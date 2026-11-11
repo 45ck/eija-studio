@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py
   title: application/runtime.py
   hash_method: ast-api-v1
-  sha256: 84586c53de927968007ddca77b706794c6994c3cb6c9dbcaeacce2ba7e7f3359
-notes_baseline: 177cdeda968d0d7044e751e6ac4466570c48576a07f0275154185ca34e1c0474
+  sha256: b63cb1570f8d4103b3598b730f15aeaede1985f812c6722a0fd64906f6159346
+notes_baseline: 3b5b6449b3521bc158efded8179b5506b6cfa66c8809f84e15ae538856ccb623
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -28,6 +28,10 @@ verified:
   at: '2026-11-11T12:00:00Z'
   notes_sha256: 51ed90c46c69260b371ab2a1d5139bf24f4f09c768aa115ebe4f70f4d761e6bb
   sources_sha256: 177cdeda968d0d7044e751e6ac4466570c48576a07f0275154185ca34e1c0474
+- by: process:claude-code
+  at: '2026-11-11T12:00:00Z'
+  notes_sha256: 51ed90c46c69260b371ab2a1d5139bf24f4f09c768aa115ebe4f70f4d761e6bb
+  sources_sha256: 3b5b6449b3521bc158efded8179b5506b6cfa66c8809f84e15ae538856ccb623
 ---
 
 # application.runtime
@@ -48,13 +52,16 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 ## Public symbols
 
 * [`check_actor`](/symbols/application/runtime/check_actor.md) (function) - no docstring
+* [`check_separation`](/symbols/application/runtime/check_separation.md) (function) - Refuse an actor who already took another action of a separation law on this record.
 * [`execute`](/symbols/application/runtime/execute.md) (function) - no docstring
 * [`initialise`](/symbols/application/runtime/initialise.md) (function) - Start a record.
+* [`separations`](/symbols/application/runtime/separations.md) (function) - The pack's separation-of-duties laws in force on ``model`` that name ``action`` (issue #149, ADR-0233).
 
 ## Internal imports
 
 * [`application/memo`](/modules/application/memo.md)
 * [`application/ports`](/modules/application/ports.md)
+* [`domain/laws`](/modules/domain/laws.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
@@ -69,6 +76,7 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 
 * [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
+* [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
@@ -83,6 +91,8 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
+* [application.runtime.check_separation](/symbols/application/runtime/check_separation.md) - Refuse an actor who already took another action of a separation law on this record.
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
+* [application.runtime.separations](/symbols/application/runtime/separations.md) - The pack's separation-of-duties laws in force on ``model`` that name ``action`` (issue #149, ADR-0233).
 <!-- okf:generated:end links -->

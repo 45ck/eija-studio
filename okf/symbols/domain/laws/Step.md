@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py#Step
   title: domain/laws.py
   hash_method: ast-sig-v1
-  sha256: 916eba652a2b2288dfeea83355b0a67baffe49d5e030676d2d246f95c4c0b0a2
-notes_baseline: ae5ec9282aa594b59ee67775b28b467537cc121c782fbc289b8b50fd52a91988
+  sha256: 0b854afbd30e49d2c21ab57ab52ca56339d4a484ed7d37ae7331300424e87a30
+notes_baseline: 53174f40f703a4cc0b3da0b032c923bc11893cbe61bacfa41349fb9d9f189a6b
 ---
 
 # domain.laws.Step
@@ -44,6 +44,7 @@ One executed transition of a run.
 | `source` | `str` |  |
 | `target` | `str` |  |
 | `effects` | `tuple[str, ...]` | `()` |
+| `actor` | `str` | `''` |
 <!-- okf:generated:end facts -->
 
 ## Notes

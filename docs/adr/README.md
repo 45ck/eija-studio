@@ -113,6 +113,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0230](0230-opt-in-live-plan-mode-and-agent-plan-check.md) | Opt-in live plan mode, and a plan check for coding agents | accepted |
 | [0231](0231-who-may-start-a-record.md) | Who may start a record | accepted |
 | [0232](0232-one-action-from-several-states.md) | One action from several states | accepted |
+| [0233](0233-separation-of-duties.md) | Separation of duties | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

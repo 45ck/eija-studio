@@ -68,7 +68,7 @@
     const tools = P.el("div", undefined, { class: "law-tools" });
     if (law.counterexample) {
       const steps = P.el("ol", undefined, { class: "law-run" });
-      for (const s of law.counterexample) steps.append(P.el("li", `${s.role} takes ${s.action}: ${s.from} → ${s.to}`));
+      for (const s of law.counterexample) steps.append(P.el("li", `${s.actor ? s.actor + " as " : ""}${s.role} takes ${s.action}: ${s.from} → ${s.to}`));
       item.append(P.el("p", "Shortest run that breaks it:", { class: "small" }), steps);
       const button = P.el("button", "Show this run", { type: "button", class: "quiet" });
       button.addEventListener("click", () => showRun(law));

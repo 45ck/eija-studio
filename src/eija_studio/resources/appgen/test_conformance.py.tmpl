@@ -25,9 +25,9 @@ def seed(svc: service.Service, state: str) -> str:
     return "r1"
 
 
-def observe(svc: service.Service, record_id: str, case: dict) -> dict:
+def observe(svc: service.Service, record_id: str, case: dict, operation: str = "op-1") -> dict:
     try:
-        result = svc.act(record_id, case["actor"], case["action"], case["expected_version"], "op-1")
+        result = svc.act(record_id, case["actor"], case["action"], case["expected_version"], operation)
     except service.Refused as refused:
         return {"outcome": "REFUSED", "code": refused.code}
     if result["duplicate"]:
@@ -89,6 +89,18 @@ class Conformance(unittest.TestCase):
                     self.assertEqual({"outcome": "REFUSED", "code": refused.code}, case["expect"])
                 else:
                     self.assertEqual({"outcome": "CREATED"}, case["expect"])
+
+    def test_one_actor_never_takes_two_separated_actions(self):
+        """An actor who took one action of a separation-of-duties law gets the kernel's answer for another (ADR-0233)."""
+        if not any(law.kind == "distinct_actors" for law in service.PACK.laws):
+            self.assertNotIn("separation_cases", ORACLE)
+        for case in ORACLE.get("separation_cases", []):
+            with self.subTest(actor=case["actor"], first=case["first"], then=case["then"]):
+                svc = service.Service()
+                record_id = seed(svc, case["state"])
+                svc.act(record_id, case["actor"], case["first"], 0, "op-1")
+                second = {"actor": case["actor"], "action": case["then"], "expected_version": 1}
+                self.assertEqual(observe(svc, record_id, second, "op-2"), case["expect"])
 
     def test_records_from_another_data_model_are_refused(self):
         """A record whose values another data model checked is never acted on: its values may not fit this one."""

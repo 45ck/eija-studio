@@ -16,6 +16,10 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   how each kind is judged and a test fails if a new kind is not classified.
 * `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
   committed during the search, so a record is stuck only where the kernel itself leaves no way to an end (ADR-0221).
+* `distinct_actors` (separation of duties, ADR-0233) is about who acted, which the actor classes above do not track.
+  It is judged by asking the kernel directly: wherever one of its actions can directly follow another on a reachable
+  record, one actor takes the first, then holds the role of the second and tries it, and must be refused; a different
+  actor must not be refused for separation.
 * Each configuration is reached first by a shortest run, so a counterexample is the shortest run that breaks the law.
 * A law about a state that is never reached, or an action that never commits, holds vacuously; that is reported.
 
@@ -27,8 +31,8 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
-from eija_studio.domain.laws import (LAW_KINDS, CanReachEnd, PathRequires, PathRequiresKind, Step, applies, evaluate_run,
-                                     evaluate_table, stuck_states)
+from eija_studio.domain.laws import (LAW_KINDS, CanReachEnd, DistinctActors, PathRequires, PathRequiresKind, Step, applies,
+                                     evaluate_run, evaluate_table, stuck_states)
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack, PackError, parse_pack
 from eija_studio.domain.policy import check_policy
@@ -44,6 +48,7 @@ LAW_HANDLING = {  # how each law kind is judged here
     "closed_shape": "table", "action_requires_guard": "table",  # about the table, not a run (evaluate_run skips them)
     "requires_evidence": "evidence",  # judged by the evidence matrix of a review
     "can_reach_end": "reach",  # judged on every step the kernel committed in the search
+    "distinct_actors": "kernel",  # judged by asking the kernel about one actor taking two of its actions
     "only_role_holds": "run", "role_never_holds": "run", "role_never_enters": "run", "state_only_via": "run",
     "action_target": "run", "action_source_in": "run", "forbidden_effects": "run", "state_final": "run",
     "path_requires": "run", "only_kind_holds": "run", "only_kind_enters": "run", "path_requires_kind": "run",
@@ -87,14 +92,16 @@ def _try(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str, 
 
 
 def _subject(law: Any) -> list[str]:
-    """The model elements a law is about: its state, its waypoint, its ends and its action, where it names them."""
+    """The model elements a law is about: its state, its waypoint, its ends and its actions, where it names them."""
     refs = [f"state:{getattr(law, name)}" for name in ("state", "via") if isinstance(getattr(law, name, None), str)]
     refs += [f"state:{end}" for end in law.states] if isinstance(law, CanReachEnd) else []
+    refs += [f"action:{a}" for a in law.actions] if isinstance(law, DistinctActors) else []
     return refs + ([f"action:{law.action}"] if isinstance(getattr(law, "action", None), str) else [])
 
 
 def _step_view(step: Step) -> dict[str, Any]:
-    return {"action": step.action, "role": step.role, "from": step.source, "to": step.target, "effects": list(step.effects)}
+    view = {"action": step.action, "role": step.role, "from": step.source, "to": step.target, "effects": list(step.effects)}
+    return view | ({"actor": step.actor} if step.actor else {})
 
 
 @dataclass
@@ -159,6 +166,75 @@ def _explore(pack: Pack, model: Workflow) -> _Search:
     return search
 
 
+def _act(session: MemorySession, pack: Pack, model: Workflow, actor: dict[str, Any], action: str,
+         n: int) -> tuple[Step | None, str]:
+    """One step on the shared record `r` of `session`: the step, or None and the kernel's refusal code."""
+    session.actors[actor["id"]] = dict(actor)
+    item = session.instances["r"]
+    command = ExecuteCommand(operation_id=f"op-{n}", actor_id=actor["id"], instance_id="r", action=action,
+                             expected_version=item["version"])
+    try:
+        result = runtime.execute(session, "proof", model, command, pack=pack)  # type: ignore[arg-type]
+    except DomainError as refused:
+        return None, refused.code
+    return Step(action=action, role=actor["role"], source=item["state"], target=result["instance"]["state"],
+                effects=tuple(result["effects"]), actor=actor["id"]), ""
+
+
+def _pair(pack: Pack, model: Workflow, first: Any, then: str) -> tuple[list[Step], str, str]:
+    """One actor takes `first`, is then given the role that takes `then` and tries it; then a different actor tries.
+    Returns the steps committed and the two refusal codes ("" when the kernel committed)."""
+    second = model.transition_for(then, first.to_state)
+    session = MemorySession(pack)
+    session.create_instance({"id": "r", "case_id": "proof", "model_hash": model_hash(model), "state": first.from_state, "version": 0})
+    actor = {"id": "same", "role": first.role, "active": True, "assigned": True}
+    step, _ = _act(session, pack, model, actor, first.action, 1)
+    if step is None or second is None:
+        return [], "", ""
+    again, same_code = _act(session, pack, model, actor | {"role": second.role}, then, 2)
+    if again is not None:
+        return [step, again], "", ""
+    _, other_code = _act(session, pack, model, {"id": "other", "role": second.role, "active": True, "assigned": True}, then, 3)
+    return [step], same_code, other_code
+
+
+def _following(model: Workflow, law: DistinctActors, reached: set[str]) -> list[tuple[Any, str]]:
+    """Each transition of a listed action from a reached state, with each other listed action leaving where it ends."""
+    follows = {(t.from_state, t.action) for t in model.transitions}
+    return [(t, then) for t in model.transitions if t.action in law.actions and t.from_state in reached
+            for then in law.actions if then != t.action and (t.to_state, then) in follows]
+
+
+def _pair_breach(run: list[Step], other: str) -> dict[str, Any] | None:
+    """What is wrong with one checked pair: the same actor let through, or a different actor refused for separation."""
+    if len(run) == 2:
+        return {"status": "BROKEN", "why": "The kernel let one actor take two of these actions on a record.",
+                "counterexample": [_step_view(s) for s in run]}
+    if other == "SEPARATION_DENIED":
+        return {"status": "BROKEN", "why": "The kernel refused a different actor too.", "counterexample": [_step_view(s) for s in run]}
+    return None
+
+
+def _separation_verdict(pack: Pack, model: Workflow, law: DistinctActors, search: _Search) -> dict[str, Any]:
+    """Every place one of the law's actions directly follows another on a record the kernel can reach."""
+    checked = [(run, other) for t, then in _following(model, law, search.reached)
+               for run, _same, other in [_pair(pack, model, t, then)] if run]
+    breach = next((b for run, other in checked if (b := _pair_breach(run, other)) is not None), None)
+    if breach is not None:
+        return breach
+    if not checked:
+        return {"status": "VACUOUS", "why": "No reachable record lets one of these actions directly follow another."}
+    return {"status": "HOLDS", "why": f"In each of {len(checked)} place(s) where one of these actions follows another, the "
+            "kernel refused the same actor and did not refuse a different one for separation."}
+
+
+def _kernel_verdicts(pack: Pack, model: Workflow, search: _Search | None) -> dict[str, dict[str, Any]]:
+    """The verdict of each law judged by asking the kernel directly; none when the kernel refuses the model."""
+    if search is None:
+        return {}
+    return {law.id: _separation_verdict(pack, model, law, search) for law in pack.laws if isinstance(law, DistinctActors)}
+
+
 def _when(law: Any) -> str:
     when = law.when
     return (f"when {when.action_present} is modelled" if when.action_present else "") + \
@@ -196,7 +272,8 @@ def _reach_verdict(law: CanReachEnd, search: _Search, initial: str) -> dict[str,
             "counterexample": [_step_view(s) for s in run], "stuck": stuck}
 
 
-def _verdict(law: Any, table: set[str], search: _Search | None, actions: set[str], initial: str = "") -> dict[str, Any]:
+def _verdict(law: Any, table: set[str], search: _Search | None, actions: set[str], initial: str = "",
+             kernel: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
     entry: dict[str, Any] = {"id": law.id, "kind": law.kind, "code": law.code, "description": law.description,
                              "method": LAW_HANDLING[law.kind], "subject": _subject(law)}
     if not applies(law, actions):
@@ -207,6 +284,8 @@ def _verdict(law: Any, table: set[str], search: _Search | None, actions: set[str
         return entry | _run_verdict(law, entry["subject"], search)
     if entry["method"] == "reach" and search is not None:
         return entry | _reach_verdict(law, search, initial)
+    if kernel and law.id in kernel:
+        return entry | kernel[law.id]
     if law.id in table:
         return entry | {"status": "BROKEN", "why": "The transition table breaks it."}
     return entry | {"status": "HOLDS", "why": "Checked on the transition table."}
@@ -235,7 +314,8 @@ def prove_laws(pack: Pack, model: Workflow | None = None) -> dict[str, Any]:
     refused = check_policy(model, pack)
     search = None if refused else _explore(pack, model)
     actions = {t.action for t in model.transitions}
-    verdicts = [_verdict(law, table, search, actions, model.initial_state) for law in pack.laws]
+    kernel = _kernel_verdicts(pack, model, search)
+    verdicts = [_verdict(law, table, search, actions, model.initial_state, kernel) for law in pack.laws]
     report = {"format": FORMAT, "pack": pack.id, "model": model.semantic_hash, "status": _overall(refused, verdicts),
               "laws": verdicts, "search": _summary(model, search), "limits": list(LIMITS)}
     return report | ({"policy": sorted(refused)} if refused else {})

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py#LAW_KINDS
   title: domain/laws.py
   hash_method: ast-v2
-  sha256: 5697f0df9a46c72b6432074d1211d4c212b229950b08431ba81dfcd6ddcaf3e6
-notes_baseline: 36bc8a20741c99320e165eb9e254084081e421acbfd6131dc9610d4aa637b7db
+  sha256: d4ca58e2b8eef2ab2c158ea1fb930bd6c966e6d024b96771f7ff663d33ebad07
+notes_baseline: 5e82563ed079b71cd2b66eb602a51298dcac852c7e31f658604955d89dce22e3
 ---
 
 # domain.laws.LAW_KINDS

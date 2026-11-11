@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py#Law
   title: domain/laws.py
   hash_method: ast-v2
-  sha256: e3f3728bfe58fbe0fce53c290f6bc94c4153de7dee1ff99447b70feca4bab1b0
-notes_baseline: eef926e63e399e5a680ddb9846f14753ece3f34d5e9c9272710fa6185615b151
+  sha256: 7f760faf691de24c619c0bd71b35337cf0ef1a59a3a427d431dfd58a6ecaada8
+notes_baseline: f4dcc60adf46d964426dcec07685d43fedd4625b79eeacfc9963cbd0d2f87f67
 ---
 
 # domain.laws.Law
@@ -46,6 +46,7 @@ _No curated notes yet._
 * [domain.laws.ActionTarget](/symbols/domain/laws/ActionTarget.md) - Every transition performing ``action`` ends in ``state``.
 * [domain.laws.CanReachEnd](/symbols/domain/laws/CanReachEnd.md) - From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left in a dead end or a loop with no way out.
 * [domain.laws.ClosedShape](/symbols/domain/laws/ClosedShape.md) - The workflow has exactly these states and actions and this initial state.
+* [domain.laws.DistinctActors](/symbols/domain/laws/DistinctActors.md) - Separation of duties (issue #149, ADR-0233): on one record, no single actor takes two different ``actions``, such as raising a request and approving it.
 * [domain.laws.ForbiddenEffects](/symbols/domain/laws/ForbiddenEffects.md) - No transition requires any of ``effects`` and every transition declares them forbidden.
 * [domain.laws.OnlyKindEnters](/symbols/domain/laws/OnlyKindEnters.md) - Every transition entering ``state`` is held by a role of one of ``role_kinds``.
 * [domain.laws.OnlyKindHolds](/symbols/domain/laws/OnlyKindHolds.md) - Every transition performing ``action`` is held by a role of one of ``role_kinds`` (e.g.

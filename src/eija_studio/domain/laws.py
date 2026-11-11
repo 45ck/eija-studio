@@ -13,7 +13,7 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal, Union
 
-from pydantic import Field, PrivateAttr
+from pydantic import Field, PrivateAttr, model_validator
 
 from .models import Contract, Guard, Transition, Workflow
 
@@ -161,6 +161,21 @@ class CanReachEnd(_Law):
     states: tuple[Name, ...] = Field(min_length=1)
 
 
+class DistinctActors(_Law):
+    """Separation of duties (issue #149, ADR-0233): on one record, no single actor takes two different ``actions``,
+    such as raising a request and approving it. About who acted, not which role: an actor whose role changes between
+    steps is still the same actor. The kernel refuses the second step at commit time (``SEPARATION_DENIED``); the
+    table cannot break it, so the policy never reports it. Repeating the same action (resubmitting) is allowed."""
+    kind: Literal["distinct_actors"]
+    actions: tuple[Name, ...] = Field(min_length=2, max_length=8)
+
+    @model_validator(mode="after")
+    def _different(self) -> DistinctActors:
+        if len(set(self.actions)) != len(self.actions):
+            raise ValueError("A separation of duties names each action once")
+        return self
+
+
 class RequiresEvidence(_Law):
     """A review needs evidence of this kind; judged by the evidence matrix, never by the table."""
     kind: Literal["requires_evidence"]
@@ -169,11 +184,12 @@ class RequiresEvidence(_Law):
 
 Law = Annotated[Union[ClosedShape, OnlyRoleHolds, RoleNeverHolds, RoleNeverEnters, StateOnlyVia, ActionTarget,  # noqa: UP007
                       ActionSourceIn, ActionRequiresGuard, ForbiddenEffects, StateFinal, PathRequires, OnlyKindHolds,
-                      OnlyKindEnters, PathRequiresKind, CanReachEnd, RequiresEvidence],
+                      OnlyKindEnters, PathRequiresKind, CanReachEnd, DistinctActors, RequiresEvidence],
                 Field(discriminator="kind")]
 LAW_KINDS = ("closed_shape", "only_role_holds", "role_never_holds", "role_never_enters", "state_only_via", "action_target",
              "action_source_in", "action_requires_guard", "forbidden_effects", "state_final", "path_requires",
-             "only_kind_holds", "only_kind_enters", "path_requires_kind", "can_reach_end", "requires_evidence")
+             "only_kind_holds", "only_kind_enters", "path_requires_kind", "can_reach_end", "distinct_actors",
+             "requires_evidence")
 KIND_LAWS = (OnlyKindHolds, OnlyKindEnters, PathRequiresKind)
 
 
@@ -193,6 +209,7 @@ class Step:
     source: str
     target: str
     effects: tuple[str, ...] = ()
+    actor: str = ""  # who took it; empty when the run does not say (a distinct_actors law then cannot judge it)
 
 
 def applies(law: _Law, actions: set[str]) -> bool:
@@ -361,21 +378,44 @@ def _run_kind_breaks(law: PathRequiresKind, steps: Sequence[Step]) -> bool:
     return False
 
 
+def separation_breach(law: DistinctActors, action: str, actor: str, earlier: Iterable[tuple[str, str]]) -> str | None:
+    """The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.
+    ``earlier`` is the record's (action, actor) history. None when the step is allowed."""
+    if not actor or action not in law.actions:
+        return None
+    return next((a for a, who in sorted(set(earlier)) if who == actor and a != action and a in law.actions), None)
+
+
+def _run_separation_breaks(law: DistinctActors, steps: Sequence[Step]) -> list[int]:
+    """The steps of one run that an actor took after taking another of the law's actions on the record."""
+    return [i for i, step in enumerate(steps)
+            if separation_breach(law, step.action, step.actor, ((s.action, s.actor) for s in steps[:i])) is not None]
+
+
+def _sequence_violations(law: _Law, initial: str, steps: Sequence[Step]) -> list[Violation]:
+    """Violations of a law judged on the whole run rather than step by step."""
+    if isinstance(law, PathRequires) and _run_path_breaks(law, initial, steps):
+        return [Violation(law.id, law.code, ("law:" + law.id, "state:" + law.state))]
+    if isinstance(law, PathRequiresKind) and _run_kind_breaks(law, steps):
+        return [Violation(law.id, law.code, ("law:" + law.id, "state:" + law.state))]
+    if isinstance(law, DistinctActors):
+        return [Violation(law.id, law.code, ("law:" + law.id, f"step:{i}")) for i in _run_separation_breaks(law, steps)]
+    return []
+
+
 def evaluate_run(laws: Sequence[_Law], initial: str, steps: Sequence[Step], actions: set[str]) -> list[Violation]:
     """Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 
     ``actions`` is the action set of the workflow the run executed (for ``when`` conditions). Structural laws
     (``closed_shape``, ``action_requires_guard``), ``can_reach_end`` (about every run a record could still take) and
-    evidence requirements are about the table, not a run, and are not judged here. Only
+    evidence requirements are about the table, not a run, and are not judged here. ``distinct_actors`` is judged on
+    the steps whose actor the run records. Only
     a step's REQUIRED effects are known, so the ``forbidden_effects`` law judges that nothing forbidden ran."""
     found: list[Violation] = []
     for law in laws:
         if not applies(law, actions):
             continue
-        if isinstance(law, PathRequires) and _run_path_breaks(law, initial, steps):
-            found.append(Violation(law.id, law.code, ("law:" + law.id, "state:" + law.state)))
-        if isinstance(law, PathRequiresKind) and _run_kind_breaks(law, steps):
-            found.append(Violation(law.id, law.code, ("law:" + law.id, "state:" + law.state)))
+        found += _sequence_violations(law, initial, steps)
         found += [Violation(law.id, law.code, ("law:" + law.id, f"step:{i}"))
                   for i, step in enumerate(steps) if _step_breaks(law, _as_transition(step, i))]
     return found

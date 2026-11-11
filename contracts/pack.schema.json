@@ -504,6 +504,63 @@
       "title": "ClosedShape",
       "type": "object"
     },
+    "DistinctActors": {
+      "additionalProperties": false,
+      "description": "Separation of duties (issue #149, ADR-0233): on one record, no single actor takes two different ``actions``,\nsuch as raising a request and approving it. About who acted, not which role: an actor whose role changes between\nsteps is still the same actor. The kernel refuses the second step at commit time (``SEPARATION_DENIED``); the\ntable cannot break it, so the policy never reports it. Repeating the same action (resubmitting) is allowed.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "distinct_actors",
+          "title": "Kind",
+          "type": "string"
+        },
+        "actions": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 2,
+          "title": "Actions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "actions"
+      ],
+      "title": "DistinctActors",
+      "type": "object"
+    },
     "Effect": {
       "additionalProperties": false,
       "description": "A typed effect. ``audit`` is written to the audit log, ``notification`` to the outbox for ``recipient``.",
@@ -2103,6 +2160,7 @@
             "action_target": "#/$defs/ActionTarget",
             "can_reach_end": "#/$defs/CanReachEnd",
             "closed_shape": "#/$defs/ClosedShape",
+            "distinct_actors": "#/$defs/DistinctActors",
             "forbidden_effects": "#/$defs/ForbiddenEffects",
             "only_kind_enters": "#/$defs/OnlyKindEnters",
             "only_kind_holds": "#/$defs/OnlyKindHolds",
@@ -2162,6 +2220,9 @@
           },
           {
             "$ref": "#/$defs/CanReachEnd"
+          },
+          {
+            "$ref": "#/$defs/DistinctActors"
           },
           {
             "$ref": "#/$defs/RequiresEvidence"

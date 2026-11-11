@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#execute
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: 6410d725b8f6747e43ebca8d8931aa1d57e58755d2db2dbf70a6b47fe432b648
+  sha256: c9747a399cc0db10b64e2e6fda583ec9f9c3e9928211140de63da4f721076d85
 description_override: 'Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.'
-notes_baseline: 127bca8128bc242ceeb420ee22c625071d98f51df4452d0744be292adc7f10a9
+notes_baseline: 3a95c13fc45694f0ddd526f38de4d0522fc0a24e813c639a82a1ddebf2f5ca73
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -34,6 +34,14 @@ verified:
   at: '2026-11-11T13:00:00Z'
   notes_sha256: dfe04ae0f939b3dc6f5f14024f1734fc5143e74a17b0b76f63eaa874ed4c6a37
   sources_sha256: 127bca8128bc242ceeb420ee22c625071d98f51df4452d0744be292adc7f10a9
+- by: process:claude-code
+  at: '2026-11-11T12:00:00Z'
+  notes_sha256: b48429d3549b75841f9905147dcbe4b998f26a44b506014f8768ddf0f70b6859
+  sources_sha256: 7154b62fb58e39e64733d109ee208f7e75cdb0d74bc9a6656aab54d071c76354
+- by: process:claude-code
+  at: '2026-11-11T12:30:00Z'
+  notes_sha256: b48429d3549b75841f9905147dcbe4b998f26a44b506014f8768ddf0f70b6859
+  sources_sha256: 3a95c13fc45694f0ddd526f38de4d0522fc0a24e813c639a82a1ddebf2f5ca73
 ---
 
 # application.runtime.execute
@@ -58,7 +66,7 @@ The transition is the one the command's action takes from the record's state; an
 1. `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`). Both go through [application.memo](/modules/application/memo.md), which asks them once per frozen model and pack object; a refusal still comes from `ensure_policy` itself ([ADR-0199](/adrs/0199-playide-at-the-kernel-limits.md)).
 2. **Authorise first** with [check_actor](/symbols/application/runtime/check_actor.md): active, current role, and assignment where the guard requires it. A cached success is not continuing authority.
 3. Replay: an existing operation id with a different binding is `OPERATION_CONFLICT`; the same binding returns the original result and enqueues nothing again.
-4. Version and source-state guards (`STALE_VERSION`, `STATE_DENIED`), then the state update.
+4. Version and source-state guards (`STALE_VERSION`, `STATE_DENIED`). Then separation of duties, only when a `distinct_actors` law in force names the action: an actor who already took another of its actions on this record is `SEPARATION_DENIED`, and otherwise the act is logged in the same unit of work ([ADR-0233](/adrs/0233-separation-of-duties.md)). Then the state update.
 5. Required effects, typed by the pack: an `audit` effect is an event row, a `notification` effect an outbox intent for its declared recipient, both in the same unit of work, then `record_operation`. An effect the pack does not declare is `EFFECT_DENIED`.
 
 Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/application/ports/UnitOfWork.md) commits; an exception rolls everything back. This is an at-most-once *local enqueue* guarantee ([Effect Intent](/language/effect-intent.md)), not external delivery. The optional `fault` hook exists so tests can crash after each step (acceptance [AC11](/requirements/ac11.md), [AC14](/requirements/ac14.md)).
@@ -70,6 +78,7 @@ Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/appli
 * [application.memo.model_hash](/symbols/application/memo/model_hash.md) - `model.semantic_hash`, computed once per model object.
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
+* [application.runtime.separations](/symbols/application/runtime/separations.md) - The pack's separation-of-duties laws in force on ``model`` that name ``action`` (issue #149, ADR-0233).
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.

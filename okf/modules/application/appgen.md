@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 78039a32bf181f2521086a20abe14b119ea47ed7b7f13740fd594f81a988d83a
-notes_baseline: d59725eb9877e9d2b8a4839906a7d0f7af275dd28d337cd5a62814a4a602c980
+  sha256: 4b9093b2cca7ba8c957d06a93ff210cd15f465634e752a091ed3b30feb454706
+notes_baseline: 33f13d68055e1068032f55fc04c6096e2172f39dc540f41df481143d4ce45aef
 ---
 
 # application.appgen
@@ -56,6 +56,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`may_start`](/symbols/application/appgen/may_start.md) (function) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
+* [`separation_cases`](/symbols/application/appgen/separation_cases.md) (function) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record;…
 * [`start_cases`](/symbols/application/appgen/start_cases.md) (function) - Each active fixture actor starting a record, and the kernel's answer.
 
 ## Internal imports
@@ -63,6 +64,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`application/memo`](/modules/application/memo.md)
 * [`application/runtime`](/modules/application/runtime.md)
 * [`domain/data`](/modules/domain/data.md)
+* [`domain/laws`](/modules/domain/laws.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/navigation`](/modules/domain/navigation.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -80,6 +82,7 @@ _No curated notes yet._
 * [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
+* [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.navigation](/modules/domain/navigation.md) - The generated app's bounded navigation, derived from its existing contracts.
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
@@ -105,5 +108,6 @@ _No curated notes yet._
 * [application.appgen.may_start](/symbols/application/appgen/may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
+* [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 <!-- okf:generated:end links -->

@@ -56,5 +56,4 @@ _No curated notes yet._
 ## Referenced by
 
 * [domain.laws.Law](/symbols/domain/laws/Law.md) - Type alias `Law` in `domain/laws`.
-* [domain.laws.evaluate_run](/symbols/domain/laws/evaluate_run.md) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 <!-- okf:generated:end links -->

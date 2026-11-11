@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS cases(id TEXT PRIMARY KEY, version INTEGER NOT NULL, 
 CREATE TABLE IF NOT EXISTS actors(id TEXT PRIMARY KEY, role TEXT NOT NULL, active INTEGER NOT NULL, assigned INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS instances(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, model_hash TEXT NOT NULL, state TEXT NOT NULL, version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS acts(seq INTEGER PRIMARY KEY AUTOINCREMENT, instance_id TEXT NOT NULL, action TEXT NOT NULL, actor_id TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, operation_id TEXT NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS pack_info(id INTEGER PRIMARY KEY CHECK(id=1), pack TEXT NOT NULL, digest TEXT NOT NULL);
@@ -85,6 +86,12 @@ class Session:
             (item["state"], item["version"], item["id"], expected)).rowcount
         if n != 1:
             raise DomainError("STALE_VERSION", "Concurrent state update")
+
+    def acts(self, instance_id: str) -> list[tuple[str, str]]:
+        return [(r["action"], r["actor_id"]) for r in self.db.execute("SELECT action,actor_id FROM acts WHERE instance_id=? ORDER BY seq", (instance_id,))]
+
+    def record_act(self, instance_id: str, action: str, actor_id: str) -> None:
+        self.db.execute("INSERT INTO acts(instance_id,action,actor_id) VALUES(?,?,?)", (instance_id, action, actor_id))
 
     def find_operation(self, operation_id: str) -> dict | None:
         row = self.db.execute("SELECT binding,body FROM operations WHERE id=?", (operation_id,)).fetchone()

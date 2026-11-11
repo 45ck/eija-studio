@@ -34,6 +34,7 @@ class MemorySession:
         self.actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
         self.instances: dict[str, dict[str, Any]] = {}
         self.operations: dict[str, dict[str, Any]] = {}
+        self.acted: dict[str, list[tuple[str, str]]] = {}  # per record, (action, actor) for separation laws (ADR-0233)
         self.audit: list[str] = []
         self.outbox: list[str] = []
 
@@ -53,6 +54,12 @@ class MemorySession:
         if self.instances[item["id"]]["version"] != expected:
             raise DomainError("STALE_VERSION", "Concurrent state update")
         self.instances[item["id"]] = dict(item)
+
+    def acts(self, instance_id: str) -> list[tuple[str, str]]:
+        return list(self.acted.get(instance_id, []))
+
+    def record_act(self, instance_id: str, action: str, actor_id: str) -> None:
+        self.acted.setdefault(instance_id, []).append((action, actor_id))
 
     def find_operation(self, operation_id: str) -> dict[str, Any] | None:
         return self.operations.get(operation_id)
