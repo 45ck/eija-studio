@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py#MemorySession
   title: application/simulation.py
   hash_method: ast-sig-v1
-  sha256: 59bff6b83c0954a93bfa7834ce4b23e747b9438d1890ca46cbac9b498010c140
-notes_baseline: 8d08e3d915cab1f814d3e9da516dcdec5d8379ffaa4726b60770a68ee82a9f7b
+  sha256: b9e1986763bf1c3f3d5157696afa7b3c11857b73663d64491444e226a513c50d
+notes_baseline: 6d16714a8b99881606e9946f0bbbe210335246bd2b10962fd405c5e8e99a16d9
 ---
 
 # application.simulation.MemorySession
@@ -47,6 +47,7 @@ The kernel's unit-of-work port over plain dictionaries, keeping every record, op
 * [`record_act`](/symbols/application/simulation/MemorySession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None`
 * [`record_operation`](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None`
 * [`update_instance`](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None`
+* [`values`](/symbols/application/simulation/MemorySession.values.md) - `def values(self, instance_id: str) -> dict[str, Any]`
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -70,4 +71,5 @@ _No curated notes yet._
 * [application.simulation.MemorySession.record_act](/symbols/application/simulation/MemorySession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.record_operation](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.update_instance](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/simulation`.
+* [application.simulation.MemorySession.values](/symbols/application/simulation/MemorySession.values.md) - `def values(self, instance_id: str) -> dict[str, Any]` in `application/simulation`.
 <!-- okf:generated:end links -->

@@ -114,6 +114,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0231](0231-who-may-start-a-record.md) | Who may start a record | accepted |
 | [0232](0232-one-action-from-several-states.md) | One action from several states | accepted |
 | [0233](0233-separation-of-duties.md) | Separation of duties | accepted |
+| [0234](0234-guards-over-record-values.md) | Guards over record values | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

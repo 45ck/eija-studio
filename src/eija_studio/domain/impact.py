@@ -27,7 +27,7 @@ def changed_fields(old: Transition, new: Transition) -> list[str]:
     as in `Workflow.semantic_hash`), so shuffling them is not a change. The single definition of "changed"
     shared by the ripple and the diagram diff."""
     fields = [name for name in ("id", "from_state", "to_state", "role") if getattr(old, name) != getattr(new, name)]
-    fields += [name for name in ("guards", "required_effects", "forbidden_effects")
+    fields += [name for name in ("guards", "required_effects", "forbidden_effects", "conditions")
                if set(getattr(old, name)) != set(getattr(new, name))]
     return fields
 

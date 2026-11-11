@@ -35,6 +35,20 @@ def check_separation(laws: list[DistinctActors], action: str, actor_id: str, act
                               {"codes": [law.code], "refs": [f"law:{law.id}", f"action:{earlier}", f"action:{action}"]})
 
 
+def check_guards(transition: Transition, values: dict[str, Any]) -> None:
+    """Refuse a transition whose guards over the record's values do not hold (ADR-0234). Missing values fail closed."""
+    failed = transition.admits(values)
+    if failed is not None:
+        raise DomainError("VALUE_GUARD_DENIED", f"{transition.action} needs [{failed}]",
+                          {"codes": ["VALUE_GUARD_DENIED"], "refs": [f"transition:{transition.id}", f"attribute:{failed.attribute}"]})
+
+
+def _admitted(session: UnitOfWork, transition: Transition, instance_id: str) -> None:
+    """Read the record's values only for a transition with value guards; most transitions never touch them."""
+    if transition.conditions:
+        check_guards(transition, session.values(instance_id))
+
+
 def _separate(session: UnitOfWork, laws: list[DistinctActors], action: str, actor_id: str, instance_id: str) -> None:
     """Refuse or log this act for the separation laws naming the action; with none (most packs) the log is untouched."""
     if laws:
@@ -99,6 +113,7 @@ def execute(
         raise DomainError("STALE_VERSION", "Instance changed; reload before acting")
     if instance["state"] != t.from_state:
         raise DomainError("STATE_DENIED", "Action is invalid from the current state")
+    _admitted(session, t, instance["id"])
     _separate(session, separations(pack, model, t.action), t.action, command.actor_id, instance["id"])
     instance.update(state=t.to_state, version=instance["version"] + 1)
     session.update_instance(instance, command.expected_version)

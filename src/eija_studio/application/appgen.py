@@ -14,11 +14,12 @@ from typing import Any
 
 from eija_studio.domain.data import Attribute, DataModel, Entity, check_values
 from eija_studio.domain.laws import DistinctActors
-from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow, canonical, fingerprint
+from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, ValueGuard, Workflow, canonical, fingerprint
 from eija_studio.domain.navigation import navigation_for
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
 from eija_studio.domain.screens import Screens, default_screens, require_buildable
+from eija_studio.domain.value_guards import combinations, guard_problems
 from .memo import model_hash
 from .runtime import execute
 
@@ -38,7 +39,8 @@ LIMITS = (
 class _OracleSession:
     """In-memory answers to exactly the port calls `execute` makes for one instance. Nothing persists."""
 
-    def __init__(self, pack: Pack, model: Workflow, state: str):
+    def __init__(self, pack: Pack, model: Workflow, state: str, values: dict[str, Any] | None = None):
+        self.record_values = dict(values or {})
         self.actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
         self.item = {"id": "r1", "case_id": "app", "model_hash": model_hash(model), "state": state, "version": 0}
         self.operations: dict[str, dict[str, Any]] = {}
@@ -52,6 +54,9 @@ class _OracleSession:
 
     def record_act(self, instance_id: str, action: str, actor_id: str) -> None:
         self.acted.append((action, actor_id))
+
+    def values(self, instance_id: str) -> dict[str, Any]:
+        return dict(self.record_values)
 
     def actor(self, actor_id: str) -> dict[str, Any]:
         if actor_id not in self.actors:
@@ -166,12 +171,36 @@ def separation_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
     return cases
 
 
+def _taker(pack: Pack, t: Transition) -> str | None:
+    """The first fixture actor the kernel lets take this transition, value guards aside."""
+    return next((a.id for a in sorted(pack.fixtures.actors, key=lambda a: a.id) if a.active and a.role == t.role
+                 and (a.assigned or "actor_assigned" not in t.guards)), None)
+
+
+def value_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
+    """For each transition with guards over record values, an actor who may take it tries it on records holding every
+    combination of values its guards can tell apart (`value_guards.combinations`), and the kernel's answer (ADR-0234).
+    Empty for a model without value guards, so every other oracle keeps its exact bytes."""
+    cases: list[dict[str, object]] = []
+    for t in sorted((t for t in model.transitions if t.conditions), key=lambda t: t.id):
+        actor = _taker(pack, t)
+        if actor is None:
+            continue
+        grouped: dict[str, list[ValueGuard]] = {}
+        for guard in t.conditions:
+            grouped.setdefault(guard.attribute, []).append(guard)
+        for values in combinations(dict(sorted(grouped.items()))) or []:
+            session = _OracleSession(pack, model, t.from_state, values)
+            cases.append({"state": t.from_state, "action": t.action, "actor": actor, "values": values,
+                          "expect": _kernel(pack, model, session, actor, t.action, 0)})
+    return cases
+
+
 def _people_cases(pack: Pack, model: Workflow) -> dict[str, Any]:
     """The oracle's checks of who may start a record and who may not act twice, present only when the model or pack
     asks for them, so every other oracle keeps its exact bytes."""
-    separated = separation_cases(pack, model)
-    return ({"start_cases": start_cases(pack, model)} if model.initiators else {}) | (
-        {"separation_cases": separated} if separated else {})
+    found = {"separation_cases": separation_cases(pack, model), "value_cases": value_cases(pack, model)}
+    return ({"start_cases": start_cases(pack, model)} if model.initiators else {}) | {k: v for k, v in found.items() if v}
 
 
 def _creator(pack: Pack, model: Workflow | None) -> str:
@@ -254,6 +283,16 @@ def _require_policy(pack: Pack, model: Workflow) -> None:
                           {"codes": sorted(errors)})
 
 
+def _require_data(pack: Pack, model: Workflow, data: DataModel | None) -> None:
+    """Refuse a data model from another pack, or value guards that do not fit its record class (ADR-0234)."""
+    if data is not None and data.id != pack.id:
+        raise DomainError("DATA_PACK_MISMATCH", f"Data model {data.id!r} does not belong to pack {pack.id!r}")
+    problems = guard_problems(model, data)
+    if problems:
+        raise DomainError("VALUE_GUARD_INVALID", "A guard over record values does not fit the data model; no app is built",
+                          {"codes": problems})
+
+
 def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None = None,
              screens: Screens | None = None) -> tuple[dict[str, str], dict[str, Any]]:
     """Return the per-model files and the build manifest (without file hashes or test results).
@@ -262,8 +301,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
     screens with design problems (ADR-0154); without screens, each use case gets a default one."""
     model = model if model is not None else pack.model
     _require_policy(pack, model)
-    if data is not None and data.id != pack.id:
-        raise DomainError("DATA_PACK_MISMATCH", f"Data model {data.id!r} does not belong to pack {pack.id!r}")
+    _require_data(pack, model, data)
     screens = screens if screens is not None else default_screens(pack, model, data)
     if screens.id != pack.id:
         raise DomainError("SCREENS_PACK_MISMATCH", f"Screens {screens.id!r} do not belong to pack {pack.id!r}")
@@ -281,7 +319,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
         files["app/data.json"] = canonical(data) + "\n"
     oracle |= _people_cases(pack, model)
     files["tests/oracle.json"] = canonical(oracle) + "\n"
-    total = len(cases) + sum(len(oracle.get(k, [])) for k in ("data_cases", "start_cases", "separation_cases"))
+    total = len(cases) + sum(len(oracle.get(k, [])) for k in ("data_cases", "start_cases", "separation_cases", "value_cases"))
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": total, "hash": fingerprint(oracle)},
                 "data": {"digest": data.digest, "record": data.record} if data else None,

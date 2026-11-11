@@ -64,6 +64,7 @@ classDiagram
         +str role
         +tuple~str~ required_effects
         +tuple~str~ forbidden_effects
+        +tuple~ValueGuard~ conditions
     }
     class Workflow {
         <<value-object>>

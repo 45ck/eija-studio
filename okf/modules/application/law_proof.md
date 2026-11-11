@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py
   title: application/law_proof.py
   hash_method: ast-api-v1
-  sha256: f28165935826ba58149c5f5446dc0ee89836538ac9baf5c2f31a01f01debe1ca
-notes_baseline: 9355bacb1d113dbc48df7029f30ff756db76a54578b65ccb75cf0d97728824ea
+  sha256: 4bba003c30f8071aa2607f386b8f1ede95a89f99443b4a49701c4da2c03e6382
+notes_baseline: e848e5c9bf1a4d5713b9fcc24cac401256ac3afc66360be0bf411b3ae4924a3a
 ---
 
 # application.law_proof
@@ -42,7 +42,8 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   actor per role and per combination of the two flags, plus one actor holding a role the pack does not declare,
   stands for every possible actor.
 * Configurations: the record's state plus the set of path-law waypoints (`path_requires.via`) it has passed and of
-  the `path_requires_kind` laws whose kind of actor has already taken a step (ADR-0210). Every other law kind is
+  the `path_requires_kind` laws whose kind of actor has already taken a step (ADR-0210), and the record's values
+  where the model has guards over them: one search per combination its guards can tell apart (ADR-0234). Every other law kind is
   judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
   how each kind is judged and a test fails if a new kind is not classified.
 * `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
@@ -63,8 +64,10 @@ Pure: no IO, no clock, no randomness. The same pack and model always give the sa
 * [`LAW_HANDLING`](/symbols/application/law_proof/LAW_HANDLING.md) (constant) - no docstring
 * [`LIMITS`](/symbols/application/law_proof/LIMITS.md) (constant) - no docstring
 * [`MAX_CONFIGURATIONS`](/symbols/application/law_proof/MAX_CONFIGURATIONS.md) (constant) - no docstring
+* [`Node`](/symbols/application/law_proof/Node.md) (type-alias) - no docstring
 * [`OUTSIDER`](/symbols/application/law_proof/OUTSIDER.md) (constant) - no docstring
 * [`Passed`](/symbols/application/law_proof/Passed.md) (type-alias) - no docstring
+* [`STOPPED`](/symbols/application/law_proof/STOPPED.md) (constant) - no docstring
 * [`actor_classes`](/symbols/application/law_proof/actor_classes.md) (function) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
 * [`compare_laws`](/symbols/application/law_proof/compare_laws.md) (function) - Which laws a draft adds, removes or changes.
 * [`prove_laws`](/symbols/application/law_proof/prove_laws.md) (function) - Every law of the pack, judged on `model` (the pack's own by default), with the evidence for each verdict.
@@ -78,6 +81,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give the sa
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
+* [`domain/value_guards`](/modules/domain/value_guards.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -93,6 +97,7 @@ _No curated notes yet._
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
+* [domain.value_guards](/modules/domain/value_guards.md) - Guards over a record's values (issue #93, ADR-0234): which values can decide them, and whether they fit the data model.
 
 ## Referenced by
 
@@ -105,8 +110,10 @@ _No curated notes yet._
 * [application.law_proof.LAW_HANDLING](/symbols/application/law_proof/LAW_HANDLING.md) - Constant `LAW_HANDLING` in `application/law_proof`.
 * [application.law_proof.LIMITS](/symbols/application/law_proof/LIMITS.md) - Constant `LIMITS` in `application/law_proof`.
 * [application.law_proof.MAX_CONFIGURATIONS](/symbols/application/law_proof/MAX_CONFIGURATIONS.md) - Constant `MAX_CONFIGURATIONS` in `application/law_proof`.
+* [application.law_proof.Node](/symbols/application/law_proof/Node.md) - Type alias `Node` in `application/law_proof`.
 * [application.law_proof.OUTSIDER](/symbols/application/law_proof/OUTSIDER.md) - Constant `OUTSIDER` in `application/law_proof`.
 * [application.law_proof.Passed](/symbols/application/law_proof/Passed.md) - Type alias `Passed` in `application/law_proof`.
+* [application.law_proof.STOPPED](/symbols/application/law_proof/STOPPED.md) - Constant `STOPPED` in `application/law_proof`.
 * [application.law_proof.actor_classes](/symbols/application/law_proof/actor_classes.md) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
 * [application.law_proof.compare_laws](/symbols/application/law_proof/compare_laws.md) - Which laws a draft adds, removes or changes.
 * [application.law_proof.prove_laws](/symbols/application/law_proof/prove_laws.md) - Every law of the pack, judged on `model` (the pack's own by default), with the evidence for each verdict.

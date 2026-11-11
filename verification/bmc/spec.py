@@ -26,7 +26,7 @@ from eija_studio.domain.laws import ForbiddenEffects, Step, evaluate_run
 from eija_studio.domain.models import Transition, Workflow
 from eija_studio.domain.pack import Pack, default_pack
 
-from ..scope import require_one_transition_per_action
+from ..scope import require_formal_scope
 from .snapshot import Snapshot
 
 CASE = "bmc"
@@ -70,7 +70,7 @@ class Expectation:
 
 
 def transition_of(model: Workflow, action: str) -> Transition | None:
-    require_one_transition_per_action(model)
+    require_formal_scope(model)
     return next((t for t in model.transitions if t.action == action), None)
 
 

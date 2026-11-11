@@ -160,7 +160,9 @@ def _provenance(*workflows: tuple[str, Workflow]) -> tuple[str, ...]:
 
 
 def _edge_label(t: Transition) -> str:
-    return f"{t.action} · {t.role}" + (" · assigned" if "actor_assigned" in t.guards else "")
+    """UML's `event [guard]`: the action, its guards over record values in brackets (ADR-0234), then who takes it."""
+    guard = f" [{' and '.join(str(c) for c in t.conditions)}]" if t.conditions else ""
+    return f"{t.action}{guard} · {t.role}" + (" · assigned" if "actor_assigned" in t.guards else "")
 
 
 def _edge_key(t: Transition) -> tuple[str, str, str]:
@@ -184,7 +186,7 @@ def _describe(old: Transition, new: Transition, field: str) -> str:
     """What one changed field became: `role A→B`, `guards +actor_assigned -x`."""
     before, after = getattr(old, field), getattr(new, field)
     if isinstance(before, tuple):
-        added, removed = sorted(set(after) - set(before)), sorted(set(before) - set(after))
+        added, removed = sorted(set(after) - set(before), key=str), sorted(set(before) - set(after), key=str)
         return f"{field} " + " ".join([f"+{x}" for x in added] + [f"-{x}" for x in removed])
     return f"{field} {before}→{after}"
 

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: 0193ce592c955a5ab5110d2c8df248b0b7351b4c6cb2acc0bf2e966eb6b4370f
-notes_baseline: cad755598494e713cc2d76056f90d35a89cac72b0b5e4008277fbe28e9501a11
+  sha256: b4794644351bd00203084f645bf596748c375b2b1390da862af65602545beaae
+notes_baseline: 694bf6ac47343e9860e5c809e0d70f3feb9576dab9f3f172efe6db6671c1400a
 ---
 
 # domain.models
@@ -35,6 +35,7 @@ _The source carries no module docstring._
 * [`AGENT`](/symbols/domain/models/AGENT.md) (constant) - no docstring
 * [`Alternative`](/symbols/domain/models/Alternative.md) (class) - no docstring
 * [`BASE_GUARDS`](/symbols/domain/models/BASE_GUARDS.md) (constant) - no docstring
+* [`Comparison`](/symbols/domain/models/Comparison.md) (type-alias) - no docstring
 * [`Contract`](/symbols/domain/models/Contract.md) (class) - no docstring
 * [`DomainError`](/symbols/domain/models/DomainError.md) (class) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [`ExecuteCommand`](/symbols/domain/models/ExecuteCommand.md) (class) - no docstring
@@ -44,11 +45,14 @@ _The source carries no module docstring._
 * [`OWNER`](/symbols/domain/models/OWNER.md) (constant) - no docstring
 * [`Principal`](/symbols/domain/models/Principal.md) (class) - no docstring
 * [`Proposal`](/symbols/domain/models/Proposal.md) (class) - no docstring
+* [`SYMBOLS`](/symbols/domain/models/SYMBOLS.md) (constant) - no docstring
 * [`SemanticTransaction`](/symbols/domain/models/SemanticTransaction.md) (class) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
 * [`Transition`](/symbols/domain/models/Transition.md) (class) - no docstring
+* [`ValueGuard`](/symbols/domain/models/ValueGuard.md) (class) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [`Workflow`](/symbols/domain/models/Workflow.md) (class) - no docstring
 * [`canonical`](/symbols/domain/models/canonical.md) (function) - no docstring
 * [`fingerprint`](/symbols/domain/models/fingerprint.md) (function) - no docstring
+* [`iso_date`](/symbols/domain/models/iso_date.md) (function) - The date a YYYY-MM-DD string names, or None.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -127,6 +131,7 @@ _No curated notes yet._
 * [domain.scenarios](/modules/domain/scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
+* [domain.value_guards](/modules/domain/value_guards.md) - Guards over a record's values (issue #93, ADR-0234): which values can decide them, and whether they fit the data model.
 * [interfaces.agent_config](/modules/interfaces/agent_config.md) - Copy-paste MCP client configuration for `eija mcp --print-config <client>`.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [interfaces.c4](/modules/interfaces/c4.md) - C4 structural inspection under the existing authenticated PlayIDE boundary.
@@ -142,6 +147,7 @@ _No curated notes yet._
 * [domain.models.AGENT](/symbols/domain/models/AGENT.md) - Constant `AGENT` in `domain/models`.
 * [domain.models.Alternative](/symbols/domain/models/Alternative.md) - `class Alternative(Contract)` in `domain/models`.
 * [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.Comparison](/symbols/domain/models/Comparison.md) - Type alias `Comparison` in `domain/models`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
@@ -153,9 +159,14 @@ _No curated notes yet._
 * [domain.models.Principal.require](/symbols/domain/models/Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.Proposal.unique](/symbols/domain/models/Proposal.unique.md) - `def unique(self) -> Proposal` in `domain/models`.
+* [domain.models.SYMBOLS](/symbols/domain/models/SYMBOLS.md) - Constant `SYMBOLS` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
+* [domain.models.Transition.admits](/symbols/domain/models/Transition.admits.md) - The first condition these record values fail, or None when the transition's conditions all hold.
 * [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
+* [domain.models.ValueGuard.comparable](/symbols/domain/models/ValueGuard.comparable.md) - `def comparable(self) -> ValueGuard` in `domain/models`.
+* [domain.models.ValueGuard.holds](/symbols/domain/models/ValueGuard.holds.md) - `def holds(self, values: dict[str, Any]) -> bool` in `domain/models`.
+* [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
@@ -163,4 +174,5 @@ _No curated notes yet._
 * [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…
 * [domain.models.canonical](/symbols/domain/models/canonical.md) - `def canonical(value: Any) -> str` in `domain/models`.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
+* [domain.models.iso_date](/symbols/domain/models/iso_date.md) - The date a YYYY-MM-DD string names, or None.
 <!-- okf:generated:end links -->

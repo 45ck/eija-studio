@@ -39,5 +39,7 @@ _The source carries no docstring._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [application.law_proof.Node](/symbols/application/law_proof/Node.md) - Type alias `Node` in `application/law_proof`.
 <!-- okf:generated:end links -->

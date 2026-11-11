@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from datetime import date
 from hashlib import sha256
 import json
+import math
+import re
 from typing import Any, Literal
-from pydantic import BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler, model_serializer, model_validator
+from pydantic import (BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler, StrictBool, StrictFloat, StrictInt,
+                      StrictStr, model_serializer, model_validator)
 
 
 class DomainError(ValueError):
@@ -32,6 +36,57 @@ Guard = Literal["actor_active", "role_current", "actor_assigned", "state_equals"
 BASE_GUARDS: tuple[Guard, ...] = ("actor_active", "role_current", "state_equals", "expected_version", "operation_binding")
 
 
+Comparison = Literal["eq", "ne", "lt", "le", "gt", "ge"]
+SYMBOLS: dict[str, str] = {"eq": "=", "ne": "≠", "lt": "<", "le": "≤", "gt": ">", "ge": "≥"}
+_COMPARE = {"eq": lambda a, b: a == b, "ne": lambda a, b: a != b, "lt": lambda a, b: a < b,
+            "le": lambda a, b: a <= b, "gt": lambda a, b: a > b, "ge": lambda a, b: a >= b}
+
+
+def iso_date(text: str) -> date | None:
+    """The date a YYYY-MM-DD string names, or None. ISO dates compare as text in date order."""
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def _kind(value: Any) -> str:
+    """What a guard compares: a bool is not a number, and an int and a float are both numbers."""
+    return "boolean" if isinstance(value, bool) else "number" if isinstance(value, int | float) else "text"
+
+
+class ValueGuard(Contract):
+    """A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234). The transition
+    fires only when it holds. A value that is missing, or of another kind, never satisfies it (fail closed)."""
+    attribute: str = Field(pattern=r"^[a-z][a-zA-Z0-9_]{0,39}$")
+    op: Comparison
+    value: StrictBool | StrictInt | StrictFloat | StrictStr
+
+    @model_validator(mode="after")
+    def comparable(self) -> ValueGuard:
+        if isinstance(self.value, float) and not math.isfinite(self.value):
+            raise ValueError("A guard compares with a finite number")
+        if isinstance(self.value, str) and len(self.value) > 200:
+            raise ValueError("A guard's text is at most 200 characters")
+        if isinstance(self.value, str) and self.op not in ("eq", "ne") and iso_date(self.value) is None:
+            raise ValueError("Only a date (YYYY-MM-DD) or a number is compared with <, ≤, > or ≥")
+        if isinstance(self.value, bool) and self.op not in ("eq", "ne"):
+            raise ValueError("A true/false value is only compared with = or ≠")
+        return self
+
+    def holds(self, values: dict[str, Any]) -> bool:
+        actual = values.get(self.attribute)
+        if actual is None or _kind(actual) != _kind(self.value):
+            return False
+        return bool(_COMPARE[self.op](actual, self.value))
+
+    def __str__(self) -> str:
+        shown = json.dumps(self.value, ensure_ascii=False) if isinstance(self.value, str | bool) else repr(self.value)
+        return f"{self.attribute} {SYMBOLS[self.op]} {shown}"
+
+
 class Transition(Contract):
     id: str = Field(pattern=r"^[A-Z][A-Z0-9_-]{0,63}$")
     action: str = Field(min_length=1, max_length=60)
@@ -41,6 +96,20 @@ class Transition(Contract):
     guards: tuple[Guard, ...]
     required_effects: tuple[str, ...]
     forbidden_effects: tuple[str, ...]
+    # Guards over the record's values (ADR-0234); all must hold. Empty is left out of every dump, so transitions
+    # without them keep their exact bytes and hashes.
+    conditions: tuple[ValueGuard, ...] = Field(default=(), max_length=8)
+
+    @model_serializer(mode="wrap")
+    def _omit_unconditional(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.conditions:
+            data.pop("conditions", None)
+        return data
+
+    def admits(self, values: dict[str, Any]) -> ValueGuard | None:
+        """The first condition these record values fail, or None when the transition's conditions all hold."""
+        return next((c for c in self.conditions if not c.holds(values)), None)
 
     @model_validator(mode="after")
     def guarded(self) -> Transition:
@@ -52,12 +121,15 @@ class Transition(Contract):
             raise ValueError("Duplicate required effects")
         if set(self.required_effects) & set(self.forbidden_effects):
             raise ValueError("Required/forbidden effect conflict")
+        if len(set(self.conditions)) != len(self.conditions):
+            raise ValueError("Duplicate value guard")
         return self
 
 
 def _shape(t: Transition) -> tuple[Any, ...]:
     """What every transition one action labels must share: all but its id and source state (ADR-0232)."""
-    return (t.to_state, t.role, frozenset(t.guards), frozenset(t.required_effects), frozenset(t.forbidden_effects))
+    return (t.to_state, t.role, frozenset(t.guards), frozenset(t.required_effects), frozenset(t.forbidden_effects),
+            frozenset(t.conditions))
 
 
 class Workflow(Contract):
@@ -117,6 +189,8 @@ class Workflow(Contract):
         for t in data["transitions"]:
             for key in ("guards", "required_effects", "forbidden_effects"):
                 t[key] = sorted(t[key])
+            if "conditions" in t:  # a set of guards (ADR-0234); absent when empty, so old hashes hold
+                t["conditions"] = sorted(t["conditions"], key=canonical)
         return fingerprint(data)
 
 

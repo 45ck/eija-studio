@@ -2,6 +2,7 @@
 
 ## 2026-11-11
 
+* **Guards over record values (issue #93)**: synced ADR-0234, `ValueGuard` and `Transition.conditions`, `domain/value_guards.py`, the runtime's `VALUE_GUARD_DENIED` check, the `values` port, the law proof's search per set of values, Simulate's values, the oracle's value cases, the SCXML projection and the formal scope. Re-read the Notes of the runtime module, `execute`, `UnitOfWork`, `Transition` and `Workflow.semantic_hash` as `process:claude-code` and updated the last four. No human source approval was recorded.
 * **Separation of duties (issue #149)**: synced ADR-0233, the `distinct_actors` law, the runtime's `SEPARATION_DENIED` check, the act log on the unit-of-work port, the law proof's kernel check and the generated app's separation cases. Re-read the Notes of the runtime module, `execute` and `UnitOfWork` as `process:claude-code` and updated the last two. No human source approval was recorded.
 * **One action from several states (issue #148)**: synced ADR-0232, `Workflow.transition_for`/`sources`, `impact.keyed`, the runtime, transactions, importers and `verification/scope.py`. Re-read the Notes of `execute`, `verify_runtime`, `model_impact`, `Workflow` and the integration-test kind as `process:claude-code` and updated the first four. No human source approval was recorded.
 

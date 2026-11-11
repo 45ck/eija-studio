@@ -91,6 +91,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
+* [application.appgen.value_cases](/symbols/application/appgen/value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart…
 * [application.build_subject.snapshot_contracts](/symbols/application/build_subject/snapshot_contracts.md) - Parse the very contracts the generated application will load.
 * [application.capabilities.capability_map](/symbols/application/capabilities/capability_map.md) - The supported constructs, bounded to the current model, with no inferred readiness.
 * [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
@@ -197,4 +198,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.screens.screens_for](/symbols/domain/screens/screens_for.md) - The screens beside this pack's `pack.json`, each use case they leave out given its default screen; or the defaults.
 * [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.
 * [domain.transactions.apply_structural](/symbols/domain/transactions/apply_structural.md) - ``model`` with ``tx`` applied.
+* [domain.value_guards.guard_problems](/symbols/domain/value_guards/guard_problems.md) - Codes for value guards that do not fit the data model's record class: no data model, an attribute the record does not have, or a constant of another type (or a…
+* [domain.value_guards.guards_by_attribute](/symbols/domain/value_guards/guards_by_attribute.md) - Every value guard of the model, grouped by the attribute it reads, attributes in name order.
+* [domain.value_guards.valuations](/symbols/domain/value_guards/valuations.md) - One record's values for each combination of `points` over the guarded attributes, in a fixed order; a value of None is left out.
 <!-- okf:generated:end links -->

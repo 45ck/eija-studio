@@ -116,3 +116,4 @@
 * [ADR-0231: Who may start a record](0231-who-may-start-a-record.md) - Issue #142: a workflow said who may take each transition, but not who may start a record.
 * [ADR-0232: One action from several states](0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
 * [ADR-0233: Separation of duties](0233-separation-of-duties.md) - Issue #149.
+* [ADR-0234: Guards over record values](0234-guards-over-record-values.md) - Issue #93, item 1.

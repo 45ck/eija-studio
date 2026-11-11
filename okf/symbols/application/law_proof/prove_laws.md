@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py#prove_laws
   title: application/law_proof.py
   hash_method: ast-v2
-  sha256: ab61def4106db12b597ecd11b76f3f35790ec9eafff2723d0afe3823b820be37
-notes_baseline: c19467054bd110efe55c8ffab6cec42dec70f3d8ea9ee3c3fb86379d1da1ffd9
+  sha256: b5989e12be17666b74efaf1c9cb760023620488eb3eed1aebca636ad25b9dd25
+notes_baseline: 0fc746c906573fbf8d28cb6a0926b70ffcd3c3d548272cd4a80fa61496442f1f
 ---
 
 # application.law_proof.prove_laws

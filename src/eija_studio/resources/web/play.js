@@ -263,7 +263,10 @@
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
   }
 
-  function label(t) { return `${t.action} [${t.role}]`; }
+  const SYMBOL = { eq: "=", ne: "≠", lt: "<", le: "≤", gt: ">", ge: "≥" };
+  function condition(c) { return `${c.attribute} ${SYMBOL[c.op] || c.op} ${typeof c.value === "string" ? JSON.stringify(c.value) : c.value}`; }
+  function when(t) { return (t.conditions || []).map(condition).join(" and "); }
+  function label(t) { return `${t.action}${when(t) ? ` [${when(t)}]` : ""} [${t.role}]`; }
 
   function draw(workflow) {
     const { Graph, InternalEvent } = maxgraph;
@@ -443,6 +446,7 @@
       row(dl, "Path", `${t.from_state} → ${t.to_state}`);
       row(dl, "Who", t.role + kindNote(t.role));
       row(dl, "Guards", t.guards.join(", "));
+      if (when(t)) row(dl, "Only when", when(t));
       row(dl, "Effects", t.required_effects.join(", ") || "none");
       row(dl, "Never", t.forbidden_effects.join(", ") || "nothing listed");
       box.append(dl, screenLink(t.action), transitionTools(t));

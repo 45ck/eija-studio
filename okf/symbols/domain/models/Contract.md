@@ -79,6 +79,7 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
+* [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.navigation.Destination](/symbols/domain/navigation/Destination.md) - `class Destination(Contract)` in `domain/navigation`.
 * [domain.navigation.Navigation](/symbols/domain/navigation/Navigation.md) - `class Navigation(Contract)` in `domain/navigation`.
