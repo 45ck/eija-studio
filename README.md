@@ -221,7 +221,7 @@ As of 11 November 2026, in order:
 2. **A backlog that matches the product.** Stale issues closed, one list of current work, tech debt removed.
 3. **Measure how well AI reads a request.** A kernel-graded intent eval across providers.
 4. **Opt-in live AI, offline by default.** Live chat only with consent, plus a `plan_check` tool for coding agents.
-5. **Kernel gaps from real systems.** Associations, who may start a record, separation of duties, one action on several transitions.
+5. **Kernel gaps from real systems.** Done: built to-one associations, who may start a record, separation of duties, one action on several transitions and guards over record values. Next: timers, composite states and messages (#93).
 
 The checklist is [issue #221](https://github.com/45ck/eija-studio/issues/221). Issues labelled [`owner-only`](https://github.com/45ck/eija-studio/labels/owner-only) wait on the owner; [`later`](https://github.com/45ck/eija-studio/labels/later) is parked. The [roadmap](docs/ROADMAP.md#what-we-are-doing-now) gives the reasons and the longer milestones; the [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) and [acceptance criteria](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) say how work ships.
 
