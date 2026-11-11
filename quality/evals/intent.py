@@ -120,6 +120,8 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
 def evaluate(provider_name: str = "offline", model: str = "", *, max_calls: int | None = None,
              cases: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     chosen = cases if cases is not None else load_cases()
+    if max_calls is not None and max_calls < 0:
+        raise ValueError("max_calls must be 0 or more")
     limit = min(max_calls if max_calls is not None else len(chosen), HARD_CALL_LIMIT)
     packs: dict[str, Pack] = {}
     rows = [run_case(case, provider_name, model, packs) for case in chosen[:limit]]
@@ -140,6 +142,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-calls", type=int, default=None, help=f"stop after this many provider calls (hard limit {HARD_CALL_LIMIT})")
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "evals" / "intent.json")
     args = parser.parse_args(argv)
+    if args.max_calls is not None and args.max_calls < 0:
+        parser.error("--max-calls must be 0 or more")
     if create_provider(args.provider, args.model).networked and not (args.allow_network and args.consent):
         sys.stderr.write("NOT_RUN: a networked provider needs --allow-network and --consent; no call was made.\n")
         return 2

@@ -74,6 +74,10 @@ def test_exact_phrases_stay_offline_and_never_reach_the_provider():
     state = pack.model.states[-1]
     result = propose_plan(f"add state Archived after {state}", pack.model, pack, proposer)
     assert stub.calls == 0 and result["meaning"] is None and len(result["steps"]) == 1
+    # Provenance follows who answered: the phrase reader, not the model (Codex review on PR #219).
+    assert result["live"] is False and result["provider"] == OfflinePlanProposer().name
+    asked = propose_plan("Please let an agent hand this off to a human.", pack.model, pack, proposer)
+    assert stub.calls == 1 and asked["live"] is True and asked["provider"] == proposer.name
 
 
 @pytest.fixture

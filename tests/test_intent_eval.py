@@ -59,6 +59,14 @@ def test_a_provider_that_swaps_meanings_is_caught_on_every_unsafe_case(monkeypat
     assert all(r["outcome"] == "substituted" for r in rows if r["kind"] == "unsafe")
 
 
+def test_a_negative_call_cap_is_refused_before_any_call(monkeypatch):
+    monkeypatch.setattr(intent, "run_case", lambda *a, **k: pytest.fail("no case may run"))
+    with pytest.raises(ValueError):
+        intent.evaluate("offline", max_calls=-1)
+    with pytest.raises(SystemExit):
+        intent.main(["--max-calls", "-1"])
+
+
 def test_max_calls_stops_the_run_and_says_so():
     report = intent.evaluate("offline", max_calls=3)
     assert report["summary"]["cases"] == 3 and report["stopped_at_call_limit"] is True

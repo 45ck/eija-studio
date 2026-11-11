@@ -31,7 +31,7 @@ class LivePlanProposer:
             plan = self.offline.propose(request, model, pack, grows=grows)
         except DomainError:
             return None
-        return plan if plan.get("meaning") is None else None
+        return plan | {"answered_offline_by": self.offline.name} if plan.get("meaning") is None else None
 
     def propose(self, request: str, model: Workflow, pack: Pack, *, grows: bool = False) -> dict[str, Any]:
         exact = self._offline_phrases(request, model, pack, grows)

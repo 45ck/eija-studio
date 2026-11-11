@@ -195,9 +195,11 @@ def propose_plan(request: str, model: Workflow, pack: Pack, proposer: PlanPropos
     document = proposer.propose(request, model, pack, grows=True) if grows else proposer.propose(request, model, pack)
     steps = _steps(document)
     transactions = [tx for tx, _ in steps]
+    # A live proposer that answered from its offline reader says so; provenance can only be downgraded to offline.
+    offline = document.get("answered_offline_by")
     return {
-        "scope": "plan-proposal", "trust": "UNTRUSTED_PROPOSAL", "request": request, "provider": proposer.name,
-        "live": proposer.live, "model": model.semantic_hash, "summary": str(document.get("summary", ""))[:300],
+        "scope": "plan-proposal", "trust": "UNTRUSTED_PROPOSAL", "request": request,
+        "provider": str(offline)[:80] if offline else proposer.name, "live": proposer.live and not offline, "model": model.semantic_hash, "summary": str(document.get("summary", ""))[:300],
         "meaning": document.get("meaning") if pack.meaning(str(document.get("meaning"))) else None,
         "steps": [{"n": n, "transaction": tx.model_dump(mode="json"), "text": describe(tx, model, pack if grows else None, transactions),
                    "why": why} for n, (tx, why) in enumerate(steps, 1)],
