@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/data.py
   title: domain/data.py
   hash_method: ast-api-v1
-  sha256: ff35c52ad0769193e3619bf838e073eb1f5e272bc3cddfcff8a09b6adadfc4d8
-notes_baseline: 6e206b63994c7d7732040fecf7e8c60a74829290dd84905cdc1c42ed21631f9e
+  sha256: c4e87266332d1575d4a6286fc273aa53fd8c038592e5468addbb4b55633aa598
+notes_baseline: 0a52bd652c01ed246db1a0d7bd21e7dd792c40229d1de9b3334ee92b25161498
 ---
 
 # domain.data
@@ -46,6 +46,7 @@ is no second reading of the rules.
 * [`DataModel`](/symbols/domain/data/DataModel.md) (class) - no docstring
 * [`Entity`](/symbols/domain/data/Entity.md) (class) - no docstring
 * [`FieldType`](/symbols/domain/data/FieldType.md) (type-alias) - no docstring
+* [`MAX_RECORD_FIELDS`](/symbols/domain/data/MAX_RECORD_FIELDS.md) (constant) - no docstring
 * [`Multiplicity`](/symbols/domain/data/Multiplicity.md) (type-alias) - no docstring
 * [`NAME`](/symbols/domain/data/NAME.md) (constant) - no docstring
 * [`REFERENCE_LENGTH`](/symbols/domain/data/REFERENCE_LENGTH.md) (constant) - no docstring
@@ -112,6 +113,7 @@ _No curated notes yet._
 * [domain.data.Entity](/symbols/domain/data/Entity.md) - `class Entity(Contract)` in `domain/data`.
 * [domain.data.Entity.unique](/symbols/domain/data/Entity.unique.md) - `def unique(self) -> Entity` in `domain/data`.
 * [domain.data.FieldType](/symbols/domain/data/FieldType.md) - Type alias `FieldType` in `domain/data`.
+* [domain.data.MAX_RECORD_FIELDS](/symbols/domain/data/MAX_RECORD_FIELDS.md) - Constant `MAX_RECORD_FIELDS` in `domain/data`.
 * [domain.data.Multiplicity](/symbols/domain/data/Multiplicity.md) - Type alias `Multiplicity` in `domain/data`.
 * [domain.data.NAME](/symbols/domain/data/NAME.md) - Constant `NAME` in `domain/data`.
 * [domain.data.REFERENCE_LENGTH](/symbols/domain/data/REFERENCE_LENGTH.md) - Constant `REFERENCE_LENGTH` in `domain/data`.

@@ -320,6 +320,19 @@ def _link(link: Link, names: set[str], report: ImportReport) -> dict[str, Any] |
             "source_multiplicity": ends[0], "target_multiplicity": ends[1]}
 
 
+def _keep_built(links: list[dict[str, Any]], data: DataModel | None, report: ImportReport) -> list[dict[str, Any]]:
+    """UML files do not say which associations are built (ADR-0235): one the current model builds stays built when the
+    file draws it with the same ends, multiplicities and role, and the report says so."""
+    keys = ("source", "target", "role", "source_multiplicity", "target_multiplicity")
+    built = {tuple(getattr(a, k) for k in keys) for a in (data.associations if data else ()) if a.built}
+    for link in links:
+        if tuple(link[k] for k in keys) in built:
+            link["built"] = True
+            report.add("defaulted", "class model", f"{link['source']} -> {link['target']}",
+                       "the file cannot say an association is built; kept it built as in the current model")
+    return links
+
+
 def _record(parsed: Parsed, names: list[str], data: DataModel | None, report: ImportReport) -> str:
     marked = [k.name for k in parsed.classes or [] if k.record and k.name in names]
     if marked:
@@ -343,7 +356,7 @@ def _document(pack: Pack, data: DataModel | None, parsed: Parsed, entities: list
     names = [e["name"] for e in entities]
     links = [x for link in parsed.links if (x := _link(link, set(names), report)) is not None]
     return {"schema_version": "eija.data.v1", "id": pack.id, "record": _record(parsed, names, data, report),
-            "entities": entities, "associations": links}
+            "entities": entities, "associations": _keep_built(links, data, report)}
 
 
 def _validated(document: dict[str, Any], report: ImportReport) -> DataModel | list[str]:

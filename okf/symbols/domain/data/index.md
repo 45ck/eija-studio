@@ -12,6 +12,7 @@
 
 * [domain.data.ATTRIBUTE_NAME](ATTRIBUTE_NAME.md) - Constant `ATTRIBUTE_NAME` in `domain/data`.
 * [domain.data.DATA_FILE](DATA_FILE.md) - Constant `DATA_FILE` in `domain/data`.
+* [domain.data.MAX_RECORD_FIELDS](MAX_RECORD_FIELDS.md) - Constant `MAX_RECORD_FIELDS` in `domain/data`.
 * [domain.data.NAME](NAME.md) - Constant `NAME` in `domain/data`.
 * [domain.data.REFERENCE_LENGTH](REFERENCE_LENGTH.md) - Constant `REFERENCE_LENGTH` in `domain/data`.
 

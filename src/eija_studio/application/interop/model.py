@@ -241,6 +241,9 @@ def not_carried(pack: Pack, data: DataModel | None, *extra: str) -> list[str]:
     found.append("fixtures, verifiers, the meaning-check journey and the language")
     if data is None:
         found.append("no class model: this pack has no data.json")
+    elif built := sum(a.built for a in data.associations):
+        found.append(f"which {built} association(s) the app builds as checked reference fields (ADR-0235): the file "
+                     "draws them, and PlayIDE keeps them built when it reads an unchanged one back")
     return found + list(extra)
 
 

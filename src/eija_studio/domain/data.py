@@ -21,6 +21,7 @@ from .models import Contract, DomainError, fingerprint
 from .pack import Pack, held, pack_directory
 
 DATA_FILE = "data.json"
+MAX_RECORD_FIELDS = 40  # attributes and reference fields: what one screen shows (Screen.fields)
 REFERENCE_LENGTH = 32  # an object id: what the built app's object store issues
 NAME = r"^[A-Z][A-Za-z0-9]{0,39}$"  # UML class names: UpperCamelCase
 ATTRIBUTE_NAME = r"^[a-z][a-zA-Z0-9_]{0,39}$"
@@ -137,6 +138,8 @@ def _link_problem(data: DataModel, link: Association, taken: set[str]) -> str:
 def _reference_problem(data: DataModel) -> str:
     """Why the built associations cannot be reference fields, or "" when they can."""
     taken = {a.name for e in data.entities if e.name == data.record for a in e.attributes}
+    if len(taken) + sum(x.built for x in data.associations) > MAX_RECORD_FIELDS:
+        return f"A record holds at most {MAX_RECORD_FIELDS} fields, its attributes and reference fields together"
     for link in (x for x in data.associations if x.built):
         problem = _link_problem(data, link, taken)
         if problem:

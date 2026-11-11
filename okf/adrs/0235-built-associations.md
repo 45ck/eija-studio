@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0235-built-associations.md
   title: 0235-built-associations.md
   hash_method: lf-sha256-v1
-  sha256: 50e8da456b9c28e1725ce7734591e7db95b92617e368db4febee33210ef7876a
-notes_baseline: baf87eab89768f23f2d0e8eccb4fd8680f111c90d0afaf43007d986bb2719157
+  sha256: ea918ba1d81feaf03d10363c4d722c3e7346ae569d80ad4040ac9e752949997a
+notes_baseline: 5b6d3f05aaaa995baed5d90b2b8d759d7a42679c359370e57802cd8b089dea63
 ---
 
 # ADR-0235: Built associations as checked reference fields
@@ -34,7 +34,7 @@ notes_baseline: baf87eab89768f23f2d0e8eccb4fd8680f111c90d0afaf43007d986bb2719157
 > * link one record to at most one object (`1` or `0..1` at the other end);
 > * have a role name that is a free attribute name of the record class.
 >
-> `DataModel` refuses anything else.
+> `DataModel` refuses anything else, and it refuses a record class whose attributes and reference fields together exceed 40, which is what one screen shows.
 >
 > **What a record holds.** `references(data)` lists the reference fields, named by the role. Such a field is required when the multiplicity is `1`. `record_fields(data)` lists the record's attributes followed by each reference field, typed as text of at most 32 characters. Screens, the API contract, the Studio's presentation and the generated form all read `record_fields`, so a reference appears wherever an attribute does.
 >
@@ -47,7 +47,8 @@ notes_baseline: baf87eab89768f23f2d0e8eccb4fd8680f111c90d0afaf43007d986bb2719157
 >
 > **Conformance.** When a reference exists, the oracle gains `objects`: one sample object of each referenced class, which the conformance template stores before it creates records. The data cases add, for each reference, a missing value, a value that is not an id and an id that names nothing. An oracle without references is unchanged.
 >
-> **The class diagram report** (`class_build`) lists the stored classes as built and marks each built association. For a built association it says the app refuses an id that names nothing, instead of "drawn, not built".
+> **UML interchange.** PlantUML, Mermaid, XMI and draw.io have no way to say an association is built. An export lists the built associations under `not_carried`. On import, an association that the current model builds stays built if the file draws it with the same ends, multiplicities and role, and the report lists it as defaulted.
+>
 
 ## Sections
 

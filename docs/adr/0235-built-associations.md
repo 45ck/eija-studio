@@ -28,7 +28,7 @@ Issue #145, step 2. ADR-0205 made the class diagram say which parts the built ap
 * link one record to at most one object (`1` or `0..1` at the other end);
 * have a role name that is a free attribute name of the record class.
 
-`DataModel` refuses anything else.
+`DataModel` refuses anything else, and it refuses a record class whose attributes and reference fields together exceed 40, which is what one screen shows.
 
 **What a record holds.** `references(data)` lists the reference fields, named by the role. Such a field is required when the multiplicity is `1`. `record_fields(data)` lists the record's attributes followed by each reference field, typed as text of at most 32 characters. Screens, the API contract, the Studio's presentation and the generated form all read `record_fields`, so a reference appears wherever an attribute does.
 
@@ -40,6 +40,8 @@ Issue #145, step 2. ADR-0205 made the class diagram say which parts the built ap
 **The built app.** The app stores objects of each referenced class in an `objects` table. `POST /api/objects/<Class>` checks the object's values against that class's attributes and returns a new id, and `GET /api/objects/<Class>` lists the stored objects. A class the app does not store answers `NOT_FOUND`. Record creation calls `check_record` with a lookup in the `objects` table. `REFERENCE_UNKNOWN` is a 400. The OpenAPI contract documents the objects route.
 
 **Conformance.** When a reference exists, the oracle gains `objects`: one sample object of each referenced class, which the conformance template stores before it creates records. The data cases add, for each reference, a missing value, a value that is not an id and an id that names nothing. An oracle without references is unchanged.
+
+**UML interchange.** PlantUML, Mermaid, XMI and draw.io have no way to say an association is built. An export lists the built associations under `not_carried`. On import, an association that the current model builds stays built if the file draws it with the same ends, multiplicities and role, and the report lists it as defaulted.
 
 **The class diagram report** (`class_build`) lists the stored classes as built and marks each built association. For a built association it says the app refuses an id that names nothing, instead of "drawn, not built".
 
