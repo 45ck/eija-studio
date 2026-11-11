@@ -1,7 +1,7 @@
 ---
 type: Architecture Decision Record
 title: 'ADR-0017: Local quality gates with nox sessions and noslop enforcement'
-description: Hosted CI is not currently available for this repository.
+description: Hosted CI was not available for this repository when this was written (September 2026).
 resource: repo://docs/adr/0017-local-quality-gates.md
 tags:
 - adr
@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0017-local-quality-gates.md
   title: 0017-local-quality-gates.md
   hash_method: lf-sha256-v1
-  sha256: 203666932a77afe16c9534f446fb156714ba271f9939229a06f4117a0e0d2559
-notes_baseline: d4ae5c69d86f7fcdd3692845ed27f1dbe173038ed9f047624ed492da8853cd6f
+  sha256: d0c16f67a97cc56f0952619cafb544928bbb9d68a2bc7c31661d7fd5dcb15e25
+notes_baseline: d411fd2b42132f918e070e7a24e3a6f820cfef9988cf352d1e9a41a5131ab775
 ---
 
 # ADR-0017: Local quality gates with nox sessions and noslop enforcement
@@ -22,7 +22,7 @@ notes_baseline: d4ae5c69d86f7fcdd3692845ed27f1dbe173038ed9f047624ed492da8853cd6f
 <!-- okf:generated:begin facts -->
 | | |
 |---|---|
-| Status | accepted |
+| Status | accepted (its manual-dispatch-only part is superseded by [ADR-0228](0228-hosted-ci-on-pull-requests.md)) |
 | Date | 2026-09-28 |
 | Source | `repo://docs/adr/0017-local-quality-gates.md` |
 
@@ -48,6 +48,10 @@ Existence-checked by the gate; not hashed (an ADR is a decision record, not a de
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
+## Related decisions
+
+* [ADR-0228: Hosted CI on pull requests, nightly full tier and auto-merge](/adrs/0228-hosted-ci-on-pull-requests.md) - ADR-0017 kept the GitHub workflows on manual `workflow_dispatch` because hosted CI was not available.
+
 ## Referenced by
 
 * [ADR-0035: Static analysis, architecture fitness functions and ratcheted budgets](/adrs/0035-static-analysis-and-architecture-fitness-functions.md) - The kernel's central claims (a vendor-free domain, authority checked before replay, computed evidence) hold only while the code keeps its shape.

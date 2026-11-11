@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 11 November 2026: repo clean-up
+
+- At 1280 px the PlayIDE toolbar keeps the checks pill on the same row as Run, Simulate and Build & run again (fixes #208). Between 1181 and 1439 px the toolbar uses tighter gaps and padding and a shorter run status (its full text stays in the tooltip). The last run speed is now labelled "Next stop", so the menu is narrower at every width. An opt-in browser test checks 1280 and 1440 px with a three-digit score.
+- CONTRIBUTING, ADR-0017 and ADR-0036 no longer say hosted CI is unavailable or manual-only; they point to ADR-0228.
+- `pyproject.toml`: the ADR-0165 comment is back on the `xuml` extra it describes.
+
 ### 11 November 2026: one place to see what we are doing
 
 - The README's "How close is it?" section now lists the five current steps, and the roadmap opens with "What we are doing now": what each step is, where it stands and what waits on the owner.
