@@ -5,8 +5,14 @@
 ### 11 November 2026: repo clean-up
 
 - At 1280 px the PlayIDE toolbar keeps the checks pill on the same row as Run, Simulate and Build & run again (fixes #208). Between 1181 and 1439 px the toolbar uses tighter gaps and padding and a shorter run status (its full text stays in the tooltip). The last run speed is now labelled "Next stop", so the menu is narrower at every width. An opt-in browser test checks 1280 and 1440 px with a three-digit score.
-- README, CONTRIBUTING, ADR-0017 and ADR-0036 no longer say hosted CI is unavailable or manual-only; they point to ADR-0228.
+- CONTRIBUTING, ADR-0017 and ADR-0036 no longer say hosted CI is unavailable or manual-only; they point to ADR-0228.
 - `pyproject.toml`: the ADR-0165 comment is back on the `xuml` extra it describes.
+
+### 11 November 2026: one place to see what we are doing
+
+- The README's "How close is it?" section now lists the five current steps, and the roadmap opens with "What we are doing now": what each step is, where it stands and what waits on the owner.
+- [Issue #221](https://github.com/45ck/eija-studio/issues/221) is the checklist for current work. Open issues carry `owner-only`, `kernel`, `gates` or `later` labels, and the empty Phase 2 and Phase 3 milestones are closed.
+- The README no longer says hosted checks are manual-only: PRs now run the fast tier ([ADR-0228](docs/adr/0228-hosted-ci-on-pull-requests.md)) once Actions billing is unlocked.
 
 ### 9 November 2026: PlayIDE is easier to find and describe
 

@@ -47,6 +47,8 @@ from mcp.types import ToolAnnotations
 from pydantic import WithJsonSchema
 
 from eija_studio import __version__
+from eija_studio.application.data_steps import parse_step
+from eija_studio.application.plan import MAX_DRAFT_STEPS
 from eija_studio.application.repository import COMMIT_OID_PATTERN
 from eija_studio.application.service import Studio
 from eija_studio.domain.models import DomainError, Workflow
@@ -57,7 +59,7 @@ from eija_studio.interfaces.agent_policy import STORE_WRITE_NAMES  # noqa: F401 
 
 #: The complete agent tool surface. Adding a name here is a governance decision (ADR-0041).
 AGENT_TOOLS: tuple[str, ...] = ("list_cases", "create_case", "propose", "view_case", "impact", "verify", "render",
-                               "pack", "affordances", "edit_check", "repository_impact", "repository_source",
+                               "pack", "affordances", "edit_check", "plan_check", "repository_impact", "repository_source",
                                "repository_change", "repository_change_file")
 
 #: Owner-only operations. Tests assert none of these is registered as a tool, and that no identifier in this
@@ -167,6 +169,7 @@ class AgentPort(Protocol):
     def workbench(self) -> dict: ...
     def affordances(self, case_id: str) -> dict: ...
     def edit_check(self, case_id: str, proposal: Transaction) -> dict: ...
+    def plan_check(self, steps: list[Any]) -> dict: ...
     def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict: ...
     def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict: ...
     def repository_change(self, base: str, head: str) -> dict: ...
@@ -212,6 +215,9 @@ def StudioAgentPort(studio: Studio) -> AgentPort:  # a class-like factory: the S
 
         def edit_check(self, case_id: str, proposal: Transaction) -> dict:
             return studio.edit_check(case_id, proposal)
+
+        def plan_check(self, steps: list[Any]) -> dict:
+            return studio.plan_check(steps)
 
         def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict:
             return studio.repository_impact(term, expected_source_hash=expected_source_hash)
@@ -267,6 +273,14 @@ class AgentSurface:
         result = self.port.edit_check(_case_id(case_id), parse_transaction(proposal))
         return result | {"trust": "UNTRUSTED_PROPOSAL", "applied": False, "persisted": False,
                          "boundary": "Dry-run only; the local owner must choose and perform any model edit."}
+
+    def plan_check(self, steps: list[dict[str, Any]]) -> dict[str, Any]:
+        """Check an untrusted plan of typed steps on the model in force, in order. Stores and changes nothing."""
+        if not 1 <= len(steps) <= MAX_DRAFT_STEPS:
+            raise DomainError("INVALID_PLAN", f"Send 1 to {MAX_DRAFT_STEPS} steps")
+        result = self.port.plan_check([parse_step(step) for step in steps])
+        return result | {"trust": "UNTRUSTED_PROPOSAL", "applied": False, "persisted": False,
+                         "boundary": "Dry-run only; a legal plan does not select a meaning, approve it, or authorize applying it."}
 
     def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         if not term or len(term) > 400:
@@ -446,6 +460,13 @@ def create_server(studio: Studio, *, egress_consent: bool = False, diagram_rende
         """Dry-run an untrusted typed transaction. Returns law codes and references; stores and changes nothing.
         A legal result does not select a meaning, approve the change, or authorize an agent to apply it."""
         return await surface.guarded_async(lambda: surface.edit_check(case_id, proposal))
+
+    @server.tool(annotations=read)
+    async def plan_check(steps: list[dict[str, Any]]) -> dict[str, Any]:
+        """Dry-run a plan of typed steps (the chat's step vocabulary) on the model in force, in order. Returns whether the
+        kernel accepts it, each step's status, refusal codes and the laws they name; stores and changes nothing. Use it
+        before writing code for a change. A legal result does not select a meaning, approve the change, or apply it."""
+        return await surface.guarded_async(lambda: surface.plan_check(steps))
 
     @server.tool(annotations=read)
     async def repository_impact(term: str, expected_source_hash: str | None = None) -> dict[str, Any]:

@@ -141,6 +141,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio(StudioViews)` in `application/service`.
 * [application.service_views.StudioViews.formal_view](/symbols/application/service_views/StudioViews.formal_view.md) - `def formal_view(self, model: Workflow) -> dict[str, Any]` in `application/service_views`.
 * [application.service_views.StudioViews](/symbols/application/service_views/StudioViews.md) - Projection half of Studio; callbacks use the command service's case and review checks.
+* [application.service_views.StudioViews.plan_check](/symbols/application/service_views/StudioViews.plan_check.md) - Dry-run a whole plan of typed steps on the model in force, in order, as the chat's preview does (ADR-0230).
 * [application.service_views.StudioViews.workflows](/symbols/application/service_views/StudioViews.workflows.md) - Baseline and candidate of a case, for read-only projections (diagrams).
 * [application.simulation.run_log](/symbols/application/simulation/run_log.md) - Every step of the seeded run in order, and where a run with these breakpoints stops (ADR-0160).
 * [application.simulation.simulate](/symbols/application/simulation/simulate.md) - Run `steps` seeded attempts by the pack's fixture actors through the kernel and report where they went.

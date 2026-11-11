@@ -6,6 +6,7 @@
 * [agents](agents/) - Gates defined in quality/sessions/agents.py
 * [appgen](appgen/) - Gates defined in quality/sessions/appgen.py
 * [demos](demos/) - Gates defined in quality/sessions/demos.py
+* [evals](evals/) - Gates defined in quality/sessions/evals.py
 * [formal-bend](formal-bend/) - Gates defined in quality/sessions/formal_bend.py
 * [graph](graph/) - Gates defined in quality/sessions/graph.py
 * [hci](hci/) - Gates defined in quality/sessions/hci.py

@@ -99,6 +99,14 @@ class StudioViews(ABC):
         """Dry-run one edit: {legal, codes, refs}. No authority is needed because nothing is written."""
         return dry_run(self._working(case_id), tx, self.pack)
 
+    def plan_check(self, steps: list[Any]) -> dict[str, Any]:
+        """Dry-run a whole plan of typed steps on the model in force, in order, as the chat's preview does (ADR-0230).
+        For a coding agent to ask "would the kernel accept this change?" before it writes code. Nothing is stored."""
+        from .plan import preview_plan  # noqa: PLC0415 - plan imports the service layer's siblings; keep the view import-light
+        with self.store.transaction() as u:
+            model = Workflow.model_validate(u.active()["model"])
+        return preview_plan(model, self.pack, list(steps), [True] * len(steps)) | {"model": model.semantic_hash}
+
     def affordances(self, case_id: str) -> dict[str, Any]:
         """Which single edits of the case's working model the kernel would accept (read-only)."""
         model = self._working(case_id)

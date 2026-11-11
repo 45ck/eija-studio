@@ -11,6 +11,7 @@ EIJA asks a model for an **untrusted proposal**: alternative readings of a chang
 | `gemini` | Gemini CLI | the CLI's own Google sign-in | prompt only, validated | deny-all admin policy file, plan mode |
 | `openrouter` | HTTPS | `OPENROUTER_API_KEY` or `--ask-key` (memory only) | `json_schema` strict | no `tools` in request |
 | `anthropic` | HTTPS (optional) | `ANTHROPIC_API_KEY` or `--ask-key` (memory only); also needs an explicit `--model` (no default is baked in) | `output_config.format` | no `tools` in request |
+| `openai` | HTTPS, OpenAI Responses API (optional) | `OPENAI_API_KEY` or `--ask-key` (memory only); also needs an explicit `--model` | `text.format` `json_schema`, `strict: true`; `store: false` | no `tools` in request; refusals, tool calls and incomplete replies fail closed |
 
 ## Setup
 
@@ -20,7 +21,7 @@ py -3.12 -m venv .venv && .venv/Scripts/python -m pip install -e ".[dev,provider
 .venv/Scripts/eija propose "Let teachers sign off excursions." --provider claude --allow-network --consent
 ```
 
-`doctor` uses only the vendor's official commands (`--version`, `--help`, `claude auth status`, `codex login status`, `opencode auth list`). It never opens an auth or token file and never calls a model. `live_test` is always `NOT_RUN` there. Gemini CLI has no login-status command, so its login shows `UNKNOWN` until a call is made and `doctor` reports `READY (login unverified)`: a call may be attempted, no login was confirmed (`login_verified: false`). `--model` is required for the two HTTPS providers (no default model, so a metered call never picks a model and price for you); a CLI's own default model is used when none is given.
+`doctor` uses only the vendor's official commands (`--version`, `--help`, `claude auth status`, `codex login status`, `opencode auth list`). It never opens an auth or token file and never calls a model. `live_test` is always `NOT_RUN` there. Gemini CLI has no login-status command, so its login shows `UNKNOWN` until a call is made and `doctor` reports `READY (login unverified)`: a call may be attempted, no login was confirmed (`login_verified: false`). `--model` is required for the `anthropic` and `openai` HTTPS providers (no default model, so a metered call never picks a model and price for you); a CLI's own default model is used when none is given.
 
 Network use needs both `--allow-network` at start and per-request consent, exactly as for OpenRouter. A subscription CLI still sends data to the vendor and may consume plan usage.
 
@@ -57,8 +58,23 @@ The current record is `evidence/live-providers/2026-09-28-windows.json`. It supe
 | `opencode` 1.4.3 | NOT_RUN: 0 stored credentials |
 | `gemini` 0.37.1 | NOT_RUN: CLI reported no auth method configured (exit 41) |
 | `openrouter`, `anthropic` | NOT_RUN: no key in the environment |
+| `openai` (added 2026-11-11) | NOT_RUN: no key in the environment; contract-tested over a mock transport only |
 
 Unverified live: tool lockdown for **every** CLI (claude and codex included; only the flags are tested), OpenCode's deny-all config and success event shape, OpenCode and Gemini stdin ingestion (Gemini gets a fixed `-p` instruction and the prompt on stdin), Gemini's deny-all policy and prompt-only JSON, the Anthropic structured-output request shape. A canary probe (planted file in the temporary directory, prompt asking for it) is the open follow-up that would verify lockdown.
+
+## Kernel-graded intent eval
+
+`python -m quality.evals.intent` asks a provider to read each request in [`packs/intent-evals.json`](../packs/intent-evals.json) and grades its first alternative against the meaning the request asked for, with the kernel as the judge ([ADR-0229](adr/0229-kernel-graded-intent-evals-and-openai-provider.md)). `substituted` counts the dangerous case: an unsafe request answered with a safe meaning (issue #152). A networked provider needs `--allow-network --consent`, and `--max-calls` caps billable calls:
+
+```bash
+python -m quality.evals.intent --provider openai --model <id> --allow-network --consent --max-calls 40
+```
+
+| Run | Evidence | Correct | Substituted | Wrong | Invalid |
+|---|---|---|---|---|---|
+| `offline` fixture, 2026-11-11, Linux | SYNTHETIC, [report](../evidence/intent-eval/2026-11-11-offline-linux.json) | 24 / 32 | 1 (excursion unsafe) | 7 (5 of 6 paraphrases, 2 unsafe read as unsupported) | 0 |
+
+No live provider has been run on it yet.
 
 ## Known limits
 
@@ -67,6 +83,6 @@ Unverified live: tool lockdown for **every** CLI (claude and codex included; onl
 * Gemini: a supplemental `--admin-policy` file is ignored by the CLI when system-level `.toml` policies already exist (its policy-engine documentation); the CLI then follows the system policy, which may be less strict than the deny-all file. Not detected by `doctor`.
 * POSIX (`killpg` fallback) is untested: the test suite has run on Windows only.
 * Executables are looked up on `PATH` only (never the current directory) and only from absolute `PATH` entries.
-* The shared contract suite (`tests/test_provider_contract.py`) runs the full secret, stdin, lockdown, working-directory and no-retry matrix over the four CLI adapters. The two HTTP providers get a smaller matrix over a mock transport (no tools in the request, key only in a header, one attempt, sanitised errors, size cap, wrong-label rejection); they have no subprocess, environment or working directory to isolate.
+* The shared contract suite (`tests/test_provider_contract.py`) runs the full secret, stdin, lockdown, working-directory and no-retry matrix over the four CLI adapters. The three HTTP providers get a smaller matrix over a mock transport (no tools in the request, key only in a header, one attempt, sanitised errors, size cap, wrong-label rejection); they have no subprocess, environment or working directory to isolate.
 * Prompt-only providers may wrap JSON in a Markdown fence; one outer fence is removed and the rest is validated. Anything else is rejected without repair.
 * `total_cost_usd` from Claude Code is a list-price estimate for a subscription, not an invoice.

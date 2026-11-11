@@ -15,7 +15,7 @@ from collections.abc import Callable
 import httpx
 import pytest
 
-from eija_studio.adapters.providers import (AnthropicApiProvider, OpenRouterProvider, ClaudeCodeProvider, CodexProvider, GeminiCliProvider, OfflineProvider, OpenCodeProvider,
+from eija_studio.adapters.providers import (AnthropicApiProvider, OpenAiApiProvider, OpenRouterProvider, ClaudeCodeProvider, CodexProvider, GeminiCliProvider, OfflineProvider, OpenCodeProvider,
                                             create_provider, PROVIDER_NAMES)
 from eija_studio.adapters.providers import cli_base
 from eija_studio.adapters.providers.cli_base import has_flag
@@ -313,7 +313,7 @@ def test_claude_does_not_use_bare_mode_that_would_ignore_the_subscription_login(
 
 
 def test_registry_builds_every_named_provider_and_rejects_unknown():
-    assert set(PROVIDER_NAMES) == {"offline", "openrouter", "anthropic", "codex", "claude", "opencode", "gemini"}
+    assert set(PROVIDER_NAMES) == {"offline", "openrouter", "anthropic", "openai", "codex", "claude", "opencode", "gemini"}
     for name in PROVIDER_NAMES:
         p = create_provider(name, "")
         assert p.name == name and isinstance(p.networked, bool)
@@ -364,6 +364,13 @@ def _anthropic_ok():
     return {"model": "claude-fixture", "stop_reason": "end_turn", "content": [{"type": "text", "text": proposal_text()}]}
 
 
+def _openai_ok():
+    return {"model": "gpt-fixture", "status": "completed",
+            "output": [{"type": "reasoning", "summary": []},
+                       {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": proposal_text()}]}],
+            "usage": {"input_tokens": 10, "output_tokens": 20, "total_tokens": 30}}
+
+
 def _make_openrouter(handler):
     return OpenRouterProvider("fixture/model", HTTP_KEY, transport=httpx.MockTransport(handler))
 
@@ -372,7 +379,12 @@ def _make_anthropic(handler):
     return AnthropicApiProvider("claude-fixture", HTTP_KEY, transport=httpx.MockTransport(handler))
 
 
-HTTP_SPECS = [pytest.param(_make_openrouter, _openrouter_ok, id="openrouter"), pytest.param(_make_anthropic, _anthropic_ok, id="anthropic")]
+def _make_openai(handler):
+    return OpenAiApiProvider("gpt-fixture", HTTP_KEY, transport=httpx.MockTransport(handler))
+
+
+HTTP_SPECS = [pytest.param(_make_openrouter, _openrouter_ok, id="openrouter"), pytest.param(_make_anthropic, _anthropic_ok, id="anthropic"),
+              pytest.param(_make_openai, _openai_ok, id="openai")]
 
 
 @pytest.mark.parametrize(("make", "ok_body"), HTTP_SPECS)
@@ -425,6 +437,8 @@ def _with_text(ok_body, text):
     body = ok_body()
     if "choices" in body:
         body["choices"][0]["message"]["content"] = text
+    elif "output" in body:
+        body["output"][1]["content"][0]["text"] = text
     else:
         body["content"][0]["text"] = text
     return body
@@ -591,3 +605,42 @@ def test_smoke_record_never_claims_lockdown_and_only_records_a_model_that_was_re
 def test_smoke_script_does_not_issue_a_wmi_query():
     text = (Path(__file__).resolve().parents[1] / "scripts" / "live_provider_smoke.py").read_text(encoding="utf-8")
     assert "platform.system" not in text and "platform.release" not in text
+
+
+# --- OpenAI Responses API specifics ---------------------------------------------------------------------------
+def _openai_with_output(output, status="completed"):
+    return OpenAiApiProvider("gpt-fixture", HTTP_KEY,
+                             transport=httpx.MockTransport(lambda r: httpx.Response(200, json={"status": status, "output": output})))
+
+
+@pytest.mark.parametrize(("output", "status", "code"), [
+    ([{"type": "message", "content": [{"type": "refusal", "refusal": "no"}]}], "completed", "PROVIDER_INCOMPLETE"),
+    ([{"type": "message", "content": [{"type": "output_text", "text": "{"}]}], "incomplete", "PROVIDER_INCOMPLETE"),
+    ([{"type": "function_call", "name": "x", "arguments": "{}"}], "completed", "PROVIDER_OUTPUT_INVALID"),
+    ([{"type": "message", "content": []}], "completed", "PROVIDER_OUTPUT_INVALID"),
+], ids=["refusal", "incomplete", "tool_call", "no_text"])
+def test_openai_refusals_truncation_and_tool_calls_fail_closed(output, status, code):
+    with pytest.raises(DomainError) as e:
+        _openai_with_output(output, status).propose(CANARY, baseline())
+    assert e.value.code == code
+
+
+def test_openai_request_is_strict_structured_output_and_not_stored():
+    seen = []
+
+    def handler(request):
+        seen.append(json.loads(request.content))
+        return httpx.Response(200, json=_openai_ok())
+
+    result = _make_openai(handler).propose(CANARY, baseline())
+    (body,) = seen
+    assert body["store"] is False and body["text"]["format"]["type"] == "json_schema" and body["text"]["format"]["strict"] is True
+    assert CANARY in body["input"] and result.usage == {"input_tokens": 10, "output_tokens": 20, "total_tokens": 30}
+
+
+def test_openai_without_a_key_or_model_makes_no_call(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    provider = OpenAiApiProvider("gpt-fixture", None, transport=httpx.MockTransport(lambda r: pytest.fail("called")))
+    with pytest.raises(DomainError) as e:
+        provider.propose(CANARY, baseline())
+    assert e.value.code == "PROVIDER_NOT_CONFIGURED" and provider.doctor()["ready"] is False

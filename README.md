@@ -213,7 +213,17 @@ Exact workflow and generated-app review are implemented. A fresh-process browser
 
 General live AI creation, value-driven actions, migrations, connected delivery and production identity remain unfinished. Law, vocabulary, data-schema, screen and scenario edits do not silently become active policy.
 
-We ship small, checked commits directly to `main` throughout this initial stage. Hosted CI runs the fast gates on every pull request and push to `main`, and the full tier nightly ([ADR-0228](docs/adr/0228-hosted-ci-on-pull-requests.md)); the local `nox -t fast` run is still the evidence whenever a hosted run is missing. See the [roadmap](docs/ROADMAP.md), [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) and [current acceptance criteria](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md).
+### What we are working on now
+
+As of 11 November 2026, in order:
+
+1. **Checks on every pull request.** The fast tier runs on each PR and the full tier nightly, once hosted Actions are unlocked. Until then, local `nox -t fast` is the merge evidence.
+2. **A backlog that matches the product.** Stale issues closed, one list of current work, tech debt removed.
+3. **Measure how well AI reads a request.** A kernel-graded intent eval across providers.
+4. **Opt-in live AI, offline by default.** Live chat only with consent, plus a `plan_check` tool for coding agents.
+5. **Kernel gaps from real systems.** Associations, who may start a record, separation of duties, one action on several transitions.
+
+The checklist is [issue #221](https://github.com/45ck/eija-studio/issues/221). Issues labelled [`owner-only`](https://github.com/45ck/eija-studio/labels/owner-only) wait on the owner; [`later`](https://github.com/45ck/eija-studio/labels/later) is parked. The [roadmap](docs/ROADMAP.md#what-we-are-doing-now) gives the reasons and the longer milestones; the [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) and [acceptance criteria](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) say how work ships.
 
 ## Watch the product tours
 
@@ -329,7 +339,7 @@ The block above is generated from the real model. `python scripts/gen_readme_dia
 | Inspect the agent interface | [Agent quickstart](docs/agents/quickstart.md) and [contract](docs/agents/contract.md) |
 | Understand the architecture and executable scope | [PlayIDE ↔ EIJA flow](docs/architecture/PLAYIDE-EIJA-FLOW.md), [executable UML](docs/architecture/executable-uml.md), [ADRs](docs/adr/README.md) |
 | Check security and authority boundaries | [Security and trust](docs/SECURITY_AND_TRUST.md) |
-| See what we are building next | [Roadmap](docs/ROADMAP.md) and [product thesis](docs/engineering/PRODUCT-THESIS.md) |
+| See what we are doing now and next | [Current work (#221)](https://github.com/45ck/eija-studio/issues/221), [roadmap](docs/ROADMAP.md) and [product thesis](docs/engineering/PRODUCT-THESIS.md) |
 | Inspect dependencies and earlier evidence | [OSS register](docs/oss/REGISTER.md) and [README history](docs/README-HISTORY.md) |
 
 ## Contributing and license

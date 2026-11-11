@@ -163,7 +163,7 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
             active = u.active()
         identity = studio.identity_provider()
         return {"version": "0.2.0", "provider": studio.provider.name, "network_enabled": studio.allow_network,
-            "provider_networked": studio.provider.networked, "baseline_version": active["version"], "baseline": active["model"],
+            "provider_networked": studio.provider.networked, "live_plan": studio.live_plan_proposer is not None and studio.allow_network, "baseline_version": active["version"], "baseline": active["model"],
             "baseline_semantic_hash": Workflow.model_validate(active["model"]).semantic_hash,
             "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only",
             "identity_source": identity.get("identity_source", "measured-local-source"),

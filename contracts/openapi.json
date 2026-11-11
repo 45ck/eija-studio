@@ -3804,6 +3804,11 @@
             "maxLength": 2000,
             "minLength": 1,
             "title": "Request"
+          },
+          "consent": {
+            "type": "boolean",
+            "title": "Consent",
+            "default": false
           }
         },
         "additionalProperties": false,

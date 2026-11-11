@@ -83,6 +83,7 @@ class ChangeRequest(BuildRequest):
 
 class PlanRequest(BuildRequest):
     request: str = Field(min_length=1, max_length=2000)
+    consent: bool = Field(default=False, strict=True)  # this request may go to the live provider (ADR-0230)
 
 
 class PlanPreviewRequest(BuildRequest):
@@ -278,7 +279,11 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         return {"screens": screens.model_dump(mode="json"), "digest": screens.digest, "use_cases": use_cases(model),
                 "problems": check_screens(screens, model, data), "accessibility": accessibility(screens, model, data)}
 
-    def proposer():
+    def proposer(consent: bool = False):
+        if consent:
+            if studio.live_plan_proposer is None or not studio.allow_network:
+                raise DomainError("EGRESS_CONSENT_REQUIRED", "Live AI needs a networked provider and --allow-network when PlayIDE starts")
+            return studio.live_plan_proposer
         if studio.plan_proposer is None:
             raise DomainError("PLAN_UNAVAILABLE", "No plan proposer is configured")
         return studio.plan_proposer
@@ -290,7 +295,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         # planned on top of them (ADR-0201); on a shipped pack a new plan replaces the last, as before.
         grows = own()
         on_top = body if grows else body.model_copy(update={"plan": None})
-        return propose_plan(body.request, resolve(on_top), pack_of(on_top.plan), proposer(), grows=grows) | {"on_top": bool(grows and body.plan)}
+        return propose_plan(body.request, resolve(on_top), pack_of(on_top.plan), proposer(body.consent), grows=grows) | {"on_top": bool(grows and body.plan)}
 
     @app.post("/api/play/plan/preview")
     def play_plan_preview(body: PlanPreviewRequest):
