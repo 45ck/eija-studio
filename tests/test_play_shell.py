@@ -490,12 +490,11 @@ def test_the_shell_reveals_hides_and_remembers_its_regions_in_a_real_browser():
             page.wait_for_selector('body[data-chat="open"]')
             assert page.evaluate("document.activeElement.id") == "chat-input"
             assert page.evaluate("document.querySelector('.side').getBoundingClientRect().left") > 1100  # still on the right
-            # At 1100px the responsive shell stacks its side panes, giving the diagram the full row:
-            # tabs now fit. At 760px they genuinely overflow; More tabs must still expose every choice.
+            # At 1100px the responsive shell stacks its side panes, giving the diagram's tools the full row. (Eleven
+            # tabs no longer all fit there, so More tabs may show; it is checked at 760px below.)
             page.set_viewport_size({"width": 1100, "height": 800})
-            page.wait_for_function("""() => { const strip=document.querySelector('.stage-tools .tabs');
-                return strip.scrollWidth <= strip.clientWidth + 1; }""")
-            assert page.is_hidden("#tabs-more")
+            page.wait_for_function("() => document.querySelector('.stage-tools').getBoundingClientRect().width >= 1080")
+            # At 760px the tabs genuinely overflow; More tabs must still expose every choice.
             page.set_viewport_size({"width": 760, "height": 800})
             page.wait_for_function("""() => { const strip=document.querySelector('.stage-tools .tabs');
                 return strip.scrollWidth > strip.clientWidth + 1; }""")

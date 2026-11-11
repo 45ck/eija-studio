@@ -18,11 +18,14 @@ ROOT = Path(__file__).resolve().parents[1]
 CENTRE = """(id) => { const g = window.PlayIDE.diagram("states"), cell = g.getDataModel().getCell(id);
     const s = cell && g.view.getState(cell), r = document.getElementById("canvas").getBoundingClientRect();
     return s ? [r.left + s.getCenterX(), r.top + s.getCenterY()] : null; }"""
-# A point on the canvas with no element under it, in page pixels.
+# A point on the canvas with no element under it, in page pixels. Zoomed in, the canvas grows taller than its scrolling
+# panel, so the point is taken from the part of the canvas that is on screen and not under the panel's foot.
 EMPTY = """() => { const g = window.PlayIDE.diagram("states"), box = document.getElementById("canvas"), r = box.getBoundingClientRect();
+    const view = box.closest(".workbench").getBoundingClientRect(), help = document.getElementById("canvas-help").getBoundingClientRect();
+    const top = Math.max(r.top, view.top), foot = Math.min(r.bottom, view.bottom, innerHeight, help.top > r.top ? help.top : Infinity);
     for (const [fx, fy] of [[0.9, 0.85], [0.1, 0.85], [0.9, 0.15], [0.5, 0.92]]) {
-      const x = box.clientWidth * fx, y = box.clientHeight * fy;
-      if (!g.getCellAt(x, y)) return [r.left + x, r.top + y];
+      const x = r.left + box.clientWidth * fx, y = top + (foot - top) * fy;
+      if (!g.getCellAt(x - r.left, y - r.top) && document.elementFromPoint(x, y)?.closest("#canvas")) return [x, y];
     }
     return null; }"""
 GEOMETRY = """([key, id]) => { const c = window.PlayIDE.diagram(key).getDataModel().getCell(id); return [c.geometry.x, c.geometry.y]; }"""

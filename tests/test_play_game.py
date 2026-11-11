@@ -134,18 +134,22 @@ def test_agents_show_as_diamonds_and_gaps_and_disagreements_count_down_in_a_real
     with ephemeral_eija_server(pack=ROOT / "packs/refund-desk") as server, api.sync_playwright() as playwright:
         chrome = _launch(api, playwright)
         try:
-            page = chrome.new_page(viewport={"width": 1280, "height": 900})
+            page = chrome.new_page(viewport={"width": 1920, "height": 1000})  # the toolbar has room for a note only on a wide screen; narrower, the status bar says it (#208)
             errors: list[str] = []
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.goto(f"{server.base_url}/play#{server.token}")
             page.wait_for_selector("body[data-assist=ready]", timeout=60_000)
             seen = page.evaluate("""() => new Promise((done) => {
                 let diamonds = 0, squares = 0, rings = 0, notes = '', overlaps = [], onLabel = 0, faded = 0;
-                const graph = window.PlayIDE.graph(), view = graph.getView(), boxes = [];
-                for (const cell of Object.values(graph.getDataModel().cells)) {
-                  const b = cell.isEdge() && view.getState(cell) && view.getState(cell).text && view.getState(cell).text.boundingBox;
-                  if (b && b.width > 0) boxes.push(b);
-                }
+                const graph = window.PlayIDE.graph(), view = graph.getView();
+                const labelBoxes = () => { // read live: opening Simulate re-centres the diagram, so the labels move
+                  const boxes = [];
+                  for (const cell of Object.values(graph.getDataModel().cells)) {
+                    const b = cell.isEdge() && view.getState(cell) && view.getState(cell).text && view.getState(cell).text.boundingBox;
+                    if (b && b.width > 0) boxes.push(b);
+                  }
+                  return boxes;
+                };
                 const box = (e) => e.getBoundingClientRect(), cross = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
                 const others = ['#simulate', '#build', 'aside.side', '#chat-title', '.tabs', '#run-status'].map((s) => document.querySelector(s)).filter(Boolean);
                 const watch = setInterval(() => {
@@ -154,6 +158,7 @@ def test_agents_show_as_diamonds_and_gaps_and_disagreements_count_down_in_a_real
                   diamonds = Math.max(diamonds, document.querySelectorAll('g.game-traffic > path[d^="M0-7.5"]').length);
                   squares = Math.max(squares, document.querySelectorAll('g.game-traffic > rect').length);
                   rings = Math.max(rings, document.querySelectorAll('g.game-traffic > circle.game-timer').length);
+                  const boxes = labelBoxes();
                   for (const dot of document.querySelectorAll('g.game-traffic[opacity]')) {
                     const m = /translate\\(([-\\d.]+) ([-\\d.]+)\\)/.exec(dot.getAttribute('transform') || '');
                     const inside = m && boxes.some((b) => +m[1] >= b.x && +m[1] <= b.x + b.width && +m[2] >= b.y && +m[2] <= b.y + b.height);
@@ -165,7 +170,7 @@ def test_agents_show_as_diamonds_and_gaps_and_disagreements_count_down_in_a_real
                 document.getElementById('simulate').click();
                 setTimeout(() => { clearInterval(watch); done({ diamonds, squares, rings, notes, overlaps, onLabel, faded }); }, 4000);
             })""")
-            assert seen["overlaps"] == []  # #179: at 1280 a note sits in the toolbar's free space, over no other panel
+            assert seen["overlaps"] == []  # #179: a note sits in the toolbar's free space, over no other panel
             assert seen["diamonds"] > 0 and seen["squares"] > 0  # the support agent, and the payment system
             assert seen["rings"] > 0  # the timer: a clock ring, not the payment system's square
             assert seen["onLabel"] == 0 and seen["faded"] > 0  # #184: a dot crossing a label fades and never covers it
