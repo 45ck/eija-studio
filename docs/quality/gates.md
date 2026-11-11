@@ -2,8 +2,9 @@
 
 Every gate is a nox session in `quality/sessions/` ([ADR-0017](../adr/0017-local-quality-gates.md)) whose thresholds live in
 `pyproject.toml` or a checked-in baseline, so tightening or loosening a threshold is one reviewable diff
-([ADR-0035](../adr/0035-static-analysis-and-architecture-fitness-functions.md)). Hosted CI is unavailable, so these local runs
-are the evidence; a green run shows that this checkout on this machine passed, not a remote attestation.
+([ADR-0035](../adr/0035-static-analysis-and-architecture-fitness-functions.md)). Since 2026-11-11 the same tiers also run on
+GitHub's hosted runners ([ADR-0228](../adr/0228-hosted-ci-on-pull-requests.md)): the fast tier on every pull request and push to
+`main`, the full tier nightly. A local green run shows that this checkout on this machine passed; a hosted run is Linux only.
 
 ```sh
 nox -t fast       # pre-commit: about 2 minutes on the reference PC (most of it the test suite)
@@ -23,12 +24,12 @@ runs the suite once, inside `coverage` (with `--cov`), so neither hook runs it t
 LANE-01 budget aggregates the reports the other lanes write. Before 2026-11-09 it ran before `property`, `formal_tla`, `bmc` and
 `scxml_differential` and so judged the reports the previous run had left (#206).
 
-**Hosted CI spend.** The three workflows in `.github/workflows/` are `workflow_dispatch` only, and no Vercel project builds this
-repository (the server is loopback-only, so there is no site to deploy). Measured on 2026-11-09: 11 Actions runs ever, about
-40 runner-minutes in total, the last a Dependabot dependency-graph job. Each workflow carries a `timeout-minutes` cap (a hung
-session would otherwise bill up to the 6-hour default), a `concurrency` group that cancels a superseded dispatch on the same
-ref, and pip caching keyed on `pyproject.toml`. Re-review this paragraph before adding a `push` or `pull_request` trigger: add
-`paths-ignore` for `docs/**` and `*.md` at the same time, so a docs-only change does not run the full tier.
+**Hosted CI spend.** The repository is public, so GitHub's standard Linux runners cost nothing; larger and macOS runners
+would be billed even here, and none are used. Measured on 2026-11-09 before triggers were added: 11 Actions runs ever, about 40
+runner-minutes. Each job carries a `timeout-minutes` cap (a hung session would otherwise run to the 6-hour default), a
+`concurrency` group that cancels a superseded run on the same ref, and pip caching keyed on `pyproject.toml`. The nightly full
+tier skips itself when `main` has not changed for 26 hours. Docs-only changes still run the fast tier, because it holds the docs
+gates and a required check that never starts blocks a pull request (ADR-0228).
 
 **Missing prerequisites report `NOT_RUN`, never PASS.** The only gate here that needs anything outside the venv is `audit`
 (network). nox exits 0 for a skipped session, and an exit code cannot tell NOT_RUN from PASS, so `audit` **fails** offline with a
@@ -131,7 +132,8 @@ this gate does not make.
 | `.githooks/commit-msg` | Conventional Commits subject; rejects `[skip ci]`-style bypass text; allows git-generated merge and revert subjects |
 | `.githooks/run-nox` | Finds `.venv/Scripts/python.exe` or `.venv/bin/python` (Git Bash on Windows and POSIX), sets TMP/TEMP inside the checkout, probes for nox, pytest-cov, ruff, mypy, import-linter, xenon, radon and deptry and prints the `.[dev,lint]` instruction if any is missing |
 | `.claude/settings.json`, `.claude/hooks/pre-tool-use.sh` | **Active for every agent automatically** (not opt-in). Deny force-pushes and the long no-verify flag on `git commit`/`git push`, and Edit/Write of hooks and agent settings. The hook is a tripwire inside a single `git ... commit\|push` command segment: the long flag, `git commit -n` (and clusters such as `-nm`), `core.hooksPath` overrides, `HUSKY=`/`SKIP=` variables and `[skip ci]`. Text that merely mentions a flag (a PR comment, a quoted commit message) and ordinary `--force` operations (worktree removal, pip) are allowed; the hook works without `jq` |
-| `.github/workflows/quality.yml`, `guardrails.yml` | `workflow_dispatch` only (hosted CI unavailable) |
+| `.github/workflows/quality.yml` | `nox -t fast` on pull requests and pushes to `main`; `nox -t full` nightly and on dispatch; a red nightly opens one issue (ADR-0228) |
+| `.github/workflows/guardrails.yml` | On pull requests touching hooks or agent settings: requires the `noslop-approved` label |
 
 ### Toolchain with uv (Windows reference PC)
 

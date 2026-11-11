@@ -108,6 +108,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0225](0225-react-for-generated-application-frontends.md) | React for generated application frontends | accepted for the generated local app target |
 | [0226](0226-standard-record-navigation-and-presentation-map.md) | standard record navigation and a connected presentation map | accepted for generated local record apps |
 | [0227](0227-search-and-generative-engine-metadata.md) | Search and generative-engine metadata for the repository and docs | accepted |
+| [0228](0228-hosted-ci-on-pull-requests.md) | Hosted CI on pull requests, nightly full tier and auto-merge | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

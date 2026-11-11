@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-11-11
+
+* **Hosted CI on pull requests**: synced ADR-0228 (and the missing ADR-0227 page). ADR-0017's page gained backlinks only. No Notes were hand-edited and nothing was recorded as verified.
+
 ## 2026-11-08
 
 * **Simulation findings across a rename**: synced `application.review`; findings are matched by the element they name, not by rewriting their text (review on #211).
