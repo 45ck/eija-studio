@@ -511,6 +511,13 @@ def law_coverage(s: Subject, outcomes: list[Outcome]) -> list[dict[str, Any]]:
 
 def check(subject: Subject, workers: int) -> dict[str, Any]:
     _, reviewed = _assemble(subject.pack, subject.model, subject.data)
+    # The control: the reviewed app, resealed the same way, must pass its own suite. Otherwise every divergence of
+    # this subject would look caught, and none of them is evidence.
+    code, failed, _ = run_suite(_divergent(subject, Divergence("control", "control", "no divergence"), reviewed))
+    if code != 0:
+        return {"subject": subject.name, "counts": {"HARNESS_ERROR": 1}, "by_kind": {}, "equivalent": [], "laws": [],
+                "caught_by": {}, "missed": [{"kind": "control", "ref": "control",
+                                             "text": f"the reviewed app fails its own suite: {failed}"}]}
     plan = divergences(subject)
     with ThreadPoolExecutor(max_workers=workers) as pool:
         outcomes = list(pool.map(lambda d: judge(subject, d, reviewed), plan))

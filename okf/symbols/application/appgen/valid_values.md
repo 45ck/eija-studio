@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#valid_values
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 682586fc9d231aaddb901839514d3792109be53be43c7718173f3ad882d25987
-notes_baseline: c959168288c488cac6e7c8d775c99c91f1406bc54f46e32ac0f307f4ba005e34
+  sha256: c2cf067f9ca3c1212796ec0b2c09ab161f490ab053d0d7ddc8ed6572b9df105f
+notes_baseline: d8bdc63b3e5234bdd3cdebfbf65ba1b5edb95cd1dca6985628a889092e20152b
 ---
 
 # application.appgen.valid_values

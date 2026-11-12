@@ -116,7 +116,11 @@ def app_limits(data: DataModel | None) -> list[str]:
 
 
 def _sample(attribute: Attribute) -> object:
-    return attribute.choices[0] if attribute.type == "choice" else SAMPLES[attribute.type]
+    """A valid value: the first choice, or the type's sample, cut to the attribute's length (a 4-digit card suffix)."""
+    if attribute.type == "choice":
+        return attribute.choices[0]
+    sample = SAMPLES[attribute.type]
+    return sample[:attribute.max_length] if isinstance(sample, str) and attribute.type == "text" else sample
 
 
 def _breaks(attribute: Attribute, valid: dict[str, object]) -> list[tuple[str, dict[str, object]]]:
@@ -214,8 +218,11 @@ def value_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
                               f"(more than {MAX_VALUATIONS}); no app is built", {"refs": [f"transition:{t.id}"]})
         for values in tried:
             session = _OracleSession(pack, model, t.from_state, values)
-            cases.append({"state": t.from_state, "action": t.action, "actor": actor, "values": values,
-                          "expect": _kernel(pack, model, session, actor, t.action, 0)})
+            case: dict[str, Any] = {"state": t.from_state, "action": t.action, "actor": actor, "values": values,
+                    "expect": _kernel(pack, model, session, actor, t.action, 0)}
+            if case["expect"]["outcome"] == "COMMITTED":
+                case["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
+            cases.append(case)
     return cases
 
 
@@ -266,7 +273,12 @@ def data_cases(pack: Pack, data: DataModel, model: Workflow | None = None) -> li
              *_reference_breaks(data, valid),
              # Appended after the cases above so their order holds: the edges of each rule, then only required values.
              *(edge for a in entity.attributes for edge in _fits(a, valid)), ("required values only", least)]
-    return [{"name": name, "actor": creator, "fields": values, "expect": _answer(data, values, stored)} for name, values in tries]
+    cases: list[dict[str, Any]] = [{"name": name, "actor": creator, "fields": values, "expect": _answer(data, values, stored)}
+                                   for name, values in tries]
+    if cases[0]["expect"]["outcome"] != "CREATED":  # never a suite whose "valid" record the app must refuse
+        raise DomainError("DATA_NO_VALID_RECORD", f"The sample record is refused ({cases[0]['expect'].get('code')}); no app is built",
+                          {"refs": [f"class:{data.record}"]})
+    return cases
 
 
 def valid_values(data: DataModel | None) -> dict[str, object]:
@@ -394,6 +406,8 @@ def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
         if first["outcome"] == "COMMITTED":
             case["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
             case["replay"] = _kernel(pack, model, session, actor, action, version)
+            # the same request under a new operation id: not a replay, so the kernel judges it afresh
+            case["again"] = _kernel(pack, model, session, actor, action, version, "op-2")
         cases.append(case)
     return cases
 

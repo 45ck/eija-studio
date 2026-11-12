@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#data_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: b3a8bf28a4608f1408e67d00d933a0ce6a7ac4254cbf3dd2f66c885615302174
-notes_baseline: 01649fef7ee0cb817cdcc3ea37b940c96c74a230d31f5d2e4d25ec6cea1d921a
+  sha256: 0add03f9d5560d8e8532c404d4697e7171cd4b609943379e0e9547a4d0a84f99
+notes_baseline: 0e00462d95f302bffd5b807f30a4180a555c2b21f53dd352dab81111a26464bf
 ---
 
 # application.appgen.data_cases
@@ -50,6 +50,7 @@ _No curated notes yet._
 * [application.appgen.valid_values](/symbols/application/appgen/valid_values.md) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.data.record_fields](/symbols/domain/data/record_fields.md) - What a record holds: the record class's attributes, then each reference field as text holding an object's id.
+* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 

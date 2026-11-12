@@ -45,11 +45,14 @@ We built a harness that asks the real question. For library-loan, its first run 
   * a separation-of-duties law is dropped.
 
   The app keeps the reviewed oracle and tests. Only the identity fields (model hash, data and screens digests) are pointed at the divergent app, and the build identity is resealed, so only behaviour can fail the suite.
-* **Code divergence.** One of 23 seeded faults in `app/service.py` or `app/server.py`, resealed the same way.
+* **Code divergence.** One of 23 seeded faults in `app/service.py` or `app/server.py`, resealed the same way. A fault in code a subject's app never reaches is not applicable to it, not missed. For example, a fault in the value-guard check applies only to a model with value guards.
 
 Each divergence ends up CAUGHT, REFUSED (no app is built: the model is invalid or the protected policy refuses it), EQUIVALENT, or MISSED. Only one kind of divergence may be EQUIVALENT: dropping a forbidden effect. The kernel performs only required effects, and the policy checks forbidden ones at build time. Any MISSED divergence fails the check. For each law, the harness also runs the law proof on every model divergence, and every divergence the proof finds BROKEN must be CAUGHT or REFUSED.
 
-The two feature variants are refund-desk with initiators, a separation-of-duties law and a value guard, and library-loan with its record's associations built. They exist only in the harness, so the shipped packs keep their bytes.
+The two feature variants exist only in the harness, so the shipped packs keep their bytes:
+
+* refund-desk with initiators, a separation-of-duties law and a value guard;
+* library-loan with its record's associations built, and `Return` leaving two states.
 
 **The oracle gains four lists, and the generated suite gains five tests** (it now runs 14):
 
@@ -64,7 +67,7 @@ The two feature variants are refund-desk with initiators, a separation-of-duties
 
 **The fixes.** The outbox names the record acted on (`Session.record_id`). The rule table lists every source of an action (`server.transitions()`).
 
-**Gates.** `nox -s conformance_divergence` (full tier) runs the harness on library-loan and the two variants. `--all` (release tier) runs every subject. `tests/test_conformance_divergence.py` (fast tier) runs every divergence that used to be missed, plus the controls: a resealed app with no divergence passes, and every seeded fault still matches the templates.
+**Gates.** `nox -s conformance_divergence` (full tier) runs the harness on library-loan and the two variants. `nox -s conformance_divergence_all` (release tier) runs every pack and both variants, about 20 minutes on four cores. `tests/test_conformance_divergence.py` (fast tier) runs every divergence that used to be missed, plus the controls: a resealed app with no divergence passes, and every seeded fault still matches the templates.
 
 ### Consequences
 
