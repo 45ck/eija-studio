@@ -256,7 +256,9 @@
         const card = node.querySelector && node.querySelector(".plan");
         if (!card || card.querySelector(".review-keys")) continue;
         for (const box of card.querySelectorAll(".plan-steps input")) box.setAttribute("aria-keyshortcuts", "J K Space S P");
-        card.querySelector(".plan-steps").after(el("p", "Review keys: J/K move · Space accept or reject · S show on the diagram · P preview on or off", { class: "muted small review-keys" }));
+        const keys = el("p", "Review keys: ", { class: "muted small review-keys" });
+        for (const [k, what, sep] of [["J", "", "/"], ["K", " move · ", ""], ["Space", " accept or reject · ", ""], ["S", " show on the diagram · ", ""], ["P", " preview on or off", ""]]) keys.append(el("kbd", k), what + sep);
+        card.querySelector(".plan-steps").after(keys);
       }
     }
   }

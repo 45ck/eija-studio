@@ -941,7 +941,7 @@
     const tools = el("div", undefined, { class: "plan-tools" });
     const preview = el("button", "Preview on the diagram", { type: "button", class: "primary" });
     preview.addEventListener("click", () => (plan.previewing ? leavePreview() : enterPreview()));
-    const review = el("button", "Review it", { type: "button", class: "review-it", title: "Review the previewed change: what changed, how risky, what the kernel does differently" });
+    const review = el("button", "Review the change", { type: "button", class: "review-it", title: "Review the previewed change: what changed, how risky, what the kernel does differently" });
     review.addEventListener("click", () => { if (!plan.previewing) enterPreview(); if (plan.previewing) showTab("review"); });
     tools.append(preview, review);
     const keep = el("button", "Review & activate", { type: "button", class: "plan-activate" });
@@ -2120,7 +2120,7 @@
     box.className = "a11y " + (a11y.failed ? "bad" : warned ? "warn" : "ok");
     box.open = Boolean(a11y.failed) || box.open;
     const summary = el("summary");
-    summary.append(el("span", a11y.failed ? "✗" : "✓", { class: "a11y-mark" }),
+    summary.append(el("span", a11y.failed ? "✗" : warned ? "⚠" : "✓", { class: "a11y-mark", "aria-hidden": "true" }),
       el("span", `Accessibility (${a11y.standard}): ${a11y.passed} of ${a11y.checks.length} checks pass` + (a11y.failed ? `, ${a11y.failed} fail` : "") + (warned ? `, ${warned} to look at` : "")));
     const list = el("ul", undefined, { class: "a11y-checks" });
     for (const c of a11y.checks) {

@@ -82,6 +82,7 @@ label.role-kind select{font:inherit}
 .a11y summary:hover{background:var(--busy-bg)}
 .a11y.ok .a11y-mark{color:var(--ok)}
 .a11y.bad .a11y-mark{color:var(--bad)}
+.a11y.warn .a11y-mark{color:var(--warn)}
 .a11y-checks{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
 .a11y-checks>li{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;align-items:baseline}
 .a11y-status{font-size:.7rem;font-weight:600;padding:0 6px;border-radius:999px;background:var(--ok-bg);color:var(--ok)}
