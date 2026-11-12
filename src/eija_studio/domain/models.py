@@ -53,7 +53,10 @@ def iso_date(text: str) -> date | None:
 
 
 def _kind(value: Any) -> str:
-    """What a guard compares: a bool is not a number, and an int and a float are both numbers."""
+    """What a guard compares: a bool is not a number, and an int and a float are both numbers. NaN and infinity are
+    no kind a guard compares (a record never holds one), so every guard over them fails closed."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return "non-finite"
     return "boolean" if isinstance(value, bool) else "number" if isinstance(value, int | float) else "text"
 
 
@@ -151,17 +154,25 @@ class Transition(Contract):
             raise ValueError("Duplicate guards")
         if len(set(self.required_effects)) != len(self.required_effects):
             raise ValueError("Duplicate required effects")
+        if len(set(self.forbidden_effects)) != len(self.forbidden_effects):
+            raise ValueError("Duplicate forbidden effects")
         if set(self.required_effects) & set(self.forbidden_effects):
             raise ValueError("Required/forbidden effect conflict")
-        if len(set(self.conditions)) != len(self.conditions):
+        if len(guard_keys(self.conditions)) != len(self.conditions):
             raise ValueError("Duplicate value guard")
         return self
+
+
+def guard_keys(conditions: tuple[ValueGuard, ...]) -> frozenset[str]:
+    """Value guards as a set compared by their JSON, as the semantic hash compares them. Pydantic equality would make
+    ``[x = true]`` equal ``[x = 1]`` (``True == 1`` in Python), though no record value satisfies both."""
+    return frozenset(canonical(c) for c in conditions)
 
 
 def _shape(t: Transition) -> tuple[Any, ...]:
     """What every transition one action labels must share: all but its id and source state (ADR-0232)."""
     return (t.to_state, t.role, frozenset(t.guards), frozenset(t.required_effects), frozenset(t.forbidden_effects),
-            frozenset(t.conditions), t.after)
+            guard_keys(t.conditions), t.after)
 
 
 class Workflow(Contract):

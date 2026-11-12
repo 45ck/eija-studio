@@ -32,7 +32,8 @@ from jsonschema import Draft202012Validator
 from pydantic import ValidationError
 
 from eija_studio.domain.change_case import ChangeCase
-from eija_studio.domain.models import BASE_GUARDS, OWNER, Alternative, ExecuteCommand, LayoutChange, Proposal, Workflow
+from eija_studio.domain.models import (BASE_GUARDS, OWNER, Alternative, ExecuteCommand, LayoutChange, Proposal, ValueGuard, Workflow,
+                                      canonical)
 from eija_studio.domain.transactions import RetargetTransition, SetRole, TransactionDocument
 from .property_strategies import workflows
 from .property_support import REQUEST, ROOT, ephemeral_studio, examples, scratch_directory
@@ -45,9 +46,10 @@ CONTRACTS = {
 # Rules enforced by ``model_validator`` that JSON Schema (structural) cannot state. A schema-valid
 # instance may be refused by the model with exactly these messages and no other.
 CROSS_FIELD = (
-    "Mandatory guards cannot be removed", "Duplicate guards", "Duplicate required effects",
+    "Mandatory guards cannot be removed", "Duplicate guards", "Duplicate required effects", "Duplicate forbidden effects",
     "Required/forbidden effect conflict", "Duplicate states or missing initial state", "Dangling transition state",
     "Duplicate or ambiguous transition/action", "Duplicate interpretation", "Unknown description too long",
+    "Duplicate initiator role",  # who may start a record is a set (ADR-0231)
     # Value guards (ADR-0234): no duplicates; equality only for true/false; ordering only for numbers and dates.
     "Duplicate value guard", "A true/false value is only compared with = or ≠",
     "Only a date (YYYY-MM-DD) or a number is compared with <, ≤, > or ≥", "A guard's text is at most 200 characters",
@@ -103,7 +105,7 @@ def repaired(instance: Any) -> Any:
     out = {k: repaired(v) for k, v in instance.items()}
     if isinstance(out.get("guards"), list):
         out["guards"] = list(dict.fromkeys(list(BASE_GUARDS) + out["guards"]))
-    for key in ("states", "required_effects"):
+    for key in ("states", "required_effects", "forbidden_effects", "initiators"):
         if isinstance(out.get(key), list):
             out[key] = list(dict.fromkeys(out[key]))
     if isinstance(out.get("forbidden_effects"), list) and isinstance(out.get("required_effects"), list):
@@ -117,6 +119,14 @@ def repaired(instance: Any) -> Any:
                 t["action"] = f"{str(t.get('action', 'a'))[:40]}#{i}"
                 for key in ("from_state", "to_state"):
                     t[key] = states[sum(map(ord, str(t.get(key)))) % len(states)]
+    if isinstance(out.get("conditions"), list):  # value guards the contract refuses only on a cross-field rule
+        kept: dict[str, Any] = {}
+        for guard in out["conditions"]:
+            try:
+                kept.setdefault(canonical(guard), ValueGuard.model_validate(guard) and guard)
+            except ValidationError:
+                continue
+        out["conditions"] = list(kept.values())
     if isinstance(out.get("alternatives"), list):
         seen: dict[Any, Any] = {}
         for alternative in out["alternatives"]:
