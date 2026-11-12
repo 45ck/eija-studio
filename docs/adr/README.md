@@ -117,7 +117,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0234](0234-guards-over-record-values.md) | Guards over record values | accepted |
 | [0235](0235-built-associations.md) | Built associations as checked reference fields | accepted |
 | [0236](0236-hostile-input-and-plan-cost.md) | Hostile input at PlayIDE's edges, and the cost of a plan at the model's limits | accepted |
-| [0237](0237-value-guard-representatives-verified.md) | Verify value-guard representatives by property and mutation | accepted |
+| [0237](0237-value-guard-representatives-verified.md) | Verify value-guard representatives by property and mutation, and fix what that found | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

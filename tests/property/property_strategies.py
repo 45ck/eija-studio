@@ -27,7 +27,7 @@ def value_guards(draw) -> dict[str, Any]:
     """One guard over a record value (ADR-0234) that the contract accepts: ordering only on numbers and dates."""
     value = draw(st.one_of(st.integers(-10**6, 10**6), st.floats(allow_nan=False, allow_infinity=False),
                            st.booleans(), DATES, st.text(max_size=6)))
-    ordered = isinstance(value, int | float) and not isinstance(value, bool) or (isinstance(value, str) and iso_date(value))
+    ordered = (isinstance(value, int | float) and not isinstance(value, bool)) or (isinstance(value, str) and iso_date(value))
     op = draw(st.sampled_from(("eq", "ne", "lt", "le", "gt", "ge") if ordered else ("eq", "ne")))
     return {"attribute": draw(ATTRIBUTES), "op": op, "value": value}
 
