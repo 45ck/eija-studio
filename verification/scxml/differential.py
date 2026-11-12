@@ -30,7 +30,7 @@ from typing import Any
 
 from eija_studio.application.appgen import linked_cases, oracle_cases, timer_cases, value_cases
 from eija_studio.application.scxml import event_data, scxml_id, to_scxml
-from eija_studio.domain.linked import along
+from eija_studio.domain.linked import advance, along
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack, load_pack
 from eija_studio.domain.value_guards import guards_by_attribute
@@ -62,12 +62,18 @@ def packs() -> list[Path]:
 
 
 def _moved(case: dict[str, Any], model: Workflow) -> dict[str, Any]:
-    """The kernel's moves on linked objects in a committed case, `link:state` in the transition's order (ADR-0241);
-    nothing for a model without linked objects."""
+    """The kernel's moves on linked objects in a committed case, `link:state` in the transition's order (ADR-0241),
+    from the states the case's objects start in; nothing for a model without linked objects."""
     if not model.objects:
         return {}
     t = model.transition_for(case["action"], case["state"])
-    return {"moved": [f"{s.link}:{case['after'][s.link]}" for s in (t.then if t is not None else ())]}
+    after = advance(model, t, _objects(case, model)) or {}
+    return {"moved": [f"{s.link}:{after[s.link]}" for s in (t.then if t is not None else ())]}
+
+
+def _objects(case: dict[str, Any], model: Workflow) -> dict[str, str]:
+    """The states the case's linked objects start in: its own, or where a run of this record alone leaves them."""
+    return case.get("objects", along(model).get(case["state"], {}))
 
 
 def _expected(case: dict[str, Any], model: Workflow) -> dict[str, Any]:
@@ -87,7 +93,7 @@ class Record:
 def _observed(chart: Any, case: dict[str, Any], actors: dict[str, dict[str, Any]], names: dict[str, str],
               model: Workflow, attributes: tuple[str, ...] = ()) -> dict[str, Any]:
     machine = chart(model=Record(), start_value=scxml_id(case["state"]))
-    waited, objects = model.longest_wait, case.get("objects", along(model).get(case["state"], {}))
+    waited, objects = model.longest_wait, _objects(case, model)
     machine.send(scxml_id(case["action"]), **event_data(actors.get(case["actor"]), case.get("expected_version", 0),
                                                         case.get("values"), attributes, case.get("waited", waited), waited > 0,
                                                         objects))

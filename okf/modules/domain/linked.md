@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/linked.py
   title: domain/linked.py
   hash_method: ast-api-v1
-  sha256: ae994ef1f65ff566d9e3705522eafdb5fcf7e4c8478c82baee69a0ee96bfe7f7
-notes_baseline: f45f6ef228d4f8e0a98e4db61d5fa730824fa61ba063d9051ec40a13921bf629
+  sha256: 95bc411d057e8e9075c4c68fa31e330bb46c06924e3a3c9ddea9c856a7e62896
+notes_baseline: ebbc7f93b7396a1a5edae81d8c2aa26f631109aecdc25704485222184b5386aa
 ---
 
 # domain.linked
@@ -41,8 +41,10 @@ record alone reaches (`along`).
 ## Public symbols
 
 * [`admitting`](/symbols/domain/linked/admitting.md) (function) - The first combination of states (as `combinations` orders them) from which `transition` can move every object it names;…
+* [`advance`](/symbols/domain/linked/advance.md) (function) - The objects' states after `transition` (unchanged when it moves none), or None when one of its moves is not possible fr…
 * [`along`](/symbols/domain/linked/along.md) (function) - For each state a record can reach, the states its linked objects are in when only this record moves them, from every ob…
 * [`combinations`](/symbols/domain/linked/combinations.md) (function) - Every combination of states of the objects `transition` moves, one dict per combination; `[{}]` when it moves none.
+* [`drift`](/symbols/domain/linked/drift.md) (function) - The states the objects can be in after one move another record makes: any one object takes any move of its lifecycle fr…
 
 ## Internal imports
 
@@ -65,6 +67,8 @@ _No curated notes yet._
 * [application.scenario_run](/modules/application/scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).
 * [application.scxml](/modules/application/scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).
 * [domain.linked.admitting](/symbols/domain/linked/admitting.md) - The first combination of states (as `combinations` orders them) from which `transition` can move every object it names; `{}` when it moves none, None when no c…
+* [domain.linked.advance](/symbols/domain/linked/advance.md) - The objects' states after `transition` (unchanged when it moves none), or None when one of its moves is not possible from their states.
 * [domain.linked.along](/symbols/domain/linked/along.md) - For each state a record can reach, the states its linked objects are in when only this record moves them, from every object in its initial state: the first suc…
 * [domain.linked.combinations](/symbols/domain/linked/combinations.md) - Every combination of states of the objects `transition` moves, one dict per combination; `[{}]` when it moves none.
+* [domain.linked.drift](/symbols/domain/linked/drift.md) - The states the objects can be in after one move another record makes: any one object takes any move of its lifecycle from its state (ADR-0241).
 <!-- okf:generated:end links -->

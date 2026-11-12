@@ -18,7 +18,7 @@ import pytest
 from eija_studio.application import runtime
 from eija_studio.application.appgen import generate, linked_cases
 from eija_studio.application.diagrams import state_graph
-from eija_studio.application.law_proof import prove_laws
+from eija_studio.application.law_proof import prove_laws, with_laws
 from eija_studio.application.memo import model_hash
 from eija_studio.application.scxml import to_scxml
 from eija_studio.application.simulation import MemorySession, simulate
@@ -191,3 +191,40 @@ def test_a_built_app_keeps_object_states_and_conformance_catches_an_app_that_doe
     assert marker in text
     service.write_text(text.replace(marker, "pass"), encoding="utf-8")  # negative control: the move is lost
     assert conformance(out)["status"] == "FAIL"
+
+
+def test_one_transition_never_moves_two_objects_of_one_class():
+    """Review regression: two links could name one object, and both moves were written to it."""
+    raw = OPS.model.model_dump(mode="json")
+    raw["objects"].append(dict(raw["objects"][0], link="spare"))
+    next(t for t in raw["transitions"] if t["id"] == "TR-WINDOW")["then"] = [
+        {"link": "target", "event": "lock"}, {"link": "spare", "event": "lock"}]
+    with pytest.raises(ValueError, match="at most one object of each class"):
+        Workflow.model_validate(raw)
+
+
+def test_the_law_proof_carries_object_states_forward():
+    """Review regression: trying every object state at every step proved a record could finish when a lock it took
+    could never be released."""
+    ends = {"id": "every-change-ends", "kind": "can_reach_end", "code": "STUCK",
+            "states": ["InProduction", "RolledBack", "Abandoned"]}
+    pack = with_laws(OPS, [law.model_dump(mode="json") for law in OPS.laws] + [ends])
+    assert {v["id"]: v for v in prove_laws(pack)["laws"]}["every-change-ends"]["status"] == "HOLDS"
+    raw = OPS.model.model_dump(mode="json")
+    raw["objects"][0]["moves"] = [m for m in raw["objects"][0]["moves"] if m["event"] == "lock"]  # never released
+    for t in raw["transitions"]:
+        if t.get("then") and t["then"][0]["event"] == "release":
+            t["then"] = [{"link": "target", "event": "lock"}]
+    verdict = {v["id"]: v for v in prove_laws(pack, Workflow.model_validate(raw))["laws"]}["every-change-ends"]
+    assert verdict["status"] == "BROKEN" and "Rolling" in verdict["stuck"]
+
+
+def test_the_differential_runs_a_timed_step_on_a_linked_object():
+    """Review regression: a case without the objects' end states (a timer or value case) stopped the differential."""
+    raw = OPS.model.model_dump(mode="json")
+    next(t for t in raw["transitions"] if t["id"] == "TR-WINDOW")["after"] = {"amount": 1, "unit": "hours"}
+    timed = Workflow.model_validate(raw)
+    differential = pytest.importorskip("verification.scxml.differential")
+    if differential.load is None:
+        pytest.skip("python-statemachine is not installed")
+    assert differential.compare(OPS, timed)["status"] == "PASS"

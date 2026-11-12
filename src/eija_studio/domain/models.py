@@ -270,10 +270,12 @@ class LinkedObject(Contract):
 
 
 def _linked(objects: tuple[LinkedObject, ...], transitions: tuple[Transition, ...]) -> bool:
-    """Each linked object has its own link, and each step on one names a declared link and one of its events."""
+    """Each linked object has its own link, and each step on one names a declared link and one of its events. One
+    transition never moves two objects of the same class: two links could name one object, and its moves would clash."""
     lifecycles = {o.link: o for o in objects}
     return len(lifecycles) == len(objects) and all(
-        s.link in lifecycles and s.event in lifecycles[s.link].events() for t in transitions for s in t.then)
+        s.link in lifecycles and s.event in lifecycles[s.link].events() for t in transitions for s in t.then) and all(
+        len({lifecycles[s.link].entity for s in t.then}) == len(t.then) for t in transitions)
 
 
 class Workflow(Contract):
@@ -322,7 +324,8 @@ class Workflow(Contract):
         if not _is_tree(self.states, self.composites):
             raise ValueError("Composite states must form a tree over the states")
         if not _linked(self.objects, self.transitions):
-            raise ValueError("Each step on a linked object needs a declared lifecycle with that event")
+            raise ValueError("Each step on a linked object needs a declared lifecycle with that event, and one transition moves at most one "
+                             "object of each class")
         return self
 
     def lifecycle(self, link: str) -> LinkedObject | None:

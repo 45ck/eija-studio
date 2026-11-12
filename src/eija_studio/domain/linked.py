@@ -44,6 +44,18 @@ def along(model: Workflow) -> dict[str, dict[str, str]]:
     return seen
 
 
+def advance(model: Workflow, transition: Transition | None, objects: dict[str, str]) -> dict[str, str] | None:
+    """The objects' states after `transition` (unchanged when it moves none), or None when one of its moves is not
+    possible from their states."""
+    return dict(objects) if transition is None else _moved(model, transition, objects)
+
+
+def drift(model: Workflow, objects: dict[str, str]) -> list[dict[str, str]]:
+    """The states the objects can be in after one move another record makes: any one object takes any move of its
+    lifecycle from its state (ADR-0241)."""
+    return [dict(objects) | {o.link: m.to_state} for o in model.objects for m in o.moves if objects.get(o.link) == m.from_state]
+
+
 def _moved(model: Workflow, transition: Transition, objects: dict[str, str]) -> dict[str, str] | None:
     """The objects' states after `transition`, or None when one of its moves is not possible from their states."""
     after = dict(objects)

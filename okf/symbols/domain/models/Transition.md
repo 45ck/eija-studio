@@ -95,6 +95,7 @@ The validator [guarded](/symbols/domain/models/Transition.guarded.md) refuses re
 * [domain.impact.changed_fields](/symbols/domain/impact/changed_fields.md) - Semantic differences of one action's transition.
 * [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
 * [domain.linked.admitting](/symbols/domain/linked/admitting.md) - The first combination of states (as `combinations` orders them) from which `transition` can move every object it names; `{}` when it moves none, None when no c…
+* [domain.linked.advance](/symbols/domain/linked/advance.md) - The objects' states after `transition` (unchanged when it moves none), or None when one of its moves is not possible from their states.
 * [domain.linked.combinations](/symbols/domain/linked/combinations.md) - Every combination of states of the objects `transition` moves, one dict per combination; `[{}]` when it moves none.
 * [domain.models.Transition.admits](/symbols/domain/models/Transition.admits.md) - The first condition these record values fail, or None when the transition's conditions all hold.
 * [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.

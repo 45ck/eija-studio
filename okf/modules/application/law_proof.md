@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py
   title: application/law_proof.py
   hash_method: ast-api-v1
-  sha256: c6cfd95f566faaba9366c2fe6049c83a39c5f1f656eb761be28d02564ef88db1
-notes_baseline: acd83245a87685ddff15338d209304f369ccefb85c23f166eb6ef45bc51e7c93
+  sha256: 577b8bdf1f12c344b7b53a4879549c2fdc5fd657bfc73749f85f73c2f05ce889
+notes_baseline: c9d7d438b7e3177788150c1b768c2e599af970f4b2b79996f732e507d2dee422
 ---
 
 # application.law_proof
@@ -48,6 +48,9 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   how each kind is judged and a test fails if a new kind is not classified.
 * Time events (`after(14 days)`, ADR-0237): time can always pass, so each step is tried once the longest of them is
   due. Waiting only makes more steps possible, never fewer, so this is every run the kernel allows.
+* Linked objects (ADR-0241): a configuration also holds the state of each object the record links to, starting in its
+  lifecycle's initial state, and a record's step carries its moves forward. Other records may link to the same object,
+  so between steps an object may take any move of its lifecycle; that changes no step of this record's run.
 * `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
   committed during the search, so a record is stuck only where the kernel itself leaves no way to an end (ADR-0221).
 * `distinct_actors` (separation of duties, ADR-0233) is about who acted, which the actor classes above do not track.
@@ -68,6 +71,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give the sa
 * [`MAX_CONFIGURATIONS`](/symbols/application/law_proof/MAX_CONFIGURATIONS.md) (constant) - no docstring
 * [`Node`](/symbols/application/law_proof/Node.md) (type-alias) - no docstring
 * [`OUTSIDER`](/symbols/application/law_proof/OUTSIDER.md) (constant) - no docstring
+* [`Objects`](/symbols/application/law_proof/Objects.md) (type-alias) - no docstring
 * [`Passed`](/symbols/application/law_proof/Passed.md) (type-alias) - no docstring
 * [`STOPPED`](/symbols/application/law_proof/STOPPED.md) (constant) - no docstring
 * [`actor_classes`](/symbols/application/law_proof/actor_classes.md) (function) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
@@ -116,6 +120,7 @@ _No curated notes yet._
 * [application.law_proof.MAX_CONFIGURATIONS](/symbols/application/law_proof/MAX_CONFIGURATIONS.md) - Constant `MAX_CONFIGURATIONS` in `application/law_proof`.
 * [application.law_proof.Node](/symbols/application/law_proof/Node.md) - Type alias `Node` in `application/law_proof`.
 * [application.law_proof.OUTSIDER](/symbols/application/law_proof/OUTSIDER.md) - Constant `OUTSIDER` in `application/law_proof`.
+* [application.law_proof.Objects](/symbols/application/law_proof/Objects.md) - Type alias `Objects` in `application/law_proof`.
 * [application.law_proof.Passed](/symbols/application/law_proof/Passed.md) - Type alias `Passed` in `application/law_proof`.
 * [application.law_proof.STOPPED](/symbols/application/law_proof/STOPPED.md) - Constant `STOPPED` in `application/law_proof`.
 * [application.law_proof.actor_classes](/symbols/application/law_proof/actor_classes.md) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
