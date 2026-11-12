@@ -126,16 +126,16 @@ def _mm_state_legend(g: Graph) -> list[str]:
 
 
 def _group_ids(g: Graph) -> dict[str, str]:
-    """Identifiers for a state graph's composite states, never colliding with its states' (ADR-0238)."""
+    """One identifier map for a state graph's states and composite states, so a composite never shares an identifier
+    with a state (ADR-0238). Without composites it is the states' own map."""
     return safe_ids([n.id for n in g.nodes] + [c.id for c in g.clusters])
 
 
 def _mm_composites(g: Graph, ids: dict[str, str], parent: str | None = None, indent: str = "    ") -> list[str]:
     """Composite states (ADR-0238) as nested `state X { ... }` blocks naming the states they hold."""
-    clusters = _group_ids(g)
     out: list[str] = []
     for c in (c for c in g.clusters if c.parent == parent):
-        cid = clusters[c.id]
+        cid = ids[c.id]
         out += [*([f'{indent}state "{_mm(c.label)}" as {cid}'] if cid != c.label else []), f"{indent}state {cid} {{"]
         out += [f"{indent}    {ids[n.id]}" for n in g.nodes if n.cluster == c.id]
         out += [*_mm_composites(g, ids, c.id, indent + "    "), f"{indent}}}"]
@@ -143,7 +143,7 @@ def _mm_composites(g: Graph, ids: dict[str, str], parent: str | None = None, ind
 
 
 def _mm_state(g: Graph) -> str:
-    ids = safe_ids([n.id for n in g.nodes])
+    ids = _group_ids(g)
     out = [*_comments(g.provenance, "%%"), "stateDiagram-v2", f"    direction {g.direction}", *_mm_classdef_lines(g)]
     out += [f'    state "{_mm(n.label)}" as {ids[n.id]}' for n in g.nodes if ids[n.id] != n.label]
     out += _mm_composites(g, ids)
@@ -244,10 +244,9 @@ def _pu_edge(e: Edge, ids: dict[str, str]) -> str:
 
 def _pu_states(g: Graph, ids: dict[str, str], parent: str | None = None, indent: str = "") -> list[str]:
     """States, with composite states (ADR-0238) as nested `state X { ... }` blocks holding theirs."""
-    clusters = _group_ids(g)
     out = [_pu_node("state", n, ids, indent) for n in g.nodes if n.cluster == parent]
     for c in (c for c in g.clusters if c.parent == parent):
-        out += [f'{indent}state "{_puml(c.label)}" as {clusters[c.id]} {{', *_pu_states(g, ids, c.id, indent + "  "), f"{indent}}}"]
+        out += [f'{indent}state "{_puml(c.label)}" as {ids[c.id]} {{', *_pu_states(g, ids, c.id, indent + "  "), f"{indent}}}"]
     return out
 
 
@@ -269,7 +268,7 @@ def _pu_flow_body(g: Graph, ids: dict[str, str]) -> list[str]:
 
 
 def _pu_graph(g: Graph) -> str:
-    ids = safe_ids([n.id for n in g.nodes])
+    ids = _group_ids(g) if g.kind == "state" else safe_ids([n.id for n in g.nodes])
     out = ["@startuml", *_comments(g.provenance, "'"), f"title {_puml(g.title)}"]
     if g.direction == "LR":
         out.append("left to right direction")

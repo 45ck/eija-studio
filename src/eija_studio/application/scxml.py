@@ -129,11 +129,23 @@ def _carriers(model: Workflow, groups: list[Any], action: str) -> list[tuple[str
     found: list[tuple[str, Transition]] = []
     for group in groups:
         inside = model.leaves(group.name)
-        if inside and all(s in left for s in inside):
+        if _fits(inside, left):
             found.append((group.name, left[inside[0]]))
             for s in inside:
                 del left[s]
     return found + list(left.items())
+
+
+def _fits(inside: tuple[str, ...], left: dict[str, Transition]) -> bool:
+    """Whether one action leaves every state of a composite, by transitions alike but for id and source."""
+    return bool(inside) and all(s in left for s in inside) and _alike([left[s] for s in inside])
+
+
+def _alike(transitions: list[Transition]) -> bool:
+    """Whether the transitions are the same step but for id and source, effects in the same order included: the
+    model compares effects as sets, but the kernel performs them in the order each transition declares."""
+    shapes = [t.model_dump(mode="json", exclude={"id", "from_state"}) for t in transitions]
+    return all(shape == shapes[0] for shape in shapes)
 
 
 def _top_level(model: Workflow) -> list[str]:

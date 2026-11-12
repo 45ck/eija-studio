@@ -135,3 +135,31 @@ def test_editing_states_keeps_the_composites_coherent():
     with pytest.raises(DomainError) as e:  # Approved starts PayingOut, and transitions use it
         apply_structural(DESK.model, RemoveState(kind="remove_state", state="Approved"), _never_built)
     assert "composite:PayingOut" in e.value.details["refs"]
+
+
+def test_hoisting_keeps_each_transitions_effect_order():
+    """Review regression: effects compare as sets, but the kernel performs them in declared order, so transitions
+    whose effects differ only in order are not carried once on the composite."""
+    escalate = next(t for t in DESK.model.model_dump(mode="json")["transitions"] if t["action"] == "EscalateStale")
+    assert escalate["from_state"] == "AwaitingApproval" and len(escalate["required_effects"]) > 1
+    again = dict(escalate, id="TR-ESCALATE-AGAIN", from_state="WithSupervisor")
+    swapped = dict(again, required_effects=list(reversed(escalate["required_effects"])))
+    composites = [c.model_dump() for c in DESK.model.composites]
+    carried = hoisted(grouped(DESK.model, composites, [swapped]))
+    assert all(t.action != "EscalateStale" for t in carried.get("Deciding", []))
+    assert [t.required_effects for t in carried["WithSupervisor"] if t.action == "EscalateStale"] == [tuple(swapped["required_effects"])]
+    assert [t.action for t in hoisted(grouped(DESK.model, composites, [again]))["Deciding"]] == ["EscalateStale"]
+
+
+def test_a_composite_never_shares_an_identifier_with_a_state():
+    """Review regression: composite `A B` holding state `A-B` both became `n_A_B` in Mermaid and PlantUML."""
+    raw = DESK.model.model_dump(mode="json")
+    raw["states"] = ["A-B" if s == "WithSupervisor" else s for s in raw["states"]]
+    for t in raw["transitions"]:
+        t["from_state"] = "A-B" if t["from_state"] == "WithSupervisor" else t["from_state"]
+        t["to_state"] = "A-B" if t["to_state"] == "WithSupervisor" else t["to_state"]
+    raw["composites"] = [{"name": "A B", "states": ["AwaitingApproval", "A-B"], "initial": "AwaitingApproval"}]
+    graph = state_graph(Workflow.model_validate(raw))
+    mermaid, plantuml = emit(graph, "mermaid"), emit(graph, "plantuml")
+    assert "state n_A_B {" in mermaid and "        n_A_B_2" in mermaid
+    assert 'state "A B" as n_A_B {' in plantuml and "as n_A_B_2" in plantuml
