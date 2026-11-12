@@ -18,7 +18,7 @@ python -m quality.mutation run --module src/eija_studio/domain/evidence.py --che
 | Session | Tier | Scope | Gate |
 |---|---|---|---|
 | `mutation_quick` | `full` | `domain/policy.py` | score not below the ratchet floor |
-| `mutation` | `release` | `domain/{policy,models,impact,evidence}.py`, `application/{runtime,verifier}.py` | each module's score not below its floor |
+| `mutation` | `release` | `domain/{policy,models,impact,evidence,value_guards,laws}.py`, `application/{runtime,verifier}.py` | each module's score not below its floor |
 
 A missing `cosmic-ray` reports `NOT_RUN` (nox "skipped"), never a pass. Exit status of `python -m quality.mutation`: `0` passed, `1` ratchet failed, `2` the measurement itself failed (red baseline, engine crash after retries, the scratch copy not being the code under test). A measurement failure produces no score.
 

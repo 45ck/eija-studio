@@ -8,7 +8,7 @@ case of the app oracle (ADR-0150) on the exported chart and requires the same ou
 The export is a projection of one run-to-completion step of `runtime.execute`, not a second interpreter that anything
 runs in production. What it keeps and what it leaves to the kernel:
 
-* A state is an atomic `<state>`; the initial state is the chart's `initial`. A composite state (ADR-0239) is a
+* A state is an atomic `<state>`; the initial state is the chart's `initial`. A composite state (ADR-0240) is a
   compound `<state>` holding its children, with its initial child as `initial`. An action that leaves every state
   inside a composite is carried once, on the composite, so the engine's own hierarchy decides it, and the differential
   checks that against the kernel's flat machine.
@@ -114,7 +114,7 @@ def _transition(parent: ET.Element, transition: Transition) -> None:
 def hoisted(model: Workflow) -> dict[str, list[Transition]]:
     """The transitions each state or composite carries in the chart. Where one action leaves every state inside a
     composite (ADR-0232 makes those transitions alike but for their source), the chart carries it once, on the
-    composite, as UML draws it (ADR-0239). Larger composites are tried first, so the outermost group that fits wins."""
+    composite, as UML draws it (ADR-0240). Larger composites are tried first, so the outermost group that fits wins."""
     carried: dict[str, list[Transition]] = {}
     groups = sorted(model.composites, key=lambda c: (-len(model.leaves(c.name)), c.name))
     for action in sorted({t.action for t in model.transitions}):
@@ -159,7 +159,7 @@ def _top_level(model: Workflow) -> list[str]:
 
 
 def _element(parent: ET.Element, model: Workflow, name: str, leaving: dict[str, list[Transition]]) -> None:
-    """One `<state>`: a plain state, or a composite holding its children with its initial child (ADR-0239)."""
+    """One `<state>`: a plain state, or a composite holding its children with its initial child (ADR-0240)."""
     group = model.composite(name)
     attributes = {"id": scxml_id(name)} | ({"initial": scxml_id(group.initial)} if group else {})
     element = ET.SubElement(parent, "state", attributes)

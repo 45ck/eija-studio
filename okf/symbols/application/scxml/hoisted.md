@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py#hoisted
   title: application/scxml.py
   hash_method: ast-v2
-  sha256: d6b2acf8fb4581c86fe85e812ff0a432e97062169fc645748c6e900af9aab238
-notes_baseline: 49b0956510bf7f248efe02a401f70b3c2cc0ebfcb741d943ba566c1a769f2105
+  sha256: e30a544c6e5bacc9f91b7edaff62db11398bc90b2aac96dd5a6b95aee62c3abe
+notes_baseline: 5c2ededfcbca3bed685e3a5ceb2ae7cbc819214b99086749d5b482a5e2f4e5fb
 ---
 
 # application.scxml.hoisted
@@ -34,7 +34,7 @@ notes_baseline: 49b0956510bf7f248efe02a401f70b3c2cc0ebfcb741d943ba566c1a769f2105
 ~~~text
 The transitions each state or composite carries in the chart. Where one action leaves every state inside a
 composite (ADR-0232 makes those transitions alike but for their source), the chart carries it once, on the
-composite, as UML draws it (ADR-0239). Larger composites are tried first, so the outermost group that fits wins.
+composite, as UML draws it (ADR-0240). Larger composites are tried first, so the outermost group that fits wins.
 ~~~
 <!-- okf:generated:end facts -->
 

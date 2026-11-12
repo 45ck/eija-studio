@@ -2926,7 +2926,7 @@
           "initial"
         ],
         "title": "Composite",
-        "description": "A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the\nchild a transition into the group enters first. A record is always in exactly one plain state; the composite is the\nset of states inside it. The kernel runs the flat machine, so a composite never changes what a step does. A\ntransition the group's states all share is drawn once from the group, and SCXML gets a nested `<state>`."
+        "description": "A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the\nchild a transition into the group enters first. A record is always in exactly one plain state; the composite is the\nset of states inside it. The kernel runs the flat machine, so a composite never changes what a step does. A\ntransition the group's states all share is drawn once from the group, and SCXML gets a nested `<state>`."
       },
       "Delay": {
         "properties": {

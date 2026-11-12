@@ -4,7 +4,7 @@
 
 ### 12 November 2026: composite states
 
-- A workflow may group its states into UML composite states, nested to any depth ([ADR-0239](docs/adr/0239-composite-states.md), issue #93 item 3). The kernel still runs the flat machine, so the grouping never changes what a step does.
+- A workflow may group its states into UML composite states, nested to any depth ([ADR-0240](docs/adr/0240-composite-states.md), issue #93 item 3). The kernel still runs the flat machine, so the grouping never changes what a step does.
 - The SCXML chart nests the states and carries an action that leaves every state of a composite once, on the composite. The differential checks the engine's hierarchy against the kernel and catches a chart that carries it on the wrong composite.
 - Mermaid, PlantUML and DOT draw composites as boxes, and so does PlayIDE's state machine, which lays each composite's states out together. The diff reports regrouping, and renaming or removing a state keeps its composite coherent.
 - The refund desk groups its states into `Deciding` and `PayingOut`.
@@ -23,6 +23,17 @@
 - Checking a 64-step chat plan at the model's limits takes about 70 ms instead of 1.2 s, with the same verdicts.
 - How it was tested, and what was found: [HOSTILE-INPUT](docs/engineering/HOSTILE-INPUT.md).
 - Integer fields in requests now read as the published contracts say: `"5"` and `true` are refused where a number is expected, and `1.0` is accepted as `1` for a case version ([ADR-0238](docs/adr/0238-json-integers-in-request-contracts.md), issue #235).
+
+### 12 November 2026: value guards checked against every value
+
+- The property suite now generates value guards and initiators, and a new property says the values the law proof tries for a guard stand for every value a record can hold ([ADR-0239](docs/adr/0239-value-guard-representatives-verified.md)). It found five kernel defects, all fixed with fast-tier regression tests:
+  - guards over numbers at or beyond 2**53 had no value tried on the far side of the constant, so a law could read HOLDS without the proof trying the record that breaks it;
+  - two integer constants beyond the float range crashed the law proof with `OverflowError`;
+  - records accepted `NaN` and `Infinity` as numbers, and NaN satisfied every `≠` guard; they are now refused with `FIELD_TYPE`;
+  - `[x = true]` and `[x = 1]` counted as the same guard, so two transitions of one action could carry different guards (ADR-0232) and the ripple missed the change;
+  - a duplicate forbidden effect is now refused, like a duplicate required effect (was a known strict xfail).
+- `value_guards.py` and `laws.py` are mutation targets: 432 mutants, none survive. Their floors are in `quality/mutation/baseline.json`.
+- The full-tier `mutation_quick` gate was red on main: no test of the protected policy asserted the `UNDECLARED_INITIATOR` code (ADR-0231). A direct test now does, and every `policy.py` mutant is killed again.
 
 ### 11 November 2026: repo clean-up
 

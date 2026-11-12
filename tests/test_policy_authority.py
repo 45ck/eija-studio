@@ -195,6 +195,14 @@ def test_errors_are_sorted_and_unique():
     assert errors == ["PROTECTED_AUTHORITY:Approve", "PROTECTED_AUTHORITY:Submit"] == sorted(set(errors))
 
 
+def test_only_undeclared_initiators_are_reported_each_by_name():
+    """ADR-0231: a model may name only the pack's declared roles as initiators. Declared ones pass, and each
+    undeclared one is reported by its own name (found by mutation: no selected test asserted this code)."""
+    assert check_policy(edited(baseline(), initiators=["Teacher", "Registrar"])) == []
+    assert check_policy(edited(baseline(), initiators=["Teacher", "Ghost", "Intern"])) == [
+        "UNDECLARED_INITIATOR:Ghost", "UNDECLARED_INITIATOR:Intern"]
+
+
 # ---- ensure_policy / apply_transaction -------------------------------------------------------------
 
 def test_ensure_policy_blocks_with_a_stable_code_and_lists_every_error():

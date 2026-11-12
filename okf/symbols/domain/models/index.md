@@ -3,7 +3,7 @@
 # Classes
 
 * [domain.models.Alternative](Alternative.md) - `class Alternative(Contract)` in `domain/models`.
-* [domain.models.Composite](Composite.md) - A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the child a transition into the group enters first.
+* [domain.models.Composite](Composite.md) - A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the child a transition into the group enters first.
 * [domain.models.Contract](Contract.md) - Base class for every domain contract: frozen and strict, unknown fields rejected.
 * [domain.models.Delay](Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
 * [domain.models.DomainError](DomainError.md) - Error carrying a stable code and safe message; never provider secrets or arbitrary exception text.
@@ -29,6 +29,7 @@
 
 * [domain.models.canonical](canonical.md) - Canonical JSON text (sorted keys, no whitespace, no NaN) for a value or pydantic model.
 * [domain.models.fingerprint](fingerprint.md) - SHA-256 of the canonical JSON of a value: the identity primitive used for models, subjects, artifacts and command bindings.
+* [domain.models.guard_keys](guard_keys.md) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 * [domain.models.iso_date](iso_date.md) - The date a YYYY-MM-DD string names, or None.
 
 # Methods

@@ -89,7 +89,7 @@
     g.setDefaultEdgeLabel(() => ({}));
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
     for (const s of shape.states) g.setNode(s, { ...STATE });
-    // Composite states (ADR-0239) are dagre clusters, so the states each holds are laid out together inside its box.
+    // Composite states (ADR-0240) are dagre clusters, so the states each holds are laid out together inside its box.
     for (const c of shape.composites) g.setNode("composite:" + c.name, {});
     for (const c of shape.composites) for (const child of c.states) {
       const id = shape.composites.some((k) => k.name === child) ? "composite:" + child : child;
@@ -277,7 +277,7 @@
   function after(t) { return t.after ? ` after(${t.after.amount} ${t.after.amount === 1 ? t.after.unit.slice(0, -1) : t.after.unit})` : ""; }
   function label(t) { return `${t.action}${after(t)}${when(t) ? ` [${when(t)}]` : ""} [${t.role}]`; }
 
-  // Composite states (ADR-0239): one box around the states each holds, outermost first so it sits behind the inner ones.
+  // Composite states (ADR-0240): one box around the states each holds, outermost first so it sits behind the inner ones.
   // The kernel runs the flat machine; the box only shows the grouping, and it follows the states on the next redraw.
   function composites(workflow, place) {
     const groups = workflow.composites || [];
@@ -308,7 +308,7 @@
     graph.getTooltipForCell = (cell) => tooltip(cell);
     const boxed = (cell) => cell.id && cell.id.startsWith("composite:");
     graph.isCellMovable = (cell) => cell.isVertex() && !boxed(cell); // states and the initial dot move; edges follow
-    graph.isCellSelectable = (cell) => !boxed(cell); // a composite state is drawn around its states (ADR-0239)
+    graph.isCellSelectable = (cell) => !boxed(cell); // a composite state is drawn around its states (ADR-0240)
     const parent = graph.getDefaultParent(), place = arrange(workflow, layout(workflow)), cells = {};
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
     graph.batchUpdate(() => {

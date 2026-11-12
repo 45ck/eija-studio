@@ -49,7 +49,7 @@ body[data-chat="closed"] .side,body[data-chat="closed"] #split-chat{display:none
 .split{background:transparent;position:relative;z-index:4;touch-action:none}
 .split::after{content:"";position:absolute;inset:0;transition:background .15s}
 .split::before{content:"";position:absolute;inset:0 -3px}
-.split.h::before{inset:-3px 0}
+.split.h::before,body[data-play-arrangement="stacked"] #split-play::before{inset:-3px 0}  /* stacked, the local-app splitter runs across */
 .split:hover::after,.split:focus-visible::after{background:var(--accent);opacity:.45}
 .split.v{cursor:col-resize}
 .split.h{cursor:row-resize;height:5px}

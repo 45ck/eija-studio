@@ -1,7 +1,7 @@
 ---
 type: Class
 title: domain.models.Composite
-description: 'A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the child a transition into the group enters first.'
+description: 'A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the child a transition into the group enters first.'
 resource: repo://src/eija_studio/domain/models.py#Composite
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Composite
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 10a105cb7954d399834071e5f9b4c4af13ef554bb4169c5c26c94283b184e9f5
-notes_baseline: 8692f0029e77ab284f4c10ea268983392fe4e48fd50f75e726ed81410115e6b9
+  sha256: 54682768b36bac766d2ceace6e0fa75a0c1b176ef8d186fb5e6823bb10001504
+notes_baseline: 2f2ee384340f8eed90ec38b9eb805ecabe8aa91d1ccdf336f18eac88f9ed9284
 ---
 
 # domain.models.Composite
@@ -32,7 +32,7 @@ notes_baseline: 8692f0029e77ab284f4c10ea268983392fe4e48fd50f75e726ed81410115e6b9
 ## Docstring
 
 ~~~text
-A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the
+A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the
 child a transition into the group enters first. A record is always in exactly one plain state; the composite is the
 set of states inside it. The kernel runs the flat machine, so a composite never changes what a step does. A
 transition the group's states all share is drawn once from the group, and SCXML gets a nested `<state>`.

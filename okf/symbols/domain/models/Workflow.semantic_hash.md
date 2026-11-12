@@ -51,7 +51,7 @@ _The source carries no docstring._
 
 ## Notes
 
-Sorted states, transitions by id, sorted guards/effects and sorted initiators (when named, ADR-0231) each transition's sorted value guards (when it has them, ADR-0234) and the composite states sorted by name with sorted children (when there are any, ADR-0239) go through [fingerprint](/symbols/domain/models/fingerprint.md). A changed hash makes old [Preview Instances](/language/preview-instance.md) stale (`STALE_INSTANCE`) and invalidates evidence bound to the previous semantic dimension.
+Sorted states, transitions by id, sorted guards/effects and sorted initiators (when named, ADR-0231) each transition's sorted value guards (when it has them, ADR-0234) and the composite states sorted by name with sorted children (when there are any, ADR-0240) go through [fingerprint](/symbols/domain/models/fingerprint.md). A changed hash makes old [Preview Instances](/language/preview-instance.md) stale (`STALE_INSTANCE`) and invalidates evidence bound to the previous semantic dimension.
 
 <!-- okf:generated:begin links -->
 ## Depends on

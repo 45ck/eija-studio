@@ -53,7 +53,10 @@ def iso_date(text: str) -> date | None:
 
 
 def _kind(value: Any) -> str:
-    """What a guard compares: a bool is not a number, and an int and a float are both numbers."""
+    """What a guard compares: a bool is not a number, and an int and a float are both numbers. NaN and infinity are
+    no kind a guard compares (a record never holds one), so every guard over them fails closed."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return "non-finite"
     return "boolean" if isinstance(value, bool) else "number" if isinstance(value, int | float) else "text"
 
 
@@ -151,9 +154,11 @@ class Transition(Contract):
             raise ValueError("Duplicate guards")
         if len(set(self.required_effects)) != len(self.required_effects):
             raise ValueError("Duplicate required effects")
+        if len(set(self.forbidden_effects)) != len(self.forbidden_effects):
+            raise ValueError("Duplicate forbidden effects")
         if set(self.required_effects) & set(self.forbidden_effects):
             raise ValueError("Required/forbidden effect conflict")
-        if len(set(self.conditions)) != len(self.conditions):
+        if len(guard_keys(self.conditions)) != len(self.conditions):
             raise ValueError("Duplicate value guard")
         return self
 
@@ -189,14 +194,20 @@ def _acyclic(parent: dict[str, str]) -> bool:
     return True
 
 
+def guard_keys(conditions: tuple[ValueGuard, ...]) -> frozenset[str]:
+    """Value guards as a set compared by their JSON, as the semantic hash compares them. Pydantic equality would make
+    ``[x = true]`` equal ``[x = 1]`` (``True == 1`` in Python), though no record value satisfies both."""
+    return frozenset(canonical(c) for c in conditions)
+
+
 def _shape(t: Transition) -> tuple[Any, ...]:
     """What every transition one action labels must share: all but its id and source state (ADR-0232)."""
     return (t.to_state, t.role, frozenset(t.guards), frozenset(t.required_effects), frozenset(t.forbidden_effects),
-            frozenset(t.conditions), t.after)
+            guard_keys(t.conditions), t.after)
 
 
 class Composite(Contract):
-    """A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the
+    """A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the
     child a transition into the group enters first. A record is always in exactly one plain state; the composite is the
     set of states inside it. The kernel runs the flat machine, so a composite never changes what a step does. A
     transition the group's states all share is drawn once from the group, and SCXML gets a nested `<state>`."""
@@ -214,7 +225,7 @@ class Workflow(Contract):
     # Roles that may start a record (ADR-0231, issue #142). Empty means any active actor, as before: an empty tuple is
     # left out of every dump, so models that do not name initiators keep their exact bytes and hashes.
     initiators: tuple[str, ...] = Field(default=(), max_length=16)
-    # Composite states (ADR-0239). Empty is left out of every dump, so flat models keep their exact bytes and hashes.
+    # Composite states (ADR-0240). Empty is left out of every dump, so flat models keep their exact bytes and hashes.
     composites: tuple[Composite, ...] = Field(default=(), max_length=16)
 
     @model_serializer(mode="wrap")
@@ -244,7 +255,7 @@ class Workflow(Contract):
         return self._grouped()
 
     def _grouped(self) -> Workflow:
-        """Initiators are distinct and composite states form a tree (ADR-0231, ADR-0239)."""
+        """Initiators are distinct and composite states form a tree (ADR-0231, ADR-0240)."""
         if len(set(self.initiators)) != len(self.initiators):
             raise ValueError("Duplicate initiator role")
         if not _is_tree(self.states, self.composites):
@@ -304,7 +315,7 @@ class Workflow(Contract):
         data["transitions"] = sorted(data["transitions"], key=lambda x: x["id"])
         if "initiators" in data:  # who may start a record is a set (ADR-0231); absent when empty, so old hashes hold
             data["initiators"] = sorted(data["initiators"])
-        if "composites" in data:  # a set of groups, each over a set of children (ADR-0239); absent when empty
+        if "composites" in data:  # a set of groups, each over a set of children (ADR-0240); absent when empty
             data["composites"] = sorted(({**c, "states": sorted(c["states"])} for c in data["composites"]),
                                         key=lambda c: c["name"])
         for t in data["transitions"]:

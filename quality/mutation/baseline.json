@@ -1,12 +1,22 @@
 {
   "engine": "cosmic-ray 8.7.0",
   "modules": {
+    "src/eija_studio/domain/laws.py": {
+      "score": 1.0,
+      "survived": 0,
+      "total": 263
+    },
     "src/eija_studio/domain/policy.py": {
       "score": 1.0,
       "survived": 0,
-      "total": 205
+      "total": 132
+    },
+    "src/eija_studio/domain/value_guards.py": {
+      "score": 1.0,
+      "survived": 0,
+      "total": 169
     }
   },
-  "platform": "win32 Windows 11, CPython 3.12.10",
+  "platform": "linux Linux 6.18.44-fc-v378, CPython 3.13.18",
   "schema": "eija.mutation-baseline.v1"
 }

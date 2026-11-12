@@ -159,7 +159,7 @@ def _rename_state(model: Workflow, tx: RenameState, _: Declare) -> dict[str, Any
     data["initial_state"] = rename.get(data["initial_state"], data["initial_state"])
     for t in data["transitions"]:
         t["from_state"], t["to_state"] = rename.get(t["from_state"], t["from_state"]), rename.get(t["to_state"], t["to_state"])
-    for c in data.get("composites", []):  # the composite states holding it (ADR-0239)
+    for c in data.get("composites", []):  # the composite states holding it (ADR-0240)
         c["states"], c["initial"] = [rename.get(x, x) for x in c["states"]], rename.get(c["initial"], c["initial"])
     return data
 
@@ -174,7 +174,7 @@ def _remove_state(model: Workflow, tx: RemoveState, _: Declare) -> dict[str, Any
 
 
 def _without_state(model: Workflow, state: str) -> dict[str, Any]:
-    """The model without `state`, which also leaves the composite holding it (ADR-0239)."""
+    """The model without `state`, which also leaves the composite holding it (ADR-0240)."""
     data = model.model_dump(mode="json") | {"states": [s for s in model.states if s != state]}
     for c in data.get("composites", []):
         c["states"] = [x for x in c["states"] if x != state]

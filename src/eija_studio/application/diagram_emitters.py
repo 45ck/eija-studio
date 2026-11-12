@@ -127,12 +127,12 @@ def _mm_state_legend(g: Graph) -> list[str]:
 
 def _group_ids(g: Graph) -> dict[str, str]:
     """One identifier map for a state graph's states and composite states, so a composite never shares an identifier
-    with a state (ADR-0239). Without composites it is the states' own map."""
+    with a state (ADR-0240). Without composites it is the states' own map."""
     return safe_ids([n.id for n in g.nodes] + [c.id for c in g.clusters])
 
 
 def _mm_composites(g: Graph, ids: dict[str, str], parent: str | None = None, indent: str = "    ") -> list[str]:
-    """Composite states (ADR-0239) as nested `state X { ... }` blocks naming the states they hold."""
+    """Composite states (ADR-0240) as nested `state X { ... }` blocks naming the states they hold."""
     out: list[str] = []
     for c in (c for c in g.clusters if c.parent == parent):
         cid = ids[c.id]
@@ -243,7 +243,7 @@ def _pu_edge(e: Edge, ids: dict[str, str]) -> str:
 
 
 def _pu_states(g: Graph, ids: dict[str, str], parent: str | None = None, indent: str = "") -> list[str]:
-    """States, with composite states (ADR-0239) as nested `state X { ... }` blocks holding theirs."""
+    """States, with composite states (ADR-0240) as nested `state X { ... }` blocks holding theirs."""
     out = [_pu_node("state", n, ids, indent) for n in g.nodes if n.cluster == parent]
     for c in (c for c in g.clusters if c.parent == parent):
         out += [f'{indent}state "{_puml(c.label)}" as {ids[c.id]} {{', *_pu_states(g, ids, c.id, indent + "  "), f"{indent}}}"]
@@ -343,7 +343,7 @@ def _dot_header(g: Graph, ids: dict[str, str]) -> list[str]:
 
 
 def _dot_nodes(g: Graph, ids: dict[str, str], parent: str | None = None) -> list[str]:
-    """Nodes, inside a cluster per group; a cluster with a parent (a nested composite state, ADR-0239) nests."""
+    """Nodes, inside a cluster per group; a cluster with a parent (a nested composite state, ADR-0240) nests."""
     out = [line for c in g.clusters if c.parent == parent for line in _dot_cluster(g, ids, c)]
     return out + ([_dot_node(ids[n.id], n.label, n.status) for n in g.nodes if n.cluster is None] if parent is None else [])
 
