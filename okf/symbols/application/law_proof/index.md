@@ -19,4 +19,5 @@
 # Type Aliases
 
 * [application.law_proof.Node](Node.md) - Type alias `Node` in `application/law_proof`.
+* [application.law_proof.Objects](Objects.md) - Type alias `Objects` in `application/law_proof`.
 * [application.law_proof.Passed](Passed.md) - Type alias `Passed` in `application/law_proof`.

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/oracle_session.py#OracleSession
   title: application/oracle_session.py
   hash_method: ast-sig-v1
-  sha256: 184eafa6f35c9aaa1fe11a2477243c4e0ddd38a3727dda77fbfc296a44544a20
-notes_baseline: 5c7e142784c7b3ff8d379abb2b7be247f990e25f70632d8d51b7dc6bebaf4ca7
+  sha256: 1f4ad481c7fe20b2620cac42433a4f8fd466651879bc119a1662a28857f91bd0
+notes_baseline: f021a414dea4ed4cc8a6baf05fedf92cdc31f90c93d74113bf3464fd8601e2e2
 ---
 
 # application.oracle_session.OracleSession
@@ -45,6 +45,8 @@ In-memory answers to exactly the port calls `execute` makes for one instance. No
 * [`event`](/symbols/application/oracle_session/OracleSession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None`
 * [`find_instance`](/symbols/application/oracle_session/OracleSession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] \| None`
 * [`find_operation`](/symbols/application/oracle_session/OracleSession.find_operation.md) - `def find_operation(self, operation_id: str) -> dict[str, Any] \| None`
+* [`move_object`](/symbols/application/oracle_session/OracleSession.move_object.md) - `def move_object(self, instance_id: str, link: str, state: str) -> None`
+* [`object_state`](/symbols/application/oracle_session/OracleSession.object_state.md) - `def object_state(self, instance_id: str, link: str) -> str \| None`
 * [`record_act`](/symbols/application/oracle_session/OracleSession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None`
 * [`record_operation`](/symbols/application/oracle_session/OracleSession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None`
 * [`update_instance`](/symbols/application/oracle_session/OracleSession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None`
@@ -65,6 +67,7 @@ _No curated notes yet._
 
 * [application.app_runs.create_cases](/symbols/application/app_runs/create_cases.md) - Every fixture actor, and one unknown actor, starting a record with valid values: the state and version it starts in, or the refusal.
 * [application.app_runs.options_cases](/symbols/application/app_runs/options_cases.md) - What the app offers each fixture actor (and one unknown actor) on a record in each state that holds valid values: every action leaving that state, and whether…
+* [application.appgen.linked_cases](/symbols/application/appgen/linked_cases.md) - For each transition that moves linked objects, an actor who may take it tries it with the objects in every state of their lifecycles, and the kernel's answer,…
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
 * [application.appgen.timer_cases](/symbols/application/appgen/timer_cases.md) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state half the time and the whole time, and th…
@@ -77,6 +80,8 @@ _No curated notes yet._
 * [application.oracle_session.OracleSession.event](/symbols/application/oracle_session/OracleSession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.find_instance](/symbols/application/oracle_session/OracleSession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.find_operation](/symbols/application/oracle_session/OracleSession.find_operation.md) - `def find_operation(self, operation_id: str) -> dict[str, Any] | None` in `application/oracle_session`.
+* [application.oracle_session.OracleSession.move_object](/symbols/application/oracle_session/OracleSession.move_object.md) - `def move_object(self, instance_id: str, link: str, state: str) -> None` in `application/oracle_session`.
+* [application.oracle_session.OracleSession.object_state](/symbols/application/oracle_session/OracleSession.object_state.md) - `def object_state(self, instance_id: str, link: str) -> str | None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.record_act](/symbols/application/oracle_session/OracleSession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.record_operation](/symbols/application/oracle_session/OracleSession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.update_instance](/symbols/application/oracle_session/OracleSession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/oracle_session`.

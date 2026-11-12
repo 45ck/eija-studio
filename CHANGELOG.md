@@ -4,10 +4,17 @@
 
 ### 12 November 2026: conformance that catches a wrong app
 
-- New `python -m verification.conformance.divergence` ([ADR-0241](docs/adr/0241-conformance-that-catches-divergence.md)). For every pack, it builds apps that are wrong in one model element (a transition, role, guard, effect, recipient, initial state, initiator, actor, attribute or association) or one of 23 seeded code faults. It reseals each app so a hash cannot catch it, and requires the app's own generated tests to fail. Before this change the generated suite missed, among others, a wrong initial state, a wrong notification recipient, records the app itself created, the actions it offers, and its HTTP API.
-- The generated conformance suite runs 15 tests, up from 10. New: who may start a record and where it starts; a run from a new record to every transition, with a second record that must stay untouched; the actions offered to each actor in each state; the rule table; and every case again over HTTP. Effects are checked with their recipients. Data cases now include text at its exact limit, every choice, and a record with only its required values.
+- New `python -m verification.conformance.divergence` ([ADR-0242](docs/adr/0242-conformance-that-catches-divergence.md)). For every pack, it builds apps that are wrong in one model element (a transition, role, guard, effect, recipient, initial state, initiator, actor, attribute or association) or one of 23 seeded code faults. It reseals each app so a hash cannot catch it, and requires the app's own generated tests to fail. Before this change the generated suite missed, among others, a wrong initial state, a wrong notification recipient, records the app itself created, the actions it offers, and its HTTP API.
+- The generated conformance suite runs 16 tests, up from 11. New: who may start a record and where it starts; a run from a new record to every transition, with a second record that must stay untouched; the actions offered to each actor in each state; the rule table; and every case again over HTTP. Effects are checked with their recipients. Data cases now include text at its exact limit, every choice, and a record with only its required values.
 - Fixed: each outbox row now names the record it is about (it held the case id `app`). Fixed: the generated app's rule table lists every state an action leaves (ADR-0232); before, it showed only one.
 - The repository's eight seeded app breaks in `tests/test_appgen.py` were each caught by the build-identity seal, not by a behavioural test. `tests/test_conformance_divergence.py` now checks behaviour, with a resealed control app that must pass.
+
+### 12 November 2026: actions on linked objects
+
+- A workflow may give the object a built reference names a small lifecycle, and a transition may move it: `/ target.lock` ([ADR-0241](docs/adr/0241-actions-on-linked-objects.md), issue #93 item 4). The kernel moves the object in the same unit of work as the record, and refuses the step with `LINKED_OBJECT_REFUSED` when the object has no move from its state.
+- The `ai-ops` pack locks the target service while a deploy window is open, so a second window on a service that is already rolling out is refused.
+- The law proof tries every state of a linked object, Simulate shares a few objects between records, the built app stores each object's state and its conformance run gains a linked-object test (eleven tests now), and the SCXML chart carries the object's state as a `cond` term and the move as an `<assign>`, which the differential checks. The TLA+, SMT and BMC encodings refuse a model with linked objects.
+
 ### 12 November 2026: composite states
 
 - A workflow may group its states into UML composite states, nested to any depth ([ADR-0240](docs/adr/0240-composite-states.md), issue #93 item 3). The kernel still runs the flat machine, so the grouping never changes what a step does.

@@ -48,7 +48,9 @@ def test_every_export_reads_back_as_exactly_the_model_it_came_from(name, fmt):
     assert report["model"] == pack.model.semantic_hash and report["not_carried"]
     back = import_model(detect_format("x" + {"xmi": ".xmi", "plantuml": ".puml", "mermaid": ".md", "drawio": ".drawio"}[fmt], text),
                         text, pack, None, data)
-    assert back["status"] == "CLEAN" and not back["defaulted"] and not back["unmapped"], back["unmapped"]
+    # A file cannot say an association is built, so the import keeps the current model's (ADR-0235) and says so.
+    defaulted = [d for d in back["defaulted"] if "association is built" not in d["reason"]]
+    assert back["status"] == "CLEAN" and not defaulted and not back["unmapped"], back["unmapped"]
     assert back["state_machine"]["transactions"] == [] and not back["state_machine"]["changed"]
     assert back["state_machine"]["laws"] == "HOLDS" if pack.laws else True
     if data is not None:

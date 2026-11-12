@@ -121,7 +121,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0238](0238-json-integers-in-request-contracts.md) | Integers in request contracts are JSON integers | accepted |
 | [0239](0239-value-guard-representatives-verified.md) | Verify value-guard representatives by property and mutation, and fix what that found | accepted |
 | [0240](0240-composite-states.md) | Composite states | accepted |
-| [0241](0241-conformance-that-catches-divergence.md) | Conformance that catches a divergent app by behaviour | accepted |
+| [0241](0241-actions-on-linked-objects.md) | Actions on linked objects | accepted |
+| [0242](0242-conformance-that-catches-divergence.md) | Conformance that catches a divergent app by behaviour | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

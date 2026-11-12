@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py
   title: application/runtime.py
   hash_method: ast-api-v1
-  sha256: a0b37428867f42befe11fcc06296c11e9780d33122585b7390a9dae953ab6d3e
-notes_baseline: ac1c59f66190c6198f70edfe98da9a916a879e05c5e8afbf7160d2ed04d9a780
+  sha256: 0d62c143c489aca20e2d42d5b53c982b87183b62cf557141964b3808691b943f
+notes_baseline: c5bc21c3114f0fb05f7fffabfb714a54db5638f6823a81f648f22460ee393441
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -44,6 +44,10 @@ verified:
   at: '2026-11-12T05:00:00Z'
   notes_sha256: 51ed90c46c69260b371ab2a1d5139bf24f4f09c768aa115ebe4f70f4d761e6bb
   sources_sha256: ac1c59f66190c6198f70edfe98da9a916a879e05c5e8afbf7160d2ed04d9a780
+- by: process:claude-code
+  at: '2026-11-12T04:00:08Z'
+  notes_sha256: 059515f5bcc55670dd7aab22e019848b2e55a70784bd41a92ca5afb742d4507f
+  sources_sha256: c5bc21c3114f0fb05f7fffabfb714a54db5638f6823a81f648f22460ee393441
 ---
 
 # application.runtime
@@ -66,6 +70,7 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 * [`check_actor`](/symbols/application/runtime/check_actor.md) (function) - no docstring
 * [`check_due`](/symbols/application/runtime/check_due.md) (function) - Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (AD…
 * [`check_guards`](/symbols/application/runtime/check_guards.md) (function) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
+* [`check_linked`](/symbols/application/runtime/check_linked.md) (function) - The moves a transition makes on the objects the record links to, given each object's state (ADR-0241).
 * [`check_separation`](/symbols/application/runtime/check_separation.md) (function) - Refuse an actor who already took another action of a separation law on this record.
 * [`execute`](/symbols/application/runtime/execute.md) (function) - no docstring
 * [`initialise`](/symbols/application/runtime/initialise.md) (function) - Start a record.
@@ -83,7 +88,7 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 
 ## Notes
 
-The generic execution algorithm. Policy, laws and typed effects come from the domain pack ([domain.pack](/modules/domain/pack.md), [domain.policy](/modules/domain/policy.md)); nothing here names a domain.
+The generic execution algorithm. Policy, laws and typed effects come from the domain pack ([domain.pack](/modules/domain/pack.md), [domain.policy](/modules/domain/policy.md)); nothing here names a domain. Every check that reads more than the record (time, values, separation, linked objects) reads through a [UnitOfWork](/symbols/application/ports/UnitOfWork.md) port only when the transition needs it, so a model without the feature never touches the port.
 
 <!-- okf:generated:begin links -->
 ## Imports
@@ -99,7 +104,7 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 
 * [Execution](/contexts/execution.md) - Owns Trusted fixture actor state, preview instances, command replay, committed effect intents
 * [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
-* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0241): who may start one and where it starts, a run from a new record to each transi…
+* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0242): who may start one and where it starts, a run from a new record to each transi…
 * [application.oracle_session](/modules/application/oracle_session.md) - The in-memory session the app oracle asks the kernel through (ADR-0150): one record, nothing persists.
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
@@ -108,6 +113,7 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
 * [application.runtime.check_due](/symbols/application/runtime/check_due.md) - Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (ADR-0237).
 * [application.runtime.check_guards](/symbols/application/runtime/check_guards.md) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
+* [application.runtime.check_linked](/symbols/application/runtime/check_linked.md) - The moves a transition makes on the objects the record links to, given each object's state (ADR-0241).
 * [application.runtime.check_separation](/symbols/application/runtime/check_separation.md) - Refuse an actor who already took another action of a separation law on this record.
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.

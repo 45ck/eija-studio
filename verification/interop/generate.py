@@ -5,8 +5,8 @@
 
 The files are derived (ADR-0093): change the pack, then regenerate. They let a reader open a pack in Enterprise
 Architect, Papyrus, PlantUML, a Markdown reader or draw.io without installing EIJA. The round trip is the faithfulness
-check: importing each export into its own pack must be CLEAN (nothing unmapped, nothing defaulted) and must leave the
-state machine and the class model exactly as they were.
+check: importing each export into its own pack must be CLEAN (nothing unmapped, nothing defaulted but a built
+association's flag, which no file can carry) and must leave the state machine and the class model exactly as they were.
 """
 from __future__ import annotations
 
@@ -52,8 +52,10 @@ def round_trip_problems() -> list[str]:
             text, _ = export_model(fmt, pack, None, data)
             report: dict[str, Any] = import_model(fmt, text, pack, None, data)
             where = f"{location.name} {fmt}"
-            if report["status"] != "CLEAN" or report["defaulted"]:
-                problems.append(f"{where}: {report['status']}, unmapped {report['unmapped']}, defaulted {report['defaulted']}")
+            # A file cannot say an association is built, so the import keeps the current model's and says so (ADR-0235).
+            defaulted = [d for d in report["defaulted"] if "association is built" not in d["reason"]]
+            if report["status"] != "CLEAN" or defaulted:
+                problems.append(f"{where}: {report['status']}, unmapped {report['unmapped']}, defaulted {defaulted}")
             if report["state_machine"].get("changed") or report["state_machine"].get("transactions"):
                 problems.append(f"{where}: the state machine changed on the way back")
             if data is not None and report["class_model"].get("candidate") != data.model_dump(mode="json"):

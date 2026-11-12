@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.app_runs
-description: 'The app oracle''s runs that start from a record the app itself creates (ADR-0241): who may start one and where it starts, a run from a new record to each transition, the actions offered in each state, and the rule table…'
+description: 'The app oracle''s runs that start from a record the app itself creates (ADR-0242): who may start one and where it starts, a run from a new record to each transition, the actions offered in each state, and the rule table…'
 resource: repo://src/eija_studio/application/app_runs.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/app_runs.py
   title: application/app_runs.py
   hash_method: ast-api-v1
-  sha256: 36ad13dcf80a1279869efd67a44762b7db0e84e1f03b84d9400412c572f48490
-notes_baseline: 30f63bc9dc6ad187f466454e24f0a793114dd1b9d9db9629f72f57d648d87bb9
+  sha256: 6642363174b89e2d23bf957797b867b740171801aef76ff32701e94555a12b8b
+notes_baseline: 2025ff4687f9863a09cfbfa596483646ab7a64848c3e0bf199c17aa957fc4752
 ---
 
 # application.app_runs
@@ -29,7 +29,7 @@ notes_baseline: 30f63bc9dc6ad187f466454e24f0a793114dd1b9d9db9629f72f57d648d87bb9
 ## Module docstring
 
 ~~~text
-The app oracle's runs that start from a record the app itself creates (ADR-0241): who may start one and where it
+The app oracle's runs that start from a record the app itself creates (ADR-0242): who may start one and where it
 starts, a run from a new record to each transition, the actions offered in each state, and the rule table shown.
 Each answer is the kernel's, asked through `OracleSession`.
 ~~~

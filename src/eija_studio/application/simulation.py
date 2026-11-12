@@ -28,6 +28,7 @@ NEW_RECORD = 0.2  # chance a step starts a new record instead of acting on an op
 SLIP = 0.1  # chance a user tries a declared action that does not leave the record's state
 STALE = 0.05  # chance a user acts on a version someone else has already changed
 TICKS = 12  # with time events (ADR-0237), simulated time passes the longest one in this many steps
+POOL = 3  # with linked objects (ADR-0241), records share this many objects of each class, so they contend for them
 
 
 class MemorySession:
@@ -41,6 +42,8 @@ class MemorySession:
         self.record_values: dict[str, dict[str, Any]] = {}  # per record, the values its value guards read (ADR-0234)
         self.clock = 0.0  # simulated seconds; only `wait` moves it, so nothing here reads the real time (ADR-0237)
         self.entered: dict[str, float] = {}  # per record, the clock when it entered its current state
+        self.objects: dict[str, str] = {}  # linked objects (ADR-0241): object key -> its lifecycle state
+        self.object_of: dict[tuple[str, str], str] = {}  # (record, link) -> the key of the object it links to
         self.audit: list[str] = []
         self.outbox: list[str] = []
 
@@ -79,6 +82,19 @@ class MemorySession:
     def wait(self, seconds: float) -> None:
         """Let simulated time pass."""
         self.clock += seconds
+
+    def link(self, instance_id: str, link: str, key: str, state: str | None = None) -> None:
+        """Link a record to an object, setting the object's state if given or the object is new (ADR-0241)."""
+        self.object_of[(instance_id, link)] = key
+        if state is not None:
+            self.objects[key] = state
+
+    def object_state(self, instance_id: str, link: str) -> str | None:
+        key = self.object_of.get((instance_id, link))
+        return None if key is None else self.objects.get(key)
+
+    def move_object(self, instance_id: str, link: str, state: str) -> None:
+        self.objects[self.object_of[(instance_id, link)]] = state
 
     def find_operation(self, operation_id: str) -> dict[str, Any] | None:
         return self.operations.get(operation_id)
@@ -250,6 +266,19 @@ def _give_values(session: MemorySession, model: Workflow, rng: _Dice, record: st
     return {"values": session.record_values[record]}
 
 
+def _give_objects(session: MemorySession, model: Workflow, rng: _Dice, record: str) -> dict[str, Any]:
+    """A new record's links, for a model with linked objects: one seeded pick among a few shared objects of each class,
+    a new one starting in its lifecycle's initial state (ADR-0241). Other models draw nothing."""
+    if not model.objects:
+        return {}
+    links = {}
+    for lifecycle in model.objects:
+        key = f"{lifecycle.entity} {rng.choice(list(range(1, POOL + 1)))}"
+        session.link(record, lifecycle.link, key, session.objects.get(key, lifecycle.initial))
+        links[lifecycle.link] = key
+    return {"objects": links}
+
+
 def _step(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _Dice, n: int, actor: dict[str, Any]) -> None:
     """One user's turn: start a record, or act on one they can work on (any record if none)."""
     records = list(session.instances)  # creation order, not the kernel's random ids, so a seed replays exactly
@@ -264,7 +293,8 @@ def _step(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _
     run.labels[record] = f"R{len(run.labels) + 1}"
     run.entered[model.initial_state] += 1
     run.log({"step": n, "actor": actor["id"], "role": actor["role"], "record": run.labels[record],
-             "outcome": "CREATED", "to": model.initial_state} | _give_values(session, model, rng, record))
+             "outcome": "CREATED", "to": model.initial_state} | _give_values(session, model, rng, record)
+            | _give_objects(session, model, rng, record))
 
 
 def _times(n: int) -> str:

@@ -191,6 +191,12 @@
         "forbidden_effects": [
           "SecretsSentToModel",
           "ProductionTouchedUnapproved"
+        ],
+        "then": [
+          {
+            "link": "target",
+            "event": "lock"
+          }
         ]
       },
       {
@@ -212,6 +218,12 @@
         "forbidden_effects": [
           "SecretsSentToModel",
           "ProductionTouchedUnapproved"
+        ],
+        "then": [
+          {
+            "link": "target",
+            "event": "release"
+          }
         ]
       },
       {
@@ -234,6 +246,35 @@
         "forbidden_effects": [
           "SecretsSentToModel",
           "ProductionTouchedUnapproved"
+        ],
+        "then": [
+          {
+            "link": "target",
+            "event": "release"
+          }
+        ]
+      }
+    ],
+    "objects": [
+      {
+        "link": "target",
+        "entity": "Microservice",
+        "states": [
+          "Idle",
+          "RollingOut"
+        ],
+        "initial": "Idle",
+        "moves": [
+          {
+            "event": "lock",
+            "from_state": "Idle",
+            "to_state": "RollingOut"
+          },
+          {
+            "event": "release",
+            "from_state": "RollingOut",
+            "to_state": "Idle"
+          }
         ]
       }
     ]

@@ -1,7 +1,8 @@
 """Differential check: the exported SCXML chart, run by an independent SCXML engine, agrees with the kernel (ADR-0165).
 
 For every case of the app oracle (`appgen.oracle_cases`: every state x action x fixture actor x expected version, plus
-an undeclared action and an unknown actor, `appgen.value_cases` for guards over record values and `appgen.timer_cases` for time events), the kernel's answer is
+an undeclared action and an unknown actor, `appgen.value_cases` for guards over record values, `appgen.timer_cases` for time events and `appgen.linked_cases` for
+steps on linked objects), the kernel's answer is
 compared with what python-statemachine (MIT) does
 when it runs the exported chart from that state and is sent that action's event:
 
@@ -27,8 +28,9 @@ from importlib import metadata
 from pathlib import Path
 from typing import Any
 
-from eija_studio.application.appgen import oracle_cases, timer_cases, value_cases
+from eija_studio.application.appgen import linked_cases, oracle_cases, timer_cases, value_cases
 from eija_studio.application.scxml import event_data, scxml_id, to_scxml
+from eija_studio.domain.linked import advance, along
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack, load_pack
 from eija_studio.domain.value_guards import guards_by_attribute
@@ -59,28 +61,45 @@ def packs() -> list[Path]:
     return sorted(p for p in (ROOT / "packs").iterdir() if (p / "pack.json").is_file())
 
 
+def _moved(case: dict[str, Any], model: Workflow) -> dict[str, Any]:
+    """The kernel's moves on linked objects in a committed case, `link:state` in the transition's order (ADR-0241),
+    from the states the case's objects start in; nothing for a model without linked objects."""
+    if not model.objects:
+        return {}
+    t = model.transition_for(case["action"], case["state"])
+    after = advance(model, t, _objects(case, model)) or {}
+    return {"moved": [f"{s.link}:{after[s.link]}" for s in (t.then if t is not None else ())]}
+
+
+def _objects(case: dict[str, Any], model: Workflow) -> dict[str, str]:
+    """The states the case's linked objects start in: its own, or where a run of this record alone leaves them."""
+    return case.get("objects", along(model).get(case["state"], {}))
+
+
 def _expected(case: dict[str, Any], model: Workflow) -> dict[str, Any]:
     answer = case["expect"]
     if answer["outcome"] == "COMMITTED":
-        return {"state": answer["state"], "version": 1, "effects": list(answer["effects"])}
-    return {"state": case["state"], "version": 0, "effects": []}
+        return {"state": answer["state"], "version": 1, "effects": list(answer["effects"])} | _moved(case, model)
+    return {"state": case["state"], "version": 0, "effects": []} | ({"moved": []} if model.objects else {})
 
 
 class Record:
-    """A stored record as the engine restores it: its state and its datamodel (`version` 0, no effects yet)."""
+    """A stored record as the engine restores it: its state and its datamodel (`version` 0, no effects or moves yet)."""
 
     def __init__(self) -> None:
-        self.version, self.effects = 0, []
+        self.version, self.effects, self.moved = 0, [], []
 
 
 def _observed(chart: Any, case: dict[str, Any], actors: dict[str, dict[str, Any]], names: dict[str, str],
-              attributes: tuple[str, ...] = (), waited: float = 0) -> dict[str, Any]:
+              model: Workflow, attributes: tuple[str, ...] = ()) -> dict[str, Any]:
     machine = chart(model=Record(), start_value=scxml_id(case["state"]))
+    waited, objects = model.longest_wait, _objects(case, model)
     machine.send(scxml_id(case["action"]), **event_data(actors.get(case["actor"]), case.get("expected_version", 0),
-                                                        case.get("values"), attributes, case.get("waited", waited), waited > 0))
+                                                        case.get("values"), attributes, case.get("waited", waited), waited > 0,
+                                                        objects))
     current = sorted(names[s.id] for s in machine.configuration if s.id in names)  # plain states; composites hold them
     return {"state": current[0] if len(current) == 1 else current, "version": machine.model.version,
-            "effects": list(machine.model.effects)}
+            "effects": list(machine.model.effects)} | ({"moved": list(machine.model.moved)} if model.objects else {})
 
 
 def compare(pack: Pack, model: Workflow | None = None, document: str | None = None) -> dict[str, Any]:
@@ -99,12 +118,13 @@ def compare(pack: Pack, model: Workflow | None = None, document: str | None = No
         disagreements.append({"check": "initial", "expected": model.initial_state, "observed": initial})
     # value cases: guards over record values (ADR-0234); timer cases: time events (ADR-0237). Other cases' records have
     # waited the longest time event, as the oracle's did.
-    cases = oracle_cases(pack, model) + value_cases(pack, model) + timer_cases(pack, model)
+    cases = oracle_cases(pack, model) + value_cases(pack, model) + timer_cases(pack, model) + linked_cases(pack, model)
     attributes = tuple(sorted(guards_by_attribute(model)))
     for case in cases:
-        expected, observed = _expected(case, model), _observed(chart, case, actors, names, attributes, model.longest_wait)
+        expected, observed = _expected(case, model), _observed(chart, case, actors, names, model, attributes)
         if expected != observed:
-            disagreements.append({"case": {k: case[k] for k in ("state", "action", "actor", "expected_version", "values", "waited") if k in case},
+            keys = ("state", "action", "actor", "expected_version", "values", "waited", "objects")
+            disagreements.append({"case": {k: case[k] for k in keys if k in case},
                                   "kernel": case["expect"], "expected": expected, "observed": observed})
     return {"pack": pack.id, "model_hash": model.semantic_hash,
             "scxml_sha256": sha256(document.encode("utf-8")).hexdigest(), "cases": len(cases),

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 9ddf87df6ad8a6895fe30bf1a346559c04de767c9c5eb2d4a96da45794646d70
-notes_baseline: ed052b92bb90891f70bbfc7e6519ac7622c0049af2ae3f453226a7f48e64bb8a
+  sha256: e6a3b1e49a08f25ad46d20c9385589ab79cea192a1fac93a02e56d74cf5566b8
+notes_baseline: 0426e74ad3b12be9acfa890fac46315d3c15ce288c4aafd153f4b8835d4ce5e5
 ---
 
 # application.appgen
@@ -52,6 +52,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`app_limits`](/symbols/application/appgen/app_limits.md) (function) - no docstring
 * [`data_cases`](/symbols/application/appgen/data_cases.md) (function) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, e…
 * [`generate`](/symbols/application/appgen/generate.md) (function) - Return the per-model files and the build manifest (without file hashes or test results).
+* [`linked_cases`](/symbols/application/appgen/linked_cases.md) (function) - For each transition that moves linked objects, an actor who may take it tries it with the objects in every state of the…
 * [`may_start`](/symbols/application/appgen/may_start.md) (function) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
@@ -68,6 +69,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`application/oracle_session`](/modules/application/oracle_session.md)
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/laws`](/modules/domain/laws.md)
+* [`domain/linked`](/modules/domain/linked.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/navigation`](/modules/domain/navigation.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -83,10 +85,11 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
-* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0241): who may start one and where it starts, a run from a new record to each transi…
+* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0242): who may start one and where it starts, a run from a new record to each transi…
 * [application.oracle_session](/modules/application/oracle_session.md) - The in-memory session the app oracle asks the kernel through (ADR-0150): one record, nothing persists.
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
+* [domain.linked](/modules/domain/linked.md) - Linked objects (issue #93 item 4, ADR-0241): the states a record's linked objects are in, as the checkers try them.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.navigation](/modules/domain/navigation.md) - The generated app's bounded navigation, derived from its existing contracts.
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
@@ -109,6 +112,7 @@ _No curated notes yet._
 * [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
+* [application.appgen.linked_cases](/symbols/application/appgen/linked_cases.md) - For each transition that moves linked objects, an actor who may take it tries it with the objects in every state of their lifecycles, and the kernel's answer,…
 * [application.appgen.may_start](/symbols/application/appgen/may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.

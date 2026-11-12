@@ -80,7 +80,7 @@ def test_every_pack_builds_an_app_that_passes_its_kernel_conformance(tmp_path, p
 
 
 MUTANTS = {  # tamper controls: each edits a built file without resealing it, so the build-identity check catches it before
-    # any behavioural test runs. Behaviour is checked by tests/test_conformance_divergence.py (ADR-0241).
+    # any behavioural test runs. Behaviour is checked by tests/test_conformance_divergence.py (ADR-0242).
     "operation not recorded": ("excursion", "app/service.py",
                                'self.db.execute("INSERT INTO operations VALUES(?,?,?)", (operation_id, binding, canonical(result)))',
                                "return None"),

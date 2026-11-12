@@ -4,6 +4,7 @@ from __future__ import annotations
 from itertools import count
 from typing import Any
 
+from eija_studio.domain.linked import along
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack
 from .memo import model_hash
@@ -16,8 +17,11 @@ class OracleSession:
     """In-memory answers to exactly the port calls `execute` makes for one instance. Nothing persists."""
 
     def __init__(self, pack: Pack, model: Workflow, state: str, values: dict[str, Any] | None = None,
-                 waited: float | None = None):
+                 waited: float | None = None, objects: dict[str, str] | None = None):
         self.record_values = dict(values or {})
+        # The states of the record's linked objects: as a run of this record alone leaves them unless a case says
+        # otherwise (ADR-0241). Empty for a model without linked objects.
+        self.objects = dict(along(model).get(state, {}) if objects is None else objects)
         # How long the record has been in its state: the model's longest time event unless a case says otherwise, so
         # every time event is due in the ordinary cases (ADR-0237). A committed step enters a state afresh.
         self.since = float(model.longest_wait if waited is None else waited)
@@ -45,6 +49,12 @@ class OracleSession:
 
     def elapsed(self, instance_id: str) -> float | None:
         return self.since
+
+    def object_state(self, instance_id: str, link: str) -> str | None:
+        return self.objects.get(link)
+
+    def move_object(self, instance_id: str, link: str, state: str) -> None:
+        self.objects[link] = state
 
     def actor(self, actor_id: str) -> dict[str, Any]:
         if actor_id not in self.actors:

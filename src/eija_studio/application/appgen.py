@@ -14,6 +14,7 @@ from typing import Any
 
 from eija_studio.domain.data import Attribute, DataModel, check_record, record_fields, references
 from eija_studio.domain.laws import DistinctActors
+from eija_studio.domain.linked import along, combinations as linked_combinations
 from eija_studio.domain.models import DomainError, Transition, ValueGuard, Workflow, canonical, fingerprint
 from eija_studio.domain.navigation import navigation_for
 from eija_studio.domain.pack import Pack
@@ -24,9 +25,9 @@ from .app_runs import create_cases, journeys, options_cases, rules
 from .oracle_session import UNKNOWN_ACTOR, OracleSession as _OracleSession, absent, kernel_answer as _kernel
 
 FORMAT = "eija.app-build.v1"
-# The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0241 added the last three).
-CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "timer_cases", "create_cases", "journeys",
-              "options_cases")
+# The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0242 added the last three).
+CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "timer_cases", "linked_cases", "create_cases",
+              "journeys", "options_cases")
 UNDECLARED_ACTION = "UndeclaredAction"
 LIMITS = (
     "The app runs the EIJA kernel itself (eija-studio must be installed). Records created under an earlier model are "
@@ -178,6 +179,24 @@ def timer_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
     return cases
 
 
+def linked_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
+    """For each transition that moves linked objects, an actor who may take it tries it with the objects in every
+    state of their lifecycles, and the kernel's answer, with the objects' states after a commit (ADR-0241). Empty for a
+    model without linked objects, so every other oracle keeps its exact bytes."""
+    cases: list[dict[str, object]] = []
+    for t in sorted((t for t in model.transitions if t.then), key=lambda t: t.id):
+        actor = _taker(pack, t)
+        if actor is None:
+            continue
+        for objects in linked_combinations(model, t):
+            session = _OracleSession(pack, model, t.from_state, _admitting(t), objects=objects)
+            expect = _kernel(pack, model, session, actor, t.action, 0)
+            case: dict[str, object] = {"state": t.from_state, "action": t.action, "actor": actor, "objects": objects,
+                                       **({"values": _admitting(t)} if t.conditions else {}), "expect": expect}
+            cases.append(case | ({"after": dict(session.objects)} if expect["outcome"] == "COMMITTED" else {}))
+    return cases
+
+
 def _admitting(t: Transition) -> dict[str, Any]:
     """Record values every value guard of `t` admits, when some combination does; {} otherwise."""
     grouped: dict[str, list[ValueGuard]] = {}
@@ -190,7 +209,7 @@ def _people_cases(pack: Pack, model: Workflow) -> dict[str, Any]:
     """The oracle's checks of who may start a record and who may not act twice, present only when the model or pack
     asks for them, so every other oracle keeps its exact bytes."""
     found = {"separation_cases": separation_cases(pack, model), "value_cases": value_cases(pack, model),
-             "timer_cases": timer_cases(pack, model)}
+             "timer_cases": timer_cases(pack, model), "linked_cases": linked_cases(pack, model)}
     return ({"start_cases": start_cases(pack, model)} if model.initiators else {}) | {k: v for k, v in found.items() if v}
 
 
@@ -271,6 +290,7 @@ def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
         first = _kernel(pack, model, session, actor, action, version)
         case = {"state": state, "action": action, "actor": actor, "expected_version": version, "expect": first}
         if first["outcome"] == "COMMITTED":
+            case |= {"after": dict(session.objects)} if model.objects else {}  # linked objects after it (ADR-0241)
             case["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
             case["replay"] = _kernel(pack, model, session, actor, action, version)
             # the same request under a new operation id: not a replay, so the kernel judges it afresh
@@ -328,6 +348,11 @@ def _require_data(pack: Pack, model: Workflow, data: DataModel | None) -> None:
     if problems:
         raise DomainError("VALUE_GUARD_INVALID", "A guard over record values does not fit the data model; no app is built",
                           {"codes": problems})
+    built = {(r.name, r.target) for r in references(data)}
+    unlinked = [o.link for o in model.objects if (o.link, o.entity) not in built]
+    if unlinked:  # a lifecycle needs a reference field naming its object (ADR-0235, ADR-0241)
+        raise DomainError("LINK_NOT_BUILT", "A linked object's lifecycle needs a built association from the record to "
+                          f"its class: {', '.join(unlinked)}; no app is built", {"refs": [f"link:{x}" for x in unlinked]})
 
 
 def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None = None,
@@ -357,6 +382,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
         files["app/data.json"] = canonical(data) + "\n"
     oracle |= _people_cases(pack, model)
     oracle |= {"waited": model.longest_wait} if model.longest_wait else {}  # how long ordinary cases' records waited
+    oracle |= {"linked": along(model)} if model.objects else {}  # where ordinary cases' linked objects were (ADR-0241)
     valid = valid_values(data)
     oracle |= {"create_cases": create_cases(pack, model), "journeys": journeys(pack, model, valid),
                "options_cases": options_cases(pack, model, valid), "rules": rules(model)}

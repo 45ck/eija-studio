@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py#Node
   title: application/law_proof.py
   hash_method: ast-v2
-  sha256: 9056943edfdb5c92ef5f47ea36c1ab35473eb1b849383f0aa14585065daa5155
-notes_baseline: 1f7335ceece8644e7e987e31bde8f8aca63380339cd74bacfa92229685d19a8b
+  sha256: 60c28f7a9b8ad3a2cc34557270b74346d38dfe43f60193f72a9232c52c0efd39
+notes_baseline: 223fb802bbab769e9b713691d48494dfbb9184252edeab308ee0a85732e11225
 ---
 
 # application.law_proof.Node
@@ -25,7 +25,7 @@ notes_baseline: 1f7335ceece8644e7e987e31bde8f8aca63380339cd74bacfa92229685d19a8b
 |---|---|
 | Kind | type-alias |
 | Module | [`application/law_proof`](/modules/application/law_proof.md) |
-| Signature | `Node = tuple[str, frozenset[Passed], int]` |
+| Signature | `Node = tuple[str, frozenset[Passed], int, Objects]` |
 | Code | `repo://src/eija_studio/application/law_proof.py#Node` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -41,5 +41,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.law_proof.Objects](/symbols/application/law_proof/Objects.md) - Type alias `Objects` in `application/law_proof`.
 * [application.law_proof.Passed](/symbols/application/law_proof/Passed.md) - Type alias `Passed` in `application/law_proof`.
 <!-- okf:generated:end links -->

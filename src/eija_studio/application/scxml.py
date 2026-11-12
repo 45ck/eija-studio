@@ -24,6 +24,11 @@ runs in production. What it keeps and what it leaves to the kernel:
   reads how long the record has been in its state, as the kernel's `UnitOfWork.elapsed` port does, and attaches it as
   `elapsed` in seconds, with `has_elapsed` False when it is unknown, which is never due. It is not a delayed `<send>`: in the kernel a time
   event makes a step allowed, and an actor (usually a «timer» role) still takes it through the same checks.
+* A step on a linked object (`/ target.lock`, ADR-0241) reads the object's state the way the kernel's
+  `UnitOfWork.object_state` port does: whoever sends the event attaches it as `object_<link>` ("" when unknown). The
+  chart has one transition per combination of object states the step can move from, each with those states in its
+  `cond`, and each appends `<link>:<new state>` to a `moved` list in the datamodel. A combination it cannot move from
+  has no transition, so the event is refused, as the kernel refuses it.
 * `expected_version` is a `version` variable in the datamodel, compared in the `cond` and incremented when the
   transition fires.
 * Each required effect is appended, in declared order, to an `effects` list in the datamodel. Writing the audit log
@@ -43,6 +48,7 @@ import re
 import xml.etree.ElementTree as ET
 from typing import Any
 
+from eija_studio.domain.linked import combinations
 from eija_studio.domain.models import DomainError, Transition, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
@@ -88,27 +94,38 @@ def guard_condition(transition: Transition) -> str:
 
 
 def event_data(actor: dict[str, Any] | None, expected_version: int, values: dict[str, Any] | None = None,
-               attributes: tuple[str, ...] = (), elapsed: float | None = None, timed: bool = False) -> dict[str, Any]:
+               attributes: tuple[str, ...] = (), elapsed: float | None = None, timed: bool = False,
+               objects: dict[str, str | None] | None = None) -> dict[str, Any]:
     """What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, the
-    record's value of each guarded attribute in `attributes`, and, for a `timed` model, how long it has been in its state
-    (`elapsed`, None when unknown)."""
+    record's value of each guarded attribute in `attributes`, for a `timed` model how long it has been in its state
+    (`elapsed`, None when unknown), and for a model with linked objects the state of each (`objects`, by link)."""
     held = values or {}
     record = {f"has_{a}": held.get(a) is not None for a in attributes} | {f"value_{a}": held.get(a) for a in attributes}
     if timed:  # sent for a model with time events only
         record |= {"has_elapsed": elapsed is not None, "elapsed": 0 if elapsed is None else elapsed}
+    record |= {f"object_{link}": state or "" for link, state in (objects or {}).items()}  # linked objects (ADR-0241)
     if actor is None:
         return {"known": False, "active": False, "role": "", "assigned": False, "expected_version": expected_version} | record
     return {"known": True, "active": bool(actor["active"]), "role": str(actor["role"]),
             "assigned": bool(actor["assigned"]), "expected_version": expected_version} | record
 
 
-def _transition(parent: ET.Element, transition: Transition) -> None:
-    element = ET.SubElement(parent, "transition", {"event": scxml_id(transition.action),
-                                                   "target": scxml_id(transition.to_state),
-                                                   "cond": guard_condition(transition)})
-    ET.SubElement(element, "assign", {"location": "version", "expr": "version + 1"})
-    for effect in transition.required_effects:
-        ET.SubElement(element, "assign", {"location": "effects", "expr": f"effects + [{_literal(effect)}]"})
+def _transition(parent: ET.Element, model: Workflow, transition: Transition) -> None:
+    """The transition's `<transition>`, or one per combination of linked-object states it can move from (ADR-0241)."""
+    for objects in combinations(model, transition):
+        moved = [(step.link, model.lifecycle(step.link).move(step.event, objects[step.link]))  # type: ignore[union-attr]
+                 for step in transition.then]
+        if any(target is None for _, target in moved):
+            continue  # no move from these states: the event is refused, as the kernel refuses it
+        terms = [f"_event.data.object_{link} == {_literal(state)}" for link, state in objects.items()]
+        element = ET.SubElement(parent, "transition", {"event": scxml_id(transition.action),
+                                                       "target": scxml_id(transition.to_state),
+                                                       "cond": " and ".join([guard_condition(transition), *terms])})
+        ET.SubElement(element, "assign", {"location": "version", "expr": "version + 1"})
+        for effect in transition.required_effects:
+            ET.SubElement(element, "assign", {"location": "effects", "expr": f"effects + [{_literal(effect)}]"})
+        for link, target in moved:
+            ET.SubElement(element, "assign", {"location": "moved", "expr": f"moved + [{_literal(f'{link}:{target}')}]"})
 
 
 def hoisted(model: Workflow) -> dict[str, list[Transition]]:
@@ -164,7 +181,7 @@ def _element(parent: ET.Element, model: Workflow, name: str, leaving: dict[str, 
     attributes = {"id": scxml_id(name)} | ({"initial": scxml_id(group.initial)} if group else {})
     element = ET.SubElement(parent, "state", attributes)
     for transition in leaving.get(name, []):
-        _transition(element, transition)
+        _transition(element, model, transition)
     for child in group.states if group else ():
         _element(element, model, child, leaving)
 
@@ -183,6 +200,8 @@ def to_scxml(pack: Pack, model: Workflow | None = None) -> str:
     datamodel = ET.SubElement(root, "datamodel")
     ET.SubElement(datamodel, "data", {"id": "version", "expr": "0"})
     ET.SubElement(datamodel, "data", {"id": "effects", "expr": "[]"})
+    if model.objects:  # the moves made on linked objects (ADR-0241); absent otherwise, so other charts keep their bytes
+        ET.SubElement(datamodel, "data", {"id": "moved", "expr": "[]"})
     leaving = hoisted(model)
     for name in _top_level(model):
         _element(root, model, name, leaving)

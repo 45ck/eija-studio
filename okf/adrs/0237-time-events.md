@@ -70,5 +70,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [ADR-0241: Conformance that catches a divergent app by behaviour](/adrs/0241-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
+* [ADR-0242: Conformance that catches a divergent app by behaviour](/adrs/0242-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
 <!-- okf:generated:end links -->

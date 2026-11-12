@@ -29,21 +29,29 @@ VALID = ORACLE["data_cases"][0]["fields"] if ORACLE.get("data_cases") else None 
 
 
 def seed(svc: service.Service, state: str, values: dict | None = None, waited: float | None = None,
-         record_id: str = "r1") -> str:
-    """A record already in `state` (holding `values`, and in it for `waited` seconds: by default the model's longest time
-    event, as in the oracle's cases), written directly so the case starts where the oracle's did."""
+         objects: dict | None = None, record_id: str = "r1") -> str:
+    """A record already in `state` (holding `values`, in it for `waited` seconds: by default the model's longest time
+    event, and linked to objects in the states `objects` gives: by default where the oracle's cases had them), written
+    directly so the case starts where the oracle's did."""
     entered = service.now() - (ORACLE.get("waited", 0) if waited is None else waited)
+    links = {}
+    for link, state_of in (ORACLE.get("linked", {}).get(state, {}) if objects is None else objects).items():
+        entity = next(o.entity for o in service.MODEL.objects if o.link == link)
+        svc.db.execute("INSERT INTO objects(id,class,fields,created_by,state) VALUES(?,?,'{}','oracle',?)",
+                       ("linked-" + link, entity, state_of))
+        links[link] = "linked-" + link
     svc.db.execute("INSERT INTO records(id,case_id,model_hash,state,version,fields,data_digest,entered_at) "
                    "VALUES(?,?,?,?,0,?,?,?)",
-                   (record_id, service.CASE, service.MODEL.semantic_hash, state, json.dumps(values or {}), service.DATA_DIGEST,
-                    entered))
+                   (record_id, service.CASE, service.MODEL.semantic_hash, state, json.dumps((values or {}) | links),
+                    service.DATA_DIGEST, entered))
     return record_id
 
 
 def stock(svc: service.Service) -> service.Service:
     """The objects the oracle's records refer to (ADR-0235), stored so a reference field can name them."""
     for item in ORACLE.get("objects", []):
-        svc.db.execute("INSERT INTO objects VALUES(?,?,?,'oracle')", (item["id"], item["class"], json.dumps(item["fields"])))
+        svc.db.execute("INSERT INTO objects(id,class,fields,created_by) VALUES(?,?,?,'oracle')",
+                       (item["id"], item["class"], json.dumps(item["fields"])))
     return svc
 
 
@@ -95,6 +103,9 @@ class Conformance(unittest.TestCase):
                 svc = service.Service()
                 record_id = seed(svc, case["state"])
                 self.assertEqual(observe(svc, record_id, case), case["expect"])
+                if "after" in case:  # the record's linked objects after the step (ADR-0241)
+                    session = service.Session(svc.db)
+                    self.assertEqual({link: session.object_state(record_id, link) for link in case["after"]}, case["after"])
                 if "replay" in case:
                     self.assertEqual(observe(svc, record_id, case), case["replay"])
                     self.assertEqual(observe(svc, record_id, case, "op-2"), case["again"])
@@ -173,6 +184,20 @@ class Conformance(unittest.TestCase):
                 record_id = seed(svc, case["state"], case.get("values"), case["waited"])
                 attempt = {"actor": case["actor"], "action": case["action"], "expected_version": 0}
                 self.assertEqual(observe(svc, record_id, attempt), case["expect"])
+
+    def test_linked_objects_match_the_kernel(self):
+        """A step on a linked object commits, moving the object, or is refused exactly as the kernel decides (ADR-0241)."""
+        if not service.MODEL.objects:
+            self.assertNotIn("linked_cases", ORACLE)
+        for case in ORACLE.get("linked_cases", []):
+            with self.subTest(action=case["action"], objects=case["objects"]):
+                svc = service.Service()
+                record_id = seed(svc, case["state"], case.get("values"), objects=case["objects"])
+                attempt = {"actor": case["actor"], "action": case["action"], "expected_version": 0}
+                self.assertEqual(observe(svc, record_id, attempt), case["expect"])
+                session = service.Session(svc.db)
+                after = {link: session.object_state(record_id, link) for link in case["objects"]}
+                self.assertEqual(after, case.get("after", case["objects"]))
 
     def test_records_from_another_data_model_are_refused(self):
         """A record whose values another data model checked is never acted on: its values may not fit this one."""

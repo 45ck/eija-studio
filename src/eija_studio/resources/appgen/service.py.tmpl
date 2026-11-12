@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from eija_studio.application.runtime import (check_actor, check_due, check_guards, check_separation, execute, initialise,
+from eija_studio.application.runtime import (check_actor, check_due, check_guards, check_linked, check_separation, execute, initialise,
                                              separations)
 from eija_studio.domain.data import DataModel, check_record, check_values, references
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical
@@ -40,13 +40,16 @@ CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, m
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, result TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, record_id TEXT NOT NULL, effect TEXT NOT NULL, recipient TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS objects(id TEXT PRIMARY KEY, class TEXT NOT NULL, fields TEXT NOT NULL, created_by TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS objects(id TEXT PRIMARY KEY, class TEXT NOT NULL, fields TEXT NOT NULL, created_by TEXT NOT NULL,
+    state TEXT);
 CREATE TABLE IF NOT EXISTS acts(seq INTEGER PRIMARY KEY AUTOINCREMENT, record_id TEXT NOT NULL, action TEXT NOT NULL, actor_id TEXT NOT NULL);
 """
 
 MIGRATIONS = {"fields": "ALTER TABLE records ADD COLUMN fields TEXT NOT NULL DEFAULT '{}'",
               "data_digest": "ALTER TABLE records ADD COLUMN data_digest TEXT NOT NULL DEFAULT ''",
               "entered_at": "ALTER TABLE records ADD COLUMN entered_at REAL"}  # NULL: a time event is never due on it
+OBJECT_MIGRATIONS = {"state": "ALTER TABLE objects ADD COLUMN state TEXT"}  # NULL: a step never moves such an object
+LIFECYCLES = {o.entity: o for o in reversed(MODEL.objects)}  # each linked class's lifecycle (ADR-0241)
 
 now = time.time  # the app's clock, which the kernel reads only through `Session.elapsed` (ADR-0237)
 
@@ -99,6 +102,16 @@ class Session:
         row = self.db.execute("SELECT entered_at FROM records WHERE id=?", (instance_id,)).fetchone()
         return None if row is None or row["entered_at"] is None else now() - row["entered_at"]
 
+    def object_state(self, instance_id: str, link: str) -> str | None:
+        """The state of the object the record's `link` field names, which the model's steps on linked objects read
+        (ADR-0241). None when the record names no object, the object is unknown, or it has no state."""
+        object_id = self.values(instance_id).get(link)
+        row = self.db.execute("SELECT state FROM objects WHERE id=?", (object_id,)).fetchone() if object_id else None
+        return None if row is None else row["state"]
+
+    def move_object(self, instance_id: str, link: str, state: str) -> None:
+        self.db.execute("UPDATE objects SET state=? WHERE id=?", (state, self.values(instance_id)[link]))
+
     def find_operation(self, operation_id: str) -> dict[str, Any] | None:
         row = self.db.execute("SELECT binding, result FROM operations WHERE id=?", (operation_id,)).fetchone()
         return {"binding": row["binding"], "result": json.loads(row["result"])} if row else None
@@ -114,23 +127,26 @@ class Session:
 
 
 def options(state: str, actor_id: str, acts: list[tuple[str, str]] | None = None,
-            values: dict[str, Any] | None = None, elapsed: float | None = None) -> list[dict[str, Any]]:
+            values: dict[str, Any] | None = None, elapsed: float | None = None,
+            objects: dict[str, str | None] | None = None) -> list[dict[str, Any]]:
     """The actions leaving `state`, each with whether this actor may take it, using the kernel's own authority,
-    time-event, value-guard and separation-of-duties checks (`acts` is the record's history of who took which action,
-    `elapsed` how long it has been in `state`)."""
+    time-event, value-guard, linked-object and separation-of-duties checks (`acts` is the record's history of who took
+    which action, `elapsed` how long it has been in `state`, `objects` its linked objects' states)."""
     result = []
     for t in MODEL.transitions:
         if t.from_state != state:
             continue
         entry = {"action": t.action, "to": t.to_state, "role": t.role, "allowed": True,
                  **({"when": [str(c) for c in t.conditions]} if t.conditions else {}),
-                 **({"after": str(t.after)} if t.after is not None else {})}
+                 **({"after": str(t.after)} if t.after is not None else {}),
+                 **({"then": [str(x) for x in t.then]} if t.then else {})}
         try:
             if actor_id not in ACTORS:
                 raise DomainError("UNKNOWN_ACTOR", "Actor is not in the directory")
             check_actor(ACTORS[actor_id], t, None)  # type: ignore[arg-type]  # the command is not read by the check
             check_due(t, elapsed)
             check_guards(t, values or {})
+            check_linked(MODEL, t, objects or {})
             check_separation(separations(PACK, MODEL, t.action), t.action, actor_id, acts or [])
         except DomainError as refused:
             entry |= {"allowed": False, "code": refused.code, "reason": refused.message}
@@ -150,6 +166,8 @@ class Service:
         for column, statement in MIGRATIONS.items():  # data from an older build; its records stay stale
             if column not in columns:
                 self.db.execute(statement)
+        if "state" not in {row["name"] for row in self.db.execute("PRAGMA table_info(objects)")}:
+            self.db.execute(OBJECT_MIGRATIONS["state"])
 
     def _write(self, work, record_id: str = ""):
         with self.lock:
@@ -208,15 +226,18 @@ class Service:
 
         def work(session: Session) -> dict[str, Any]:
             object_id = uuid4().hex
-            self.db.execute("INSERT INTO objects VALUES(?,?,?,?)", (object_id, cls, canonical(values), actor_id))
-            return {"id": object_id, "class": cls, "fields": values}
+            lifecycle = LIFECYCLES.get(cls)  # an object with a lifecycle starts in its initial state (ADR-0241)
+            state = lifecycle.initial if lifecycle is not None else None
+            self.db.execute("INSERT INTO objects(id,class,fields,created_by,state) VALUES(?,?,?,?,?)",
+                            (object_id, cls, canonical(values), actor_id, state))
+            return {"id": object_id, "class": cls, "fields": values} | ({"state": state} if state else {})
         return self._write(work)
 
     def objects(self, cls: str) -> list[dict[str, Any]]:
         if cls not in STORED:
             raise DomainError("NOT_FOUND", "This app stores no objects of that class")
-        return [{"id": r["id"], "class": cls, "fields": json.loads(r["fields"])}
-                for r in self.db.execute("SELECT id, fields FROM objects WHERE class=? ORDER BY rowid", (cls,))]
+        return [{"id": r["id"], "class": cls, "fields": json.loads(r["fields"])} | ({"state": r["state"]} if r["state"] else {})
+                for r in self.db.execute("SELECT id, fields, state FROM objects WHERE class=? ORDER BY rowid", (cls,))]
 
     def records(self) -> list[dict[str, Any]]:
         ids = [row[0] for row in self.db.execute("SELECT id FROM records ORDER BY rowid DESC")]
@@ -233,9 +254,11 @@ class Service:
         return steps
 
     def view(self, record_id: str, actor_id: str) -> dict[str, Any]:
-        record = self._record(record_id)
-        return {"record": record, "history": self.history(record_id), "options": options(record["state"], actor_id, Session(self.db).acts(record_id), record["fields"],
-                                                                                  Session(self.db).elapsed(record_id))}
+        record, session = self._record(record_id), Session(self.db)
+        objects = {o.link: session.object_state(record_id, o.link) for o in MODEL.objects}
+        return {"record": record, "history": self.history(record_id),
+                "options": options(record["state"], actor_id, session.acts(record_id), record["fields"],
+                                   session.elapsed(record_id), objects)}
 
     def outbox(self) -> list[dict[str, Any]]:
         return [dict(r) for r in self.db.execute("SELECT * FROM outbox ORDER BY rowid")]

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py
   title: application/scxml.py
   hash_method: ast-api-v1
-  sha256: f139140de296fae175390a1c6d6063227b83d0a07e1d207522549d64a8b80954
-notes_baseline: a398f20e50464e89f1bce20f6f08d8d3cab0d79ad0504b6f45399f7c88e91d85
+  sha256: 36382e5cc9cff09b8fcdb239caf26be924a87f9c0ef9adee202340e8432ef3e0
+notes_baseline: 2693bd9cd6b9e4b2eeef3331e2b4ff97472329ed72defadd5a17a715f53b6461
 ---
 
 # application.scxml
@@ -55,6 +55,11 @@ runs in production. What it keeps and what it leaves to the kernel:
   reads how long the record has been in its state, as the kernel's `UnitOfWork.elapsed` port does, and attaches it as
   `elapsed` in seconds, with `has_elapsed` False when it is unknown, which is never due. It is not a delayed `<send>`: in the kernel a time
   event makes a step allowed, and an actor (usually a «timer» role) still takes it through the same checks.
+* A step on a linked object (`/ target.lock`, ADR-0241) reads the object's state the way the kernel's
+  `UnitOfWork.object_state` port does: whoever sends the event attaches it as `object_<link>` ("" when unknown). The
+  chart has one transition per combination of object states the step can move from, each with those states in its
+  `cond`, and each appends `<link>:<new state>` to a `moved` list in the datamodel. A combination it cannot move from
+  has no transition, so the event is refused, as the kernel refuses it.
 * `expected_version` is a `version` variable in the datamodel, compared in the `cond` and incremented when the
   transition fires.
 * Each required effect is appended, in declared order, to an `effects` list in the datamodel. Writing the audit log
@@ -80,6 +85,7 @@ Pure: no IO, no clock. The same pack and model always give the same bytes.
 
 ## Internal imports
 
+* [`domain/linked`](/modules/domain/linked.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
@@ -92,6 +98,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [domain.linked](/modules/domain/linked.md) - Linked objects (issue #93 item 4, ADR-0241): the states a record's linked objects are in, as the checkers try them.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.

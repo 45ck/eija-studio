@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0241: Conformance that catches a divergent app by behaviour'
+title: 'ADR-0242: Conformance that catches a divergent app by behaviour'
 description: The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
-resource: repo://docs/adr/0241-conformance-that-catches-divergence.md
+resource: repo://docs/adr/0242-conformance-that-catches-divergence.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0241-conformance-that-catches-divergence.md
-  title: 0241-conformance-that-catches-divergence.md
+- resource: repo://docs/adr/0242-conformance-that-catches-divergence.md
+  title: 0242-conformance-that-catches-divergence.md
   hash_method: lf-sha256-v1
-  sha256: fc68910b9c355f886a0278c2c35d0474c3c856f03b8be135fd54108ca1fb9e0c
-notes_baseline: b836a2a8e02a6e532be92278e0478cee5c6e48d297f920c76cbb396cf7d81f4d
+  sha256: f8fda1616bd6764712ab31b6f913969424f51fc0e3a308e7611de76a6c05c806
+notes_baseline: c5927235848c3be03bb7443950ad89515f5a73933ef0a903b7cd863b7e8b08da
 ---
 
-# ADR-0241: Conformance that catches a divergent app by behaviour
+# ADR-0242: Conformance that catches a divergent app by behaviour
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: b836a2a8e02a6e532be92278e0478cee5c6e48d297f920c76cbb396cf7d81f4d
 | Status | accepted |
 | Date | 2026-11-12 |
 | Lane | app generation / verification |
-| Source | `repo://docs/adr/0241-conformance-that-catches-divergence.md` |
+| Source | `repo://docs/adr/0242-conformance-that-catches-divergence.md` |
 
 ## Decision outcome (verbatim)
 
@@ -76,4 +76,5 @@ _No curated notes yet._
 * [ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check](/adrs/0165-executable-uml-on-the-eija-kernel.md) - PlayIDE draws six UML views (state machine, class, use case, screens, component, sequence) over one model (ADR-0093), and `eija build` turns the model into a r…
 * [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
 * [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
+* [ADR-0241: Actions on linked objects](/adrs/0241-actions-on-linked-objects.md) - Issue #93, item 4.
 <!-- okf:generated:end links -->

@@ -1,4 +1,4 @@
-# ADR-0241: Conformance that catches a divergent app by behaviour
+# ADR-0242: Conformance that catches a divergent app by behaviour
 
 * Status: accepted
 * Date: 2026-11-12
@@ -54,7 +54,7 @@ The two feature variants exist only in the harness, so the shipped packs keep th
 * refund-desk with initiators, a separation-of-duties law and a value guard;
 * library-loan with its record's associations built, and `Return` leaving two states.
 
-**The oracle gains four lists, and the generated suite gains five tests** (it now runs 15, with the time-event test from ADR-0237):
+**The oracle gains four lists, and the generated suite gains five tests** (it now runs 16, with the time-event test from ADR-0237 and the linked-object test from ADR-0241):
 
 * `written` on every committed case and journey step holds the kernel's audit entries and outbox rows `[effect, recipient]`, recorded by the oracle session. The effects test compares them, and checks that each outbox row names the record.
 * `create_cases`: every fixture actor, and one unknown actor, starting a record with valid values. The case gives the state and version the record starts in, or the refusal (`UNKNOWN_ACTOR`, `ACTOR_REVOKED`, `ROLE_CANNOT_START`).

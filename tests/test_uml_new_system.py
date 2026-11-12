@@ -56,7 +56,9 @@ def test_a_new_system_from_an_export_is_the_same_model(name, fmt):
     assert report["status"] == "CLEAN", report["unmapped"]
     assert _shape(copy) == _shape(pack) and copy.model.initial_state == pack.model.initial_state
     if data is not None:
-        assert documents["data.json"] | {"id": data.id} == data.model_dump(mode="json")
+        expected = data.model_dump(mode="json")  # a file cannot say an association is built (ADR-0235)
+        expected["associations"] = [{k: v for k, v in a.items() if k != "built"} for a in expected["associations"]]
+        assert documents["data.json"] | {"id": data.id} == expected
 
 
 def test_a_hand_written_file_starts_a_system_and_every_loss_is_named():

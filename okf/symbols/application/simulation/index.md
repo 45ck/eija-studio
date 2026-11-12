@@ -10,6 +10,7 @@
 * [application.simulation.MAX_BREAKPOINTS](MAX_BREAKPOINTS.md) - Constant `MAX_BREAKPOINTS` in `application/simulation`.
 * [application.simulation.MAX_STEPS](MAX_STEPS.md) - Constant `MAX_STEPS` in `application/simulation`.
 * [application.simulation.NEW_RECORD](NEW_RECORD.md) - Constant `NEW_RECORD` in `application/simulation`.
+* [application.simulation.POOL](POOL.md) - Constant `POOL` in `application/simulation`.
 * [application.simulation.SLIP](SLIP.md) - Constant `SLIP` in `application/simulation`.
 * [application.simulation.STALE](STALE.md) - Constant `STALE` in `application/simulation`.
 * [application.simulation.TICKS](TICKS.md) - Constant `TICKS` in `application/simulation`.
@@ -30,6 +31,9 @@
 * [application.simulation.MemorySession.event](MemorySession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.find_instance](MemorySession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None` in `application/simulation`.
 * [application.simulation.MemorySession.find_operation](MemorySession.find_operation.md) - `def find_operation(self, operation_id: str) -> dict[str, Any] | None` in `application/simulation`.
+* [application.simulation.MemorySession.link](MemorySession.link.md) - Link a record to an object, setting the object's state if given or the object is new (ADR-0241).
+* [application.simulation.MemorySession.move_object](MemorySession.move_object.md) - `def move_object(self, instance_id: str, link: str, state: str) -> None` in `application/simulation`.
+* [application.simulation.MemorySession.object_state](MemorySession.object_state.md) - `def object_state(self, instance_id: str, link: str) -> str | None` in `application/simulation`.
 * [application.simulation.MemorySession.record_act](MemorySession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.record_operation](MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.update_instance](MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/simulation`.

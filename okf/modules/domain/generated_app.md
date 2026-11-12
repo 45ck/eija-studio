@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/generated_app.py
   title: domain/generated_app.py
   hash_method: ast-api-v1
-  sha256: 2bebcd65a420baf2c7924da16210aa6b3c7989e5a6bdb7075291a297c10500f0
-notes_baseline: 2e64cdbc5708fcb70d2ed5fea19c537f01870e5446b98b79e0535f8be400cc24
+  sha256: 0c2113d2d085262d845ce68c47474eeabd08fcbec4a28c8508ebc201f510aa5a
+notes_baseline: 6ac4863a902dd2cfd8ad716848d3625030f723806c66c513327198135b77ef29
 ---
 
 # domain.generated_app

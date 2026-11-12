@@ -23,6 +23,8 @@
 * [application.oracle_session.OracleSession.event](OracleSession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.find_instance](OracleSession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.find_operation](OracleSession.find_operation.md) - `def find_operation(self, operation_id: str) -> dict[str, Any] | None` in `application/oracle_session`.
+* [application.oracle_session.OracleSession.move_object](OracleSession.move_object.md) - `def move_object(self, instance_id: str, link: str, state: str) -> None` in `application/oracle_session`.
+* [application.oracle_session.OracleSession.object_state](OracleSession.object_state.md) - `def object_state(self, instance_id: str, link: str) -> str | None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.record_act](OracleSession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.record_operation](OracleSession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.update_instance](OracleSession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/oracle_session`.
