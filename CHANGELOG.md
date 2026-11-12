@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### 12 November 2026: PlayIDE stands up to bad input, and big plans check fast
+
+- A UML file with an escape that names no character, a count of thousands of digits, an XMI bound such as `²` or a draw.io position that is not a number is now read or refused with a reason. Before, the import failed with an unexplained error ([ADR-0236](docs/adr/0236-hostile-input-and-plan-cost.md)).
+- A draft kept in the browser in a shape PlayIDE cannot read no longer stops the page from opening. It is set aside, not deleted, and the page says so. A saved `draft.json` in another shape is moved to `draft.unreadable.json` in the same way.
+- `eija` commands say what is wrong with a bad input: `FILE_NOT_FOUND`, `NOT_A_FILE`, `PERMISSION_DENIED`, `NOT_UTF8`, `INVALID_JSON` (with line and column), `SCHEMA_INVALID` (with each field, never its value) or `INPUT_TOO_DEEP`. `eija check-export` no longer prints a traceback for a file that is not a JSON object.
+- Checking a 64-step chat plan at the model's limits takes about 70 ms instead of 1.2 s, with the same verdicts.
+- How it was tested, and what was found: [HOSTILE-INPUT](docs/engineering/HOSTILE-INPUT.md).
+
 ### 11 November 2026: repo clean-up
 
 - At 1280 px the PlayIDE toolbar keeps the checks pill on the same row as Run, Simulate and Build & run again (fixes #208). Between 1181 and 1439 px the toolbar uses tighter gaps and padding and a shorter run status (its full text stays in the tooltip). The last run speed is now labelled "Next stop", so the menu is narrower at every width. An opt-in browser test checks 1280 and 1440 px with a three-digit score.

@@ -65,7 +65,14 @@ def parse_file(fmt: str, text: str) -> Parsed:
     _need(fmt)
     if len(text) > MAX_CHARS:
         raise DomainError("IMPORT_TOO_LARGE", f"A UML file is read up to {MAX_CHARS} characters")
-    return _READERS[fmt](text)
+    try:
+        return _READERS[fmt](text)
+    except DomainError:
+        raise
+    except (ValueError, RecursionError) as error:
+        # A reader that meets text it did not expect must refuse the file, not fail the request. The readers handle
+        # every case the fuzz test found (tests/test_uml_hostile_input.py); this is the net under the next one.
+        raise DomainError("IMPORT_INVALID", f"This {fmt} file could not be read ({type(error).__name__})") from None
 
 
 def import_model(fmt: str, text: str, pack: Pack, model: Workflow | None = None,

@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 
-from .model import Attr, Edge, Klass, Link, Parsed
+from .model import Attr, Edge, Klass, Link, Parsed, whole
 
 INITIAL = "[*]"
 _NAME = r'(?:\[\*\]|"[^"]+"|[^\s"]+)'
@@ -54,7 +54,7 @@ def _bounds(rest: str) -> tuple[int, str]:
     found = _BOUNDS.search(rest)
     if found is None:
         return 0, "1"
-    lo = 0 if found.group("lo") == "*" else int(found.group("lo"))
+    lo = 0 if found.group("lo") == "*" else whole(found.group("lo"))
     hi = found.group("hi")
     upper = ("*" if hi in ("*", "n") else hi) if hi is not None else ("*" if found.group("lo") == "*" else found.group("lo"))
     return lo, upper
@@ -72,7 +72,7 @@ def read_member(text: str, where: str) -> Attr | None:
     lower, upper = _bounds(found.group("rest") or "")
     maximum = _MAX.search(found.group("rest") or "")
     return Attr(name=found.group("name"), type=found.group("type") or "", lower=lower, upper=upper,
-                max_length=int(maximum.group("n")) if maximum else None, where=where)
+                max_length=whole(maximum.group("n")) if maximum else None, where=where)
 
 
 def _stereotypes(lines: list[tuple[str, str]]) -> list[str]:

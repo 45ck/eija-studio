@@ -102,6 +102,13 @@ class SystemLibrary:
         return found if isinstance(found, dict) else None
 
     @staticmethod
+    def set_aside_draft(workspace: Path) -> None:
+        """Move a draft that cannot be reopened to `draft.unreadable.json`, so the next Save does not overwrite it."""
+        path = Path(workspace) / DRAFT_FILE
+        if path.is_file():
+            os.replace(path, path.with_name("draft.unreadable.json"))
+
+    @staticmethod
     def write_draft(workspace: Path, draft: dict[str, Any] | None) -> None:
         """Save the draft into the system's workspace, or clear it."""
         path = Path(workspace) / DRAFT_FILE
