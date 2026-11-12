@@ -48,6 +48,8 @@ body[data-chat="closed"] .side,body[data-chat="closed"] #split-chat{display:none
 .layout>*{grid-row:1;min-width:0}
 .split{background:transparent;position:relative;z-index:4;touch-action:none}
 .split::after{content:"";position:absolute;inset:0;transition:background .15s}
+.split::before{content:"";position:absolute;inset:0 -3px}
+.split.h::before{inset:-3px 0}
 .split:hover::after,.split:focus-visible::after{background:var(--accent);opacity:.45}
 .split.v{cursor:col-resize}
 .split.h{cursor:row-resize;height:5px}
@@ -156,13 +158,13 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 .statusbar .end{margin-left:auto;display:flex;align-items:center;gap:14px}
 .statusbar button{border:0;background:transparent;color:inherit;padding:2px 6px;font-size:inherit;border-radius:4px}
 .statusbar button:hover{background:rgba(255,255,255,.12)}
-.statusbar .plan-chip{padding:1px 8px;border-radius:999px;background:#2f8f5b;color:#fff;font-weight:600}
+.statusbar .plan-chip{padding:1px 8px;border-radius:999px;background:#277d50;color:#fff;font-weight:600}
 .statusbar .plan-chip[hidden]{display:none}
 .statusbar .toast{color:#9ff0c3}
 .statusbar .saved{opacity:.8}
 .statusbar .saved.bad{opacity:1;color:#ffc9c9}
 .statusbar .score{padding:1px 8px;background:rgba(255,255,255,.14);color:inherit}
-.statusbar .score.ok{background:#2f8f5b;color:#fff}
+.statusbar .score.ok{background:#277d50;color:#fff}
 .statusbar .score.bad{background:#a33b3b;color:#fff}
 .statusbar kbd{font:inherit;padding:0 5px;border:1px solid rgba(255,255,255,.35);border-radius:3px}
 
@@ -237,7 +239,7 @@ body[data-play="open"][data-play-arrangement="stacked"] .play-empty-mark{width:4
 @media(max-width:1180px){
   .bar{flex-wrap:wrap;justify-content:flex-start;gap:8px}
   .bar .brand{flex:1 1 100%;flex-wrap:wrap;gap:8px}
-  .bar .brand>.logo,.bar .brand>strong{flex:none}
+  .bar .brand>.logo,.bar .brand>.brand-name{flex:none}
   .bar .model-name{flex:1 1 10rem;min-width:0;max-width:100%}
   .bar .system-controls{margin-left:0;flex-wrap:wrap;max-width:100%}
   .bar .palette-open.command-center{flex:1 1 12rem;min-width:0;width:auto}

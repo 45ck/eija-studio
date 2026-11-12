@@ -18,7 +18,7 @@ from eija_studio.domain.data import DataModel, Entity
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack
 
-from .model import (GENERATOR, Klass, Parsed, attribute_type, enumerations, export_report, multiplicity, terminals,
+from .model import (GENERATOR, Klass, Parsed, attribute_type, character, enumerations, export_report, multiplicity, terminals,
                     transition_label)
 from .textual import read_body, read_relation, read_transition
 
@@ -33,8 +33,8 @@ def _text(text: str) -> str:
 
 
 def unescape(text: str) -> str:
-    text = re.sub(r"#(\d+);", lambda m: chr(int(m.group(1))), text)
-    return re.sub(r"#(\w+);", lambda m: html.unescape(f"&{m.group(1)};"), text)
+    text = re.sub(r"#(\d+);", lambda m: (len(m.group(1)) <= 7 and character(int(m.group(1)))) or m.group(), text)
+    return re.sub(r"#([A-Za-z]\w*);", lambda m: html.unescape(f"&{m.group(1)};"), text)  # named: numeric ones are above
 
 
 def _alias(name: str) -> str:

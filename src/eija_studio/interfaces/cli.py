@@ -79,6 +79,8 @@ def render_command(args) -> int:
 
 def check_export_command(args) -> int:
     doc = json.loads(args.file.read_text(encoding="utf-8"))
+    if not isinstance(doc, dict):
+        raise DomainError("SCHEMA_INVALID", "An export is a JSON object with format, payload and payload_hash")
     valid = doc.get("format") == "eija.change-case.export.v1" and doc.get("payload_hash") == fingerprint(doc.get("payload"))
     output({"payload_integrity": valid, "authority": "NOT_VERIFIED; exported evidence is not imported for approval"})
     return 0 if valid else 2
@@ -184,11 +186,42 @@ def _formal_for_compile(studio, model) -> dict:
     return {"formal_evidence": view["evidence"], "formal_explanations": view["explanations"]}
 
 
-def _report_failure(command: str, exc: Exception) -> None:
+_GENERIC = "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"
+_FILE_ERRORS = ((FileNotFoundError, "FILE_NOT_FOUND", "No such file"), (IsADirectoryError, "NOT_A_FILE", "A directory, not a file"),
+                (PermissionError, "PERMISSION_DENIED", "Not allowed to read or write"))
+
+
+def _schema_failure(exc: ValidationError) -> dict:
+    """Which fields of the file are wrong and how, never their values: the input may hold anything (ADR-0236)."""
+    errors = exc.errors(include_url=False, include_input=False, include_context=False)
+    if all(e["type"] == "json_invalid" for e in errors):
+        return {"error": "INVALID_JSON", "message": "The file is not valid JSON"}
+    fields = [{"field": ".".join(str(p) for p in e["loc"]) or "(document)", "problem": e["msg"]} for e in errors[:10]]
+    return {"error": "SCHEMA_INVALID", "message": f"The file does not match the expected schema ({len(errors)} problem"
+            f"{'' if len(errors) == 1 else 's'})", "details": {"fields": fields}}
+
+
+def failure_report(exc: BaseException) -> dict:
+    """The JSON a failed command prints: a stable code and a sentence a person can act on. It names the file the person
+    gave (their own path) and where in it the problem is, but never echoes the file's content."""
     if isinstance(exc, DomainError):
-        failure = {"error": exc.code, "message": exc.message} | ({"details": exc.details} if exc.details else {})
-    else:
-        failure = {"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"}
+        return {"error": exc.code, "message": exc.message} | ({"details": exc.details} if exc.details else {})
+    for kind, code, words in _FILE_ERRORS:
+        if isinstance(exc, kind):
+            return {"error": code, "message": f"{words}: {exc.filename}" if exc.filename else words}
+    if isinstance(exc, UnicodeDecodeError):
+        return {"error": "NOT_UTF8", "message": f"The file is not UTF-8 text (byte {exc.start})"}
+    if isinstance(exc, json.JSONDecodeError):
+        return {"error": "INVALID_JSON", "message": f"The file is not valid JSON (line {exc.lineno}, column {exc.colno})"}
+    if isinstance(exc, ValidationError):
+        return _schema_failure(exc)
+    if isinstance(exc, RecursionError):
+        return {"error": "INPUT_TOO_DEEP", "message": "The file nests too deeply to read"}
+    return {"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": _GENERIC}
+
+
+def _report_failure(command: str, exc: BaseException) -> None:
+    failure = failure_report(exc)
     if command == "mcp":
         # stdout is the MCP protocol channel: a startup error printed there would corrupt it. Use stderr.
         print(json.dumps(failure, indent=2, ensure_ascii=False), file=sys.stderr)
@@ -362,7 +395,7 @@ def main(argv=None) -> int:
             print(str(args.out / "compiled.json"))
             return 2 if errors or not identity["trusted_fixture"] else 0
         return 0
-    except (DomainError, ValidationError, OSError, ValueError, KeyError) as exc:
+    except (DomainError, ValidationError, OSError, ValueError, KeyError, RecursionError) as exc:
         _report_failure(args.command, exc)
         return 2
 

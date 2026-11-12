@@ -309,12 +309,47 @@
     new MutationObserver(playStatus).observe($("build"), { attributes: true, attributeFilter: ["disabled"] });
     if ($("live-trace")) new MutationObserver(refit).observe($("live-trace"), { attributes: true, attributeFilter: ["hidden"] });
     checksPopover();
+    tabKeys();
     statusBar();
     toggles();
     tabOverflow();
     window.addEventListener("resize", apply);
     new ResizeObserver(apply).observe(document.querySelector(".workbench"));
     apply();
+  }
+
+  // Every tab list on the page follows the WAI-ARIA tabs pattern: one tab stop per list (the selected tab), the
+  // arrow keys, Home and End move focus along the visible tabs, and Enter or Space opens the focused tab.
+  function tabKeys() {
+    const tabs = (list) => [...list.querySelectorAll("[role=tab]")].filter((t) => t.closest("[role=tablist]") === list && !t.hidden && t.offsetParent !== null);
+    const rove = (list, focus) => {
+      const all = tabs(list);
+      const stop = focus || all.find((t) => t.getAttribute("aria-selected") === "true") || all[0];
+      for (const t of list.querySelectorAll("[role=tab]")) t.tabIndex = t === stop ? 0 : -1;
+    };
+    const roveAll = () => document.querySelectorAll("[role=tablist]").forEach((list) => rove(list));
+    document.addEventListener("keydown", (event) => {
+      const tab = event.target.closest?.("[role=tab]");
+      const list = tab?.closest("[role=tablist]");
+      if (!list || event.altKey || event.ctrlKey || event.metaKey) return;
+      const all = tabs(list), at = all.indexOf(tab);
+      const vertical = list.getAttribute("aria-orientation") === "vertical";
+      const step = { ArrowRight: vertical ? 0 : 1, ArrowLeft: vertical ? 0 : -1, ArrowDown: vertical ? 1 : 0, ArrowUp: vertical ? -1 : 0 }[event.key];
+      let next = null;
+      if (step) next = all[(at + step + all.length) % all.length];
+      else if (event.key === "Home") next = all[0];
+      else if (event.key === "End") next = all[all.length - 1];
+      if (!next || at < 0) return;
+      event.preventDefault();
+      rove(list, next);
+      next.focus();
+    });
+    document.addEventListener("focusout", (event) => {
+      const list = event.target.closest?.("[role=tablist]");
+      if (list && !list.contains(event.relatedTarget)) rove(list);
+    });
+    new MutationObserver(roveAll).observe(document.body, { attributes: true, attributeFilter: ["aria-selected", "hidden"], subtree: true, childList: true });
+    roveAll();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

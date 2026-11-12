@@ -2,9 +2,17 @@
 
 ## Unreleased
 
+### 12 November 2026: PlayIDE stands up to bad input, and big plans check fast
+
+- A UML file with an escape that names no character, a count of thousands of digits, an XMI bound such as `²` or a draw.io position that is not a number is now read or refused with a reason. Before, the import failed with an unexplained error ([ADR-0236](docs/adr/0236-hostile-input-and-plan-cost.md)).
+- A draft kept in the browser in a shape PlayIDE cannot read no longer stops the page from opening. It is set aside, not deleted, and the page says so. A saved `draft.json` in another shape is moved to `draft.unreadable.json` in the same way.
+- `eija` commands say what is wrong with a bad input: `FILE_NOT_FOUND`, `NOT_A_FILE`, `PERMISSION_DENIED`, `NOT_UTF8`, `INVALID_JSON` (with line and column), `SCHEMA_INVALID` (with each field, never its value) or `INPUT_TOO_DEEP`. `eija check-export` no longer prints a traceback for a file that is not a JSON object.
+- Checking a 64-step chat plan at the model's limits takes about 70 ms instead of 1.2 s, with the same verdicts.
+- How it was tested, and what was found: [HOSTILE-INPUT](docs/engineering/HOSTILE-INPUT.md).
+
 ### 12 November 2026: value guards checked against every value
 
-- The property suite now generates value guards and initiators, and a new property says the values the law proof tries for a guard stand for every value a record can hold ([ADR-0236](docs/adr/0236-value-guard-representatives-verified.md)). It found five kernel defects, all fixed with fast-tier regression tests:
+- The property suite now generates value guards and initiators, and a new property says the values the law proof tries for a guard stand for every value a record can hold ([ADR-0237](docs/adr/0237-value-guard-representatives-verified.md)). It found five kernel defects, all fixed with fast-tier regression tests:
   - guards over numbers at or beyond 2**53 had no value tried on the far side of the constant, so a law could read HOLDS without the proof trying the record that breaks it;
   - two integer constants beyond the float range crashed the law proof with `OverflowError`;
   - records accepted `NaN` and `Infinity` as numbers, and NaN satisfied every `≠` guard; they are now refused with `FIELD_TYPE`;

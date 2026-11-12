@@ -2,7 +2,9 @@
 
 ## 2026-11-12
 
-* **Value-guard representatives verified (ADR-0236)**: synced ADR-0236, `guard_keys`, `Transition.guarded`, `Workflow.coherent`, `ValueGuard`, `ValueGuard.holds`, `points`, `check_values` and `changed_fields` after the property-suite fixes (large constants, overflow, non-finite values, `true` versus `1`, duplicate forbidden effects). No Notes were changed and no human source approval was recorded.
+* **Hostile input and plan cost**: synced ADR-0236 (and again after the Codex review: set-aside drafts never overwrite each other) and the pages for `adapters.system_library` (`set_aside_draft`), `interfaces.cli` (`failure_report`) and `application.plan.preview_plan` (each step applied once). None of these pages has curated Notes. Nothing was recorded as verified.
+
+* **Value-guard representatives verified (ADR-0237)**: synced ADR-0237 (renumbered from 0236, taken by hostile input), `guard_keys`, `Transition.guarded`, `Workflow.coherent`, `ValueGuard`, `ValueGuard.holds`, `points`, `check_values` and `changed_fields` after the property-suite fixes (large constants, overflow, non-finite values, `true` versus `1`, duplicate forbidden effects). No Notes were changed and no human source approval was recorded.
 
 ## 2026-11-11
 

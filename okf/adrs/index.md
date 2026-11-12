@@ -118,4 +118,5 @@
 * [ADR-0233: Separation of duties](0233-separation-of-duties.md) - Issue #149.
 * [ADR-0234: Guards over record values](0234-guards-over-record-values.md) - Issue #93, item 1.
 * [ADR-0235: Built associations as checked reference fields](0235-built-associations.md) - Issue #145, step 2.
-* [ADR-0236: Verify value-guard representatives by property and mutation, and fix what that found](0236-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
+* [ADR-0236: Hostile input at PlayIDE's edges, and the cost of a plan at the model's limits](0236-hostile-input-and-plan-cost.md) - Robustness is PlayIDE's stated edge over other UML tools.
+* [ADR-0237: Verify value-guard representatives by property and mutation, and fix what that found](0237-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
