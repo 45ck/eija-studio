@@ -67,6 +67,7 @@ ALLOWLIST: dict[str, str] = {
     "verification/bmc/": "BMC harness explores the excursion workflows and fixture actors (debt; FUTURE-WORK: BMC over a new pack)",
     "verification/bend/": "hand-written Bend model, laws and proofs of the excursion pack (debt; FUTURE-WORK: generate Bend laws)",
     "verification/tla/": "hand-written TLA+ model of the excursion pack (debt; FUTURE-WORK: generate TLA+ laws)",
+    "verification/conformance/divergence.py": "builds its feature variants on named shipped packs, because no shipped pack uses those kernel features yet (ADR-0237)",
     "quality/hci/": "HCI budgets and journey evidence measured on the excursion demo (re-baselined per pack in WBS 2.6)",
     "quality/mutation/": "mutation-testing evidence recorded on the excursion kernel run (evidence, not code)",
     "quality/metrics/": "metrics snapshots recorded on the excursion build (evidence, not code)",

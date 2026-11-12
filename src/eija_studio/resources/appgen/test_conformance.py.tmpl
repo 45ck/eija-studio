@@ -16,6 +16,7 @@ import threading
 import unittest
 from http.server import ThreadingHTTPServer
 from pathlib import Path
+from unittest.mock import patch
 
 from app import service
 from app.build_identity import current_subject
@@ -69,6 +70,11 @@ class Conformance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.subject = current_subject()
+        # The HTTP front end checks the build identity when it is imported. It was just checked above, and is checked
+        # again after the tests, so the import reuses that result instead of measuring the installation a third time.
+        with patch("app.build_identity.current_subject", return_value=cls.subject):
+            from app import server
+        cls.server = server
 
     @classmethod
     def tearDownClass(cls):
@@ -214,7 +220,7 @@ class Conformance(unittest.TestCase):
 
     def test_the_rules_shown_are_the_model(self):
         """The rule table the app shows: each action, every state it leaves, where it leads and who takes it."""
-        from app import server
+        server = self.server
         self.assertEqual(server.describe()["transitions"], ORACLE["rules"])
         self.assertEqual(server.describe()["initial_state"], next(
             (c["expect"]["state"] for c in ORACLE["create_cases"] if c["expect"]["outcome"] == "CREATED"), server.MODEL.initial_state))
@@ -223,7 +229,7 @@ class Conformance(unittest.TestCase):
         """Every case again, through the app's HTTP API: a commit is a success carrying the kernel's state and
         effects, a refusal an error carrying the kernel's code; starting a record is refused or created alike; and each
         journey runs from a record created over HTTP, one operation id per step."""
-        from app import server
+        server = self.server
         httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.handler_for(service.Service()))
         threading.Thread(target=httpd.serve_forever, daemon=True).start()
         connection = http.client.HTTPConnection("127.0.0.1", httpd.server_address[1], timeout=30)

@@ -53,6 +53,7 @@ from eija_studio.domain.pack import Pack, PackError, load_pack, parse_pack
 from eija_studio.domain.screens import default_screens
 
 FORMAT = "eija.conformance-divergence.v1"
+CORE = ("library-loan", "refund-desk+features", "library-loan+features")  # every element kind and feature, quickly
 ROOT = Path(__file__).resolve().parents[2]
 TIMEOUT_S = 300
 STATIC = {target: resource_files("eija_studio.resources").joinpath("appgen", source).read_text(encoding="utf-8")
@@ -536,9 +537,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--pack", action="append", help="Only these subjects (pack directory names or variant names)")
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "conformance" / "divergence.json")
+    parser.add_argument("--core", action="store_true", help="Only library-loan and the two feature variants (the full tier)")
     parser.add_argument("--workers", type=int, default=max(1, min(8, os.cpu_count() or 1)))
     args = parser.parse_args(argv)
-    subjects = [s for s in shipped() + variants() if not args.pack or s.name in args.pack]
+    chosen = set(args.pack or ()) | (set(CORE) if args.core else set())
+    subjects = [s for s in shipped() + variants() if not chosen or s.name in chosen]
     results = []
     for subject in subjects:
         result = check(subject, args.workers)

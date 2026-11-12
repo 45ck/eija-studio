@@ -1,7 +1,7 @@
 ---
 type: Quality Gate
 title: nox -s conformance_divergence
-description: 'Seeded divergence on library-loan and the feature variants: every one caught by behaviour, or refused.'
+description: 'Seeded divergence on one pack and the feature variants: every one caught by behaviour, or refused.'
 resource: repo://quality/sessions/conformance.py#conformance_divergence
 tags:
 - gate
@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/conformance.py#conformance_divergence
   title: conformance.py
   hash_method: ast-v2
-  sha256: 3032e6176bba0d3795588cd8881aae96b88bf5adb6d058a16ced102257218a0d
-notes_baseline: 351b1777f5ecec9a6034fb6c58977c0a92abff56389af9643efdb6405b0fd94f
+  sha256: 115922187772fd6195791353d774cba81b7d694ddefc36ceb51229db752fa507
+notes_baseline: 7e0aae44e4883573c35219e13ee2b2fabab6ad743e95876376e4790a1866e7e6
 ---
 
 # nox -s conformance_divergence
@@ -30,7 +30,7 @@ notes_baseline: 351b1777f5ecec9a6034fb6c58977c0a92abff56389af9643efdb6405b0fd94f
 ## Docstring
 
 ~~~text
-Seeded divergence on library-loan and the feature variants: every one caught by behaviour, or refused.
+Seeded divergence on one pack and the feature variants: every one caught by behaviour, or refused.
 ~~~
 
 Tiers: `fast` (seconds, pre-commit), `full` (the PR gate) and `release` (maintainer evidence; may need Docker, Java or Chromium and reports `NOT_RUN`, never `PASS`, without them).

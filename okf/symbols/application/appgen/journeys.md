@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#journeys
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: b6c4e34b5ad88d57031fef2c085dc3e01049a930f71fc04c5012d4e8f63d92be
-notes_baseline: f3cdf8a33b49ee5edf0890b4f367f2c6611081802942951c208848f16bf2678f
+  sha256: 4ce2075309ccb815d7717cea8b40959c56831e7b1ea15592be2ef13d53b416fb
+notes_baseline: 940d5b16e06d2cf7a44aa07556a2f8987718762526f5ceaf71f14c5e5ca43258
 ---
 
 # application.appgen.journeys

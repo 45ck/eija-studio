@@ -275,7 +275,12 @@ def data_cases(pack: Pack, data: DataModel, model: Workflow | None = None) -> li
              *(edge for a in entity.attributes for edge in _fits(a, valid)), ("required values only", least)]
     cases: list[dict[str, Any]] = [{"name": name, "actor": creator, "fields": values, "expect": _answer(data, values, stored)}
                                    for name, values in tries]
-    if cases[0]["expect"]["outcome"] != "CREATED":  # never a suite whose "valid" record the app must refuse
+    return _require_valid(cases, data)
+
+
+def _require_valid(cases: list[dict[str, Any]], data: DataModel) -> list[dict[str, Any]]:
+    """Never a suite whose "valid" record the app must refuse: that would leave every create check vacuous."""
+    if cases[0]["expect"]["outcome"] != "CREATED":
         raise DomainError("DATA_NO_VALID_RECORD", f"The sample record is refused ({cases[0]['expect'].get('code')}); no app is built",
                           {"refs": [f"class:{data.record}"]})
     return cases
@@ -327,6 +332,40 @@ def _first_taker(pack: Pack, model: Workflow, state: str, action: str, values: d
     return None
 
 
+def _walks(pack: Pack, model: Workflow, values: dict[str, Any]) -> list[dict[str, Any]]:
+    """Breadth first from the initial state: for each transition the kernel lets some fixture actor take, the shortest
+    run that ends with it. Each state is entered once, by its first run."""
+    runs: dict[str, list[dict[str, Any]]] = {model.initial_state: []}
+    acted: dict[str, list[tuple[str, str]]] = {model.initial_state: []}
+    frontier, found = [model.initial_state], []  # type: tuple[list[str], list[dict[str, Any]]]
+    while frontier:
+        following = []
+        for state in frontier:
+            for t in sorted((t for t in model.transitions if t.from_state == state), key=lambda t: t.id):
+                taker = _first_taker(pack, model, state, t.action, values, acted[state])
+                if taker is None:
+                    continue
+                walk = [*(dict(x) for x in runs[state]), {"actor": taker[0], "action": t.action}]
+                found.append({"transition": t.id, "steps": walk})
+                if t.to_state not in runs:
+                    runs[t.to_state], acted[t.to_state] = walk, [*acted[state], (t.action, taker[0])]
+                    following.append(t.to_state)
+        frontier = following
+    return sorted(found, key=lambda j: str(j["transition"]))
+
+
+def _answer_steps(pack: Pack, model: Workflow, values: dict[str, Any], steps: list[dict[str, Any]]) -> None:
+    """The kernel's answer, and what it writes, for each step of one run on one record."""
+    session = _OracleSession(pack, model, model.initial_state, values)
+    for n, step in enumerate(steps):
+        version = int(session.item["version"])
+        step["expected_version"] = version
+        step["expect"] = _kernel(pack, model, session, step["actor"], step["action"], version, f"op-{n + 1}")
+        step["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
+        session.audited.clear()
+        session.queued.clear()
+
+
 def journeys(pack: Pack, model: Workflow, data: DataModel | None) -> list[dict[str, Any]]:
     """For each transition, a record started through the app and walked to it: the shortest run from the initial state
     whose last step is that transition, each step taken by the first fixture actor the kernel allows, and the kernel's
@@ -334,37 +373,10 @@ def journeys(pack: Pack, model: Workflow, data: DataModel | None) -> list[dict[s
     out (the law proof reports what is unreachable). Unlike `oracle_cases`, nothing is seeded: the record is the
     app's own, created with valid values."""
     values = dict(valid_values(data))
-    runs: dict[str, list[dict[str, Any]]] = {model.initial_state: []}
-    acted: dict[str, list[tuple[str, str]]] = {model.initial_state: []}
-    frontier, found = [model.initial_state], []  # type: tuple[list[str], list[dict[str, Any]]]
-    taken: set[str] = set()
-    while frontier:
-        following = []
-        for state in frontier:
-            for t in sorted((t for t in model.transitions if t.from_state == state), key=lambda t: t.id):
-                if t.id in taken:
-                    continue
-                taker = _first_taker(pack, model, state, t.action, values, acted[state])
-                if taker is None:
-                    continue
-                taken.add(t.id)
-                walk = [*(dict(x) for x in runs[state]), {"actor": taker[0], "action": t.action}]
-                found.append({"transition": t.id, "steps": walk})
-                if t.to_state not in runs:
-                    runs[t.to_state], acted[t.to_state] = walk, [*acted[state], (t.action, taker[0])]
-                    following.append(t.to_state)
-        frontier = following
-    for journey in sorted(found, key=lambda j: str(j["transition"])):
-        session = _OracleSession(pack, model, model.initial_state, values)
-        steps: list[dict[str, Any]] = journey["steps"]
-        for n, step in enumerate(steps):
-            version = int(session.item["version"])
-            step["expected_version"] = version
-            step["expect"] = _kernel(pack, model, session, step["actor"], step["action"], version, f"op-{n + 1}")
-            step["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
-            session.audited.clear()
-            session.queued.clear()
-    return sorted(found, key=lambda j: str(j["transition"]))
+    found = _walks(pack, model, values)
+    for journey in found:
+        _answer_steps(pack, model, values, journey["steps"])
+    return found
 
 
 def rules(model: Workflow) -> dict[str, dict[str, str]]:

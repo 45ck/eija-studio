@@ -116,6 +116,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0233](0233-separation-of-duties.md) | Separation of duties | accepted |
 | [0234](0234-guards-over-record-values.md) | Guards over record values | accepted |
 | [0235](0235-built-associations.md) | Built associations as checked reference fields | accepted |
+| [0237](0237-conformance-that-catches-divergence.md) | Conformance that catches a divergent app by behaviour | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
