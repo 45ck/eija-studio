@@ -65,6 +65,7 @@ classDiagram
         +tuple~str~ required_effects
         +tuple~str~ forbidden_effects
         +tuple~ValueGuard~ conditions
+        +Delay | None after
     }
     class Workflow {
         <<value-object>>

@@ -27,7 +27,7 @@ def test_the_built_app_calls_the_kernel_and_has_no_rules_of_its_own():
     ids = {c["id"]: c["stereotype"] for c in diagram["components"]}
     assert ids["app.service"] == "component" and ids["eija_studio.application.runtime"] == "kernel"
     assert ids["sqlite3"] == "database" and ids["app/web"] == "browser" and ids["tests.test_conformance"] == "test"
-    assert uses(diagram, "app.service", "eija_studio.application.runtime") == ["check_actor", "check_guards", "check_separation", "execute", "initialise", "separations"]
+    assert uses(diagram, "app.service", "eija_studio.application.runtime") == ["check_actor", "check_due", "check_guards", "check_separation", "execute", "initialise", "separations"]
     assert "check_values" in uses(diagram, "app.service", "eija_studio.domain.data")
     assert uses(diagram, "app/web", "app.server") == ["/api/app", "/api/outbox", "/api/records"]
     assert uses(diagram, "app.service", "app/data.json") == ["reads"] and uses(diagram, "tests.test_conformance", "app.service")
@@ -55,7 +55,7 @@ def test_the_diagram_follows_the_code(change, check):
 def test_interfaces_list_what_users_import():
     diagram = app_components(files_of("excursion"))
     runtime = next(i for i in diagram["interfaces"] if i["provider"] == "eija_studio.application.runtime")
-    assert runtime["names"] == ["check_actor", "check_guards", "check_separation", "execute", "initialise", "separations"]
+    assert runtime["names"] == ["check_actor", "check_due", "check_guards", "check_separation", "execute", "initialise", "separations"]
 
 
 def test_only_imported_names_are_provided_interfaces():

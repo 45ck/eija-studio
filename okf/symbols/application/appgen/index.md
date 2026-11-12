@@ -23,4 +23,5 @@
 * [application.appgen.separation_cases](separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0233).
 * [application.appgen.start_cases](start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [application.appgen.stock](stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
+* [application.appgen.timer_cases](timer_cases.md) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state half the time and the whole time, and the kernel's answer (ADR-0237).
 * [application.appgen.value_cases](value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart (`value_guards.combinations`), and the kernel's answer (ADR-…

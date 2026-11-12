@@ -331,7 +331,7 @@
     document.addEventListener("keydown", (event) => {
       const tab = event.target.closest?.("[role=tab]");
       const list = tab?.closest("[role=tablist]");
-      if (!list || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (!list || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;  // a list with its own keys (the panel tabs) wins
       const all = tabs(list), at = all.indexOf(tab);
       const vertical = list.getAttribute("aria-orientation") === "vertical";
       const step = { ArrowRight: vertical ? 0 : 1, ArrowLeft: vertical ? 0 : -1, ArrowDown: vertical ? 1 : 0, ArrowUp: vertical ? -1 : 0 }[event.key];

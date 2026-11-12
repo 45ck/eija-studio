@@ -1,7 +1,7 @@
 """Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 
 A scenario starts a new record (in the model's initial state unless it names another), then lists steps. Each step
-is a fixture actor taking an action, and what must happen: the record moves to a state, or the kernel refuses with a
+is a fixture actor taking an action, after waiting a while if it says so, and what must happen: the record moves to a state, or the kernel refuses with a
 code. Scenarios decide nothing; they pin down what the kernel does, so a change to the model that alters it shows up
 as a failing test. They live in an optional `scenarios.json` beside the pack's `pack.json` with their own digest.
 """
@@ -16,7 +16,7 @@ from pydantic import (Field, SerializerFunctionWrapHandler, StrictBool, StrictFl
                       model_serializer, model_validator)
 
 from .data import ATTRIBUTE_NAME
-from .models import Contract, DomainError, fingerprint
+from .models import Contract, Delay, DomainError, fingerprint
 from .pack import Pack, pack_directory
 
 SCENARIOS_FILE = "scenarios.json"
@@ -39,6 +39,16 @@ class ScenarioStep(Contract):
     actor: str = Field(min_length=1, max_length=60)  # a fixture actor id
     action: str = Field(pattern=NAME)
     then: Then
+    # Time that passes before the step, for a model with time events (ADR-0237). None is left out of every dump, so
+    # scenarios without waits keep their exact bytes and digests.
+    wait: Delay | None = None
+
+    @model_serializer(mode="wrap")
+    def _omit_no_wait(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if self.wait is None:
+            data.pop("wait", None)
+        return data
 
 
 _Value = StrictBool | StrictInt | StrictFloat | StrictStr  # a value a guard over values compares (ADR-0234)

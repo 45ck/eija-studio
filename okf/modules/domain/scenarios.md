@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/scenarios.py
   title: domain/scenarios.py
   hash_method: ast-api-v1
-  sha256: a66e664b541d12b1b41ba458d59944a187d37671dfadd4287fa5cf1ce975c1d6
-notes_baseline: 071639c568d1b4b8adbc54752a3da5b5a5a3cad2ad6c21b8043b7fb3abfb7d4b
+  sha256: c07b8cc59e7947e9115e2bf6552514e685cd046f7b58ba37e7cd77a17a54f3b6
+notes_baseline: 671295f464a153154b3bc7ce59b5362ccaeea7eff40b9c030477d13d82cdff71
 ---
 
 # domain.scenarios
@@ -32,7 +32,7 @@ notes_baseline: 071639c568d1b4b8adbc54752a3da5b5a5a3cad2ad6c21b8043b7fb3abfb7d4b
 Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 
 A scenario starts a new record (in the model's initial state unless it names another), then lists steps. Each step
-is a fixture actor taking an action, and what must happen: the record moves to a state, or the kernel refuses with a
+is a fixture actor taking an action, after waiting a while if it says so, and what must happen: the record moves to a state, or the kernel refuses with a
 code. Scenarios decide nothing; they pin down what the kernel does, so a change to the model that alters it shows up
 as a failing test. They live in an optional `scenarios.json` beside the pack's `pack.json` with their own digest.
 ~~~

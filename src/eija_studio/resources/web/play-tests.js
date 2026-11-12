@@ -39,7 +39,7 @@
     const mark = { PASS: "✓", FAIL: "✗", NOT_RUN: "·" }[step.status];
     const line = P.el("li", undefined, { class: "test-step " + step.status.toLowerCase() });
     line.append(P.el("span", mark, { class: "mark", "aria-hidden": "true" }),
-      P.el("span", `When ${who(step)} takes ${step.action}, it ${said(step.expect)}`));
+      P.el("span", `${step.wait ? `After ${step.wait}, w` : "W"}hen ${who(step)} takes ${step.action}, it ${said(step.expect)}`));
     if (step.status === "FAIL") line.append(P.el("p", `Step ${i + 1} failed: ${step.why}`, { class: "small test-why" }));
     return line;
   }

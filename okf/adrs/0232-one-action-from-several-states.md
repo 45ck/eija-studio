@@ -71,4 +71,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0234: Guards over record values](/adrs/0234-guards-over-record-values.md) - Issue #93, item 1.
+* [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
 <!-- okf:generated:end links -->

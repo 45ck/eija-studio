@@ -20,14 +20,16 @@ from __future__ import annotations
 from typing import Any
 
 from eija_studio.domain.impact import changed_fields, keyed
-from eija_studio.domain.models import Transition, Workflow
+from eija_studio.domain.models import Delay, Transition, Workflow
 
 FORMAT = "eija.ghost-diff.v1"
 FIELD_TEXT = {"id": "id", "from_state": "from", "to_state": "to", "role": "role", "guards": "guards",
-              "required_effects": "effects", "forbidden_effects": "never"}
+              "required_effects": "effects", "forbidden_effects": "never", "after": "time event"}
 
 
 def _shown(value: Any) -> Any:
+    if isinstance(value, Delay):
+        return str(value)
     return sorted(value) if isinstance(value, tuple) else value
 
 
@@ -44,6 +46,8 @@ def _edge(t: Transition, key: str, status: str, **extra: Any) -> dict[str, Any]:
 
 def _field_text(f: dict[str, Any]) -> str:
     before, after = f["before"], f["after"]
+    if f["field"] == "after":  # a time event (ADR-0237): none, or after(2 days)
+        return f"{FIELD_TEXT['after']} {before or 'none'} → {after or 'none'}"
     if isinstance(before, list):
         parts = [f"+{x}" for x in after if x not in before] + [f"-{x}" for x in before if x not in after]
         return f"{FIELD_TEXT[f['field']]} {' '.join(parts)}"

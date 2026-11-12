@@ -377,8 +377,8 @@
       }
     });
     dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
-    const opener = el("button", undefined, { id: "palette-open", type: "button", class: "quiet palette-open command-center", title: "Commands: every command and element",
-      "aria-label": "Commands", "aria-keyshortcuts": isMac ? "Meta+K" : "Control+K" });
+    const opener = el("button", undefined, { id: "palette-open", type: "button", class: "quiet palette-open command-center", title: "Search commands, diagrams and elements",
+      "aria-label": "Search commands, diagrams and elements", "aria-keyshortcuts": isMac ? "Meta+K" : "Control+K" });
     opener.append(el("span", "Search commands, diagrams and elements"), el("kbd", `${MOD}K`)); // the title bar's command center (ADR-0173)
     opener.addEventListener("click", openPalette);
     (document.querySelector(".bar .brand") || document.body).after(opener);

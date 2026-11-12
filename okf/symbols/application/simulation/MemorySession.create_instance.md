@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py#MemorySession.create_instance
   title: application/simulation.py
   hash_method: ast-v2
-  sha256: 1d301f75008be0016398d811498f83b2fb9a98990278d0b3cb0cb4fe9f9b9d33
-notes_baseline: 920a4ee0f0ec023eb75ff588a2e36890621f66a1b5dd9a6c633192fa9f240e99
+  sha256: ca274e1cb94396d25ccbdec8b25374c7d50741c88e2aa9875f6aa5f6c6cca004
+notes_baseline: 97f1998c3b57935f9a2d57b50230e267c1dec1078baa88bdfe40db16e36c956d
 ---
 
 # application.simulation.MemorySession.create_instance
