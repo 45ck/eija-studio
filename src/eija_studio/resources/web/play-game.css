@@ -20,7 +20,7 @@
 .game-note.caught::before{content:"\1F6E1\FE0F  "}
 .game-note.guard{background:#f1edff;color:#4a3a8c;border-color:#c9bdf2}
 .game-legend{margin:2px 0 6px}
-.game-note.stale{color:#8a5a00;border-color:#efd39b}
+.game-note.stale{color:var(--warn);border-color:#efd39b}
 @keyframes game-note{from{opacity:0;transform:translateX(8px)}}
 #build.game-stale,#simulate.game-stale{box-shadow:0 0 0 2px #f0b44c;animation:game-stale 1.8s ease-in-out infinite}
 @keyframes game-stale{50%{box-shadow:0 0 0 4px rgba(240,180,76,.35)}}

@@ -1,5 +1,5 @@
 :root{--bg:#f4f5f8;--panel:#fff;--ink:#1b2130;--muted:#5f687a;--line:#dfe3ea;--accent:#3157d5;--accent-ink:#fff;
-  --state:#eef2ff;--state-line:#5b74d6;--ok:#17734a;--ok-bg:#e5f5ec;--bad:#a12f2f;--bad-bg:#fbe9e9;--busy-bg:#eef1f7;
+  --state:#eef2ff;--warn:#8a5a08;--warn-bg:#fdf1dc;--state-line:#5b74d6;--ok:#17734a;--ok-bg:#e5f5ec;--bad:#a12f2f;--bad-bg:#fbe9e9;--busy-bg:#eef1f7;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
@@ -8,6 +8,7 @@ body{display:grid;grid-template-rows:auto 1fr;background:var(--bg)}
 .brand{display:flex;align-items:center;gap:10px}
 .logo{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--accent-ink);font-size:.8rem}
 .model-name{color:var(--muted);font-size:.9rem}
+.brand-name{margin:0;font-size:1em;font-weight:700}
 .actions{display:flex;align-items:center;gap:12px}
 button,a.quiet{font:inherit;font-size:.9rem;border-radius:7px;padding:7px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;text-decoration:none}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
@@ -64,7 +65,7 @@ dd{margin:0}
 .screen-list li button{width:100%;display:flex;justify-content:space-between;text-align:left;border:0;padding:5px 8px;background:transparent}
 .screen-list li button[aria-current="true"]{background:var(--state)}
 .mark.ok{color:var(--ok)}
-.mark.bad{color:#c27c0e}
+.mark.bad{color:var(--warn)}
 .screen-stage{display:flex;flex-direction:column;gap:10px;min-width:0}
 .problems{display:flex;flex-direction:column;gap:4px;font-size:.84rem;padding:8px 10px;border-radius:8px}
 .problems.ok{background:var(--ok-bg);color:var(--ok)}
@@ -82,12 +83,12 @@ dd{margin:0}
 .screen-field{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;background:var(--busy-bg);cursor:grab}
 .screen-field code{font-size:.8rem}
 .screen-field .field-meta{grid-column:2/4;grid-row:2;margin-top:-4px}  /* under the name and label, so the label keeps the width */
-.screen-field button{padding:2px 8px}
+.screen-field button{padding:2px 8px;min-height:24px}
 .grip{color:var(--muted)}
 .drop-hint{padding:12px;text-align:center}
 .screen-tools{display:flex;gap:8px}
 .palette .chip-row{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 8px;margin-bottom:5px;border:1px solid var(--line);border-radius:7px;background:var(--panel);font-size:.8rem;cursor:grab}
-.palette .chip-row button{padding:2px 8px;font-size:.75rem}
+.palette .chip-row button{padding:2px 8px;font-size:.75rem;min-height:24px}
 .chat{display:flex;flex-direction:column;gap:8px}
 .mode{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
 .chat-log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto}
@@ -144,11 +145,11 @@ dd{margin:0}
 .inline-edit .draft-tools .primary{flex:1;padding:4px 8px;font-size:.82rem}
 .inline-edit .draft-tools .quiet{padding:4px 9px}
 .msg.draft{background:var(--busy-bg);padding:9px 11px;border-radius:12px;font-size:.88rem;border:1px dashed var(--state-line)}
-.who{font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:999px;margin-right:6px}
+.who{font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:999px;margin-right:6px}
 .who.ai{background:#efe7fb;color:#5b2ea6}
-.who.you{background:var(--state);color:var(--state-line)}
+.who.you{background:var(--state);color:var(--accent)}
 .plan-steps>li.checked{box-shadow:inset 3px 0 0 var(--ok)}
-.plan-steps .show{grid-column:3;padding:2px 8px;font-size:.75rem}
+.plan-steps .show{grid-column:3;padding:2px 8px;font-size:.75rem;min-height:24px}
 .step-note{background:#efe7fb;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:.86rem}
 .step-note p{margin:2px 0}
 .health{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;border-radius:999px;font-size:.85rem}
@@ -169,18 +170,18 @@ dd{margin:0}
 .palette-title{font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:0 6px}
 /* Ripple (ADR-0158): what a change does to the other diagrams, and the AI's follow-ons */
 .tabs .badge{display:inline-block;min-width:1.3em;margin-left:5px;padding:0 5px;border-radius:999px;background:#e5f5ec;color:var(--ok);font-size:.7rem;line-height:1.35em;text-align:center}
-.tabs .badge.warn{background:#fdf1dc;color:#8a5a08}
+.tabs .badge.warn{background:#fdf1dc;color:var(--warn)}
 .tabs .badge.bad{background:#fbe3e3;color:var(--bad)}
 .tabs .badge[hidden]{display:none}
 .ripple h4,.follow-ons h4{margin:4px 0;font-size:.82rem}
 .ripple h4.ok{color:var(--ok)}
 .ripple h4.bad{color:var(--bad)}
 .ripple-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px}
-.ripple-item{display:grid;grid-template-columns:1.1em auto 1fr;gap:6px;width:100%;text-align:left;border:0;background:transparent;padding:3px 4px;border-radius:5px;font-size:.8rem}
+.ripple-item{display:grid;grid-template-columns:1.1em auto 1fr;gap:6px;width:100%;text-align:left;border:0;background:transparent;padding:3px 4px;border-radius:5px;font-size:.8rem;min-height:24px}
 .ripple-item:hover{background:var(--busy-bg)}
 .ripple-item .where{color:var(--muted);font-weight:600;white-space:nowrap}
 .ripple-item.added .mark{color:var(--ok)}
-.ripple-item.changed .mark,.ripple-item.warning .mark{color:#a86b06}
+.ripple-item.changed .mark,.ripple-item.warning .mark{color:var(--warn)}
 .ripple-item.removed .mark,.ripple-item.problem .mark,.ripple-item.problem .what{color:var(--bad)}
 .ripple-list .cases{padding:3px 4px}
 .follow-ons ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
@@ -210,7 +211,7 @@ body[data-run="paused"] .run-status{color:#8a6100;font-weight:600}
 .records{border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
 .records th{text-align:left;font-weight:600;padding:1px 12px 1px 4px}
 .records tr.now{background:#fff0b3}
-button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);font-size:inherit;text-align:left}
+button.link{border:0;background:transparent;padding:1px 4px;min-height:24px;color:var(--accent);font-size:inherit;text-align:left}
 .breakpoints li{display:flex;align-items:center;gap:6px;font-size:.84rem}
 .breakpoints .dot{width:10px;height:10px;border-radius:50%;background:#e51400;flex:none}
 .breakpoints button.small{padding:1px 8px;font-size:.75rem;margin-left:auto}
@@ -232,13 +233,13 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .law-badge{flex:none;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--busy-bg);color:var(--muted)}
 .law.holds .law-badge{background:var(--ok-bg);color:var(--ok)}
 .law.broken .law-badge{background:var(--bad-bg);color:var(--bad)}
-.law.vacuous .law-badge,.law.unknown .law-badge{background:#fdf4e3;color:#8a5a0a}
+.law.vacuous .law-badge,.law.unknown .law-badge{background:#fdf4e3;color:var(--warn)}
 .law.evidence .law-badge{background:var(--state);color:var(--accent)}
 .law-text{font-size:.92rem}
 .law-why{margin:4px 0 0}
 .law-run{margin:4px 0 0;padding-left:20px;font-size:.84rem}
 .law-tools{display:flex;gap:6px;margin-top:8px}
-.law-tools button{padding:3px 10px;font-size:.8rem}
+.law-tools button{padding:3px 10px;font-size:.8rem;min-height:24px}
 /* What's missing (ADR-0216): every view's row, ready or what it still lacks */
 .explorer{grid-template-rows:minmax(0,max-content) minmax(0,max-content) minmax(36%,1fr)}
 .explorer .missing{padding:10px 12px;border-bottom:1px solid var(--line);max-height:34vh;overflow:auto}
@@ -246,16 +247,16 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .missing>p{margin:0 0 6px}
 .missing-list,.missing-items{list-style:none;margin:0;padding:0}
 .missing-view{margin:0 0 2px}
-.missing-head{display:grid;grid-template-columns:16px 1fr auto;gap:6px;width:100%;text-align:left;border:0;background:transparent;padding:3px 4px;font-size:.84rem;border-radius:5px}
+.missing-head{display:grid;grid-template-columns:16px 1fr auto;gap:6px;width:100%;text-align:left;border:0;background:transparent;padding:3px 4px;font-size:.84rem;border-radius:5px;min-height:24px}
 .missing-head:hover{background:var(--state)}
 .missing-view.ready .mark{color:var(--ok)}
-.missing-view.todo .mark{color:#a35f00}
+.missing-view.todo .mark{color:var(--warn)}
 .missing-n{color:var(--muted);font-size:.78rem}
 .missing-items{margin:0 0 6px 22px;display:flex;flex-direction:column;gap:3px;font-size:.8rem}
 .missing-items li{display:flex;flex-direction:column}
 .missing-items li.problem>span:first-child{color:var(--bad)}
 .missing-items .fix{font-size:.76rem}
-.missing-fix{margin:2px 0 4px 22px;padding:3px 10px;font-size:.8rem;border:1px solid var(--accent,#2f5bd3);color:var(--accent,#2f5bd3);background:transparent;border-radius:5px}
+.missing-fix{margin:2px 0 4px 22px;padding:3px 10px;min-height:24px;font-size:.8rem;border:1px solid var(--accent,#2f5bd3);color:var(--accent,#2f5bd3);background:transparent;border-radius:5px}
 .missing-fix:hover{background:var(--state)}
 .missing-note{margin:4px 0 0}.missing-updated{margin:0;color:var(--ok)}
 .sim-kinds[hidden]{display:none}

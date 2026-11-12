@@ -253,6 +253,27 @@ def export_report(fmt: str, pack: Pack, model: Workflow, data: DataModel | None,
 
 
 MAX_XML_BYTES = 8_000_000  # XMI and draw.io files
+_LARGEST = 10 ** 18  # beyond every limit the kernel and the data model set
+
+
+def whole(digits: str) -> int:
+    """A count written in a file (a multiplicity, a length): ASCII digits as an int. A number longer than 18 digits is
+    read as 10**18, which every limit refuses as the number itself would be: Python will not convert one of more
+    than 4,300 digits, and a file must not be able to stop an import that way."""
+    if not (digits.isascii() and digits.isdigit()):
+        raise ValueError(f"not a count: {digits[:20]!r}")
+    return int(digits) if len(digits) <= 18 else _LARGEST
+
+
+def is_count(text: str) -> bool:
+    """True for ASCII digits only: `str.isdigit` also accepts characters such as `²` that `int` refuses."""
+    return text.isascii() and text.isdigit()
+
+
+def character(code: int) -> str | None:
+    """The character for an escaped code point, or None for one that is not a character (a surrogate, or beyond
+    U+10FFFF): the escape is then left as written instead of failing the import."""
+    return chr(code) if code <= 0x10FFFF and not 0xD800 <= code <= 0xDFFF else None
 
 
 def xml_root(text: str, what: str) -> ET.Element:
