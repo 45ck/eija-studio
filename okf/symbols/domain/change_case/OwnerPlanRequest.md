@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#OwnerPlanRequest
   title: domain/change_case.py
   hash_method: ast-sig-v1
-  sha256: 958c6d5921e0097183d777337aa043df3277b4ce9d61bed12f2b06946a1edddc
-notes_baseline: 8203cdb7678e2718fcd79a34309d9594127e73acfb25047a3635468c6fc1c35d
+  sha256: 86b7b1f7a0dfb6b1d9ea58db52a9f45bbb40a0eede0b09af83e328be44de90a4
+notes_baseline: b23f8bacbac8fb98f4b25e3b8c260be7623e62b9c61d33c6b75df7fe82460869
 ---
 
 # domain.change_case.OwnerPlanRequest
@@ -42,7 +42,7 @@ Exact accepted workflow commands and the identities of their reviewed preview.
 | `request` | `str` | `Field(min_length=1, max_length=6000)` |
 | `pack_id` | `str` | `Field(min_length=1, max_length=40)` |
 | `expected_pack_digest` | `str` | `Field(pattern='^[a-f0-9]{64}$')` |
-| `expected_baseline_version` | `int` | `Field(ge=0, strict=True)` |
+| `expected_baseline_version` | `JsonInt` | `Field(ge=0)` |
 | `expected_baseline_semantic_hash` | `str` | `Field(pattern='^[a-f0-9]{64}$')` |
 | `expected_candidate_semantic_hash` | `str` | `Field(pattern='^[a-f0-9]{64}$')` |
 | `steps` | `tuple[OwnerPlanStep, ...]` | `Field(min_length=1, max_length=64)` |
@@ -58,6 +58,7 @@ _No curated notes yet._
 
 * [domain.change_case.OwnerPlanStep](/symbols/domain/change_case/OwnerPlanStep.md) - Reported proposal provenance, never a capability or an owner decision.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 
 ## Referenced by
 

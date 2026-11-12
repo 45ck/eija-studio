@@ -15,8 +15,10 @@ from __future__ import annotations
 from collections import deque
 from typing import Any
 
-from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow
+from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, ValueGuard, Workflow
 from eija_studio.domain.pack import Pack
+from eija_studio.domain.data import data_for
+from eija_studio.domain.value_guards import points
 from .runtime import execute, initialise
 from .simulation import CASE, MemorySession
 
@@ -25,12 +27,48 @@ def _ordered(model: Workflow) -> list[Transition]:
     return sorted(model.transitions, key=lambda t: t.id)
 
 
+def _guards(transitions: list[Transition]) -> dict[str, list[ValueGuard]]:
+    """Every guard over values of these transitions, grouped by the attribute it reads, in name order."""
+    found: dict[str, list[ValueGuard]] = {}
+    for t in transitions:
+        for guard in t.conditions:
+            found.setdefault(guard.attribute, []).append(guard)
+    return dict(sorted(found.items()))
+
+
+def _choices(pack: Pack) -> dict[str, tuple[str, ...]]:
+    """The record class's choice attributes and their declared choices, the only values a record of them can hold."""
+    data = data_for(pack)
+    record = next((e for e in data.entities if e.name == data.record), None) if data else None
+    return {a.name: a.choices for a in record.attributes if a.type == "choice"} if record else {}
+
+
+def _meeting(pack: Pack, transitions: list[Transition]) -> dict[str, Any] | None:
+    """A record's values that meet every guard over values of these transitions (ADR-0234): {} when they have none,
+    None when no values meet them all. A cell is about who may act, so it is tried on a record whose values let it.
+
+    A guard reads one attribute, so each attribute is solved on its own, among the values that stand for every value
+    its guards tell apart; a choice attribute only among its declared choices, since a record can hold no other."""
+    grouped = _guards(transitions)
+    choices = _choices(pack) if grouped else {}
+    values: dict[str, Any] = {}
+    for attribute, guards in grouped.items():
+        candidates = choices.get(attribute) or [v for v in points(guards) if v is not None]
+        value = next((v for v in candidates if all(g.holds({attribute: v}) for g in guards)), None)
+        if value is None:
+            return None
+        values[attribute] = value
+    return values
+
+
 def _try(pack: Pack, model: Workflow, transition: Transition, actor_id: str, session: MemorySession | None = None,
          record: str | None = None) -> str | None:
     """None if the kernel commits `transition` for this actor, else its refusal code. Without a record, a fresh one is
-    started in the transition's source state."""
+    started in the transition's source state, with values that meet the transition's guards over values, if any."""
     session = session or MemorySession(pack)
-    record = record or initialise(session, CASE, model, state=transition.from_state, pack=pack)["id"]  # type: ignore[arg-type]
+    if record is None:
+        record = initialise(session, CASE, model, state=transition.from_state, pack=pack)["id"]  # type: ignore[arg-type]
+        session.record_values[record] = _meeting(pack, [transition]) or {}
     item = session.instances[record]
     command = ExecuteCommand(operation_id=f"access-{transition.id}-{actor_id}-{item['version']}", actor_id=actor_id,
                              instance_id=record, action=transition.action, expected_version=item["version"])
@@ -45,7 +83,7 @@ def _cell(pack: Pack, model: Workflow, t: Transition) -> dict[str, Any]:
     actors = [a for a in pack.fixtures.actors if a.role == t.role]
     tried = [{"actor": a.id, "refused": _try(pack, model, t, a.id)} for a in actors]
     return {"action": t.action, "transition": t.id, "to": t.to_state, "assigned_only": "actor_assigned" in t.guards,
-            "actors": tried}
+            "actors": tried} | ({"when": [str(g) for g in t.conditions]} if t.conditions else {})
 
 
 def matrix(pack: Pack, model: Workflow) -> dict[str, Any]:
@@ -112,14 +150,22 @@ def _taker(pack: Pack, model: Workflow, t: Transition) -> str | None:
     return next((a.id for a in pack.fixtures.actors if a.role == t.role and _try(pack, model, t, a.id) is None), None)
 
 
-def _replay(pack: Pack, model: Workflow, path: list[Transition]) -> list[dict[str, Any]] | str:
+def _replay(pack: Pack, model: Workflow, path: list[Transition], values: dict[str, Any]) -> list[dict[str, Any]] | str:
     """Take `path` on one record in the kernel: the steps it committed, or the refusal code that stopped it."""
     session = MemorySession(pack)
     record = initialise(session, CASE, model, pack=pack)["id"]  # type: ignore[arg-type]
-    steps = []
+    session.record_values[record] = values
+    steps: list[dict[str, Any]] = []
     for t in path:
-        actor = _taker(pack, model, t) or ""
-        code = _try(pack, model, t, actor, session, record)
+        # The first fixture actor in the role the kernel lets take this step on this record: one who took an earlier
+        # step may be refused by a separation of duties law (ADR-0233), and another of the role may not.
+        code: str | None = "ROLE_DENIED"
+        actor = ""
+        for candidate in (a.id for a in pack.fixtures.actors if a.role == t.role):
+            code = _try(pack, model, t, candidate, session, record)
+            if code is None:
+                actor = candidate
+                break
         if code is not None:  # a guard that depends on more than the actor and the state; reported, never hidden
             return f"{t.action} ({code})"
         steps.append({"transition": t.id, "action": t.action, "role": t.role, "actor": actor, "from": t.from_state, "to": t.to_state})
@@ -156,7 +202,10 @@ def reach(pack: Pack, model: Workflow, target: str, without: str | None = None) 
     path = _path(model, target, _usable(pack, model, allowed))
     if path is None:
         return _not_shown(question, "The model has a path, but no fixture actor could take every step in the kernel; other actors might.")
-    steps = _replay(pack, model, path)
+    values = _meeting(pack, path)  # one record takes the whole path, so its values must meet every guard on it (ADR-0234)
+    if values is None:
+        return _not_shown(question, "The model has a path, but no one record's values meet every guard over values on it.")
+    steps = _replay(pack, model, path, values)
     if isinstance(steps, str):
         return _not_shown(question, f"The kernel refused {steps} on replay.")
-    return question | {"verdict": "REACHABLE", "path": steps, "why": _reached(target, steps)}
+    return question | {"verdict": "REACHABLE", "path": steps, "why": _reached(target, steps)} | ({"values": values} if values else {})

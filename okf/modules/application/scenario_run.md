@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scenario_run.py
   title: application/scenario_run.py
   hash_method: ast-api-v1
-  sha256: 8dcbd3690764724996d08bbe172f4bce4c621b51c9ed5d03bea9e691f3dccbd9
-notes_baseline: 354fe9f0929e6d6c4afb9c8ecc44106428e8c400f3c030de449e9b2437ae4c6c
+  sha256: 60ad04bf0611da8021e06379ec4b29a720b3f8e13af6f8e47b68921f393c6bb6
+notes_baseline: 93ee756bcf3c4913fff80ace070c71440962b8c8684bdd86fb6668a9f26e3569
 ---
 
 # application.scenario_run

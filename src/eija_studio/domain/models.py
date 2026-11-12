@@ -5,8 +5,8 @@ from hashlib import sha256
 import json
 import math
 import re
-from typing import Any, Literal
-from pydantic import (BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler, StrictBool, StrictFloat, StrictInt,
+from typing import Annotated, Any, Literal
+from pydantic import (BaseModel, BeforeValidator, ConfigDict, Field, SerializerFunctionWrapHandler, StrictBool, StrictFloat, StrictInt,
                       StrictStr, model_serializer, model_validator)
 
 
@@ -276,10 +276,24 @@ class SemanticTransaction(Contract):
     kind: Literal["enable_recommendation"]
 
 
+def _json_integer(value: Any) -> int:
+    """An integer as JSON Schema's `"type": "integer"` reads one (ADR-0238): an int, or a float with no fractional part
+    (`1.0`, which `json.dumps(1.0)` writes). A string, a boolean or a fractional float is refused. Pydantic's lax int
+    took `"5"` and `true`, and its strict int refused `1.0`, so neither matched the published contracts."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError("must be a JSON integer")
+    if isinstance(value, float) and not (math.isfinite(value) and value.is_integer()):
+        raise ValueError("must be a whole number")
+    return int(value)
+
+
+JsonInt = Annotated[int, BeforeValidator(_json_integer)]
+
+
 class LayoutChange(Contract):
     node: str = Field(min_length=1, max_length=60)
-    x: int = Field(ge=0, le=2000)
-    y: int = Field(ge=0, le=2000)
+    x: JsonInt = Field(ge=0, le=2000)
+    y: JsonInt = Field(ge=0, le=2000)
 
 
 class ExecuteCommand(Contract):
@@ -287,7 +301,7 @@ class ExecuteCommand(Contract):
     actor_id: str = Field(min_length=1, max_length=80)
     instance_id: str = Field(min_length=1, max_length=80)
     action: str = Field(min_length=1, max_length=60)
-    expected_version: int = Field(ge=0, strict=True)
+    expected_version: JsonInt = Field(ge=0)
 
 
 class Principal(Contract):

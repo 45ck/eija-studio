@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0238: Verify value-guard representatives by property and mutation, and fix what that found'
+title: 'ADR-0239: Verify value-guard representatives by property and mutation, and fix what that found'
 description: ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
-resource: repo://docs/adr/0238-value-guard-representatives-verified.md
+resource: repo://docs/adr/0239-value-guard-representatives-verified.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0238-value-guard-representatives-verified.md
-  title: 0238-value-guard-representatives-verified.md
+- resource: repo://docs/adr/0239-value-guard-representatives-verified.md
+  title: 0239-value-guard-representatives-verified.md
   hash_method: lf-sha256-v1
-  sha256: a0a935b86e2c789cb1c5672b4312d4119dbf5a7cb72ccbc220cf1e042d66b0cc
-notes_baseline: 4821712174f927239c5784e86ada666303833b927a4c72c3e6c94bf8c0fc3e8a
+  sha256: 85a41f5c5bd510281b2dc8d16f1534633036df1a27d0c0f1626de2b26ccdb0a3
+notes_baseline: 03f9ac7f8ebd2579ec8e00d71547aa9ee2b42db541946018bdcd9b7f3be0e437
 ---
 
-# ADR-0238: Verify value-guard representatives by property and mutation, and fix what that found
+# ADR-0239: Verify value-guard representatives by property and mutation, and fix what that found
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 4821712174f927239c5784e86ada666303833b927a4c72c3e6c94bf8c0fc3e8a
 | Status | accepted |
 | Date | 2026-11-12 |
 | Lane | kernel / verification (issue #221) |
-| Source | `repo://docs/adr/0238-value-guard-representatives-verified.md` |
+| Source | `repo://docs/adr/0239-value-guard-representatives-verified.md` |
 
 ## Decision outcome (verbatim)
 

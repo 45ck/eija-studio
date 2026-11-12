@@ -1,4 +1,4 @@
-"""Regression tests for the kernel defects the property suite found in value guards (ADR-0238).
+"""Regression tests for the kernel defects the property suite found in value guards (ADR-0239).
 
 Each case is the smallest example Hypothesis shrank to; ``tests/property/test_value_guards.py`` states the general
 property. These run in the fast tier so the fixes cannot regress between full-tier runs.

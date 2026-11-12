@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: fdcea24e8599a68cc92f2696caddd2b752d7352c14cce231135cffe6e89f802a
-notes_baseline: 275ecbd2ad4a2cc5c678d40033edab5ba8559f3303ee464da59c99eeb8209493
+  sha256: 028589c898b01be609e3cb08248fa98ab8a0ba2b41ae15e569f41493b570a67c
+notes_baseline: a750b32c86ad75707228eaa52611a4af2907bd0160dba590e81ced391dbaa063
 ---
 
 # domain.models
@@ -41,6 +41,7 @@ _The source carries no module docstring._
 * [`DomainError`](/symbols/domain/models/DomainError.md) (class) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [`ExecuteCommand`](/symbols/domain/models/ExecuteCommand.md) (class) - no docstring
 * [`Guard`](/symbols/domain/models/Guard.md) (type-alias) - no docstring
+* [`JsonInt`](/symbols/domain/models/JsonInt.md) (type-alias) - no docstring
 * [`LayoutChange`](/symbols/domain/models/LayoutChange.md) (class) - no docstring
 * [`MEANING_ID`](/symbols/domain/models/MEANING_ID.md) (constant) - no docstring
 * [`OWNER`](/symbols/domain/models/OWNER.md) (constant) - no docstring
@@ -160,6 +161,7 @@ _No curated notes yet._
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.Guard](/symbols/domain/models/Guard.md) - Type alias `Guard` in `domain/models`.
+* [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
 * [domain.models.MEANING_ID](/symbols/domain/models/MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
 * [domain.models.OWNER](/symbols/domain/models/OWNER.md) - Constant `OWNER` in `domain/models`.

@@ -14,9 +14,14 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#ExecuteCommand
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 48b5954daef1d067ad22c9808aba5ec51cda6abfe17aa1aa88e93992eae3d285
+  sha256: 23a9c51aa6888993ab4ced847723eaf9615882bd795dc839ac40416e4a94c56e
 description_override: A preview command bound to an operation id, actor, instance, action and expected version.
-notes_baseline: a2a117be9176ce6df5636b2c58c81279923101006e80d95682985834ffcdb0d9
+notes_baseline: 5a6e5cd14ec42545f500993c140d89cfe03e7e58ecf3d159ce6246360fa4c6fa
+verified:
+- by: process:claude-code
+  at: '2026-11-12T03:20:00Z'
+  notes_sha256: 9176e25a115f902fc1c75eb295facbb936efc4c5a6e0408aeaafc257cce9a273
+  sources_sha256: 5a6e5cd14ec42545f500993c140d89cfe03e7e58ecf3d159ce6246360fa4c6fa
 ---
 
 # domain.models.ExecuteCommand
@@ -42,17 +47,18 @@ _The source carries no docstring._
 | `actor_id` | `str` | `Field(min_length=1, max_length=80)` |
 | `instance_id` | `str` | `Field(min_length=1, max_length=80)` |
 | `action` | `str` | `Field(min_length=1, max_length=60)` |
-| `expected_version` | `int` | `Field(ge=0, strict=True)` |
+| `expected_version` | `JsonInt` | `Field(ge=0)` |
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-All five fields form the replay binding checked in [runtime.execute](/symbols/application/runtime/execute.md); `expected_version` is strict-int so a stale caller is rejected, not coerced.
+All five fields form the replay binding checked in [runtime.execute](/symbols/application/runtime/execute.md); `expected_version` is a JSON integer ([JsonInt](/symbols/domain/models/JsonInt.md), ADR-0238): an int or a float with no fractional part such as `1.0`, never a string or a boolean, so a stale caller is rejected, not coerced from text.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 
 ## Referenced by
 

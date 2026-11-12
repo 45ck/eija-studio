@@ -53,4 +53,5 @@
 * [domain.models.Comparison](Comparison.md) - Type alias `Comparison` in `domain/models`.
 * [domain.models.Guard](Guard.md) - Type alias `Guard` in `domain/models`.
 * [domain.models.Interpretation](Interpretation.md) - Type alias `Interpretation` in `domain/models`.
+* [domain.models.JsonInt](JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 * [domain.models.TimeUnit](TimeUnit.md) - Type alias `TimeUnit` in `domain/models`.

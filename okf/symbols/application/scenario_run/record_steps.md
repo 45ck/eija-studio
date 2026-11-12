@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/scenario_run.py#record_steps
   title: application/scenario_run.py
   hash_method: ast-v2
-  sha256: de1d22d04dce4d41db641c0b0d0c22648df0b373305e3c45ca171f2468f9670e
-notes_baseline: a571d3479bda1e94846de10346f61a0c321cd7d4cd9f4806e27981767f54afca
+  sha256: ed025c38dd2008e535ce2fb22bf4a5a55bd250f24b1a5ab5494f3d151ed58689
+notes_baseline: fa2ae60fdcaf7686f67c4763b4360d067dc015e7a9b008d481725ba9e1d0abe3
 ---
 
 # application.scenario_run.record_steps
@@ -25,7 +25,7 @@ notes_baseline: a571d3479bda1e94846de10346f61a0c321cd7d4cd9f4806e27981767f54afca
 |---|---|
 | Kind | function |
 | Module | [`application/scenario_run`](/modules/application/scenario_run.md) |
-| Signature | `def record_steps(pack: Pack, model: Workflow, start: str \| None, steps: Sequence[tuple[str, str] \| tuple[str, str, Delay \| None]]) -> list[dict[str, Any]]` |
+| Signature | `def record_steps(pack: Pack, model: Workflow, start: str \| None, steps: Sequence[tuple[str, str] \| tuple[str, str, Delay \| None]], values: dict[str, Any] \| None=None) -> list[dict[str, Any]]` |
 | Code | `repo://src/eija_studio/application/scenario_run.py#record_steps` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -36,6 +36,7 @@ What the kernel does for each (actor, action) in turn, written as scenario steps
 A step given as (actor, action, wait) lets that time pass first and keeps its wait (ADR-0237).
 
 This is how a person adds a test: try the steps, read what happened, and keep it if it is what should happen.
+`values` are the record's values, which guards over values read (ADR-0234).
 ~~~
 <!-- okf:generated:end facts -->
 

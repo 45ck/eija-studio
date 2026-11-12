@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0232-one-action-from-several-states.md
   title: 0232-one-action-from-several-states.md
   hash_method: lf-sha256-v1
-  sha256: 816c45e9b3947c074a9dcd7745a7e87391be5257aa17286f2ae87614bc0c4627
-notes_baseline: 1781a0d8bf12fe3fe71ddabea630601f406db4d940d476da5ae1baa6f5a89c08
+  sha256: fb2e94d7e4d8cdd7b8eafe0926f7b9a2532d5791b0f6571bac7e3e596419ba99
+notes_baseline: f78a24662ce943c2fa8018cff1b81db2cebf14b68de4b1d512afe6d3f4d7fbdc
 ---
 
 # ADR-0232: One action from several states
@@ -54,6 +54,7 @@ notes_baseline: 1781a0d8bf12fe3fe71ddabea630601f406db4d940d476da5ae1baa6f5a89c08
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 12 November 2026: chat and the outline name the source
 
 ## Code and docs mentioned
 
@@ -71,5 +72,5 @@ _No curated notes yet._
 
 * [ADR-0234: Guards over record values](/adrs/0234-guards-over-record-values.md) - Issue #93, item 1.
 * [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
-* [ADR-0238: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0238-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
+* [ADR-0239: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0239-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
 <!-- okf:generated:end links -->

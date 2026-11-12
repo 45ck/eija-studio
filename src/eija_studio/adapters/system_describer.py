@@ -33,6 +33,8 @@ def _library() -> dict[str, Any]:
 NUMBER = ("price", "cost", "amount", "total", "quantity", "qty", "count", "number", "age", "rating", "score", "budget", "hours", "weight")
 DATE = ("date", "deadline", "due", "when", "birthday", "start", "end", "day")
 NOT_FIELDS = ("to", "be", "been", "can", "will", "no", "not", "many", "multiple", "them", "it", "they", "this", "that", "who", "which")
+# Words that make an item a clause, not a field: "agents resolve them", "customers can reopen within 7 days".
+CLAUSE = ("them", "it", "they", "that", "who", "which", "can", "will", "should", "may", "cannot")
 BOOLEAN_PREFIX = ("is", "has", "paid", "urgent", "vip")
 THING = re.compile(r"\b(?:track|tracks|tracking|manage|manages|managing|organise|organize|log|logs)\s+(?:my\s+|our\s+|the\s+|all\s+)?([a-z]{3,30}?)s\b", re.I)
 LIST = re.compile(r"\b(?:with|has|have|having|records?|stores?|captures?|fields?:?)\s+(?:an?\s+|the\s+|their\s+|its\s+)?([^.;\n]+)", re.I)
@@ -71,7 +73,10 @@ def _roles(shape: dict[str, Any], text: str) -> dict[str, str]:
 
 
 def _starts_or_ends(low: str, words: tuple[str, ...], starts: bool) -> bool:
-    return any(low == w or low.endswith(w) or (starts and low.startswith(w)) for w in words)
+    """Whether a field's words end with one of `words`, or (`starts`) begin with one as a whole word: "price paid" and
+    "unit price" are numbers, "agents" is not an age."""
+    first = low.split(" ", maxsplit=1)[0]
+    return any(low == w or low.endswith(w) or (starts and first in (w, w + "s")) for w in words)
 
 
 def _field_type(name: str, choices: list[str]) -> str:
@@ -86,8 +91,11 @@ def _field_type(name: str, choices: list[str]) -> str:
 
 
 def _choices(raw: str) -> tuple[str, list[str]]:
-    """`size (small, medium) extra` as `size extra` and its choices."""
+    """`size (small, medium) extra` as `size extra` and its choices; `priority low/medium/high` as `priority` and its."""
     match = re.match(r"^(.*?)\s*\(([^)]*)\)\s*(.*)$", raw)
+    slashed = re.match(r"^(.*?)\s*\b([A-Za-z]+(?:\s*/\s*[A-Za-z]+)+)\s*$", raw)
+    if not match and slashed and slashed.group(1).strip():
+        return slashed.group(1).strip(), [_camel(c) for c in re.split(r"\s*/\s*", slashed.group(2)) if c.strip()]
     if not match:
         return raw, []
     rest = (match.group(1) + " " + match.group(3)).strip()
@@ -97,7 +105,7 @@ def _choices(raw: str) -> tuple[str, list[str]]:
 def _field_name(raw: str) -> tuple[str, list[str]] | None:
     raw = re.sub(r"\b(required|optional|must have|an?|the|some|optional)\b", " ", raw, flags=re.I)
     words = re.findall(r"[A-Za-z][A-Za-z0-9]*", raw)[:3]
-    if not words or words[0].lower() in NOT_FIELDS:
+    if not words or words[0].lower() in NOT_FIELDS or any(w.lower() in CLAUSE for w in words[1:]):
         return None
     name = words[0].lower() + "".join(w[:1].upper() + w[1:].lower() for w in words[1:])
     return None if not FIELD_NAME.match(name) or name == "title" else (name, words)
@@ -135,7 +143,9 @@ def _split_list(text: str) -> list[str]:
 def _fields(text: str) -> list[dict[str, Any]]:
     found: dict[str, dict[str, Any]] = {}
     for match in LIST.finditer(text):
-        for item in _split_list(match.group(1)):
+        for listed in _split_list(match.group(1)):
+            # "tickets that have priority low/medium/high": the field is what comes after the last has/have/with.
+            item = re.split(r"\b(?:with|has|have|having)\s+(?:an?\s+|the\s+|their\s+|its\s+)?", listed, flags=re.I)[-1]
             field = _field(item)
             if field is not None:
                 found.setdefault(field["name"], field)

@@ -58,3 +58,15 @@ Changes by area:
 * Bad: the formal proofs do not cover a workflow that uses this. Such a workflow is refused there and reported, not proved.
 * Bad: kernel change, so it needs owner source review (#80).
 * Revisit when: a pack needs per-source targets, or the formal encodings gain a set of sources per action.
+
+## Amendment, 12 November 2026: chat and the outline name the source
+
+In PlayIDE, chat plan mode refused every phrase about such an action ("The model has no single transition or action
+Return"), and the outline listed `Return [Librarian]` twice. Now:
+
+* "allow ‹role› to Return" and "move Return target to ‹state›" change what the action's transitions share, so any one
+  stands for all of them and the kernel's edit changes every one.
+* "remove Return" removes every transition the action labels; "remove Return from Overdue" removes the one leaving
+  Overdue. "move Return from Overdue source to ‹state›" moves one source; without "from" it names the sources to choose
+  from. The phrases offered for a selected transition say "from ‹state›" when its action leaves several states.
+* The outline (and so the status bar) reads `Return [Librarian] from OnLoan` and `Return [Librarian] from Overdue`.

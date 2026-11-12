@@ -32,7 +32,7 @@ TARGETS: tuple[Target, ...] = (
     Target(f"{SRC}/domain/evidence.py", ("tests/test_evidence_oracle.py",)),
     Target(f"{SRC}/application/runtime.py", ("tests/test_runtime_oracle.py", "tests/test_runtime.py")),
     Target(f"{SRC}/application/verifier.py", ("tests/test_verifier_oracle.py",)),
-    # ADR-0238: the representatives the law proof, Simulate and the generated app's oracle try for value guards.
+    # ADR-0239: the representatives the law proof, Simulate and the generated app's oracle try for value guards.
     Target(f"{SRC}/domain/value_guards.py", ("tests/test_value_guard_edges.py", "tests/test_value_guards.py",
                                              "tests/property/test_value_guards.py")),
     Target(f"{SRC}/domain/laws.py", ("tests/test_reach_end_law.py", "tests/test_law_proof.py", "tests/test_library_loan.py",
