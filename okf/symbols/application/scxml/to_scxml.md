@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py#to_scxml
   title: application/scxml.py
   hash_method: ast-v2
-  sha256: 4746d4431dce23a377f1dad1022ade8fe5550cee2efc653302dd2c0a2f99ae69
-notes_baseline: 687d94b5c6bb7693ac3266486af0329a22e19324006f625f48e35e201b1dfe48
+  sha256: db676e07b6717943697f4a547cb7fb72c0b5ce4b2bbebd627d574a3dad68df20
+notes_baseline: 90aa8009f687c86b693a6bcda50277687b0b158cf777bcaa09876495a43ada88
 ---
 
 # application.scxml.to_scxml

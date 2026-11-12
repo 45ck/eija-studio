@@ -1,4 +1,4 @@
-# ADR-0238: Composite states
+# ADR-0239: Composite states
 
 * Status: accepted
 * Date: 2026-11-12

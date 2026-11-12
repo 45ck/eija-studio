@@ -5,8 +5,8 @@ from hashlib import sha256
 import json
 import math
 import re
-from typing import Any, Literal
-from pydantic import (BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler, StrictBool, StrictFloat, StrictInt,
+from typing import Annotated, Any, Literal
+from pydantic import (BaseModel, BeforeValidator, ConfigDict, Field, SerializerFunctionWrapHandler, StrictBool, StrictFloat, StrictInt,
                       StrictStr, model_serializer, model_validator)
 
 
@@ -196,7 +196,7 @@ def _shape(t: Transition) -> tuple[Any, ...]:
 
 
 class Composite(Contract):
-    """A UML composite state (issue #93 item 3, ADR-0238): a named group of states, or of other composites, with the
+    """A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the
     child a transition into the group enters first. A record is always in exactly one plain state; the composite is the
     set of states inside it. The kernel runs the flat machine, so a composite never changes what a step does. A
     transition the group's states all share is drawn once from the group, and SCXML gets a nested `<state>`."""
@@ -214,7 +214,7 @@ class Workflow(Contract):
     # Roles that may start a record (ADR-0231, issue #142). Empty means any active actor, as before: an empty tuple is
     # left out of every dump, so models that do not name initiators keep their exact bytes and hashes.
     initiators: tuple[str, ...] = Field(default=(), max_length=16)
-    # Composite states (ADR-0238). Empty is left out of every dump, so flat models keep their exact bytes and hashes.
+    # Composite states (ADR-0239). Empty is left out of every dump, so flat models keep their exact bytes and hashes.
     composites: tuple[Composite, ...] = Field(default=(), max_length=16)
 
     @model_serializer(mode="wrap")
@@ -244,7 +244,7 @@ class Workflow(Contract):
         return self._grouped()
 
     def _grouped(self) -> Workflow:
-        """Initiators are distinct and composite states form a tree (ADR-0231, ADR-0238)."""
+        """Initiators are distinct and composite states form a tree (ADR-0231, ADR-0239)."""
         if len(set(self.initiators)) != len(self.initiators):
             raise ValueError("Duplicate initiator role")
         if not _is_tree(self.states, self.composites):
@@ -304,7 +304,7 @@ class Workflow(Contract):
         data["transitions"] = sorted(data["transitions"], key=lambda x: x["id"])
         if "initiators" in data:  # who may start a record is a set (ADR-0231); absent when empty, so old hashes hold
             data["initiators"] = sorted(data["initiators"])
-        if "composites" in data:  # a set of groups, each over a set of children (ADR-0238); absent when empty
+        if "composites" in data:  # a set of groups, each over a set of children (ADR-0239); absent when empty
             data["composites"] = sorted(({**c, "states": sorted(c["states"])} for c in data["composites"]),
                                         key=lambda c: c["name"])
         for t in data["transitions"]:
@@ -348,10 +348,24 @@ class SemanticTransaction(Contract):
     kind: Literal["enable_recommendation"]
 
 
+def _json_integer(value: Any) -> int:
+    """An integer as JSON Schema's `"type": "integer"` reads one (ADR-0238): an int, or a float with no fractional part
+    (`1.0`, which `json.dumps(1.0)` writes). A string, a boolean or a fractional float is refused. Pydantic's lax int
+    took `"5"` and `true`, and its strict int refused `1.0`, so neither matched the published contracts."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError("must be a JSON integer")
+    if isinstance(value, float) and not (math.isfinite(value) and value.is_integer()):
+        raise ValueError("must be a whole number")
+    return int(value)
+
+
+JsonInt = Annotated[int, BeforeValidator(_json_integer)]
+
+
 class LayoutChange(Contract):
     node: str = Field(min_length=1, max_length=60)
-    x: int = Field(ge=0, le=2000)
-    y: int = Field(ge=0, le=2000)
+    x: JsonInt = Field(ge=0, le=2000)
+    y: JsonInt = Field(ge=0, le=2000)
 
 
 class ExecuteCommand(Contract):
@@ -359,7 +373,7 @@ class ExecuteCommand(Contract):
     actor_id: str = Field(min_length=1, max_length=80)
     instance_id: str = Field(min_length=1, max_length=80)
     action: str = Field(min_length=1, max_length=60)
-    expected_version: int = Field(ge=0, strict=True)
+    expected_version: JsonInt = Field(ge=0)
 
 
 class Principal(Contract):

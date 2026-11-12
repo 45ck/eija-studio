@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#diff_summary
   title: application/diagrams.py
   hash_method: ast-v2
-  sha256: 24314401d5aa085cd8e894c168817e688e23938ece151da24cd063d3c2080561
-notes_baseline: e1081db05148164c4b126d966a1879d32d17b0c634487742ddb4af99a1f38fc8
+  sha256: 27d0a86c47cb4030d075aa583fc3ca8c9efdb6db2ce29c1be55b0758998eb1d6
+notes_baseline: 2a19847e68aabb021217821aa5925a92564284da695f69c0ece027493bc9a18b
 ---
 
 # application.diagrams.diff_summary

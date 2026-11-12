@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py
   title: application/scxml.py
   hash_method: ast-api-v1
-  sha256: cfdf1745c01ef7d5778b552413e9a9cfdbab8c8e6a8080293f9cafff4098757c
-notes_baseline: f1be6c42e14409439c3dc093e104af47fcdfe2c61c64b8498553b6785a7c5070
+  sha256: fb18bece687b31b96757da359b4c5ee417a507a3e8e3a6c55f35ce73006f0864
+notes_baseline: 2248f76ee13c6b174497d0bcf9e9ef56a0dc52d6947fa49319ee6908bfbbe2a0
 ---
 
 # application.scxml
@@ -39,7 +39,7 @@ case of the app oracle (ADR-0150) on the exported chart and requires the same ou
 The export is a projection of one run-to-completion step of `runtime.execute`, not a second interpreter that anything
 runs in production. What it keeps and what it leaves to the kernel:
 
-* A state is an atomic `<state>`; the initial state is the chart's `initial`. A composite state (ADR-0238) is a
+* A state is an atomic `<state>`; the initial state is the chart's `initial`. A composite state (ADR-0239) is a
   compound `<state>` holding its children, with its initial child as `initial`. An action that leaves every state
   inside a composite is carried once, on the composite, so the engine's own hierarchy decides it, and the differential
   checks that against the kernel's flat machine.

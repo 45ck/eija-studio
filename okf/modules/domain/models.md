@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: 78bd210be3699fe5a657649e94313c199f4dd3ac6c1e3524924835582375f5b8
-notes_baseline: 90344cdf9e9757bb62264f49b686ad6d80baef400cfa40342afe03c5c5ad83c0
+  sha256: b12330e3cee0ee9af1ffef202eabda0bb3eff07c68b86e5f96eda9f4d59eeb85
+notes_baseline: 5b1ad2735af94a6f265dbc729901f28d21938d3c8bfbf0808d2ec610cf41d899
 ---
 
 # domain.models
@@ -36,12 +36,13 @@ _The source carries no module docstring._
 * [`Alternative`](/symbols/domain/models/Alternative.md) (class) - no docstring
 * [`BASE_GUARDS`](/symbols/domain/models/BASE_GUARDS.md) (constant) - no docstring
 * [`Comparison`](/symbols/domain/models/Comparison.md) (type-alias) - no docstring
-* [`Composite`](/symbols/domain/models/Composite.md) (class) - A UML composite state (issue #93 item 3, ADR-0238): a named group of states, or of other composites, with the child a t…
+* [`Composite`](/symbols/domain/models/Composite.md) (class) - A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the child a t…
 * [`Contract`](/symbols/domain/models/Contract.md) (class) - no docstring
 * [`Delay`](/symbols/domain/models/Delay.md) (class) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been i…
 * [`DomainError`](/symbols/domain/models/DomainError.md) (class) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [`ExecuteCommand`](/symbols/domain/models/ExecuteCommand.md) (class) - no docstring
 * [`Guard`](/symbols/domain/models/Guard.md) (type-alias) - no docstring
+* [`JsonInt`](/symbols/domain/models/JsonInt.md) (type-alias) - no docstring
 * [`LayoutChange`](/symbols/domain/models/LayoutChange.md) (class) - no docstring
 * [`MEANING_ID`](/symbols/domain/models/MEANING_ID.md) (constant) - no docstring
 * [`OWNER`](/symbols/domain/models/OWNER.md) (constant) - no docstring
@@ -152,7 +153,7 @@ _No curated notes yet._
 * [domain.models.Alternative](/symbols/domain/models/Alternative.md) - `class Alternative(Contract)` in `domain/models`.
 * [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
 * [domain.models.Comparison](/symbols/domain/models/Comparison.md) - Type alias `Comparison` in `domain/models`.
-* [domain.models.Composite](/symbols/domain/models/Composite.md) - A UML composite state (issue #93 item 3, ADR-0238): a named group of states, or of other composites, with the child a transition into the group enters first.
+* [domain.models.Composite](/symbols/domain/models/Composite.md) - A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the child a transition into the group enters first.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.Delay.due](/symbols/domain/models/Delay.due.md) - `def due(self, elapsed: float | None) -> bool` in `domain/models`.
 * [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
@@ -161,6 +162,7 @@ _No curated notes yet._
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.Guard](/symbols/domain/models/Guard.md) - Type alias `Guard` in `domain/models`.
+* [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
 * [domain.models.MEANING_ID](/symbols/domain/models/MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
 * [domain.models.OWNER](/symbols/domain/models/OWNER.md) - Constant `OWNER` in `domain/models`.

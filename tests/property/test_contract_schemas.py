@@ -51,7 +51,7 @@ CROSS_FIELD = (
     # Value guards (ADR-0234): no duplicates; equality only for true/false; ordering only for numbers and dates.
     "Duplicate value guard", "A true/false value is only compared with = or ≠",
     "Only a date (YYYY-MM-DD) or a number is compared with <, ≤, > or ≥", "A guard's text is at most 200 characters",
-    # Composite states (ADR-0238): a tree over the states.
+    # Composite states (ADR-0239): a tree over the states.
     "Composite states must form a tree over the states",
     # JSON Schema cannot calculate a cross-field SHA-256. Concrete valid and
     # invalid bindings are checked separately by the generated-app approval suite.
@@ -364,21 +364,10 @@ def test_real_change_cases_are_schema_valid(stage):
     assert not sorted(e.message for e in Draft202012Validator(load("change-case")).iter_errors(document))
 
 
-STRICTER = ("KERNEL FINDING (schema/model drift, fail-closed): ExecuteCommand.expected_version is `strict=True`, so an "
-            "integer-valued float such as 1.0 is refused, while contracts/execute-command.schema.json declares "
-            '`"type": "integer"` and JSON Schema 2020-12 treats 1.0 as an integer (Python json.dumps(1.0) emits 1.0). '
-            "Fix in a separate kernel change: accept integral floats or publish the restriction.")
-LAXER = ("KERNEL FINDING (schema/model drift, fail-open on type): this integer field is Pydantic-lax, so the model "
-         "accepts a numeric string or a boolean where contracts/*.schema.json declares `\"type\": \"integer\"`. "
-         "ExecuteCommand.expected_version is `strict=True` and refuses both, so the contracts are inconsistent. "
-         "Fix in a separate kernel change: StrictInt (or strict=True) on integer fields of request models.")
 COERCIONS = {"float": float, "string": str, "bool": lambda v: True}
-DIVERGENCES = {("execute-command", "float"): STRICTER, ("layout-change", "string"): LAXER, ("layout-change", "bool"): LAXER,
-               ("change-case", "string"): LAXER, ("change-case", "bool"): LAXER}
-COERCION_CASES = [
-    pytest.param(name, kind, marks=pytest.mark.xfail(strict=True, reason=DIVERGENCES[name, kind])) if (name, kind) in DIVERGENCES
-    else pytest.param(name, kind)
-    for name in ("change-case", "execute-command", "layout-change") for kind in COERCIONS]
+# The schema/model drift these used to xfail on (lax ints taking "5" and true, a strict int refusing 1.0) is fixed by
+# `domain.models.JsonInt` (ADR-0238, issue #235): every case now agrees.
+COERCION_CASES = [(name, kind) for name in ("change-case", "execute-command", "layout-change") for kind in COERCIONS]
 
 
 @pytest.mark.parametrize(("name", "coercion"), COERCION_CASES)

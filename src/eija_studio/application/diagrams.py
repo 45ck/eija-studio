@@ -54,7 +54,7 @@ class Edge:
 class Cluster:
     id: str
     label: str
-    parent: str | None = None  # the cluster holding this one: a composite state inside another (ADR-0238)
+    parent: str | None = None  # the cluster holding this one: a composite state inside another (ADR-0239)
 
 
 @dataclass(frozen=True)
@@ -182,7 +182,7 @@ def state_graph(workflow: Workflow, *, role: str = "workflow") -> Graph:
     (ADR-0237) are drawn as boxes around the states they hold."""
     edges = tuple(Edge(t.from_state, t.to_state, _edge_label(t)) for t in sorted(workflow.transitions, key=_edge_key))
     nodes = tuple(Node(s, s, cluster=workflow.parent(s)) for s in sorted(workflow.states))
-    clusters = tuple(Cluster(c.name, c.name, workflow.parent(c.name)) for c in workflow.composites)  # ADR-0238
+    clusters = tuple(Cluster(c.name, c.name, workflow.parent(c.name)) for c in workflow.composites)  # ADR-0239
     return Graph("state", f"{workflow.id} state machine", nodes, edges, clusters=clusters,
                  initial=workflow.initial_state, terminals=_terminals(set(workflow.states), edges),
                  direction="TB", provenance=_provenance((role, workflow)))
@@ -218,7 +218,7 @@ def diff_summary(before: Workflow, after: Workflow) -> dict[str, Any]:
 
 
 def _composite_diff(before: Workflow, after: Workflow) -> dict[str, Any]:
-    """Composite states added, removed or regrouped (ADR-0238); absent when neither side has any or nothing changed."""
+    """Composite states added, removed or regrouped (ADR-0239); absent when neither side has any or nothing changed."""
     old, new = {c.name: c for c in before.composites}, {c.name: c for c in after.composites}
     regrouped = sorted(n for n in set(old) & set(new) if (set(old[n].states), old[n].initial) != (set(new[n].states), new[n].initial))
     found = {"added": sorted(set(new) - set(old)), "removed": sorted(set(old) - set(new)), "changed": regrouped}

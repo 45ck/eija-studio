@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#ChangeCase
   title: domain/change_case.py
   hash_method: ast-sig-v1
-  sha256: f2a77561dd11e8237231fe315488ca5864a8c6dbd8fd3dcd496b3917523b3bd1
+  sha256: 00d2696d9a0a1c3c3e85a50bccd94cd6a25ab2933e8271aa9b95e7469595aa2d
 description_override: Aggregate linking one request to its interpretations, chosen meaning, baseline, candidate, transactions, receipts and decision.
-notes_baseline: 81db29f6cb82731361fd3be68c10f944f76974a178e8a1ed12ea3dc3aca2b3a7
+notes_baseline: fc8320045c3b7f9078daf122c5ae0121bc0c34cd9ea9b4ac49aa152310cd1931
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -42,6 +42,10 @@ verified:
   at: '2026-10-11T09:17:31Z'
   notes_sha256: c7c985ce593921bffba33e813dee30e3943440c64b0eac2bf2575f1e33e3a6cb
   sources_sha256: 81db29f6cb82731361fd3be68c10f944f76974a178e8a1ed12ea3dc3aca2b3a7
+- by: process:claude-code
+  at: '2026-11-12T03:20:00Z'
+  notes_sha256: c7c985ce593921bffba33e813dee30e3943440c64b0eac2bf2575f1e33e3a6cb
+  sources_sha256: fc8320045c3b7f9078daf122c5ae0121bc0c34cd9ea9b4ac49aa152310cd1931
 ---
 
 # domain.change_case.ChangeCase
@@ -66,10 +70,10 @@ Aggregate boundary: transitions are mediated by the application and CAS store.
 | Field | Annotation | Default |
 |---|---|---|
 | `id` | `str` |  |
-| `version` | `int` |  |
+| `version` | `JsonInt` |  |
 | `stage` | `Literal['DRAFT', 'PROPOSED', 'PREVIEW', 'SAVED', 'VERIFIED', 'APPROVED', 'APPLIED', 'DISCARDED']` |  |
 | `request` | `str` |  |
-| `baseline_version` | `int` |  |
+| `baseline_version` | `JsonInt` |  |
 | `baseline` | `Workflow` |  |
 | `candidate` | `Workflow \| None` |  |
 | `proposal` | `Proposal \| None` |  |
@@ -79,7 +83,7 @@ Aggregate boundary: transitions are mediated by the application and CAS store.
 | `selection` | `Selection \| None` | `None` |
 | `transactions` | `tuple[Transaction, ...]` |  |
 | `redo_transactions` | `tuple[Transaction, ...]` | `()` |
-| `layout` | `dict[str, dict[str, int]]` |  |
+| `layout` | `dict[str, dict[str, JsonInt]]` |  |
 | `receipts` | `tuple[dict[str, Any], ...]` |  |
 | `decision` | `dict[str, Any] \| None` |  |
 | `app_build` | `GeneratedAppBinding \| None` | `None` |
@@ -113,6 +117,7 @@ Optional app_build carries a typed exact generated subject plus checker/configur
 * [domain.change_case.Selection](/symbols/domain/change_case/Selection.md) - Type alias `Selection` in `domain/change_case`.
 * [domain.generated_app.GeneratedAppBinding](/symbols/domain/generated_app/GeneratedAppBinding.md) - `class GeneratedAppBinding(Contract)` in `domain/generated_app`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.

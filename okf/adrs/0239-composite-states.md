@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0238: Composite states'
+title: 'ADR-0239: Composite states'
 description: 'Issue #93, item 3.'
-resource: repo://docs/adr/0238-composite-states.md
+resource: repo://docs/adr/0239-composite-states.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0238-composite-states.md
-  title: 0238-composite-states.md
+- resource: repo://docs/adr/0239-composite-states.md
+  title: 0239-composite-states.md
   hash_method: lf-sha256-v1
-  sha256: e5a4d380b95421e8376b82c2e159f184bc321f25316336993ec5e932119a3a5b
-notes_baseline: 7abab8502e3d0b22a6fafe42f667e2907ec1961b2d3856f95ddd017a8bed33b7
+  sha256: bf140ef8836d857ee652bf2152f57c7d91209b69a5a4fea2af3de6a40dad9876
+notes_baseline: 498b290e93cc8bc74f50e834744dab036f9f4fed228e55e175a28a9fbfc9e237
 ---
 
-# ADR-0238: Composite states
+# ADR-0239: Composite states
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 7abab8502e3d0b22a6fafe42f667e2907ec1961b2d3856f95ddd017a8bed33b7
 | Status | accepted |
 | Date | 2026-11-12 |
 | Lane | kernel / executable UML |
-| Source | `repo://docs/adr/0238-composite-states.md` |
+| Source | `repo://docs/adr/0239-composite-states.md` |
 
 ## Decision outcome (verbatim)
 

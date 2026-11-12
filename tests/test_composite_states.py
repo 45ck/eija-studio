@@ -1,4 +1,4 @@
-"""Composite states (issue #93 item 3, ADR-0238).
+"""Composite states (issue #93 item 3, ADR-0239).
 
 A workflow may group states into UML composite states, nested to any depth, each with the child a transition into it
 enters first. A record is always in one plain state and the kernel runs the flat machine, so a composite never changes

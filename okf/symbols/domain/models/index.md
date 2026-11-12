@@ -3,7 +3,7 @@
 # Classes
 
 * [domain.models.Alternative](Alternative.md) - `class Alternative(Contract)` in `domain/models`.
-* [domain.models.Composite](Composite.md) - A UML composite state (issue #93 item 3, ADR-0238): a named group of states, or of other composites, with the child a transition into the group enters first.
+* [domain.models.Composite](Composite.md) - A UML composite state (issue #93 item 3, ADR-0239): a named group of states, or of other composites, with the child a transition into the group enters first.
 * [domain.models.Contract](Contract.md) - Base class for every domain contract: frozen and strict, unknown fields rejected.
 * [domain.models.Delay](Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
 * [domain.models.DomainError](DomainError.md) - Error carrying a stable code and safe message; never provider secrets or arbitrary exception text.
@@ -58,4 +58,5 @@
 * [domain.models.Comparison](Comparison.md) - Type alias `Comparison` in `domain/models`.
 * [domain.models.Guard](Guard.md) - Type alias `Guard` in `domain/models`.
 * [domain.models.Interpretation](Interpretation.md) - Type alias `Interpretation` in `domain/models`.
+* [domain.models.JsonInt](JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 * [domain.models.TimeUnit](TimeUnit.md) - Type alias `TimeUnit` in `domain/models`.
