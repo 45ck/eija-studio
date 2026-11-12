@@ -2623,6 +2623,32 @@
     renderSaveStatus();
   }
 
+  // Browser storage is untrusted: a draft written by an older page, cut short by a full disk, or edited by hand. The
+  // page reopens only a draft in the shape persist() writes. Any other draft is set aside under its own key, never
+  // deleted, and the page opens on the model in force, so one bad draft cannot stop it from opening on every reload.
+  const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+  const readableStep = (step) => isRecord(step) && isRecord(step.transaction) && typeof step.transaction.kind === "string";
+  const readablePlan = (p) => p == null || (isRecord(p) && Array.isArray(p.steps) && p.steps.every(readableStep)
+    && Array.isArray(p.accepted) && (p.uid === undefined || Number.isInteger(p.uid)));
+  const readableEntry = (entry) => isRecord(entry) && isRecord(entry.doc) && readablePlan(entry.doc.plan)
+    && (entry.doc.screens == null || isRecord(entry.doc.screens));
+  function readableDraft(draft) {
+    return isRecord(draft) && draft.v === 1 && Array.isArray(draft.stack) && draft.stack.length > 0
+      && draft.stack.length <= 2 * STORED + 1 && Number.isInteger(draft.at) && draft.at >= 0 && draft.at < draft.stack.length
+      && draft.stack.every(readableEntry);
+  }
+  let recoveringRaw = null; // the kept draft as read, so a failed reopening can set it aside before anything rewrites it
+  function setAsideDraft(raw) {
+    try {
+      let aside = draftKey() + ":unreadable", n = 1;
+      while (localStorage.getItem(aside) !== null && localStorage.getItem(aside) !== raw) aside = `${draftKey()}:unreadable:${++n}`; // never over an earlier one
+      localStorage.setItem(aside, raw);
+      localStorage.removeItem(draftKey());
+    } catch { /* left in place */ }
+    say("ai", el("p", "This browser held a draft PlayIDE could not read, so the model in force is open. "
+      + "The draft was set aside, not deleted.")).classList.add("recovered");
+  }
+
   // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
   // restored plan again; a step that no longer applies (the model in force changed) is shown as such.
   async function recover() {
@@ -2630,9 +2656,12 @@
     edits.at = 0;
     renderHistory();
     if (REVIEW_VIEW) return;
-    let draft = null;
-    try { draft = JSON.parse(localStorage.getItem(draftKey()) || "null"); } catch { draft = null; }
-    if (!draft || draft.v !== 1 || !Array.isArray(draft.stack) || !draft.stack[draft.at]) return;
+    let draft = null, raw = null;
+    try { raw = localStorage.getItem(draftKey()); } catch { return; } // storage blocked: nothing to recover
+    if (raw === null) return;
+    recoveringRaw = raw;
+    try { draft = JSON.parse(raw); } catch { draft = null; }
+    if (!readableDraft(draft)) { setAsideDraft(raw); return; }
     if (draft.model !== modelPrint()) {
       const note = el("p", "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams.");
       const reopen = el("button", "Reopen earlier draft", { type: "button", class: "quiet" });
@@ -2983,7 +3012,13 @@
     document.addEventListener("keydown", historyKeys);
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
-    await recover();
+    try { await recover(); } catch {
+      // A kept draft the shape check let through still failed to reopen: open the model in force, and keep the draft.
+      if (recoveringRaw !== null) setAsideDraft(recoveringRaw);
+      edits.stack = [{ label: "open the model", doc: { plan: null, screens: null }, card: null, at: Date.now() }];
+      edits.at = 0;
+      renderHistory();
+    }
     document.body.dataset.ready = "true";
     document.dispatchEvent(new CustomEvent("playide:ready"));
     recoverNavigation();
