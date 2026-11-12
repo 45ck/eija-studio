@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#value_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 6c9dfc2314ee7716798250f9d2a4aab278b383fcb60f03f74f4c260248b950b5
-notes_baseline: 3f2cfaa6f48e4581627c21be4e2fc7a6a309ee8fc201b2a41cef24f6edc9bfca
+  sha256: 5beb1f46b0d2fd13ac6e25c0e2ac31e559a41d0bc0fe5fe90afffcfc13bb72aa
+notes_baseline: 1c53f8b5922e3b0ce0e7469736205c99dc80cb9272502580aafa66148ee2cae2
 ---
 
 # application.appgen.value_cases

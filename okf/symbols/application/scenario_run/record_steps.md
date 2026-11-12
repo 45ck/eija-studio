@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/scenario_run.py#record_steps
   title: application/scenario_run.py
   hash_method: ast-v2
-  sha256: c9cb947c739bfbc2974429f8a653bca27e50a905c017cf08b055648fd375fde9
-notes_baseline: 6774a9c936047722672654ef1f0fd44b1eef2d2f8493f476cfccccfd5b1b125a
+  sha256: 170d727a3ca7750d22ef5ac311f2f3278d2284805cbb3355a94a48fc416a6a54
+notes_baseline: ffd3275428935f1ceda92384c5d1cb68fead5706935789920da8c83cf9291a66
 ---
 
 # application.scenario_run.record_steps

@@ -97,6 +97,11 @@ class Session:
         """Studio preview records carry no values, so a value guard is never satisfied here (fail closed, ADR-0234)."""
         return {}
 
+    def elapsed(self, instance_id: str) -> float | None:
+        """Studio preview records keep no clock, so a time event is never due here (fail closed, ADR-0236). Simulate
+        and the built app have clocks."""
+        return None
+
     def find_operation(self, operation_id: str) -> dict | None:
         row = self.db.execute("SELECT binding,body FROM operations WHERE id=?", (operation_id,)).fetchone()
         return {"binding": row[0], "result": json.loads(row[1])} if row else None

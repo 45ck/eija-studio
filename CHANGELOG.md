@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 12 November 2026: time events in the kernel
+
+- A transition may carry UML's `after(2 days)` ([ADR-0236](docs/adr/0236-time-events.md), issue #93 item 2). The kernel refuses the step with `TIMER_NOT_DUE` until the record has been in its source state that long, reading the time through a new `UnitOfWork.elapsed` port; an unknown time is never due.
+- The refund desk's `EscalateStale` now waits two days in `AwaitingApproval`. A scenario step may `wait` first, and the refund desk's `timer-escalates` scenario shows the escalation refused after one day and taken after two.
+- The law proof lets time pass, Simulate has simulated time, the built app stores when each record entered its state and its conformance run gains a time-event test (ten tests now), and the SCXML chart carries the time as a `cond` term that the differential checks. The TLA+, SMT and BMC encodings refuse a timed model.
+
 ### 11 November 2026: repo clean-up
 
 - At 1280 px the PlayIDE toolbar keeps the checks pill on the same row as Run, Simulate and Build & run again (fixes #208). Between 1181 and 1439 px the toolbar uses tighter gaps and padding and a shorter run status (its full text stays in the tooltip). The last run speed is now labelled "Next stop", so the menu is narrower at every width. An opt-in browser test checks 1280 and 1440 px with a three-digit score.

@@ -67,4 +67,8 @@ _No curated notes yet._
 
 * [ADR-0153: Data models as UML class diagrams, checked in the built app](/adrs/0153-data-models-as-uml-class-diagrams.md) - Until now, records in a built app (ADR-0150) carried only a title, because the model had no data.
 * [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
+
+## Referenced by
+
+* [ADR-0236: Time events on transitions](/adrs/0236-time-events.md) - Issue #93, item 2.
 <!-- okf:generated:end links -->

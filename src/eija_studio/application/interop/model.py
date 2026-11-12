@@ -249,7 +249,15 @@ def not_carried(pack: Pack, data: DataModel | None, *extra: str) -> list[str]:
 
 def export_report(fmt: str, pack: Pack, model: Workflow, data: DataModel | None, *extra: str) -> dict[str, Any]:
     return {"format": "eija.uml-export.v1", "to": fmt, "pack": pack.id, "model": model.semantic_hash,
-            "data": data.digest if data else None, "not_carried": not_carried(pack, data, *extra)}
+            "data": data.digest if data else None, "not_carried": not_carried(pack, data, *_guards_not_carried(model), *extra)}
+
+
+def _guards_not_carried(model: Workflow) -> list[str]:
+    """Guards over record values (ADR-0234) and time events (ADR-0236), which the exported files do not write yet."""
+    valued = sum(bool(t.conditions) for t in model.transitions)
+    timed = sum(t.after is not None for t in model.transitions)
+    return ([f"guards over record values on {valued} transition(s) (ADR-0234)"] if valued else []) + \
+        ([f"time events on {timed} transition(s), such as after(2 days) (ADR-0236)"] if timed else [])
 
 
 MAX_XML_BYTES = 8_000_000  # XMI and draw.io files

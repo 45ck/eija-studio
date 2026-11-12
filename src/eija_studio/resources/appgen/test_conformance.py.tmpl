@@ -18,10 +18,13 @@ from eija_studio.domain.screens import check_screens
 ORACLE = json.loads((Path(__file__).resolve().parent / "oracle.json").read_text(encoding="utf-8"))
 
 
-def seed(svc: service.Service, state: str, values: dict | None = None) -> str:
-    """A record already in `state` (holding `values`), written directly so the case starts where the oracle's did."""
-    svc.db.execute("INSERT INTO records(id,case_id,model_hash,state,version,fields,data_digest) VALUES('r1',?,?,?,0,?,?)",
-                   (service.CASE, service.MODEL.semantic_hash, state, json.dumps(values or {}), service.DATA_DIGEST))
+def seed(svc: service.Service, state: str, values: dict | None = None, waited: float | None = None) -> str:
+    """A record already in `state` (holding `values`, and in it for `waited` seconds: by default the model's longest time
+    event, as in the oracle's cases), written directly so the case starts where the oracle's did."""
+    entered = service.now() - (ORACLE.get("waited", 0) if waited is None else waited)
+    svc.db.execute("INSERT INTO records(id,case_id,model_hash,state,version,fields,data_digest,entered_at) "
+                   "VALUES('r1',?,?,?,0,?,?,?)",
+                   (service.CASE, service.MODEL.semantic_hash, state, json.dumps(values or {}), service.DATA_DIGEST, entered))
     return "r1"
 
 
@@ -117,6 +120,17 @@ class Conformance(unittest.TestCase):
             with self.subTest(action=case["action"], values=case["values"]):
                 svc = service.Service()
                 record_id = seed(svc, case["state"], case["values"])
+                attempt = {"actor": case["actor"], "action": case["action"], "expected_version": 0}
+                self.assertEqual(observe(svc, record_id, attempt), case["expect"])
+
+    def test_time_events_match_the_kernel(self):
+        """A record that has been in its state half the time is refused, and one in it the whole time is not (ADR-0236)."""
+        if not any(t.after for t in service.MODEL.transitions):
+            self.assertNotIn("timer_cases", ORACLE)
+        for case in ORACLE.get("timer_cases", []):
+            with self.subTest(action=case["action"], waited=case["waited"]):
+                svc = service.Service()
+                record_id = seed(svc, case["state"], case.get("values"), case["waited"])
                 attempt = {"actor": case["actor"], "action": case["action"], "expected_version": 0}
                 self.assertEqual(observe(svc, record_id, attempt), case["expect"])
 

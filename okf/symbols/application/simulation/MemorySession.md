@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py#MemorySession
   title: application/simulation.py
   hash_method: ast-sig-v1
-  sha256: b9e1986763bf1c3f3d5157696afa7b3c11857b73663d64491444e226a513c50d
-notes_baseline: 6d16714a8b99881606e9946f0bbbe210335246bd2b10962fd405c5e8e99a16d9
+  sha256: bae0680324d014b1e62cd8b651e3783f4801cd013ea62acbd6504dbc0970fbe9
+notes_baseline: 2b0d0057fccb8ced55ad47beb8aa0d88b63d7f5a2b4991b6bd9e65918d52bb4e
 ---
 
 # application.simulation.MemorySession
@@ -40,6 +40,7 @@ The kernel's unit-of-work port over plain dictionaries, keeping every record, op
 * [`actor`](/symbols/application/simulation/MemorySession.actor.md) - `def actor(self, actor_id: str) -> dict[str, Any]`
 * [`acts`](/symbols/application/simulation/MemorySession.acts.md) - `def acts(self, instance_id: str) -> list[tuple[str, str]]`
 * [`create_instance`](/symbols/application/simulation/MemorySession.create_instance.md) - `def create_instance(self, item: dict[str, Any]) -> None`
+* [`elapsed`](/symbols/application/simulation/MemorySession.elapsed.md) - `def elapsed(self, instance_id: str) -> float \| None`
 * [`enqueue`](/symbols/application/simulation/MemorySession.enqueue.md) - `def enqueue(self, case_id: str, operation_id: str, effect: str, recipient: str) -> None`
 * [`event`](/symbols/application/simulation/MemorySession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None`
 * [`find_instance`](/symbols/application/simulation/MemorySession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] \| None`
@@ -48,6 +49,7 @@ The kernel's unit-of-work port over plain dictionaries, keeping every record, op
 * [`record_operation`](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None`
 * [`update_instance`](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None`
 * [`values`](/symbols/application/simulation/MemorySession.values.md) - `def values(self, instance_id: str) -> dict[str, Any]`
+* [`wait`](/symbols/application/simulation/MemorySession.wait.md) - `def wait(self, seconds: float) -> None`
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -64,6 +66,7 @@ _No curated notes yet._
 * [application.simulation.MemorySession.actor](/symbols/application/simulation/MemorySession.actor.md) - `def actor(self, actor_id: str) -> dict[str, Any]` in `application/simulation`.
 * [application.simulation.MemorySession.acts](/symbols/application/simulation/MemorySession.acts.md) - `def acts(self, instance_id: str) -> list[tuple[str, str]]` in `application/simulation`.
 * [application.simulation.MemorySession.create_instance](/symbols/application/simulation/MemorySession.create_instance.md) - `def create_instance(self, item: dict[str, Any]) -> None` in `application/simulation`.
+* [application.simulation.MemorySession.elapsed](/symbols/application/simulation/MemorySession.elapsed.md) - `def elapsed(self, instance_id: str) -> float | None` in `application/simulation`.
 * [application.simulation.MemorySession.enqueue](/symbols/application/simulation/MemorySession.enqueue.md) - `def enqueue(self, case_id: str, operation_id: str, effect: str, recipient: str) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.event](/symbols/application/simulation/MemorySession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.find_instance](/symbols/application/simulation/MemorySession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None` in `application/simulation`.
@@ -72,4 +75,5 @@ _No curated notes yet._
 * [application.simulation.MemorySession.record_operation](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.update_instance](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.values](/symbols/application/simulation/MemorySession.values.md) - `def values(self, instance_id: str) -> dict[str, Any]` in `application/simulation`.
+* [application.simulation.MemorySession.wait](/symbols/application/simulation/MemorySession.wait.md) - Let simulated time pass.
 <!-- okf:generated:end links -->

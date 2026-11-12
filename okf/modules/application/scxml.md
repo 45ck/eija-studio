@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py
   title: application/scxml.py
   hash_method: ast-api-v1
-  sha256: c2ffb94f53b867c35c1b332c16f5e8245391ab85b60c400ac66282fe2a44366b
-notes_baseline: bd1afe704c594159b2cd3c4790f86375ea59c1f4a1d2491098a25c2a46d4cbec
+  sha256: 5a3cb70dd987944e95d873ecc91db3cdbe878ea84bf28c8e736c6cf13466257e
+notes_baseline: 8176d080a1fce9f300122901ad46ad5dc21dc1bd84ac873209122a88087f95d9
 ---
 
 # application.scxml
@@ -48,6 +48,10 @@ runs in production. What it keeps and what it leaves to the kernel:
   sends the event reads the record's values, as the kernel's `UnitOfWork.values` port does, and attaches each guarded
   attribute as `value_<name>` with `has_<name>` (False when the record has no value). The data model has already
   checked each value's type, so the chart compares without a type test.
+* A time event (`after(14 days)`, ADR-0236) becomes a `cond` term over the event data as well: whoever sends the event
+  reads how long the record has been in its state, as the kernel's `UnitOfWork.elapsed` port does, and attaches it as
+  `elapsed` in seconds, with `has_elapsed` False when it is unknown, which is never due. It is not a delayed `<send>`: in the kernel a time
+  event makes a step allowed, and an actor (usually a «timer» role) still takes it through the same checks.
 * `expected_version` is a `version` variable in the datamodel, compared in the `cond` and incremented when the
   transition fires.
 * Each required effect is appended, in declared order, to an `effects` list in the datamodel. Writing the audit log
@@ -65,7 +69,7 @@ Pure: no IO, no clock. The same pack and model always give the same bytes.
 
 * [`FORMAT`](/symbols/application/scxml/FORMAT.md) (constant) - no docstring
 * [`NAMESPACE`](/symbols/application/scxml/NAMESPACE.md) (constant) - no docstring
-* [`event_data`](/symbols/application/scxml/event_data.md) (function) - What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, and the recor…
+* [`event_data`](/symbols/application/scxml/event_data.md) (function) - What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, the record's…
 * [`guard_condition`](/symbols/application/scxml/guard_condition.md) (function) - The transition's `cond`: the actor checks of `runtime.check_actor`, its guards over record values and the version check…
 * [`scxml_id`](/symbols/application/scxml/scxml_id.md) (function) - An XML/SCXML-safe id for a state or event name.
 * [`to_scxml`](/symbols/application/scxml/to_scxml.md) (function) - The model as an SCXML document.
@@ -93,7 +97,7 @@ _No curated notes yet._
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [application.scxml.FORMAT](/symbols/application/scxml/FORMAT.md) - Constant `FORMAT` in `application/scxml`.
 * [application.scxml.NAMESPACE](/symbols/application/scxml/NAMESPACE.md) - Constant `NAMESPACE` in `application/scxml`.
-* [application.scxml.event_data](/symbols/application/scxml/event_data.md) - What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, and the record's value of each guarded attribute in `…
+* [application.scxml.event_data](/symbols/application/scxml/event_data.md) - What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, the record's value of each guarded attribute in `attr…
 * [application.scxml.guard_condition](/symbols/application/scxml/guard_condition.md) - The transition's `cond`: the actor checks of `runtime.check_actor`, its guards over record values and the version check, over the event data.
 * [application.scxml.scxml_id](/symbols/application/scxml/scxml_id.md) - An XML/SCXML-safe id for a state or event name.
 * [application.scxml.to_scxml](/symbols/application/scxml/to_scxml.md) - The model as an SCXML document.

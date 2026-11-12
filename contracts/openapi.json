@@ -2894,6 +2894,33 @@
         "type": "object",
         "title": "ChangeRequest"
       },
+      "Delay": {
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Amount"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "minutes",
+              "hours",
+              "days"
+            ],
+            "title": "Unit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "amount",
+          "unit"
+        ],
+        "title": "Delay",
+        "description": "A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has\nbeen in its source state this long. Time is measured from when the record entered that state, which every\ncommitted step does, a step back into the same state included. An unknown entry time never counts as due."
+      },
       "Edit": {
         "properties": {
           "expected_version": {
@@ -4483,6 +4510,16 @@
             "maxItems": 8,
             "title": "Conditions",
             "default": []
+          },
+          "after": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Delay"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

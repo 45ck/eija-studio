@@ -1,5 +1,32 @@
 {
   "$defs": {
+    "Delay": {
+      "additionalProperties": false,
+      "description": "A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has\nbeen in its source state this long. Time is measured from when the record entered that state, which every\ncommitted step does, a step back into the same state included. An unknown entry time never counts as due.",
+      "properties": {
+        "amount": {
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Amount",
+          "type": "integer"
+        },
+        "unit": {
+          "enum": [
+            "minutes",
+            "hours",
+            "days"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "unit"
+      ],
+      "title": "Delay",
+      "type": "object"
+    },
     "Transition": {
       "additionalProperties": false,
       "properties": {
@@ -69,6 +96,17 @@
           "maxItems": 8,
           "title": "Conditions",
           "type": "array"
+        },
+        "after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Delay"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/impact.py#changed_fields
   title: domain/impact.py
   hash_method: ast-v2
-  sha256: 5778fef3409f1bd095fa36a2ac43e5e90d5eca99753d0f9f83a80d236d31001d
-notes_baseline: 11495e357a9e190b418aca24881486922d4c662075580402ce1d7e9672e0bccb
+  sha256: 14ff24e41dba160b5809c121d10d30cffdf584a883b71926b0bd190f83664e63
+notes_baseline: 77ea67383771f495564df05b8f4c1046d5db556772480b35c0eb21dcb9943f00
 ---
 
 # domain.impact.changed_fields

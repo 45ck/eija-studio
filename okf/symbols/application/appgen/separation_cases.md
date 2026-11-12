@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#separation_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 902440546ab42e81d53154c8e42eff4808c2ec350e6abeaac89f4f88e1742a88
-notes_baseline: 0228e853b4112639b7835cfffcc903a628d591d8ebc3928c3cd76d757a59624b
+  sha256: 58f8abeca724aa3179b186adac9da17cc0182d6e65e15b100646d1a302fb90ac
+notes_baseline: d304d113fb0b48908596860ebb29a918fca6c73b4ee8853bbb085bf7adcd88aa
 ---
 
 # application.appgen.separation_cases

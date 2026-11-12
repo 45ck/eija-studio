@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/scenarios.py#ScenarioStep
   title: domain/scenarios.py
   hash_method: ast-sig-v1
-  sha256: 97ca4062e3e6ae0b42ae3ed1bf80e9c0d898201c87c52e9d6ab9da2ea2ba02df
-notes_baseline: 544f569f73c59d4509246dc0866a29bd1288a7c2abccff79eaf2f996fce0f525
+  sha256: 262e55e4f4b8eabd04a190b2b4a4460663bfff149b815af106ffcd2b4dd0a749
+notes_baseline: 3ec364bde06156a64d49d07e5749e45eb4ab5513fb9eec56d039450242780350
 ---
 
 # domain.scenarios.ScenarioStep
@@ -40,6 +40,7 @@ _The source carries no docstring._
 | `actor` | `str` | `Field(min_length=1, max_length=60)` |
 | `action` | `str` | `Field(pattern=NAME)` |
 | `then` | `Then` |  |
+| `wait` | `Delay \| None` | `None` |
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -50,6 +51,7 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has been in its source state this long.
 * [domain.scenarios.NAME](/symbols/domain/scenarios/NAME.md) - Constant `NAME` in `domain/scenarios`.
 * [domain.scenarios.Then](/symbols/domain/scenarios/Then.md) - What a step must do: move the record to `state`, or be refused with `refused` (a kernel refusal code).
 

@@ -5,7 +5,8 @@ and tries an action: usually one their role is offered from the record's state, 
 and sometimes with an out-of-date version (someone else got there first). Revoked or unassigned actors still try, as
 people do, and the kernel refuses them. `runtime.execute` decides each attempt against an in-memory unit of work, so
 the counts, refusal codes and effects are the kernel's own answers, not a second reading of the model. The same seed
-gives the same run. Nothing persists and no effect leaves the process.
+gives the same run. Nothing persists and no effect leaves the process. For a model with time events (ADR-0236), each
+step lets simulated time pass, so the longest one falls due within a few steps of a record entering its state.
 """
 from __future__ import annotations
 
@@ -26,6 +27,7 @@ TRACE_LIMIT = 60  # steps kept in order for the run log and the sequence view
 NEW_RECORD = 0.2  # chance a step starts a new record instead of acting on an open one
 SLIP = 0.1  # chance a user tries a declared action that does not leave the record's state
 STALE = 0.05  # chance a user acts on a version someone else has already changed
+TICKS = 12  # with time events (ADR-0236), simulated time passes the longest one in this many steps
 
 
 class MemorySession:
@@ -37,6 +39,8 @@ class MemorySession:
         self.operations: dict[str, dict[str, Any]] = {}
         self.acted: dict[str, list[tuple[str, str]]] = {}  # per record, (action, actor) for separation laws (ADR-0233)
         self.record_values: dict[str, dict[str, Any]] = {}  # per record, the values its value guards read (ADR-0234)
+        self.clock = 0.0  # simulated seconds; only `wait` moves it, so nothing here reads the real time (ADR-0236)
+        self.entered: dict[str, float] = {}  # per record, the clock when it entered its current state
         self.audit: list[str] = []
         self.outbox: list[str] = []
 
@@ -47,6 +51,7 @@ class MemorySession:
 
     def create_instance(self, item: dict[str, Any]) -> None:
         self.instances[item["id"]] = dict(item)
+        self.entered[item["id"]] = self.clock
 
     def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None:
         item = self.instances.get(instance_id)
@@ -56,6 +61,7 @@ class MemorySession:
         if self.instances[item["id"]]["version"] != expected:
             raise DomainError("STALE_VERSION", "Concurrent state update")
         self.instances[item["id"]] = dict(item)
+        self.entered[item["id"]] = self.clock  # every committed step enters its target state, the same one included
 
     def acts(self, instance_id: str) -> list[tuple[str, str]]:
         return list(self.acted.get(instance_id, []))
@@ -65,6 +71,14 @@ class MemorySession:
 
     def values(self, instance_id: str) -> dict[str, Any]:
         return dict(self.record_values.get(instance_id, {}))
+
+    def elapsed(self, instance_id: str) -> float | None:
+        entered = self.entered.get(instance_id)
+        return None if entered is None else self.clock - entered
+
+    def wait(self, seconds: float) -> None:
+        """Let simulated time pass."""
+        self.clock += seconds
 
     def find_operation(self, operation_id: str) -> dict[str, Any] | None:
         return self.operations.get(operation_id)
@@ -168,7 +182,9 @@ def _play(pack: Pack, model: Workflow, seed: int, steps: int, run: _Run) -> tupl
     if not actors:
         raise DomainError("NO_ACTORS", "The pack has no fixture actors to simulate")
     rng, session = _Dice(seed), MemorySession(pack)
+    tick = model.longest_wait / TICKS  # 0 for a model without time events, whose runs are unchanged
     for n in range(1, steps + 1):
+        session.wait(tick)
         _step(session, pack, model, run, rng, n, rng.choice(actors))
     return session, run
 
@@ -302,6 +318,13 @@ def _by_kind(pack: Pack, run: _Run) -> dict[str, dict[str, Any]]:
     return {kind: out[kind] for kind in ROLE_KINDS if kind in out}
 
 
+def _time(model: Workflow, session: MemorySession) -> dict[str, Any]:
+    """How much simulated time passed, for a model with time events only, so every other report keeps its bytes."""
+    if not model.longest_wait:
+        return {}
+    return {"time": {"seconds_per_step": model.longest_wait / TICKS, "simulated_seconds": session.clock}}
+
+
 def _report(pack: Pack, model: Workflow, seed: int, steps: int, session: MemorySession, run: _Run) -> dict[str, Any]:
     occupancy = Counter(item["state"] for item in session.instances.values())
     attempts = sum(run.commits.values()) + sum(run.codes.values())
@@ -313,6 +336,7 @@ def _report(pack: Pack, model: Workflow, seed: int, steps: int, session: MemoryS
         "states": {s: {"entered": run.entered[s], "now": occupancy[s]} for s in model.states},
         "effects": {"audit": dict(Counter(session.audit)), "outbox": dict(Counter(session.outbox))},
         "by_kind": _by_kind(pack, run), "findings": _findings(model, run, occupancy), "trace": run.trace,
+        **_time(model, session),
         "limits": ["Simulated users are the pack's fixture actors acting at random, not measured human behaviour.",
                    "Each attempt is decided by the kernel against in-memory storage; no effect leaves the process."],
     }

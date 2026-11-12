@@ -73,6 +73,7 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 * [domain.generated_app.GeneratedChecker](/symbols/domain/generated_app/GeneratedChecker.md) - `class GeneratedChecker(Contract)` in `domain/generated_app`.
 * [domain.laws.When](/symbols/domain/laws/When.md) - Condition under which a law applies.
 * [domain.models.Alternative](/symbols/domain/models/Alternative.md) - `class Alternative(Contract)` in `domain/models`.
+* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has been in its source state this long.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.

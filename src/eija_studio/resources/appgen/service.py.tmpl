@@ -9,11 +9,13 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+import time
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from eija_studio.application.runtime import check_actor, check_guards, check_separation, execute, initialise, separations
+from eija_studio.application.runtime import (check_actor, check_due, check_guards, check_separation, execute, initialise,
+                                             separations)
 from eija_studio.domain.data import DataModel, check_record, check_values, references
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical
 from eija_studio.domain.pack import parse_pack
@@ -34,7 +36,7 @@ SCREENS = Screens.model_validate_json((HERE / "screens.json").read_text(encoding
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, model_hash TEXT NOT NULL,
     state TEXT NOT NULL, version INTEGER NOT NULL, title TEXT NOT NULL DEFAULT '', created_by TEXT NOT NULL DEFAULT '',
-    fields TEXT NOT NULL DEFAULT '{}', data_digest TEXT NOT NULL DEFAULT '');
+    fields TEXT NOT NULL DEFAULT '{}', data_digest TEXT NOT NULL DEFAULT '', entered_at REAL);
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, result TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, record_id TEXT NOT NULL, effect TEXT NOT NULL, recipient TEXT NOT NULL);
@@ -43,7 +45,10 @@ CREATE TABLE IF NOT EXISTS acts(seq INTEGER PRIMARY KEY AUTOINCREMENT, record_id
 """
 
 MIGRATIONS = {"fields": "ALTER TABLE records ADD COLUMN fields TEXT NOT NULL DEFAULT '{}'",
-              "data_digest": "ALTER TABLE records ADD COLUMN data_digest TEXT NOT NULL DEFAULT ''"}
+              "data_digest": "ALTER TABLE records ADD COLUMN data_digest TEXT NOT NULL DEFAULT ''",
+              "entered_at": "ALTER TABLE records ADD COLUMN entered_at REAL"}  # NULL: a time event is never due on it
+
+now = time.time  # the app's clock, which the kernel reads only through `Session.elapsed` (ADR-0236)
 
 Refused = DomainError  # what the kernel raises; `code` is its stable refusal code
 
@@ -60,7 +65,8 @@ class Session:
         return ACTORS[actor_id]
 
     def create_instance(self, item: dict[str, Any]) -> None:
-        self.db.execute("INSERT INTO records(id,case_id,model_hash,state,version) VALUES(:id,:case_id,:model_hash,:state,:version)", item)
+        self.db.execute("INSERT INTO records(id,case_id,model_hash,state,version,entered_at) "
+                        "VALUES(:id,:case_id,:model_hash,:state,:version,:entered_at)", item | {"entered_at": now()})
 
     def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None:
         row = self.db.execute("SELECT id,case_id,model_hash,state,version FROM records WHERE id=? AND case_id=?",
@@ -68,8 +74,8 @@ class Session:
         return dict(row) if row else None
 
     def update_instance(self, item: dict[str, Any], expected: int) -> None:
-        changed = self.db.execute("UPDATE records SET state=?, version=? WHERE id=? AND version=?",
-                                  (item["state"], item["version"], item["id"], expected)).rowcount
+        changed = self.db.execute("UPDATE records SET state=?, version=?, entered_at=? WHERE id=? AND version=?",
+                                  (item["state"], item["version"], now(), item["id"], expected)).rowcount
         if changed != 1:
             raise DomainError("STALE_VERSION", "Concurrent state update")
 
@@ -86,6 +92,12 @@ class Session:
         row = self.db.execute("SELECT fields FROM records WHERE id=?", (instance_id,)).fetchone()
         return json.loads(row["fields"]) if row else {}
 
+    def elapsed(self, instance_id: str) -> float | None:
+        """Seconds since the record entered its state, which the model's time events read (ADR-0236). Every committed
+        step enters its target state afresh. None for a record from a build that kept no entry time."""
+        row = self.db.execute("SELECT entered_at FROM records WHERE id=?", (instance_id,)).fetchone()
+        return None if row is None or row["entered_at"] is None else now() - row["entered_at"]
+
     def find_operation(self, operation_id: str) -> dict[str, Any] | None:
         row = self.db.execute("SELECT binding, result FROM operations WHERE id=?", (operation_id,)).fetchone()
         return {"binding": row["binding"], "result": json.loads(row["result"])} if row else None
@@ -101,19 +113,22 @@ class Session:
 
 
 def options(state: str, actor_id: str, acts: list[tuple[str, str]] | None = None,
-            values: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+            values: dict[str, Any] | None = None, elapsed: float | None = None) -> list[dict[str, Any]]:
     """The actions leaving `state`, each with whether this actor may take it, using the kernel's own authority,
-    value-guard and separation-of-duties checks (`acts` is the record's history of who took which action)."""
+    time-event, value-guard and separation-of-duties checks (`acts` is the record's history of who took which action,
+    `elapsed` how long it has been in `state`)."""
     result = []
     for t in MODEL.transitions:
         if t.from_state != state:
             continue
         entry = {"action": t.action, "to": t.to_state, "role": t.role, "allowed": True,
-                 **({"when": [str(c) for c in t.conditions]} if t.conditions else {})}
+                 **({"when": [str(c) for c in t.conditions]} if t.conditions else {}),
+                 **({"after": str(t.after)} if t.after is not None else {})}
         try:
             if actor_id not in ACTORS:
                 raise DomainError("UNKNOWN_ACTOR", "Actor is not in the directory")
             check_actor(ACTORS[actor_id], t, None)  # type: ignore[arg-type]  # the command is not read by the check
+            check_due(t, elapsed)
             check_guards(t, values or {})
             check_separation(separations(PACK, MODEL, t.action), t.action, actor_id, acts or [])
         except DomainError as refused:
@@ -218,7 +233,8 @@ class Service:
 
     def view(self, record_id: str, actor_id: str) -> dict[str, Any]:
         record = self._record(record_id)
-        return {"record": record, "history": self.history(record_id), "options": options(record["state"], actor_id, Session(self.db).acts(record_id), record["fields"])}
+        return {"record": record, "history": self.history(record_id), "options": options(record["state"], actor_id, Session(self.db).acts(record_id), record["fields"],
+                                                                                  Session(self.db).elapsed(record_id))}
 
     def outbox(self) -> list[dict[str, Any]]:
         return [dict(r) for r in self.db.execute("SELECT * FROM outbox ORDER BY rowid")]

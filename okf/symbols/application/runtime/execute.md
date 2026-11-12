@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#execute
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: efe237890c0562d548710ae0dcce4b07d909aed43bb064968ed0099aaae777c1
+  sha256: 258dff906315bdf6ee1cc506181ffdbe2b5ba138fc2c28ab76e99fdbc1b36f09
 description_override: 'Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.'
-notes_baseline: 55b9d1c43a76ddc897f38689e389f9ed0e5c1e190c97581b6d7258f6cb810b2c
+notes_baseline: 62a73d42ad3ec3ab9b76effd54435c9574c8e556511580dce5f88f9528fa7e74
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -46,6 +46,10 @@ verified:
   at: '2026-11-11T22:00:00Z'
   notes_sha256: 795a6b25112a3ab6372c464619270e82ac1f11dd1f72b85b79c17bd78c6ab320
   sources_sha256: 55b9d1c43a76ddc897f38689e389f9ed0e5c1e190c97581b6d7258f6cb810b2c
+- by: process:claude-code
+  at: '2026-11-12T03:00:00Z'
+  notes_sha256: cbc43b666ea096285752a3d9a2c9681d40d3d6ccb23c5609db57dfee4651819b
+  sources_sha256: 62a73d42ad3ec3ab9b76effd54435c9574c8e556511580dce5f88f9528fa7e74
 ---
 
 # application.runtime.execute
@@ -70,7 +74,7 @@ The transition is the one the command's action takes from the record's state; an
 1. `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`). Both go through [application.memo](/modules/application/memo.md), which asks them once per frozen model and pack object; a refusal still comes from `ensure_policy` itself ([ADR-0199](/adrs/0199-playide-at-the-kernel-limits.md)).
 2. **Authorise first** with [check_actor](/symbols/application/runtime/check_actor.md): active, current role, and assignment where the guard requires it. A cached success is not continuing authority.
 3. Replay: an existing operation id with a different binding is `OPERATION_CONFLICT`; the same binding returns the original result and enqueues nothing again.
-4. Version and source-state guards (`STALE_VERSION`, `STATE_DENIED`). Then the transition's guards over record values, read through `UnitOfWork.values` only when it has them (`VALUE_GUARD_DENIED`, [ADR-0234](/adrs/0234-guards-over-record-values.md)). Then separation of duties, only when a `distinct_actors` law in force names the action: an actor who already took another of its actions on this record is `SEPARATION_DENIED`, and otherwise the act is logged in the same unit of work ([ADR-0233](/adrs/0233-separation-of-duties.md)). Then the state update.
+4. Version and source-state guards (`STALE_VERSION`, `STATE_DENIED`). Then the transition's time event, read through `UnitOfWork.elapsed` only when it has one (`TIMER_NOT_DUE`, [ADR-0236](/adrs/0236-time-events.md)). Then the transition's guards over record values, read through `UnitOfWork.values` only when it has them (`VALUE_GUARD_DENIED`, [ADR-0234](/adrs/0234-guards-over-record-values.md)). Then separation of duties, only when a `distinct_actors` law in force names the action: an actor who already took another of its actions on this record is `SEPARATION_DENIED`, and otherwise the act is logged in the same unit of work ([ADR-0233](/adrs/0233-separation-of-duties.md)). Then the state update.
 5. Required effects, typed by the pack: an `audit` effect is an event row, a `notification` effect an outbox intent for its declared recipient, both in the same unit of work, then `record_operation`. An effect the pack does not declare is `EFFECT_DENIED`.
 
 Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/application/ports/UnitOfWork.md) commits; an exception rolls everything back. This is an at-most-once *local enqueue* guarantee ([Effect Intent](/language/effect-intent.md)), not external delivery. The optional `fault` hook exists so tests can crash after each step (acceptance [AC11](/requirements/ac11.md), [AC14](/requirements/ac14.md)).
