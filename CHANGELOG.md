@@ -15,6 +15,7 @@
 - `eija` commands say what is wrong with a bad input: `FILE_NOT_FOUND`, `NOT_A_FILE`, `PERMISSION_DENIED`, `NOT_UTF8`, `INVALID_JSON` (with line and column), `SCHEMA_INVALID` (with each field, never its value) or `INPUT_TOO_DEEP`. `eija check-export` no longer prints a traceback for a file that is not a JSON object.
 - Checking a 64-step chat plan at the model's limits takes about 70 ms instead of 1.2 s, with the same verdicts.
 - How it was tested, and what was found: [HOSTILE-INPUT](docs/engineering/HOSTILE-INPUT.md).
+- Integer fields in requests now read as the published contracts say: `"5"` and `true` are refused where a number is expected, and `1.0` is accepted as `1` for a case version ([ADR-0238](docs/adr/0238-json-integers-in-request-contracts.md), issue #235).
 
 ### 11 November 2026: repo clean-up
 

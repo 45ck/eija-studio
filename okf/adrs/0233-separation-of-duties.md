@@ -50,5 +50,7 @@ notes_baseline: ec9b461ad6f807713e639e60b0cedae18af624485a01e45b4808f51850a46f3f
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [ADR-0234: Guards over record values](/adrs/0234-guards-over-record-values.md) - Issue #93, item 1.
 <!-- okf:generated:end links -->

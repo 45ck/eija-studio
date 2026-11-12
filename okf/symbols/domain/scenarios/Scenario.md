@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/scenarios.py#Scenario
   title: domain/scenarios.py
   hash_method: ast-sig-v1
-  sha256: 294a55484fde61fc714af458616493023e2a6bda5a0bb1129bcb393d547baf0a
-notes_baseline: 693de5fca4328940cc852ba2a02308ca3177277a407cbb3f5f71eb13a9e06457
+  sha256: 6046a17a3072aee897dee6aa3a2f2f38159e416ab660e06e15d69b4f6e471ffd
+notes_baseline: ca4be214d2a2b60cb395649f82645d631dd28bee8529e6bc66d937a73a0f6507
 ---
 
 # domain.scenarios.Scenario
@@ -40,7 +40,12 @@ _The source carries no docstring._
 | `id` | `str` | `Field(pattern='^[a-z][a-z0-9-]{0,59}$')` |
 | `title` | `str` | `Field(min_length=1, max_length=120)` |
 | `start` | `str \| None` | `Field(default=None, pattern=NAME)` |
+| `values` | `dict[str, _Value]` | `Field(default_factory=dict, max_length=40)` |
 | `steps` | `tuple[ScenarioStep, ...]` | `Field(min_length=1, max_length=40)` |
+
+## Methods
+
+* [`named_values`](/symbols/domain/scenarios/Scenario.named_values.md) - `def named_values(self) -> Scenario`
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -58,5 +63,6 @@ _No curated notes yet._
 
 * [application.scenario_run.run_scenario](/symbols/application/scenario_run/run_scenario.md) - Run one scenario; it stops at the first step whose outcome differs from what it expects.
 * [application.sequence_layout.place](/symbols/application/sequence_layout/place.md) - `def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]], record: tuple[str, str]) -…` in `application/sequence_layout`.
+* [domain.scenarios.Scenario.named_values](/symbols/domain/scenarios/Scenario.named_values.md) - `def named_values(self) -> Scenario` in `domain/scenarios`.
 * [domain.scenarios.Scenarios](/symbols/domain/scenarios/Scenarios.md) - `class Scenarios(Contract)` in `domain/scenarios`.
 <!-- okf:generated:end links -->

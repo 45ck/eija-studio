@@ -59,9 +59,10 @@ def test_command_operation_id_is_a_token_of_1_to_100_characters():
     assert_bounds(ExecuteCommand, base, "operation_id", ["a", "A-z_9", "x" * 100], ["", "x" * 101, "a b", "a/b", "a.b", "é"])
 
 
-def test_command_version_is_a_non_negative_strict_integer():
+def test_command_version_is_a_non_negative_json_integer():
+    """`1.0` is a JSON integer (ADR-0238): accepted as 1. Text, a boolean or a fraction is never coerced."""
     base = {"operation_id": "op", "actor_id": "a", "instance_id": "i", "action": "Submit", "expected_version": 0}
-    assert_bounds(ExecuteCommand, base, "expected_version", [0, 1, 10**6], [-1, "1", 1.0, True, None])
+    assert_bounds(ExecuteCommand, base, "expected_version", [0, 1, 1.0, 10**6], [-1, "1", 1.5, True, None])
 
 
 def test_layout_change_limits():

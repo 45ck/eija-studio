@@ -26,8 +26,8 @@ from .providers.offline import matches_rule
 SPLIT = re.compile(r"\s*(?:;|\n|,?\s+then\s+|,?\s+and then\s+)\s*", re.IGNORECASE)
 NAME = r"([A-Za-z][\w-]*)"
 HELP = ("Use one change per clause, with exact model names, joined by 'then': add state <S> [after <T>]; rename state <A> "
-        "to <B>; remove state <S>; start in <S>; add <action> from <A> to <B> for <role>; remove <action>; allow <role> "
-        "to <action>; move <action> source|target to <S>. On a system you started, also: add field <name> [as "
+        "to <B>; remove state <S>; start in <S>; add <action> from <A> to <B> for <role>; remove <action> [from <S>]; allow <role> "
+        "to <action>; move <action> [from <S>] source|target to <S>. On a system you started, also: add field <name> [as "
         "text|number|date|boolean|choice <A>, <B>] [required]; remove field <name>; make <field> required|optional; make <role> an AI agent|a timer|an external system|a person. "
         "Or describe a change the pack models.")
 
@@ -66,9 +66,9 @@ class _Clause(DataPhrases):
             (re.compile(rf"^(?:make {NAME}|{NAME} is)(?: held by)? (?:an? )?{KIND}$", re.I), self._kind),
             (re.compile(rf"^(?:start (?:records )?in|make) {NAME}(?: the initial state)?$", re.I), self._initial),
             (re.compile(rf"^add (?:transition )?{NAME} from {NAME} to {NAME} for {NAME}$", re.I), self._add_transition),
-            (re.compile(rf"^(?:remove|delete) (?:transition )?{NAME}$", re.I), self._remove_transition),
+            (re.compile(rf"^(?:remove|delete) (?:transition )?{NAME}(?: from {NAME})?$", re.I), self._remove_transition),
             (re.compile(rf"^(?:allow|let) {NAME} (?:to )?{NAME}$", re.I), self._role),
-            (re.compile(rf"^move {NAME} (source|target) to {NAME}$", re.I), self._retarget),
+            (re.compile(rf"^move {NAME}(?: from {NAME})? (source|target) to {NAME}$", re.I), self._retarget),
             (re.compile(rf"^add (required |optional )?{FIELD} {NAME}(?: to {NAME})?(?:(?: as|:| :) (?:an? )?"
                         rf"(text|number|date|boolean|yes/no|choice)(?:(?: of| from|:)? (.+?))?)?( required| optional)?$", re.I), self._add_field),
             (re.compile(rf"^(?:remove|delete) {FIELD} {NAME}(?: from {NAME})?$", re.I), self._remove_field),
@@ -81,10 +81,25 @@ class _Clause(DataPhrases):
             raise DomainError("PLAN_UNKNOWN_NAME", f"The model has no state {name}")
         return found
 
-    def transition(self, name: str) -> str:
-        found = [t.id for t in self.model.transitions if name.casefold() in (t.id.casefold(), t.action.casefold())]
-        if len(found) != 1:
+    def transitions(self, name: str, source: str | None = None) -> list[str]:
+        """The transitions a name means: one by its id, or every one its action labels (ADR-0232), only the one leaving
+        `source` when the clause names it ("Return from Overdue")."""
+        found = [t for t in self.model.transitions if name.casefold() in (t.id.casefold(), t.action.casefold())]
+        if not found or len({t.action for t in found}) > 1:
             raise DomainError("PLAN_UNKNOWN_NAME", f"The model has no single transition or action {name}")
+        leaving = [t.id for t in found if source is None or t.from_state.casefold() == source.casefold()]
+        if not leaving:
+            raise DomainError("PLAN_UNKNOWN_NAME", f"{name} does not leave {source}")
+        return leaving
+
+    def transition(self, name: str, source: str | None = None, *, one: bool = False) -> str:
+        """The transition a name means. A change to what an action's transitions share (their target or role) is made
+        to all of them by the kernel, so any one stands for them; a change to one (`one`) must say which it leaves."""
+        found = self.transitions(name, source)
+        if one and len(found) > 1:
+            action = next(t for t in self.model.transitions if t.id == found[0])
+            sources = [t.from_state for t in self.model.transitions if t.id in found]
+            raise DomainError("PLAN_UNKNOWN_NAME", f"{action.action} leaves {', '.join(sources)}: say which, as “{action.action} from {sources[0]}”")
         return found[0]
 
     def role(self, name: str) -> str:
@@ -153,16 +168,19 @@ class _Clause(DataPhrases):
         """A state added earlier in the same plan is not in the model yet; the application checks it exists by then."""
         return next((s for s in (*self.model.states, *self.planned) if s.casefold() == name.casefold()), name)
 
-    def _remove_transition(self, name: str) -> dict[str, Any]:
-        found = self.transition(name)
-        self.removed.add(found)
-        return {"kind": "remove_transition", "transition": found}
+    def _remove_transition(self, name: str, source: str | None = None) -> Step:
+        """Removing an action removes every transition it labels; "remove Return from Overdue" removes that one."""
+        found = self.transitions(name, source)
+        self.removed.update(found)
+        steps = [{"kind": "remove_transition", "transition": t} for t in found]
+        return steps[0] if len(steps) == 1 else steps
 
     def _role(self, role: str, name: str) -> dict[str, Any]:
         return {"kind": "set_role", "transition": self.transition(name), "role": self.role(role)}
 
-    def _retarget(self, name: str, end: str, state: str) -> dict[str, Any]:
-        return {"kind": "retarget_transition", "transition": self.transition(name), "end": end.lower(), "state": self._state_or_new(state)}
+    def _retarget(self, name: str, source: str | None, end: str, state: str) -> dict[str, Any]:
+        found = self.transition(name, source, one=end.lower() == "source")
+        return {"kind": "retarget_transition", "transition": found, "end": end.lower(), "state": self._state_or_new(state)}
 
     def resolve(self, clause: str) -> Step | None:
         for pattern, build in self.patterns:

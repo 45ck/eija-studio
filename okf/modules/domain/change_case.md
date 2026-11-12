@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py
   title: domain/change_case.py
   hash_method: ast-api-v1
-  sha256: 3aaa2b8cd16f34c15ec6e630e214e55abff947e07945c121c357e28f05083427
-notes_baseline: 3df10055b2f80388f37db937779eb8e1490a5368aeecd932d5e793fc541387e9
+  sha256: bc3f303992700dec57761890839907df775a7c9682b62d02888f2a989d1ba3a8
+notes_baseline: 12f1314be8188d23a427ba76dc86aa6175229f141ba9cb90032a6afe77cb8377
 ---
 
 # domain.change_case

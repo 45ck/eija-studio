@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from eija_studio.adapters.system_library import SystemLibrary
 from eija_studio.application import plan as plan_module
@@ -22,7 +23,7 @@ from eija_studio.application.interop import FORMATS, _READERS, export_model, imp
 from eija_studio.application.plan import MAX_DRAFT_STEPS, preview_plan
 from eija_studio.domain import transactions as transactions_module
 from eija_studio.domain.data import data_for
-from eija_studio.domain.models import DomainError
+from eija_studio.domain.models import DomainError, ExecuteCommand, LayoutChange
 from eija_studio.domain.pack import PACKS_ROOT, load_pack
 from eija_studio.domain.policy import apply_structural_all
 from eija_studio.domain.transactions import parse_transaction
@@ -275,3 +276,16 @@ def test_a_saved_draft_in_another_shape_is_set_aside_not_reopened(tmp_path, stor
         assert json.loads((tmp_path / "workspace" / "draft.unreadable-2.json").read_text()) == {"steps": "second"}
     finally:
         app.state.play.stop()
+
+
+# --- integers in request contracts read as JSON Schema reads them (ADR-0238, issue #235) ------------------------------
+
+def test_a_request_integer_is_a_json_integer_not_a_string_or_a_boolean():
+    command = {"operation_id": "op", "actor_id": "a", "instance_id": "r", "action": "Go"}
+    assert ExecuteCommand(**command, expected_version=1.0).expected_version == 1  # json.dumps(1.0) writes 1.0
+    for bad in ("1", True, 1.5, float("nan"), float("inf"), None):
+        with pytest.raises(ValidationError):
+            ExecuteCommand(**command, expected_version=bad)
+        with pytest.raises(ValidationError):
+            LayoutChange(node="n", x=bad, y=0)
+    assert LayoutChange(node="n", x=12.0, y=3).x == 12

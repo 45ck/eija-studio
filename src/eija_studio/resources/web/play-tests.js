@@ -7,6 +7,9 @@
   const BADGE = { PASS: "Pass", FAIL: "Fail", NOT_RUN: "Not run" };
   const OK = { strokeColor: "#1f7a4d", strokeWidth: 3 };
   const BAD = { strokeColor: "#a12f2f", strokeWidth: 3.5, dashed: 0 };
+  // The record's values a test gives, which guards over values read (ADR-0234): "with renewals = 2, format = "Book"".
+  const withValues = (values) => (values && Object.keys(values).length
+    ? " with " + Object.entries(values).map(([k, v]) => `${k} = ${typeof v === "string" ? JSON.stringify(v) : v}`).join(", ") : "");
   let P = null, report = null, key = null, draft = null, download = null, steps = [];
 
   const now = () => P.viewKey() + JSON.stringify(P.model()) + JSON.stringify(draft);
@@ -49,7 +52,7 @@
     item.append(head);
     if (!result.steps) return item;
     const story = P.el("ol", undefined, { class: "test-story" });
-    story.append(P.el("li", `Given a new record in ${result.start}`, { class: "test-given" }), ...result.steps.map(stepLine));
+    story.append(P.el("li", `Given a new record in ${result.start}${withValues(result.values)}`, { class: "test-given" }), ...result.steps.map(stepLine));
     item.append(story);
     if (status === "FAIL" && result.failed_step === null) item.append(P.el("p", result.why, { class: "small test-why" }));
     const tools = P.el("div", undefined, { class: "law-tools" });
