@@ -9,110 +9,37 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 """
 from __future__ import annotations
 
-from itertools import count, product
+from itertools import product
 from typing import Any
 
 from eija_studio.domain.data import Attribute, DataModel, check_record, record_fields, references
 from eija_studio.domain.laws import DistinctActors
 from eija_studio.domain.linked import along, combinations as linked_combinations
-from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, ValueGuard, Workflow, canonical, fingerprint
+from eija_studio.domain.models import DomainError, Transition, ValueGuard, Workflow, canonical, fingerprint
 from eija_studio.domain.navigation import navigation_for
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
 from eija_studio.domain.screens import Screens, default_screens, require_buildable
 from eija_studio.domain.value_guards import MAX_VALUATIONS, combinations, guard_problems
-from .memo import model_hash
-from .runtime import execute, receive
+from .app_runs import create_cases, journeys, options_cases, rules
+from .oracle_session import UNKNOWN_ACTOR, OracleSession as _OracleSession, absent, kernel_answer as _kernel
+from .runtime import receive
 from .simulation import MemorySession
 
 FORMAT = "eija.app-build.v1"
+# The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0243 added the last three).
+CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "timer_cases", "linked_cases", "signal_cases",
+              "create_cases", "journeys", "options_cases")
 UNDECLARED_ACTION = "UndeclaredAction"
-UNKNOWN_ACTOR = "unknown-actor"
 LIMITS = (
     "The app runs the EIJA kernel itself (eija-studio must be installed). Records created under an earlier model are "
     "refused with STALE_INSTANCE, and under an earlier data model with STALE_DATA.",
     "Actors are the pack's fixture directory chosen in the UI. That is not authentication.",
     "Notifications are written to an outbox table; nothing is sent.",
-    "Conformance covers every state x action x fixture actor x version case, plus replays, against the kernel. "
+    "Conformance covers every state x action x fixture actor x version case, plus replays, record creation, a run to "
+    "each transition and the actions offered, through the service and over HTTP, against the kernel. "
     "It is exhaustive for this model and these actors, not a proof about other inputs.",
 )
-
-
-class _OracleSession:
-    """In-memory answers to exactly the port calls `execute` makes for one instance. Nothing persists."""
-
-    def __init__(self, pack: Pack, model: Workflow, state: str, values: dict[str, Any] | None = None,
-                 waited: float | None = None, objects: dict[str, str] | None = None):
-        self.record_values = dict(values or {})
-        # The states of the record's linked objects: as a run of this record alone leaves them unless a case says
-        # otherwise (ADR-0241). Empty for a model without linked objects.
-        self.objects = dict(along(model).get(state, {}) if objects is None else objects)
-        # How long the record has been in its state: the model's longest time event unless a case says otherwise, so
-        # every time event is due in the ordinary cases (ADR-0237). A committed step enters a state afresh.
-        self.since = float(model.longest_wait if waited is None else waited)
-        self.actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
-        self.item = {"id": "r1", "case_id": "app", "model_hash": model_hash(model), "state": state, "version": 0}
-        self.operations: dict[str, dict[str, Any]] = {}
-        self.acted: list[tuple[str, str]] = []
-
-    def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None:
-        return self.item if instance_id == self.item["id"] else None
-
-    def acts(self, instance_id: str) -> list[tuple[str, str]]:
-        return list(self.acted)
-
-    def record_act(self, instance_id: str, action: str, actor_id: str) -> None:
-        self.acted.append((action, actor_id))
-
-    def values(self, instance_id: str) -> dict[str, Any]:
-        return dict(self.record_values)
-
-    def elapsed(self, instance_id: str) -> float | None:
-        return self.since
-
-    def object_state(self, instance_id: str, link: str) -> str | None:
-        return self.objects.get(link)
-
-    def move_object(self, instance_id: str, link: str, state: str) -> None:
-        self.objects[link] = state
-
-    def actor(self, actor_id: str) -> dict[str, Any]:
-        if actor_id not in self.actors:
-            raise DomainError("UNKNOWN_ACTOR", "Actor is not in the trusted fixture directory")
-        return self.actors[actor_id]
-
-    def find_operation(self, operation_id: str) -> dict[str, Any] | None:
-        return self.operations.get(operation_id)
-
-    def update_instance(self, item: dict[str, Any], expected: int) -> None:
-        self.item = dict(item)
-        self.since = 0.0
-
-    def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None:
-        self.operations[operation_id] = {"binding": binding, "result": result}
-
-    def event(self, kind: str, body: dict[str, Any]) -> None:
-        return None
-
-    def enqueue(self, case_id: str, operation_id: str, effect: str, recipient: str) -> None:
-        return None
-
-
-def _kernel(pack: Pack, model: Workflow, session: _OracleSession, actor: str, action: str, version: int,
-            operation: str = "op-1") -> dict[str, Any]:
-    command = ExecuteCommand(operation_id=operation, actor_id=actor, instance_id="r1", action=action, expected_version=version)
-    try:
-        result = execute(session, "app", model, command, pack=pack)  # type: ignore[arg-type]  # duck-typed session
-    except DomainError as refused:
-        return {"outcome": "REFUSED", "code": refused.code}
-    if result["duplicate"]:
-        return {"outcome": "DUPLICATE", "state": result["instance"]["state"]}
-    return {"outcome": "COMMITTED", "state": result["instance"]["state"], "effects": result["effects"]}
-
-
-def absent(base: str, taken: set[str]) -> str:
-    """A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one."""
-    return next(name for name in (base if n == 0 else f"{base}{n}" for n in count()) if name not in taken)
 
 
 NO_DATA = "Records carry a title only: this pack has no data model (data.json)."
@@ -127,7 +54,11 @@ def app_limits(data: DataModel | None) -> list[str]:
 
 
 def _sample(attribute: Attribute) -> object:
-    return attribute.choices[0] if attribute.type == "choice" else SAMPLES[attribute.type]
+    """A valid value: the first choice, or the type's sample, cut to the attribute's length (a 4-digit card suffix)."""
+    if attribute.type == "choice":
+        return attribute.choices[0]
+    sample = SAMPLES[attribute.type]
+    return sample[:attribute.max_length] if isinstance(sample, str) and attribute.type == "text" else sample
 
 
 def _breaks(attribute: Attribute, valid: dict[str, object]) -> list[tuple[str, dict[str, object]]]:
@@ -142,6 +73,17 @@ def _breaks(attribute: Attribute, valid: dict[str, object]) -> list[tuple[str, d
     if attribute.type == "text":
         tries.append((f"{name} too long", valid | {name: "x" * (attribute.max_length + 1)}))
     return tries
+
+
+def _fits(attribute: Attribute, valid: dict[str, object]) -> list[tuple[str, dict[str, object]]]:
+    """Values at the edge of what one attribute accepts, starting from a valid record: text exactly as long as it may
+    be, and every declared choice, so a narrower rule in the app is caught as surely as a looser one."""
+    name = attribute.name
+    if attribute.type == "text":
+        return [(f"{name} at its limit", valid | {name: "x" * attribute.max_length})]
+    if attribute.type == "choice":
+        return [(f"{name} is {choice}", valid | {name: choice}) for choice in attribute.choices[1:]]
+    return []
 
 
 def _answer(data: DataModel, values: dict[str, object], stored: set[tuple[str, str]]) -> dict[str, object]:
@@ -214,8 +156,11 @@ def value_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
                               f"(more than {MAX_VALUATIONS}); no app is built", {"refs": [f"transition:{t.id}"]})
         for values in tried:
             session = _OracleSession(pack, model, t.from_state, values)
-            cases.append({"state": t.from_state, "action": t.action, "actor": actor, "values": values,
-                          "expect": _kernel(pack, model, session, actor, t.action, 0)})
+            case: dict[str, Any] = {"state": t.from_state, "action": t.action, "actor": actor, "values": values,
+                    "expect": _kernel(pack, model, session, actor, t.action, 0)}
+            if case["expect"]["outcome"] == "COMMITTED":
+                case["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
+            cases.append(case)
     return cases
 
 
@@ -326,12 +271,33 @@ def data_cases(pack: Pack, data: DataModel, model: Workflow | None = None) -> li
     entity = data.entity(data.record)
     creator = _creator(pack, model)
     stored = {(str(o["class"]), str(o["id"])) for o in stock(data)}
-    valid = {a.name: _sample(a) for a in entity.attributes} | {r.name: next(i for c, i in sorted(stored) if c == r.target)
-                                                                for r in references(data)}
+    valid = valid_values(data)
+    least = {f.name: valid[f.name] for f in record_fields(data) if f.required}
     tries = [("valid", valid), *(bad for a in entity.attributes for bad in _breaks(a, valid)),
              ("unknown field", valid | {absent("extra", {a.name for a in record_fields(data)}): "x"}),
-             *_reference_breaks(data, valid)]
-    return [{"name": name, "actor": creator, "fields": values, "expect": _answer(data, values, stored)} for name, values in tries]
+             *_reference_breaks(data, valid),
+             # Appended after the cases above so their order holds: the edges of each rule, then only required values.
+             *(edge for a in entity.attributes for edge in _fits(a, valid)), ("required values only", least)]
+    cases: list[dict[str, Any]] = [{"name": name, "actor": creator, "fields": values, "expect": _answer(data, values, stored)}
+                                   for name, values in tries]
+    return _require_valid(cases, data)
+
+
+def _require_valid(cases: list[dict[str, Any]], data: DataModel) -> list[dict[str, Any]]:
+    """Never a suite whose "valid" record the app must refuse: that would leave every create check vacuous."""
+    if cases[0]["expect"]["outcome"] != "CREATED":
+        raise DomainError("DATA_NO_VALID_RECORD", f"The sample record is refused ({cases[0]['expect'].get('code')}); no app is built",
+                          {"refs": [f"class:{data.record}"]})
+    return cases
+
+
+def valid_values(data: DataModel | None) -> dict[str, object]:
+    """A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class."""
+    if data is None:
+        return {}
+    stored = sorted((str(o["class"]), str(o["id"])) for o in stock(data))
+    return {a.name: _sample(a) for a in data.entity(data.record).attributes} | {
+        r.name: next(i for c, i in stored if c == r.target) for r in references(data)}
 
 
 def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
@@ -350,7 +316,10 @@ def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
         case = {"state": state, "action": action, "actor": actor, "expected_version": version, "expect": first}
         if first["outcome"] == "COMMITTED":
             case |= {"after": dict(session.objects)} if model.objects else {}  # linked objects after it (ADR-0241)
+            case["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
             case["replay"] = _kernel(pack, model, session, actor, action, version)
+            # the same request under a new operation id: not a replay, so the kernel judges it afresh
+            case["again"] = _kernel(pack, model, session, actor, action, version, "op-2")
         cases.append(case)
     return cases
 
@@ -439,9 +408,11 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
     oracle |= _people_cases(pack, model, data)
     oracle |= {"waited": model.longest_wait} if model.longest_wait else {}  # how long ordinary cases' records waited
     oracle |= {"linked": along(model)} if model.objects else {}  # where ordinary cases' linked objects were (ADR-0241)
+    valid = valid_values(data)
+    oracle |= {"create_cases": create_cases(pack, model), "journeys": journeys(pack, model, valid),
+               "options_cases": options_cases(pack, model, valid), "rules": rules(model)}
     files["tests/oracle.json"] = canonical(oracle) + "\n"
-    total = len(cases) + sum(len(oracle.get(k, [])) for k in ("data_cases", "start_cases", "separation_cases", "value_cases",
-                                                                 "timer_cases", "linked_cases", "signal_cases"))
+    total = len(cases) + sum(len(oracle.get(k, [])) for k in CASE_KINDS)
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": total, "hash": fingerprint(oracle)},
                 "data": {"digest": data.digest, "record": data.record} if data else None,

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#stock
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 3cd8e488d8b0a826e85036e9f8c935755ba721256120cbdb86077a00207e285e
-notes_baseline: 2fca26a83649e13eafec82d06f002d425a516a72d2fe1d52c02ea3836c9e21e4
+  sha256: c788d6e735d9f31a6984c93edb0018dc0f927501f895b18ed2fc73b7357ebc44
+notes_baseline: 79c66dd085d8a95140b3adfdbc706a45bad82196f58099792361d5a58488226b
 ---
 
 # application.appgen.stock
@@ -51,4 +51,5 @@ _No curated notes yet._
 
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
+* [application.appgen.valid_values](/symbols/application/appgen/valid_values.md) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 <!-- okf:generated:end links -->

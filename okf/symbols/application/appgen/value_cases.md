@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#value_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 5a07b8ad78b37591544e0e51fca6e83df7291c7e4d64f5553ab43b6d3a669285
-notes_baseline: 3ccbb97d126c83142714eb75c16103c60abdc46dfd85f354c5f35a125edf4a1c
+  sha256: a5534cdded66b6f09cea514809296b620214d0c575e6f5ef6f10e7b82a339cf2
+notes_baseline: 75d9dc212875e13de15ab955b17a784ce737ac82a5dbd6690cc9f9a979baa81b
 ---
 
 # application.appgen.value_cases
@@ -45,6 +45,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.oracle_session.OracleSession](/symbols/application/oracle_session/OracleSession.md) - In-memory answers to exactly the port calls `execute` makes for one instance.
+* [application.oracle_session.kernel_answer](/symbols/application/oracle_session/kernel_answer.md) - `def kernel_answer(pack: Pack, model: Workflow, session: OracleSession, actor: str, action: str, version: int,…` in `application/oracle_session`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.

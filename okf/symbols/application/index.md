@@ -4,6 +4,7 @@
 
 * [access](access/) - Symbols of application.access
 * [api_contract](api_contract/) - Symbols of application.api_contract
+* [app_runs](app_runs/) - Symbols of application.app_runs
 * [appgen](appgen/) - Symbols of application.appgen
 * [build_subject](build_subject/) - Symbols of application.build_subject
 * [c4](c4/) - Symbols of application.c4
@@ -27,6 +28,7 @@
 * [law_proof](law_proof/) - Symbols of application.law_proof
 * [memo](memo/) - Symbols of application.memo
 * [new_system](new_system/) - Symbols of application.new_system
+* [oracle_session](oracle_session/) - Symbols of application.oracle_session
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
 * [presentation](presentation/) - Symbols of application.presentation

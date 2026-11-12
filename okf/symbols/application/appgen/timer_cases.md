@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#timer_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: edc97f551df9a5de395fb28a80d55dee64b4b704a382a6b197c4afdd319c4ac1
-notes_baseline: 2063b5f076c061e91a7a6a56ac09a6f5bbb29b6037bee5c9913dd2b5af80253d
+  sha256: b9acb98778fc485127838d819c84b7513f3814b8fc7eabfe4d51fb6619b45480
+notes_baseline: cf45e05420dc74458d9cf93ff60319b109cf38fc1d1159ccd336357f26dec5be
 ---
 
 # application.appgen.timer_cases
@@ -45,6 +45,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.oracle_session.OracleSession](/symbols/application/oracle_session/OracleSession.md) - In-memory answers to exactly the port calls `execute` makes for one instance.
+* [application.oracle_session.kernel_answer](/symbols/application/oracle_session/kernel_answer.md) - `def kernel_answer(pack: Pack, model: Workflow, session: OracleSession, actor: str, action: str, version: int,…` in `application/oracle_session`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 <!-- okf:generated:end links -->

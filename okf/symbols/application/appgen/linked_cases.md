@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#linked_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 7bda389b50dba6089b01f5dc939e7baa1bed4e278475eb7e2205c9722f917812
-notes_baseline: eb95f20fd5bafdb3e868b4a71622daaa3ac59ab173dd6564ad18da1ebaf235a9
+  sha256: b7e23a4409bdc09cb626c5787dba31d7d582eaf8ed8b34c1140fc0c622b312e8
+notes_baseline: 6d43c34880a2b52de89247f534c5a517c973f705a0d3279238a49872e4eabcf0
 ---
 
 # application.appgen.linked_cases
@@ -45,6 +45,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.oracle_session.OracleSession](/symbols/application/oracle_session/OracleSession.md) - In-memory answers to exactly the port calls `execute` makes for one instance.
+* [application.oracle_session.kernel_answer](/symbols/application/oracle_session/kernel_answer.md) - `def kernel_answer(pack: Pack, model: Workflow, session: OracleSession, actor: str, action: str, version: int,…` in `application/oracle_session`.
 * [domain.linked.combinations](/symbols/domain/linked/combinations.md) - Every combination of states of the objects `transition` moves, one dict per combination; `[{}]` when it moves none.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.

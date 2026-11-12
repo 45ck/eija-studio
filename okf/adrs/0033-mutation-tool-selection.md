@@ -63,5 +63,6 @@ _No curated notes yet._
 * [ADR-0034: What is mutated, how a score is defined, and the ratchet](/adrs/0034-mutation-measurement-and-ratchet.md) - ADR-0033 picks the engine.
 * [ADR-0097: Impact, ranking and evidence-status mathematics: fixed points, integer relevance, greedy selection, count vectors, and no confidence percentage](/adrs/0097-weave-impact-ranking-math.md) - The weave graph must answer six questions about a change: what does it affect, what should an agent or a person read, which tests give the cheapest useful re-c…
 * [ADR-0239: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0239-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
+* [ADR-0243: Conformance that catches a divergent app by behaviour](/adrs/0243-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
 * [Mutation analysis](/lanes/0033-mutation-analysis.md) - Capability lane with ADR numbers 0033–0034 reserved.
 <!-- okf:generated:end links -->

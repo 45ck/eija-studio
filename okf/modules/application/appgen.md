@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 1f55b7e62b0d1a890d65e6e95cacddb3cd460f57fb80f988b01c973982b2fc33
-notes_baseline: 3954a97940feb1bd753aeb3f399449722410ad94a27eb6889d2a9428dc3d9e3d
+  sha256: b7b02dd588e4e877f31a3e1c95016462e076a4baba8624637d48de698d5f1e54
+notes_baseline: 0fd47df4d2e1a016895b8ada98917d45b929ede30847720f232ef5b760a9f879
 ---
 
 # application.appgen
@@ -41,15 +41,14 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 
 ## Public symbols
 
+* [`CASE_KINDS`](/symbols/application/appgen/CASE_KINDS.md) (constant) - no docstring
 * [`FORMAT`](/symbols/application/appgen/FORMAT.md) (constant) - no docstring
 * [`LIMITS`](/symbols/application/appgen/LIMITS.md) (constant) - no docstring
 * [`NO_DATA`](/symbols/application/appgen/NO_DATA.md) (constant) - no docstring
 * [`SAMPLES`](/symbols/application/appgen/SAMPLES.md) (constant) - no docstring
 * [`UNDECLARED_ACTION`](/symbols/application/appgen/UNDECLARED_ACTION.md) (constant) - no docstring
-* [`UNKNOWN_ACTOR`](/symbols/application/appgen/UNKNOWN_ACTOR.md) (constant) - no docstring
 * [`WITH_DATA`](/symbols/application/appgen/WITH_DATA.md) (constant) - no docstring
 * [`WRONG`](/symbols/application/appgen/WRONG.md) (constant) - no docstring
-* [`absent`](/symbols/application/appgen/absent.md) (function) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [`app_limits`](/symbols/application/appgen/app_limits.md) (function) - no docstring
 * [`data_cases`](/symbols/application/appgen/data_cases.md) (function) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, e…
 * [`generate`](/symbols/application/appgen/generate.md) (function) - Return the per-model files and the build manifest (without file hashes or test results).
@@ -62,11 +61,13 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`start_cases`](/symbols/application/appgen/start_cases.md) (function) - Each active fixture actor starting a record, and the kernel's answer.
 * [`stock`](/symbols/application/appgen/stock.md) (function) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [`timer_cases`](/symbols/application/appgen/timer_cases.md) (function) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state…
+* [`valid_values`](/symbols/application/appgen/valid_values.md) (function) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 * [`value_cases`](/symbols/application/appgen/value_cases.md) (function) - For each transition with guards over record values, an actor who may take it tries it on records holding every combinat…
 
 ## Internal imports
 
-* [`application/memo`](/modules/application/memo.md)
+* [`application/app_runs`](/modules/application/app_runs.md)
+* [`application/oracle_session`](/modules/application/oracle_session.md)
 * [`application/runtime`](/modules/application/runtime.md)
 * [`application/simulation`](/modules/application/simulation.md)
 * [`domain/data`](/modules/domain/data.md)
@@ -87,7 +88,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
-* [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
+* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0243): who may start one and where it starts, a run from a new record to each transi…
+* [application.oracle_session](/modules/application/oracle_session.md) - The in-memory session the app oracle asks the kernel through (ADR-0150): one record, nothing persists.
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
@@ -104,15 +106,14 @@ _No curated notes yet._
 
 * [application.generated_app](/modules/application/generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
+* [application.appgen.CASE_KINDS](/symbols/application/appgen/CASE_KINDS.md) - Constant `CASE_KINDS` in `application/appgen`.
 * [application.appgen.FORMAT](/symbols/application/appgen/FORMAT.md) - Constant `FORMAT` in `application/appgen`.
 * [application.appgen.LIMITS](/symbols/application/appgen/LIMITS.md) - Constant `LIMITS` in `application/appgen`.
 * [application.appgen.NO_DATA](/symbols/application/appgen/NO_DATA.md) - Constant `NO_DATA` in `application/appgen`.
 * [application.appgen.SAMPLES](/symbols/application/appgen/SAMPLES.md) - Constant `SAMPLES` in `application/appgen`.
 * [application.appgen.UNDECLARED_ACTION](/symbols/application/appgen/UNDECLARED_ACTION.md) - Constant `UNDECLARED_ACTION` in `application/appgen`.
-* [application.appgen.UNKNOWN_ACTOR](/symbols/application/appgen/UNKNOWN_ACTOR.md) - Constant `UNKNOWN_ACTOR` in `application/appgen`.
 * [application.appgen.WITH_DATA](/symbols/application/appgen/WITH_DATA.md) - Constant `WITH_DATA` in `application/appgen`.
 * [application.appgen.WRONG](/symbols/application/appgen/WRONG.md) - Constant `WRONG` in `application/appgen`.
-* [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
@@ -125,5 +126,6 @@ _No curated notes yet._
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [application.appgen.timer_cases](/symbols/application/appgen/timer_cases.md) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state half the time and the whole time, and th…
+* [application.appgen.valid_values](/symbols/application/appgen/valid_values.md) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 * [application.appgen.value_cases](/symbols/application/appgen/value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart…
 <!-- okf:generated:end links -->

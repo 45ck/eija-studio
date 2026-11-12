@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 12 November 2026: conformance that catches a wrong app
+
+- New `python -m verification.conformance.divergence` ([ADR-0243](docs/adr/0243-conformance-that-catches-divergence.md)). For every pack, it builds apps that are wrong in one model element (a transition, role, guard, effect, recipient, initial state, initiator, actor, attribute or association) or one of 23 seeded code faults. It reseals each app so a hash cannot catch it, and requires the app's own generated tests to fail. Before this change the generated suite missed, among others, a wrong initial state, a wrong notification recipient, records the app itself created, the actions it offers, and its HTTP API.
+- The generated conformance suite runs 17 tests, up from 12. New: who may start a record and where it starts; a run from a new record to every transition, with a second record that must stay untouched; the actions offered to each actor in each state; the rule table; and every case again over HTTP. Effects are checked with their recipients. Data cases now include text at its exact limit, every choice, and a record with only its required values.
+- Fixed: each outbox row now names the record it is about (it held the case id `app`). Fixed: the generated app's rule table lists every state an action leaves (ADR-0232); before, it showed only one. Fixed: a journey's record is acted on as soon as the app creates it, so a time event leaving the initial state is not yet due.
+- The repository's eight seeded app breaks in `tests/test_appgen.py` were each caught by the build-identity seal, not by a behavioural test. `tests/test_conformance_divergence.py` now checks behaviour, with a resealed control app that must pass.
+
 ### 12 November 2026: messages between workflows
 
 - A transition may send a signal to another workflow of the system, such as `Signal:LateReturn` to `library-fines` ([ADR-0242](docs/adr/0242-messages-between-workflows.md), issue #93 item 5). The kernel writes it to the sender's outbox in the same step. A workflow that says it receives that signal from that sender starts a record when it is delivered (`runtime.receive`). Any other signal or sender is refused with `SIGNAL_NOT_ACCEPTED`, and a redelivery starts nothing new.

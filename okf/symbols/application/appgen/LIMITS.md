@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#LIMITS
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 988f6e4af934ba48137f400613ee2c88b62bdb5024e94338212378f81c52ffd0
-notes_baseline: 80752003c3a7d83ea841f29436d1a6d77b57bb5ca8afadad1db62ea4ba7f67c7
+  sha256: b6874e9d7825922cdd487b8bef8e54ec4c5e3d154bb3a7b45f343a5e2759685d
+notes_baseline: 41e586cd9a8c69f76c4ce8a61f7e81cd4829099ff684ed01116280eba5089c2f
 ---
 
 # application.appgen.LIMITS
