@@ -51,6 +51,8 @@ CROSS_FIELD = (
     # Value guards (ADR-0234): no duplicates; equality only for true/false; ordering only for numbers and dates.
     "Duplicate value guard", "A true/false value is only compared with = or ≠",
     "Only a date (YYYY-MM-DD) or a number is compared with <, ≤, > or ≥", "A guard's text is at most 200 characters",
+    # Composite states (ADR-0238): a tree over the states.
+    "Composite states must form a tree over the states",
     # JSON Schema cannot calculate a cross-field SHA-256. Concrete valid and
     # invalid bindings are checked separately by the generated-app approval suite.
     "Generated subject digest does not match its contents", "Generated review digest does not match its contents",

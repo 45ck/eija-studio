@@ -159,15 +159,26 @@ def _rename_state(model: Workflow, tx: RenameState, _: Declare) -> dict[str, Any
     data["initial_state"] = rename.get(data["initial_state"], data["initial_state"])
     for t in data["transitions"]:
         t["from_state"], t["to_state"] = rename.get(t["from_state"], t["from_state"]), rename.get(t["to_state"], t["to_state"])
+    for c in data.get("composites", []):  # the composite states holding it (ADR-0238)
+        c["states"], c["initial"] = [rename.get(x, x) for x in c["states"]], rename.get(c["initial"], c["initial"])
     return data
 
 
 def _remove_state(model: Workflow, tx: RemoveState, _: Declare) -> dict[str, Any]:
     _need_state(model, tx.state)
-    users = [t.id for t in model.transitions if tx.state in (t.from_state, t.to_state)]
+    users = [f"transition:{t.id}" for t in model.transitions if tx.state in (t.from_state, t.to_state)]
+    users += [f"composite:{c.name}" for c in model.composites if tx.state == c.initial or c.states == (tx.state,)]
     if users or tx.state == model.initial_state:
-        raise refused("EDIT_INVALID", "State is still in use", "state:" + tx.state, *("transition:" + u for u in users))
-    return model.model_dump(mode="json") | {"states": [s for s in model.states if s != tx.state]}
+        raise refused("EDIT_INVALID", "State is still in use", "state:" + tx.state, *users)
+    return _without_state(model, tx.state)
+
+
+def _without_state(model: Workflow, state: str) -> dict[str, Any]:
+    """The model without `state`, which also leaves the composite holding it (ADR-0238)."""
+    data = model.model_dump(mode="json") | {"states": [s for s in model.states if s != state]}
+    for c in data.get("composites", []):
+        c["states"] = [x for x in c["states"] if x != state]
+    return data
 
 
 def _set_initial(model: Workflow, tx: SetInitial, _: Declare) -> dict[str, Any]:

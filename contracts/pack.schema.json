@@ -504,6 +504,40 @@
       "title": "ClosedShape",
       "type": "object"
     },
+    "Composite": {
+      "additionalProperties": false,
+      "description": "A UML composite state (issue #93 item 3, ADR-0238): a named group of states, or of other composites, with the\nchild a transition into the group enters first. A record is always in exactly one plain state; the composite is the\nset of states inside it. The kernel runs the flat machine, so a composite never changes what a step does. A\ntransition the group's states all share is drawn once from the group, and SCXML gets a nested `<state>`.",
+      "properties": {
+        "name": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "States",
+          "type": "array"
+        },
+        "initial": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Initial",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "states",
+        "initial"
+      ],
+      "title": "Composite",
+      "type": "object"
+    },
     "Delay": {
       "additionalProperties": false,
       "description": "A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has\nbeen in its source state this long. Time is measured from when the record entered that state, which every\ncommitted step does, a step back into the same state included. An unknown entry time never counts as due.",
@@ -2198,6 +2232,15 @@
           },
           "maxItems": 16,
           "title": "Initiators",
+          "type": "array"
+        },
+        "composites": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Composite"
+          },
+          "maxItems": 16,
+          "title": "Composites",
           "type": "array"
         }
       },

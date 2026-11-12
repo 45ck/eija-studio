@@ -433,7 +433,7 @@
   "subject": {
     "function": "eija_studio.domain.policy.check_policy",
     "sources_semantic_sha256": {
-      "domain/models.py": "fb108826a6fdb80e13b0190d461416aaa5f2d62a105b550d13e98ff7ea74cc22",
+      "domain/models.py": "8a992d9951323813d083352dc5e1871cdb3a314bd6baf2577ddd6876f608901a",
       "domain/policy.py": "d639f5d966333958c972c8fa8b5308f5591158f07a3cd3c72457fcb80b2dfeec"
     }
   }

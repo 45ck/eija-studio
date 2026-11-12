@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py#to_scxml
   title: application/scxml.py
   hash_method: ast-v2
-  sha256: a9d0d255d2bb14a1ccdef86652308fea221ec97f9935d3acb2c1822cb47f31eb
-notes_baseline: f2f56064d1a27e2947c01622d33bd07ffd7209deb4e055ed404c56a32303e6a8
+  sha256: 4746d4431dce23a377f1dad1022ade8fe5550cee2efc653302dd2c0a2f99ae69
+notes_baseline: 687d94b5c6bb7693ac3266486af0329a22e19324006f625f48e35e201b1dfe48
 ---
 
 # application.scxml.to_scxml
@@ -45,6 +45,7 @@ _No curated notes yet._
 
 * [application.scxml.FORMAT](/symbols/application/scxml/FORMAT.md) - Constant `FORMAT` in `application/scxml`.
 * [application.scxml.NAMESPACE](/symbols/application/scxml/NAMESPACE.md) - Constant `NAMESPACE` in `application/scxml`.
+* [application.scxml.hoisted](/symbols/application/scxml/hoisted.md) - The transitions each state or composite carries in the chart.
 * [application.scxml.scxml_id](/symbols/application/scxml/scxml_id.md) - An XML/SCXML-safe id for a state or event name.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.

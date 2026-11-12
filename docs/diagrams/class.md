@@ -74,6 +74,7 @@ classDiagram
         +str initial_state
         +tuple~str~ states
         +tuple~str~ initiators
+        +tuple~Composite~ composites
     }
     class Guard {
         <<enumeration>>

@@ -4,6 +4,7 @@
 * **Time events (issue #93, item 2)**: synced ADR-0237, `Delay`, `Transition.after`, `Workflow.longest_wait`, the runtime's `TIMER_NOT_DUE` check, the `elapsed` port, Simulate's clock, the law proof's waiting, the oracle's timer cases, the generated app's entry time, the SCXML projection, scenario waits and the formal scope. Re-read the Notes of the runtime module, `execute`, `UnitOfWork`, `Transition` and `Workflow` as `process:claude-code` and updated the last four. No human source approval was recorded.
 
 * **Hostile input and plan cost**: synced ADR-0236 (and again after the Codex review: set-aside drafts never overwrite each other) and the pages for `adapters.system_library` (`set_aside_draft`), `interfaces.cli` (`failure_report`) and `application.plan.preview_plan` (each step applied once). None of these pages has curated Notes. Nothing was recorded as verified.
+* **Composite states (issue #93, item 3)**: synced ADR-0238, `Composite`, `Workflow.composites` and its tree helpers, the SCXML nesting (`hoisted`), nested clusters in the diagram emitters, the diff's composite summary and the state edits that keep composites coherent. Re-read the Notes of `Workflow` and `Workflow.semantic_hash` as `process:claude-code` and updated both. No human source approval was recorded.
 
 ## 2026-11-11
 

@@ -53,6 +53,7 @@ Every view has one of three standings. **Executable**: the kernel runs it. **Che
 | View | Element | Standing | Meaning when it runs | Where |
 |---|---|---|---|---|
 | State machine | State | executable | A value a record's `state` can hold. An action is refused (`STATE_DENIED`) unless the record is in the transition's source state. | `domain/models.py` `Workflow` |
+| State machine | Composite state | checked design | A named group of states, nested to any depth, with the child a transition into it enters first. The kernel runs the flat machine, so it never changes what a step does. SCXML nests it and carries an action that leaves all its states once, on the composite; the differential checks the engine's hierarchy against the kernel (ADR-0238). | `domain/models.py` `Composite` |
 | State machine | Initial state | executable | The state a new record starts in. | `runtime.initialise` |
 | State machine | Transition `action [role]` | executable | One run-to-completion step: check the actor, check the version, move the state, bump the version, perform each required effect in order, record the operation. All in one unit of work. | `runtime.execute` |
 | State machine | Guard `actor_active` | executable | The actor is active at commit time, else `ACTOR_REVOKED`. | `runtime.check_actor` |
@@ -170,7 +171,7 @@ The cost is expressiveness. A construct is executable only after it has been add
 | Not executable yet | Why it matters | Likely shape |
 |---|---|---|
 | Deadlines and upper bounds (`within(3 days)`, `at(date)`) | Expiring offers, fixed cut-offs | `after` (ADR-0237) covers "at least this long"; an upper bound needs the law proof to stop assuming that waiting only adds steps |
-| Composite and orthogonal states | Large machines stay readable | Flattened by the kernel; SCXML has both natively |
+| Orthogonal regions and history states | A record doing two things at once; resuming where it left off | A record in a set of states; SCXML has both natively. Composite states are done (ADR-0238) |
 | Actions on associated objects | "Approving the trip books the bus" | Effects on another class's records, each with its own state machine (xtUML's one machine per class) |
 | Messages between workflows | Component diagrams that run | Typed signals between packs over a port |
 

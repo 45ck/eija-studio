@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 3a58006224e61dd4f37d8176d2dde01efc782e96ca9cdb2b3635b86fc7604aa5
+  sha256: 4b10295950d49753ecc1ddc6bd3d1ca4684ed3e113ebc582dda636c009783f89
 description_override: Immutable typed states, transitions, roles, guards and effect declarations with a normalised semantic hash.
-notes_baseline: d6bcd2ea4db909659047fe9e9c220ed1db421c70296f01c5982a01eb332f3e4a
+notes_baseline: 0b8a16c09e98a1f1dea5da6ab59ca321cc7afa0a52dfe41d7f2421dc77e1af42
 verified:
 - by: process:eija-wbs-1.3-agent
   at: '2026-09-29T08:20:47Z'
@@ -38,6 +38,10 @@ verified:
   at: '2026-11-12T05:00:00Z'
   notes_sha256: a8eec18967e8167ce7b6d3a2bde007b82c6843bab3e90139f1134e65cd26a0a7
   sources_sha256: d6bcd2ea4db909659047fe9e9c220ed1db421c70296f01c5982a01eb332f3e4a
+- by: process:claude-code
+  at: '2026-11-12T05:30:00Z'
+  notes_sha256: b76d097e1976f277a03bb7b6ee7d3cfb2b1f5137103bd5c04a4486f4e7c253dd
+  sources_sha256: 0b8a16c09e98a1f1dea5da6ab59ca321cc7afa0a52dfe41d7f2421dc77e1af42
 ---
 
 # domain.models.Workflow
@@ -65,11 +69,17 @@ _The source carries no docstring._
 | `states` | `tuple[str, ...]` | `Field(min_length=1, max_length=32)` |
 | `transitions` | `tuple[Transition, ...]` | `Field(min_length=1, max_length=64)` |
 | `initiators` | `tuple[str, ...]` | `Field(default=(), max_length=16)` |
+| `composites` | `tuple[Composite, ...]` | `Field(default=(), max_length=16)` |
 
 ## Methods
 
+* [`ancestors`](/symbols/domain/models/Workflow.ancestors.md) - `def ancestors(self, name: str) -> tuple[str, ...]`
 * [`coherent`](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow`
+* [`composite`](/symbols/domain/models/Workflow.composite.md) - `def composite(self, name: str) -> Composite \| None`
+* [`entry`](/symbols/domain/models/Workflow.entry.md) - `def entry(self, name: str) -> str`
+* [`leaves`](/symbols/domain/models/Workflow.leaves.md) - `def leaves(self, name: str) -> tuple[str, ...]`
 * [`longest_wait`](/symbols/domain/models/Workflow.longest_wait.md) - `def longest_wait(self) -> int`
+* [`parent`](/symbols/domain/models/Workflow.parent.md) - `def parent(self, name: str) -> str \| None`
 * [`semantic_hash`](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str`
 * [`sources`](/symbols/domain/models/Workflow.sources.md) - `def sources(self, action: str) -> tuple[str, ...]`
 * [`transition_for`](/symbols/domain/models/Workflow.transition_for.md) - `def transition_for(self, action: str, state: str \| None=None) -> Transition \| None`
@@ -77,11 +87,12 @@ _The source carries no docstring._
 
 ## Notes
 
-The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237).
+The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237). `composites` groups the states into a tree of UML composite states, left out when empty; `parent`, `ancestors`, `leaves` and `entry` read it, and the kernel still runs the flat machine (ADR-0238).
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.models.Composite](/symbols/domain/models/Composite.md) - A UML composite state (issue #93 item 3, ADR-0238): a named group of states, or of other composites, with the child a transition into the group enters first.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
 
@@ -157,6 +168,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.scenario_run.run_scenario](/symbols/application/scenario_run/run_scenario.md) - Run one scenario; it stops at the first step whose outcome differs from what it expects.
 * [application.scenario_run.run_scenarios](/symbols/application/scenario_run/run_scenarios.md) - Every scenario run on `model`; a model the policy refuses runs none of them.
 * [application.screen_access.check_accessibility](/symbols/application/screen_access/check_accessibility.md) - Each check with its WCAG success criteria and PASS, WARN (advice) or FAIL, the design's first.
+* [application.scxml.hoisted](/symbols/application/scxml/hoisted.md) - The transitions each state or composite carries in the chart.
 * [application.scxml.to_scxml](/symbols/application/scxml/to_scxml.md) - The model as an SCXML document.
 * [application.sequence_draft.draft_scenarios](/symbols/application/sequence_draft/draft_scenarios.md) - Scenarios for a system with none: each step's expectation is what the kernel does on `model`.
 * [application.sequence_draft.journeys](/symbols/application/sequence_draft/journeys.md) - Each end state the model can reach with the pack's fixture actors, and the (actor, action) steps that reach it.
@@ -182,8 +194,13 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
 * [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [domain.models.Workflow.ancestors](/symbols/domain/models/Workflow.ancestors.md) - The composites holding a state or composite, innermost first.
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
+* [domain.models.Workflow.composite](/symbols/domain/models/Workflow.composite.md) - `def composite(self, name: str) -> Composite | None` in `domain/models`.
+* [domain.models.Workflow.entry](/symbols/domain/models/Workflow.entry.md) - The plain state a transition into `name` enters: a composite's initial child, followed down.
+* [domain.models.Workflow.leaves](/symbols/domain/models/Workflow.leaves.md) - The plain states inside a composite, in model order; a plain state is its own only leaf.
 * [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
+* [domain.models.Workflow.parent](/symbols/domain/models/Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.
 * [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…

@@ -54,6 +54,7 @@ class Edge:
 class Cluster:
     id: str
     label: str
+    parent: str | None = None  # the cluster holding this one: a composite state inside another (ADR-0238)
 
 
 @dataclass(frozen=True)
@@ -177,9 +178,12 @@ def _terminals(states: set[str], edges: tuple[Edge, ...]) -> tuple[str, ...]:
 
 
 def state_graph(workflow: Workflow, *, role: str = "workflow") -> Graph:
-    """The state machine exactly as the runtime interprets it: states, and one edge per transition."""
+    """The state machine exactly as the runtime interprets it: states, and one edge per transition. Composite states
+    (ADR-0237) are drawn as boxes around the states they hold."""
     edges = tuple(Edge(t.from_state, t.to_state, _edge_label(t)) for t in sorted(workflow.transitions, key=_edge_key))
-    return Graph("state", f"{workflow.id} state machine", tuple(Node(s, s) for s in sorted(workflow.states)), edges,
+    nodes = tuple(Node(s, s, cluster=workflow.parent(s)) for s in sorted(workflow.states))
+    clusters = tuple(Cluster(c.name, c.name, workflow.parent(c.name)) for c in workflow.composites)  # ADR-0238
+    return Graph("state", f"{workflow.id} state machine", nodes, edges, clusters=clusters,
                  initial=workflow.initial_state, terminals=_terminals(set(workflow.states), edges),
                  direction="TB", provenance=_provenance((role, workflow)))
 
@@ -210,7 +214,15 @@ def diff_summary(before: Workflow, after: Workflow) -> dict[str, Any]:
     return {"initial_state": initial, "added_states": sorted(set(after.states) - set(before.states)),
             "removed_states": sorted(set(before.states) - set(after.states)),
             "added_actions": sorted(set(b) - set(a)), "removed_actions": sorted(set(a) - set(b)),
-            "changed_actions": changed}
+            "changed_actions": changed} | _composite_diff(before, after)
+
+
+def _composite_diff(before: Workflow, after: Workflow) -> dict[str, Any]:
+    """Composite states added, removed or regrouped (ADR-0238); absent when neither side has any or nothing changed."""
+    old, new = {c.name: c for c in before.composites}, {c.name: c for c in after.composites}
+    regrouped = sorted(n for n in set(old) & set(new) if (set(old[n].states), old[n].initial) != (set(new[n].states), new[n].initial))
+    found = {"added": sorted(set(new) - set(old)), "removed": sorted(set(old) - set(new)), "changed": regrouped}
+    return {"composites": found} if any(found.values()) else {}
 
 
 def _action_edges(old: Transition | None, new: Transition | None) -> list[Edge]:

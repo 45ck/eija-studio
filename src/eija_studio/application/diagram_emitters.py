@@ -12,6 +12,7 @@ from typing import Any, Callable
 
 from eija_studio.domain.models import DomainError
 from .diagrams import (
+    Cluster,
     ClassModel, Diagram, Edge, Graph, Message, Node, Note, Sequence, Step, STATUS_ORDER,
 )
 
@@ -124,10 +125,28 @@ def _mm_state_legend(g: Graph) -> list[str]:
     return out
 
 
+def _group_ids(g: Graph) -> dict[str, str]:
+    """Identifiers for a state graph's composite states, never colliding with its states' (ADR-0238)."""
+    return safe_ids([n.id for n in g.nodes] + [c.id for c in g.clusters])
+
+
+def _mm_composites(g: Graph, ids: dict[str, str], parent: str | None = None, indent: str = "    ") -> list[str]:
+    """Composite states (ADR-0238) as nested `state X { ... }` blocks naming the states they hold."""
+    clusters = _group_ids(g)
+    out: list[str] = []
+    for c in (c for c in g.clusters if c.parent == parent):
+        cid = clusters[c.id]
+        out += [*([f'{indent}state "{_mm(c.label)}" as {cid}'] if cid != c.label else []), f"{indent}state {cid} {{"]
+        out += [f"{indent}    {ids[n.id]}" for n in g.nodes if n.cluster == c.id]
+        out += [*_mm_composites(g, ids, c.id, indent + "    "), f"{indent}}}"]
+    return out
+
+
 def _mm_state(g: Graph) -> str:
     ids = safe_ids([n.id for n in g.nodes])
     out = [*_comments(g.provenance, "%%"), "stateDiagram-v2", f"    direction {g.direction}", *_mm_classdef_lines(g)]
     out += [f'    state "{_mm(n.label)}" as {ids[n.id]}' for n in g.nodes if ids[n.id] != n.label]
+    out += _mm_composites(g, ids)
     out += [f"    [*] --> {ids[state]}" + (f": {_mm(label)}" if label else "") for state, label, _ in _starts(g)]
     out += [f"    {ids[e.source]} --> {ids[e.target]}" + (f": {_mm(e.label)}" if e.label else "") for e in g.edges]
     out += [f"    {ids[t]} --> [*]" for t in g.terminals]
@@ -223,8 +242,17 @@ def _pu_edge(e: Edge, ids: dict[str, str]) -> str:
     return f"{ids[e.source]} {_pu_arrow(e.status)} {ids[e.target]}" + (f" : {_puml(e.label)}" if e.label else "")
 
 
+def _pu_states(g: Graph, ids: dict[str, str], parent: str | None = None, indent: str = "") -> list[str]:
+    """States, with composite states (ADR-0238) as nested `state X { ... }` blocks holding theirs."""
+    clusters = _group_ids(g)
+    out = [_pu_node("state", n, ids, indent) for n in g.nodes if n.cluster == parent]
+    for c in (c for c in g.clusters if c.parent == parent):
+        out += [f'{indent}state "{_puml(c.label)}" as {clusters[c.id]} {{', *_pu_states(g, ids, c.id, indent + "  "), f"{indent}}}"]
+    return out
+
+
 def _pu_state_body(g: Graph, ids: dict[str, str]) -> list[str]:
-    out = ["hide empty description", *[_pu_node("state", n, ids) for n in g.nodes]]
+    out = ["hide empty description", *_pu_states(g, ids)]
     out += [f"[*] {_pu_arrow(status) if status != 'same' else '-->'} {ids[state]}" + (f" : {_puml(label)}" if label else "")
             for state, label, status in _starts(g)]
     return out + [_pu_edge(e, ids) for e in g.edges] + [f"{ids[t]} --> [*]" for t in g.terminals]
@@ -315,14 +343,16 @@ def _dot_header(g: Graph, ids: dict[str, str]) -> list[str]:
     return out
 
 
-def _dot_nodes(g: Graph, ids: dict[str, str]) -> list[str]:
-    clusters = safe_ids([c.id for c in g.clusters])
-    out: list[str] = []
-    for c in g.clusters:
-        out.append(f'    subgraph "cluster_{clusters[c.id]}" {{ label="{_dot(c.label)}"; style=rounded;')
-        out += [_dot_node(ids[n.id], n.label, n.status) for n in g.nodes if n.cluster == c.id]
-        out.append("    }")
-    return out + [_dot_node(ids[n.id], n.label, n.status) for n in g.nodes if n.cluster is None]
+def _dot_nodes(g: Graph, ids: dict[str, str], parent: str | None = None) -> list[str]:
+    """Nodes, inside a cluster per group; a cluster with a parent (a nested composite state, ADR-0238) nests."""
+    out = [line for c in g.clusters if c.parent == parent for line in _dot_cluster(g, ids, c)]
+    return out + ([_dot_node(ids[n.id], n.label, n.status) for n in g.nodes if n.cluster is None] if parent is None else [])
+
+
+def _dot_cluster(g: Graph, ids: dict[str, str], c: Cluster) -> list[str]:
+    out = [f'    subgraph "cluster_{safe_ids([k.id for k in g.clusters])[c.id]}" {{ label="{_dot(c.label)}"; style=rounded;']
+    out += [_dot_node(ids[n.id], n.label, n.status) for n in g.nodes if n.cluster == c.id]
+    return out + _dot_nodes(g, ids, c.id) + ["    }"]
 
 
 def _dot_legend(g: Graph) -> list[str]:
