@@ -1,7 +1,7 @@
 /* PlayIDE systems (ADR-0185): the Systems and Save controls in the title bar, and the Open / New system dialog. */
 .system-controls{display:inline-flex;align-items:center;gap:6px;margin-left:10px;min-width:0}
 .system-controls[hidden]{display:none}
-.system-controls button{padding:3px 10px;font-size:.82rem}
+.system-controls button{padding:3px 10px;font-size:.82rem;min-height:28px}
 .system-controls button:disabled{opacity:.45;cursor:default}
 .system-saved{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
 .system-saved[data-dirty="true"]{color:var(--warn)}
