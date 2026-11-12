@@ -100,6 +100,17 @@ def test_the_receiver_starts_one_record_per_signal_and_refuses_others():
     assert len(session.instances) == 1
 
 
+def test_a_redelivery_with_other_values_is_a_conflict():
+    """Review regression: the delivery binding ignored the record values, so changed values replayed as a duplicate."""
+    session = MemorySession(FINES)
+    runtime.receive(session, "c", FINES.model, LATE, "library-loan", "late-1", pack=FINES, values={"amount": 10})  # type: ignore[arg-type]
+    assert runtime.receive(session, "c", FINES.model, LATE, "library-loan", "late-1", pack=FINES,  # type: ignore[arg-type]
+                           values={"amount": 10})["duplicate"]
+    with pytest.raises(DomainError) as e:
+        runtime.receive(session, "c", FINES.model, LATE, "library-loan", "late-1", pack=FINES, values={"amount": 100})  # type: ignore[arg-type]
+    assert e.value.code == "OPERATION_CONFLICT" and len(session.instances) == 1
+
+
 def test_the_landscape_draws_each_signal_and_flags_one_end_only():
     both = landscape("library-loan", system(LOANS, FINES))
     assert both["signals"] == [{"source": "library-loan", "target": "library-fines", "signal": LATE}]
@@ -141,10 +152,10 @@ def test_a_built_app_starts_records_on_signals_and_conformance_catches_one_that_
     assert manifest["conformance"]["status"] == "PASS", manifest["conformance"]
     service = out / "app" / "service.py"
     text = service.read_text(encoding="utf-8")
-    marker = "receive(session, CASE, MODEL, signal, sender, operation_id, pack=PACK)"
+    marker = "receive(session, CASE, MODEL, signal, sender, operation_id, pack=PACK, values=values)"
     assert marker in text
     service.write_text(text.replace(marker, "receive(session, CASE, MODEL, MODEL.receives[0].signal, "
-                                            "MODEL.receives[0].sender, operation_id, pack=PACK)"), encoding="utf-8")
+                                            "MODEL.receives[0].sender, operation_id, pack=PACK, values=values)"), encoding="utf-8")
     assert conformance(out)["status"] == "FAIL"  # negative control: the app starts a record on any signal
 
 
@@ -155,3 +166,46 @@ def test_a_uml_file_keeps_the_signal_but_not_where_it_goes():
     assert effect == {"id": LATE, "kind": "signal", "recipient": "unaddressed"}
     assert any("a signal goes to" in d["reason"] for d in report["defaulted"])
     assert "1 signal(s) from other workflows" in " ".join(export_model("plantuml", FINES, None, data_for(FINES))[1]["not_carried"])
+
+
+def test_the_running_app_takes_signals_over_http_and_refuses_a_missing_delivery_id(tmp_path):
+    """Review regression: a missing delivery id became the shared id "missing", and a long one was cut short."""
+    import http.client  # noqa: PLC0415
+    import importlib  # noqa: PLC0415
+    import sys  # noqa: PLC0415
+    import threading  # noqa: PLC0415
+    from http.server import ThreadingHTTPServer  # noqa: PLC0415
+
+    pack_dir, out = tmp_path / "library-fines", tmp_path / "app"
+    shutil.copytree(ROOT / "packs" / "library-fines", pack_dir)
+    assert main(["build", "--pack", str(pack_dir), "--out", str(out), "--no-test"]) == 0
+    sys.path.insert(0, str(out))
+    try:
+        server_module, service_module = importlib.import_module("app.server"), importlib.import_module("app.service")
+        server = ThreadingHTTPServer(("127.0.0.1", 0), server_module.handler_for(service_module.Service()))
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+
+        def post(body):
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_address[1], timeout=10)
+            connection.request("POST", "/api/signals", body=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
+            response = connection.getresponse()
+            answer = (response.status, json.loads(response.read()))
+            connection.close()
+            return answer
+
+        fine = {"amount": 5, "reason": "Overdue", "issuedOn": "2026-11-12"}
+        base = {"signal": LATE, "sender": "library-loan", "fields": fine}
+        status, started = post(base | {"operation_id": "late-1"})
+        assert status == 201 and started["record"]["state"] == "Issued" and started["record"]["fields"] == fine
+        assert post(base | {"operation_id": "late-1"})[0] == 200
+        assert post(base | {"operation_id": "late-1", "fields": fine | {"amount": 50}})[1]["code"] == "OPERATION_CONFLICT"
+        for operation in (None, "", "x" * 101, 7):
+            body = base | ({"operation_id": operation} if operation is not None else {})
+            assert post(body) == (400, {"code": "BAD_REQUEST", "message": "operation_id must be a string of 1 to 100 characters"})
+        assert post(base | {"operation_id": "late-2", "signal": "Signal:Lost"})[1]["code"] == "SIGNAL_NOT_ACCEPTED"
+        server.shutdown()
+        server.server_close()
+    finally:
+        sys.path.remove(str(out))
+        for module in [m for m in sys.modules if m == "app" or m.startswith("app.")]:
+            del sys.modules[module]

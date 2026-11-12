@@ -268,7 +268,7 @@ class Service:
             raise DomainError("UNKNOWN_FIELD", "This app's model has no record attributes")
 
         def work(session: Session) -> dict[str, Any]:
-            result = receive(session, CASE, MODEL, signal, sender, operation_id, pack=PACK)
+            result = receive(session, CASE, MODEL, signal, sender, operation_id, pack=PACK, values=values)
             if result["duplicate"]:
                 return {"duplicate": True, "started": False, "record": self._record(result["original_result"]["instance"]["id"])}
             record_id = result["instance"]["id"]

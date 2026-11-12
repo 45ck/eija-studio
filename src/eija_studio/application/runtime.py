@@ -172,19 +172,20 @@ def execute(
 
 
 def receive(session: UnitOfWork, case_id: str, model: Workflow, signal: str, sender: str, operation_id: str, *,
-            pack: Pack | None = None) -> dict[str, Any]:
+            pack: Pack | None = None, values: dict[str, Any] | None = None) -> dict[str, Any]:
     """Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
 
     The sender's step put the signal in its outbox in its own unit of work; delivering it here is a separate unit of
     work, so the sender is never refused by the receiver. A signal the model does not say it receives from `sender` is
-    refused with SIGNAL_NOT_ACCEPTED. The operation id makes a redelivery start nothing new: the same signal and sender
-    return the original record, and anything else under that id is OPERATION_CONFLICT."""
+    refused with SIGNAL_NOT_ACCEPTED. The operation id makes a redelivery start nothing new: the same signal, sender and
+    record `values` return the original record, and anything else under that id is OPERATION_CONFLICT."""
     pack = pack if pack is not None else default_pack()
     ensure_conforms(model, pack, ensure_policy)
     if model.receiving(signal, sender) is None:
         raise DomainError("SIGNAL_NOT_ACCEPTED", f"This workflow does not start a record on {signal} from {sender}",
                           {"refs": [f"signal:{signal}", f"workflow:{sender}"]})
-    binding = fingerprint({"case": case_id, "subject": model_hash(model), "signal": signal, "sender": sender})
+    binding = fingerprint({"case": case_id, "subject": model_hash(model), "signal": signal, "sender": sender,
+                           "values": values or {}})
     prior = session.find_operation(operation_id)
     if prior is not None:
         if prior["binding"] != binding:

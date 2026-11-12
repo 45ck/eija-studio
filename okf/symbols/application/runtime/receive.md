@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#receive
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: 87fed8ca3188af002455cb49081d39e065259e934ae6affc99b07115263b9b55
-notes_baseline: 08a833333ebf38fde418e374ad06d4ca27ae3b3383bda98ce0e22128d4e99628
+  sha256: 917f2dcc7dc94115064327d5a8309729b09bfff506d482a95cbed2b1edb5c1f2
+notes_baseline: fc74e6d3d2eaf7cdca6ba4a0866928cc7b7dcf217d94732435dbe4d525302cb5
 ---
 
 # application.runtime.receive
@@ -25,7 +25,7 @@ notes_baseline: 08a833333ebf38fde418e374ad06d4ca27ae3b3383bda98ce0e22128d4e99628
 |---|---|
 | Kind | function |
 | Module | [`application/runtime`](/modules/application/runtime.md) |
-| Signature | `def receive(session: UnitOfWork, case_id: str, model: Workflow, signal: str, sender: str, operation_id: str, *, pack: Pack \| None=None) -> dict[str, Any]` |
+| Signature | `def receive(session: UnitOfWork, case_id: str, model: Workflow, signal: str, sender: str, operation_id: str, *, pack: Pack \| None=None, values: dict[str, Any] \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/runtime.py#receive` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -36,8 +36,8 @@ Start a record because another workflow of the system sent `signal` (issue #93 i
 
 The sender's step put the signal in its outbox in its own unit of work; delivering it here is a separate unit of
 work, so the sender is never refused by the receiver. A signal the model does not say it receives from `sender` is
-refused with SIGNAL_NOT_ACCEPTED. The operation id makes a redelivery start nothing new: the same signal and sender
-return the original record, and anything else under that id is OPERATION_CONFLICT.
+refused with SIGNAL_NOT_ACCEPTED. The operation id makes a redelivery start nothing new: the same signal, sender and
+record `values` return the original record, and anything else under that id is OPERATION_CONFLICT.
 ~~~
 <!-- okf:generated:end facts -->
 
