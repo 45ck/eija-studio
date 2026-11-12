@@ -34,7 +34,7 @@ def observation(binding):
     return {"binding_digest": binding.digest, "subject_digest": binding.subject.digest,
             "checker": binding.checker.model_dump(mode="json"), "configuration": binding.configuration.model_dump(mode="json"),
             "before": binding.subject.digest, "after": binding.subject.digest,
-            "returncode": 0, "timed_out": False, "tests_run": 9, "stdout": "", "stderr": "Synthetic checker fixture"}
+            "returncode": 0, "timed_out": False, "tests_run": 14, "stdout": "", "stderr": "Synthetic checker fixture"}
 
 
 @pytest.fixture
