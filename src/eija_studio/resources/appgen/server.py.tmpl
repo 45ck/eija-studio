@@ -34,12 +34,17 @@ def _record() -> dict | None:
     return RECORD_CLASS.model_dump(mode="json") | {"attributes": [a.model_dump(mode="json") for a in record_fields(DATA)]}
 
 
+def transitions() -> dict:
+    """Each action once, with every state it leaves: one action may leave several (ADR-0232)."""
+    return {t.action: {"from": ", ".join(MODEL.sources(t.action)), "to": t.to_state, "role": t.role} for t in MODEL.transitions}
+
+
 def describe() -> dict:
     return {"name": PACK.pack.name, "description": PACK.pack.description, "model_hash": MODEL.semantic_hash, "subject": SUBJECT,
             "navigation": NAVIGATION.model_dump(mode="json"),
             "initial_state": MODEL.initial_state, "states": list(MODEL.states),
             "roles": {r.id: r.description for r in PACK.roles}, "kinds": {r.id: r.kind for r in PACK.roles},
-            "transitions": {t.action: {"from": t.from_state, "to": t.to_state, "role": t.role} for t in MODEL.transitions},
+            "transitions": transitions(),
             "actors": {a.id: {"role": a.role, "active": a.active} for a in PACK.fixtures.actors},
             "record": _record(), "data_digest": DATA.digest if DATA else None,
             "references": [{"field": r.name, "class": r.target, "required": r.required} for r in REFERENCES],

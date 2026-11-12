@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-11-12
+
+* **Conformance that catches a divergent app (ADR-0237)**: synced ADR-0237, the new oracle lists in `application/appgen.py` (`create_cases`, `journeys`, `options_cases`, `rules`, `valid_values`, and `written` on committed cases), and the `conformance_divergence` gates. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
+
 ## 2026-11-11
 
 * **Built associations (issue #145, step 2)**: synced ADR-0235, `Association.built`, `references`, `record_fields` and `check_record` in `domain/data.py`, the generated app's object store and reference checks, the oracle's stocked objects and reference cases, the API contract's objects route and the class-build report. Re-read the Notes of `check_accessibility` as `process:claude-code`; they still hold. No human source approval was recorded. Review fixes: the 40-field limit for attributes and reference fields together, and `built` kept through UML interchange (`not_carried` on export, defaulted on import).

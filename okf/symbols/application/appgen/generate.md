@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#generate
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: f0af470a526e805965b38057fbe2cb38081be4e6242d652450d66082396deb5b
-notes_baseline: d2f2509e822b3cf3ebb8cd6a2e584ffce5f38ae7b230678d405bef00d2333d5e
+  sha256: 9f61dd662ea3aaacb5aa5d87a69e5c846ceabfa2c40e9687eb1d4ca532c50c01
+notes_baseline: 30db636600ac7476c97bdd8a28013b0f3f62ba5e048f2f905006ccfbab07b6f8
 ---
 
 # application.appgen.generate
@@ -46,11 +46,16 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.appgen.CASE_KINDS](/symbols/application/appgen/CASE_KINDS.md) - Constant `CASE_KINDS` in `application/appgen`.
 * [application.appgen.FORMAT](/symbols/application/appgen/FORMAT.md) - Constant `FORMAT` in `application/appgen`.
 * [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
+* [application.appgen.create_cases](/symbols/application/appgen/create_cases.md) - Every fixture actor, and one unknown actor, starting a record with valid values: the state and version it starts in, or the refusal.
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
+* [application.appgen.journeys](/symbols/application/appgen/journeys.md) - For each transition, a record started through the app and walked to it: the shortest run from the initial state whose last step is that transition, each step t…
+* [application.appgen.options_cases](/symbols/application/appgen/options_cases.md) - What the app offers each fixture actor (and one unknown actor) on a record in each state that holds valid values: every action leaving that state, and whether…
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
+* [application.appgen.rules](/symbols/application/appgen/rules.md) - The rule table the app shows: each action once, every state it leaves, where it leads and who takes it.
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.data.references](/symbols/domain/data/references.md) - The record's reference fields, one per built association, in declaration order.

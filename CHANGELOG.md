@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 12 November 2026: conformance that catches a wrong app
+
+- New `python -m verification.conformance.divergence` ([ADR-0237](docs/adr/0237-conformance-that-catches-divergence.md)). For every pack, it builds apps that are wrong in one model element (a transition, role, guard, effect, recipient, initial state, initiator, actor, attribute or association) or one of 23 seeded code faults. It reseals each app so a hash cannot catch it, and requires the app's own generated tests to fail. Before this change the generated suite missed, among others, a wrong initial state, a wrong notification recipient, records the app itself created, the actions it offers, and its HTTP API.
+- The generated conformance suite runs 14 tests, up from 9. New: who may start a record and where it starts; a run from a new record to every transition, with a second record that must stay untouched; the actions offered to each actor in each state; the rule table; and every case again over HTTP. Effects are checked with their recipients. Data cases now include text at its exact limit, every choice, and a record with only its required values.
+- Fixed: each outbox row now names the record it is about (it held the case id `app`). Fixed: the generated app's rule table lists every state an action leaves (ADR-0232); before, it showed only one.
+- The repository's eight seeded app breaks in `tests/test_appgen.py` were each caught by the build-identity seal, not by a behavioural test. `tests/test_conformance_divergence.py` now checks behaviour, with a resealed control app that must pass.
+
 ### 11 November 2026: repo clean-up
 
 - At 1280 px the PlayIDE toolbar keeps the checks pill on the same row as Run, Simulate and Build & run again (fixes #208). Between 1181 and 1439 px the toolbar uses tighter gaps and padding and a shorter run status (its full text stays in the tooltip). The last run speed is now labelled "Next stop", so the menu is narrower at every width. An opt-in browser test checks 1280 and 1440 px with a three-digit score.

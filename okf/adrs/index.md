@@ -118,3 +118,4 @@
 * [ADR-0233: Separation of duties](0233-separation-of-duties.md) - Issue #149.
 * [ADR-0234: Guards over record values](0234-guards-over-record-values.md) - Issue #93, item 1.
 * [ADR-0235: Built associations as checked reference fields](0235-built-associations.md) - Issue #145, step 2.
+* [ADR-0237: Conformance that catches a divergent app by behaviour](0237-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.

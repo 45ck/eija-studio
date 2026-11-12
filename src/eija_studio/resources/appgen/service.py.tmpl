@@ -51,8 +51,9 @@ Refused = DomainError  # what the kernel raises; `code` is its stable refusal co
 class Session:
     """The kernel's unit-of-work port, over this app's tables. The enclosing transaction commits or rolls back."""
 
-    def __init__(self, db: sqlite3.Connection):
+    def __init__(self, db: sqlite3.Connection, record_id: str = ""):
         self.db = db
+        self.record_id = record_id  # the record acted on: each outbox row names it
 
     def actor(self, actor_id: str) -> dict[str, Any]:
         if actor_id not in ACTORS:
@@ -97,7 +98,7 @@ class Session:
         self.db.execute("INSERT INTO audit(kind, body) VALUES(?,?)", (kind, canonical(body)))
 
     def enqueue(self, case_id: str, operation_id: str, effect: str, recipient: str) -> None:
-        self.db.execute("INSERT INTO outbox VALUES(?,?,?,?)", (operation_id + ":" + effect, case_id, effect, recipient))
+        self.db.execute("INSERT INTO outbox VALUES(?,?,?,?)", (operation_id + ":" + effect, self.record_id, effect, recipient))
 
 
 def options(state: str, actor_id: str, acts: list[tuple[str, str]] | None = None,
@@ -135,11 +136,11 @@ class Service:
             if column not in columns:
                 self.db.execute(statement)
 
-    def _write(self, work):
+    def _write(self, work, record_id: str = ""):
         with self.lock:
             self.db.execute("BEGIN IMMEDIATE")
             try:
-                result = work(Session(self.db))
+                result = work(Session(self.db, record_id))
             except BaseException:
                 self.db.execute("ROLLBACK")
                 raise
@@ -234,4 +235,4 @@ class Service:
             result = execute(session, CASE, MODEL, command, pack=PACK)
             return {"duplicate": result["duplicate"], "committed": result["committed"],
                     "record": self._record(record_id), "effects": result["effects"]}
-        return self._write(work)
+        return self._write(work, record_id)

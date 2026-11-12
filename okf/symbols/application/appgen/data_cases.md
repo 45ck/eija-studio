@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#data_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: b5bc2cd0be9747c61d356e14536ff3abb89738f0a37e7356e6b432df610fb4a2
-notes_baseline: 7e2b957c2befa6980f31be9f47b8c8c23ce1be26c2aef3cccd746df92c826234
+  sha256: b3a8bf28a4608f1408e67d00d933a0ce6a7ac4254cbf3dd2f66c885615302174
+notes_baseline: 01649fef7ee0cb817cdcc3ea37b940c96c74a230d31f5d2e4d25ec6cea1d921a
 ---
 
 # application.appgen.data_cases
@@ -47,9 +47,9 @@ _No curated notes yet._
 
 * [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
+* [application.appgen.valid_values](/symbols/application/appgen/valid_values.md) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.data.record_fields](/symbols/domain/data/record_fields.md) - What a record holds: the record class's attributes, then each reference field as text holding an object's id.
-* [domain.data.references](/symbols/domain/data/references.md) - The record's reference fields, one per built association, in declaration order.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 

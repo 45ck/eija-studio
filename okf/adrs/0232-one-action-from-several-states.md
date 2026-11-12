@@ -70,4 +70,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0234: Guards over record values](/adrs/0234-guards-over-record-values.md) - Issue #93, item 1.
+* [ADR-0237: Conformance that catches a divergent app by behaviour](/adrs/0237-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
 <!-- okf:generated:end links -->

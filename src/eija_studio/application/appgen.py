@@ -21,9 +21,11 @@ from eija_studio.domain.policy import check_policy
 from eija_studio.domain.screens import Screens, default_screens, require_buildable
 from eija_studio.domain.value_guards import MAX_VALUATIONS, combinations, guard_problems
 from .memo import model_hash
-from .runtime import execute
+from .runtime import execute, initialise
 
 FORMAT = "eija.app-build.v1"
+# The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0237 added the last three).
+CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "create_cases", "journeys", "options_cases")
 UNDECLARED_ACTION = "UndeclaredAction"
 UNKNOWN_ACTOR = "unknown-actor"
 LIMITS = (
@@ -31,7 +33,8 @@ LIMITS = (
     "refused with STALE_INSTANCE, and under an earlier data model with STALE_DATA.",
     "Actors are the pack's fixture directory chosen in the UI. That is not authentication.",
     "Notifications are written to an outbox table; nothing is sent.",
-    "Conformance covers every state x action x fixture actor x version case, plus replays, against the kernel. "
+    "Conformance covers every state x action x fixture actor x version case, plus replays, record creation, a run to "
+    "each transition and the actions offered, through the service and over HTTP, against the kernel. "
     "It is exhaustive for this model and these actors, not a proof about other inputs.",
 )
 
@@ -42,9 +45,14 @@ class _OracleSession:
     def __init__(self, pack: Pack, model: Workflow, state: str, values: dict[str, Any] | None = None):
         self.record_values = dict(values or {})
         self.actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
-        self.item = {"id": "r1", "case_id": "app", "model_hash": model_hash(model), "state": state, "version": 0}
+        self.item: dict[str, Any] = {"id": "r1", "case_id": "app", "model_hash": model_hash(model), "state": state, "version": 0}
         self.operations: dict[str, dict[str, Any]] = {}
         self.acted: list[tuple[str, str]] = []
+        self.audited: list[str] = []  # the audit entries and outbox rows the kernel writes, in order
+        self.queued: list[list[str]] = []
+
+    def create_instance(self, item: dict[str, Any]) -> None:
+        self.item = dict(item)
 
     def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None:
         return self.item if instance_id == self.item["id"] else None
@@ -73,10 +81,10 @@ class _OracleSession:
         self.operations[operation_id] = {"binding": binding, "result": result}
 
     def event(self, kind: str, body: dict[str, Any]) -> None:
-        return None
+        self.audited.append(kind)
 
     def enqueue(self, case_id: str, operation_id: str, effect: str, recipient: str) -> None:
-        return None
+        self.queued.append([effect, recipient])
 
 
 def _kernel(pack: Pack, model: Workflow, session: _OracleSession, actor: str, action: str, version: int,
@@ -123,6 +131,17 @@ def _breaks(attribute: Attribute, valid: dict[str, object]) -> list[tuple[str, d
     if attribute.type == "text":
         tries.append((f"{name} too long", valid | {name: "x" * (attribute.max_length + 1)}))
     return tries
+
+
+def _fits(attribute: Attribute, valid: dict[str, object]) -> list[tuple[str, dict[str, object]]]:
+    """Values at the edge of what one attribute accepts, starting from a valid record: text exactly as long as it may
+    be, and every declared choice, so a narrower rule in the app is caught as surely as a looser one."""
+    name = attribute.name
+    if attribute.type == "text":
+        return [(f"{name} at its limit", valid | {name: "x" * attribute.max_length})]
+    if attribute.type == "choice":
+        return [(f"{name} is {choice}", valid | {name: choice}) for choice in attribute.choices[1:]]
+    return []
 
 
 def _answer(data: DataModel, values: dict[str, object], stored: set[tuple[str, str]]) -> dict[str, object]:
@@ -240,12 +259,122 @@ def data_cases(pack: Pack, data: DataModel, model: Workflow | None = None) -> li
     entity = data.entity(data.record)
     creator = _creator(pack, model)
     stored = {(str(o["class"]), str(o["id"])) for o in stock(data)}
-    valid = {a.name: _sample(a) for a in entity.attributes} | {r.name: next(i for c, i in sorted(stored) if c == r.target)
-                                                                for r in references(data)}
+    valid = valid_values(data)
+    least = {f.name: valid[f.name] for f in record_fields(data) if f.required}
     tries = [("valid", valid), *(bad for a in entity.attributes for bad in _breaks(a, valid)),
              ("unknown field", valid | {absent("extra", {a.name for a in record_fields(data)}): "x"}),
-             *_reference_breaks(data, valid)]
+             *_reference_breaks(data, valid),
+             # Appended after the cases above so their order holds: the edges of each rule, then only required values.
+             *(edge for a in entity.attributes for edge in _fits(a, valid)), ("required values only", least)]
     return [{"name": name, "actor": creator, "fields": values, "expect": _answer(data, values, stored)} for name, values in tries]
+
+
+def valid_values(data: DataModel | None) -> dict[str, object]:
+    """A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class."""
+    if data is None:
+        return {}
+    stored = sorted((str(o["class"]), str(o["id"])) for o in stock(data))
+    return {a.name: _sample(a) for a in data.entity(data.record).attributes} | {
+        r.name: next(i for c, i in stored if c == r.target) for r in references(data)}
+
+
+def create_cases(pack: Pack, model: Workflow, data: DataModel | None) -> list[dict[str, object]]:
+    """Every fixture actor, and one unknown actor, starting a record with valid values: the state and version it starts
+    in, or the refusal. Revoked and unknown actors are refused as the kernel refuses them an action; a model that names
+    its initiators refuses anyone else (ADR-0231); everyone else gets a record in the model's initial state."""
+    declared = {a.id: a for a in pack.fixtures.actors}
+    cases: list[dict[str, object]] = []
+    for actor_id in [*sorted(declared), absent(UNKNOWN_ACTOR, set(declared))]:
+        actor = declared.get(actor_id)
+        if actor is None:
+            expect: dict[str, object] = {"outcome": "REFUSED", "code": "UNKNOWN_ACTOR"}
+        elif not actor.active:
+            expect = {"outcome": "REFUSED", "code": "ACTOR_REVOKED"}
+        else:
+            session = _OracleSession(pack, model, model.initial_state)
+            try:
+                item = initialise(session, "app", model, pack=pack, role=actor.role)  # type: ignore[arg-type]
+            except DomainError as refused:
+                expect = {"outcome": "REFUSED", "code": refused.code}
+            else:
+                expect = {"outcome": "CREATED", "state": item["state"], "version": item["version"]}
+        cases.append({"actor": actor_id, "expect": expect})
+    return cases
+
+
+def _first_taker(pack: Pack, model: Workflow, state: str, action: str, values: dict[str, Any],
+                 acted: list[tuple[str, str]]) -> tuple[str, dict[str, Any]] | None:
+    """The first fixture actor (by id) the kernel lets take `action` from `state` on a record with these values and
+    history, with the kernel's answer."""
+    for actor in sorted(pack.fixtures.actors, key=lambda a: a.id):
+        session = _OracleSession(pack, model, state, values)
+        session.acted = list(acted)
+        answer = _kernel(pack, model, session, actor.id, action, 0)
+        if answer["outcome"] == "COMMITTED":
+            return actor.id, answer
+    return None
+
+
+def journeys(pack: Pack, model: Workflow, data: DataModel | None) -> list[dict[str, Any]]:
+    """For each transition, a record started through the app and walked to it: the shortest run from the initial state
+    whose last step is that transition, each step taken by the first fixture actor the kernel allows, and the kernel's
+    answer for each step on one record that remembers its values and who acted. A transition no run reaches is left
+    out (the law proof reports what is unreachable). Unlike `oracle_cases`, nothing is seeded: the record is the
+    app's own, created with valid values."""
+    values = dict(valid_values(data))
+    runs: dict[str, list[dict[str, Any]]] = {model.initial_state: []}
+    acted: dict[str, list[tuple[str, str]]] = {model.initial_state: []}
+    frontier, found = [model.initial_state], []  # type: tuple[list[str], list[dict[str, Any]]]
+    taken: set[str] = set()
+    while frontier:
+        following = []
+        for state in frontier:
+            for t in sorted((t for t in model.transitions if t.from_state == state), key=lambda t: t.id):
+                if t.id in taken:
+                    continue
+                taker = _first_taker(pack, model, state, t.action, values, acted[state])
+                if taker is None:
+                    continue
+                taken.add(t.id)
+                walk = [*(dict(x) for x in runs[state]), {"actor": taker[0], "action": t.action}]
+                found.append({"transition": t.id, "steps": walk})
+                if t.to_state not in runs:
+                    runs[t.to_state], acted[t.to_state] = walk, [*acted[state], (t.action, taker[0])]
+                    following.append(t.to_state)
+        frontier = following
+    for journey in sorted(found, key=lambda j: str(j["transition"])):
+        session = _OracleSession(pack, model, model.initial_state, values)
+        steps: list[dict[str, Any]] = journey["steps"]
+        for n, step in enumerate(steps):
+            version = int(session.item["version"])
+            step["expected_version"] = version
+            step["expect"] = _kernel(pack, model, session, step["actor"], step["action"], version, f"op-{n + 1}")
+            step["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
+            session.audited.clear()
+            session.queued.clear()
+    return sorted(found, key=lambda j: str(j["transition"]))
+
+
+def rules(model: Workflow) -> dict[str, dict[str, str]]:
+    """The rule table the app shows: each action once, every state it leaves, where it leads and who takes it."""
+    return {t.action: {"from": ", ".join(model.sources(t.action)), "to": t.to_state, "role": t.role} for t in model.transitions}
+
+
+def options_cases(pack: Pack, model: Workflow, data: DataModel | None) -> list[dict[str, Any]]:
+    """What the app offers each fixture actor (and one unknown actor) on a record in each state that holds valid
+    values: every action leaving that state, and whether the kernel would take it from there at version 0, with its
+    refusal code when it would not."""
+    values = valid_values(data)
+    declared = {a.id for a in pack.fixtures.actors}
+    cases = []
+    for state, actor in product(sorted(model.states), [*sorted(declared), absent(UNKNOWN_ACTOR, declared)]):
+        offered = []
+        for t in (t for t in model.transitions if t.from_state == state):
+            answer = _kernel(pack, model, _OracleSession(pack, model, state, values), actor, t.action, 0)
+            offered.append({"action": t.action, "allowed": answer["outcome"] == "COMMITTED"} |
+                           ({"code": answer["code"]} if answer["outcome"] == "REFUSED" else {}))
+        cases.append({"state": state, "actor": actor, "options": offered})
+    return cases
 
 
 def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
@@ -263,6 +392,7 @@ def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
         first = _kernel(pack, model, session, actor, action, version)
         case = {"state": state, "action": action, "actor": actor, "expected_version": version, "expect": first}
         if first["outcome"] == "COMMITTED":
+            case["written"] = {"audit": list(session.audited), "outbox": [list(q) for q in session.queued]}
             case["replay"] = _kernel(pack, model, session, actor, action, version)
         cases.append(case)
     return cases
@@ -345,8 +475,10 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
         oracle |= {"objects": stock(data)} if references(data) else {}
         files["app/data.json"] = canonical(data) + "\n"
     oracle |= _people_cases(pack, model)
+    oracle |= {"create_cases": create_cases(pack, model, data), "journeys": journeys(pack, model, data),
+               "options_cases": options_cases(pack, model, data), "rules": rules(model)}
     files["tests/oracle.json"] = canonical(oracle) + "\n"
-    total = len(cases) + sum(len(oracle.get(k, [])) for k in ("data_cases", "start_cases", "separation_cases", "value_cases"))
+    total = len(cases) + sum(len(oracle.get(k, [])) for k in CASE_KINDS)
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": total, "hash": fingerprint(oracle)},
                 "data": {"digest": data.digest, "record": data.record} if data else None,

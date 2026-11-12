@@ -79,7 +79,8 @@ def test_every_pack_builds_an_app_that_passes_its_kernel_conformance(tmp_path, p
         assert sha256((out / relative).read_bytes()).hexdigest() == digest
 
 
-MUTANTS = {  # negative controls: each breaks the app's storage or its built-in model; the conformance run must catch it
+MUTANTS = {  # tamper controls: each edits a built file without resealing it, so the build-identity check catches it before
+    # any behavioural test runs. Behaviour is checked by tests/test_conformance_divergence.py (ADR-0237).
     "operation not recorded": ("excursion", "app/service.py",
                                'self.db.execute("INSERT INTO operations VALUES(?,?,?)", (operation_id, binding, canonical(result)))',
                                "return None"),
@@ -87,7 +88,7 @@ MUTANTS = {  # negative controls: each breaks the app's storage or its built-in 
                                  'self.db.execute("INSERT INTO audit(kind, body) VALUES(?,?)", (kind, canonical(body)))',
                                  "return None"),
     "notification not queued": ("library-loan", "app/service.py",
-                                'self.db.execute("INSERT INTO outbox VALUES(?,?,?,?)", (operation_id + ":" + effect, case_id, effect, recipient))',
+                                'self.db.execute("INSERT INTO outbox VALUES(?,?,?,?)", (operation_id + ":" + effect, self.record_id, effect, recipient))',
                                 "return None"),
     "approval handed to teachers": ("excursion", "app/model.json", '"role":"Registrar"', '"role":"Teacher"'),
     "unassigned actor treated as assigned": ("library-loan", "app/pack.json", '"assigned":false', '"assigned":true'),

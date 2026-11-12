@@ -25,8 +25,8 @@ Use `--workflow FILE` to build a candidate workflow (for example one exported fr
 | `app/service.py` | SQLite storage for the kernel. Creating a record calls `runtime.initialise` and each action calls `runtime.execute`; each request commits in a single transaction. |
 | `app/server.py`, `app/web/` | A local HTTP API and page: pick an actor, create records and take the actions the model allows, with reasons for those it refuses |
 | `frontend/` | Authored React components/controller, exact dependency lock, external styles, build manifest and dependency licences; these inputs participate in the exact generated identity |
-| `tests/oracle.json` | The kernel's answer for every state × action × actor × version, plus replays |
-| `tests/test_conformance.py` | Checks the app against every oracle case |
+| `tests/oracle.json` | The kernel's answer for every state × action × actor × version, plus replays and what each commit writes (audit entries, notifications and their recipients); who may start a record and where it starts; a run from a new record to each transition; the actions offered to each actor in each state; and the data model's answer for valid, edge and broken record values |
+| `tests/test_conformance.py` | Checks the app against every oracle case, through its service and again through its HTTP API |
 | `BUILD.json` | Model and pack identity, file hashes, case count, the conformance result and the kernel's source-review status |
 
 ## Why you can trust it, and how far
@@ -35,7 +35,9 @@ The shipped frontend is already bundled. Running a generated app needs Python an
 
 The default shell provides create/read navigation and supported workflow actions. The current runtime does not expose general record editing or deletion. The presentation map in Design + Play links those destinations and controls to their screen, class and action; it describes checked design rather than granting permission.
 
-The oracle is not the generator's reading of the model. The build asks EIJA's own runtime what should happen in every case, then runs the generated app's tests in a separate process. If the app commits or refuses anywhere the kernel does not, the build reports `FAIL` and exits 2. The repository's tests break the app on purpose five ways (operations not recorded, audit not written, notifications not queued, a role changed in `app/model.json`, an assignment changed in `app/pack.json`) two more for the data model (values stored unchecked, a required attribute made optional) and one for screens (`app/screens.json` swapped after the build), and require each break to be caught. No app is built from screens that fail the design check.
+The oracle is not the generator's reading of the model. The build asks EIJA's own runtime what should happen in every case, then runs the generated app's tests in a separate process. If the app commits or refuses anywhere the kernel does not, the build reports `FAIL` and exits 2. No app is built from screens that fail the design check.
+
+The tests are themselves checked ([ADR-0237](adr/0237-conformance-that-catches-divergence.md)). `python -m verification.conformance.divergence` builds, for every pack, apps that are wrong in exactly one way: a transition dropped, retargeted or handed to another role, a guard, effect, recipient, initial state or initiator changed, an actor's standing flipped, an attribute's rule changed, or one of 23 seeded faults in the app's own service and HTTP code. It reseals each app's build identity and re-points the oracle's hashes, so a hash check cannot be what catches it, and requires the app's own generated tests to fail. Any divergence they miss fails the check, apart from one listed equivalence (dropping a forbidden effect, which the kernel never performs and the policy checks at build time). A divergence that breaks one of the pack's laws must be caught or refused. Separately, the repository's tests edit a built app's files eight ways without resealing it, and require the build-identity check to refuse each one before any test runs.
 
 The build does **not** establish:
 
