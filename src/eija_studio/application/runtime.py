@@ -43,8 +43,19 @@ def check_guards(transition: Transition, values: dict[str, Any]) -> None:
                           {"codes": ["VALUE_GUARD_DENIED"], "refs": [f"transition:{transition.id}", f"attribute:{failed.attribute}"]})
 
 
+def check_due(transition: Transition, elapsed: float | None) -> None:
+    """Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that
+    long (ADR-0237). An unknown entry time is never due (fail closed)."""
+    if transition.after is not None and not transition.after.due(elapsed):
+        raise DomainError("TIMER_NOT_DUE", f"{transition.action} is due only {transition.after} in {transition.from_state}",
+                          {"codes": ["TIMER_NOT_DUE"], "refs": [f"transition:{transition.id}", f"state:{transition.from_state}"]})
+
+
 def _admitted(session: UnitOfWork, transition: Transition, instance_id: str) -> None:
-    """Read the record's values only for a transition with value guards; most transitions never touch them."""
+    """Read the record's clock only for a transition with a time event, and its values only for one with value guards;
+    most transitions touch neither."""
+    if transition.after is not None:
+        check_due(transition, session.elapsed(instance_id))
     if transition.conditions:
         check_guards(transition, session.values(instance_id))
 

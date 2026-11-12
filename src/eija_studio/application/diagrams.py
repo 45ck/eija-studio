@@ -160,9 +160,11 @@ def _provenance(*workflows: tuple[str, Workflow]) -> tuple[str, ...]:
 
 
 def _edge_label(t: Transition) -> str:
-    """UML's `event [guard]`: the action, its guards over record values in brackets (ADR-0234), then who takes it."""
+    """UML's `event [guard]`: the action, its time event (ADR-0237), its guards over record values in brackets
+    (ADR-0234), then who takes it."""
     guard = f" [{' and '.join(str(c) for c in t.conditions)}]" if t.conditions else ""
-    return f"{t.action}{guard} · {t.role}" + (" · assigned" if "actor_assigned" in t.guards else "")
+    timer = f" {t.after}" if t.after is not None else ""
+    return f"{t.action}{timer}{guard} · {t.role}" + (" · assigned" if "actor_assigned" in t.guards else "")
 
 
 def _edge_key(t: Transition) -> tuple[str, str, str]:

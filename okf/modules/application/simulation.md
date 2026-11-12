@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py
   title: application/simulation.py
   hash_method: ast-api-v1
-  sha256: 002b725e0eaed0e1ac18ebb4d3332d23fe0240f2a0b2c625382c102647ae7660
-notes_baseline: 07d0695603b2385ff47966469bb88126173f2aca5774ac8d601c007d13a6587c
+  sha256: cfa5ef41be9a74428e06df1571669d48b5ff67d90c903e57f9cbbe446b954772
+notes_baseline: 83aa0b486d6046757d7c6d07611084ed63ef1e450dc847f1db4d88110ca2c87b
 ---
 
 # application.simulation
@@ -36,7 +36,8 @@ and tries an action: usually one their role is offered from the record's state, 
 and sometimes with an out-of-date version (someone else got there first). Revoked or unassigned actors still try, as
 people do, and the kernel refuses them. `runtime.execute` decides each attempt against an in-memory unit of work, so
 the counts, refusal codes and effects are the kernel's own answers, not a second reading of the model. The same seed
-gives the same run. Nothing persists and no effect leaves the process.
+gives the same run. Nothing persists and no effect leaves the process. For a model with time events (ADR-0237), each
+step lets simulated time pass, so the longest one falls due within a few steps of a record entering its state.
 ~~~
 
 ## Public symbols
@@ -48,6 +49,7 @@ gives the same run. Nothing persists and no effect leaves the process.
 * [`NEW_RECORD`](/symbols/application/simulation/NEW_RECORD.md) (constant) - no docstring
 * [`SLIP`](/symbols/application/simulation/SLIP.md) (constant) - no docstring
 * [`STALE`](/symbols/application/simulation/STALE.md) (constant) - no docstring
+* [`TICKS`](/symbols/application/simulation/TICKS.md) (constant) - no docstring
 * [`TRACE_LIMIT`](/symbols/application/simulation/TRACE_LIMIT.md) (constant) - no docstring
 * [`run_log`](/symbols/application/simulation/run_log.md) (function) - Every step of the seeded run in order, and where a run with these breakpoints stops (ADR-0160).
 * [`simulate`](/symbols/application/simulation/simulate.md) (function) - Run `steps` seeded attempts by the pack's fixture actors through the kernel and report where they went.
@@ -87,6 +89,7 @@ _No curated notes yet._
 * [application.simulation.MemorySession.actor](/symbols/application/simulation/MemorySession.actor.md) - `def actor(self, actor_id: str) -> dict[str, Any]` in `application/simulation`.
 * [application.simulation.MemorySession.acts](/symbols/application/simulation/MemorySession.acts.md) - `def acts(self, instance_id: str) -> list[tuple[str, str]]` in `application/simulation`.
 * [application.simulation.MemorySession.create_instance](/symbols/application/simulation/MemorySession.create_instance.md) - `def create_instance(self, item: dict[str, Any]) -> None` in `application/simulation`.
+* [application.simulation.MemorySession.elapsed](/symbols/application/simulation/MemorySession.elapsed.md) - `def elapsed(self, instance_id: str) -> float | None` in `application/simulation`.
 * [application.simulation.MemorySession.enqueue](/symbols/application/simulation/MemorySession.enqueue.md) - `def enqueue(self, case_id: str, operation_id: str, effect: str, recipient: str) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.event](/symbols/application/simulation/MemorySession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.find_instance](/symbols/application/simulation/MemorySession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None` in `application/simulation`.
@@ -96,9 +99,11 @@ _No curated notes yet._
 * [application.simulation.MemorySession.record_operation](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.update_instance](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.values](/symbols/application/simulation/MemorySession.values.md) - `def values(self, instance_id: str) -> dict[str, Any]` in `application/simulation`.
+* [application.simulation.MemorySession.wait](/symbols/application/simulation/MemorySession.wait.md) - Let simulated time pass.
 * [application.simulation.NEW_RECORD](/symbols/application/simulation/NEW_RECORD.md) - Constant `NEW_RECORD` in `application/simulation`.
 * [application.simulation.SLIP](/symbols/application/simulation/SLIP.md) - Constant `SLIP` in `application/simulation`.
 * [application.simulation.STALE](/symbols/application/simulation/STALE.md) - Constant `STALE` in `application/simulation`.
+* [application.simulation.TICKS](/symbols/application/simulation/TICKS.md) - Constant `TICKS` in `application/simulation`.
 * [application.simulation.TRACE_LIMIT](/symbols/application/simulation/TRACE_LIMIT.md) - Constant `TRACE_LIMIT` in `application/simulation`.
 * [application.simulation.run_log](/symbols/application/simulation/run_log.md) - Every step of the seeded run in order, and where a run with these breakpoints stops (ADR-0160).
 * [application.simulation.simulate](/symbols/application/simulation/simulate.md) - Run `steps` seeded attempts by the pack's fixture actors through the kernel and report where they went.

@@ -266,7 +266,8 @@
   const SYMBOL = { eq: "=", ne: "≠", lt: "<", le: "≤", gt: ">", ge: "≥" };
   function condition(c) { return `${c.attribute} ${SYMBOL[c.op] || c.op} ${typeof c.value === "string" ? JSON.stringify(c.value) : c.value}`; }
   function when(t) { return (t.conditions || []).map(condition).join(" and "); }
-  function label(t) { return `${t.action}${when(t) ? ` [${when(t)}]` : ""} [${t.role}]`; }
+  function after(t) { return t.after ? ` after(${t.after.amount} ${t.after.amount === 1 ? t.after.unit.slice(0, -1) : t.after.unit})` : ""; }
+  function label(t) { return `${t.action}${after(t)}${when(t) ? ` [${when(t)}]` : ""} [${t.role}]`; }
 
   function draw(workflow) {
     const { Graph, InternalEvent } = maxgraph;

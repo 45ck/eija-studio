@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0236-hostile-input-and-plan-cost.md
   title: 0236-hostile-input-and-plan-cost.md
   hash_method: lf-sha256-v1
-  sha256: 5c03eaef47a04f3485ef8ba2dbc3e7e798e7e715d613ecaf574cda5cf47ae33d
-notes_baseline: c6da107d2b359ef32544a852ef0de0ca5b93415ed6be0bb3888d0329e4cf1d24
+  sha256: 3e1f8198fa6012fcc3ffbf9e0116aa63d46ea357bd92510eca6043e06827474c
+notes_baseline: 790a9ed4d5d36c76506bbdfb8061804cc13c4c2b1a7fca9df81ffb39ca114860
 ---
 
 # ADR-0236: Hostile input at PlayIDE's edges, and the cost of a plan at the model's limits
@@ -42,7 +42,8 @@ notes_baseline: c6da107d2b359ef32544a852ef0de0ca5b93415ed6be0bb3888d0329e4cf1d24
 > **Autosave.** The page reopens a browser draft only when its shape is the one it writes. Any other draft is moved to
 > `<key>:unreadable` and the page opens on the model in force, with a note. If a draft passes the shape check and still
 > fails to reopen, the page sets it aside and opens anyway. On disk, `GET /api/play/draft` checks `draft.json` against
-> `SavedWork`; one in another shape is moved to `draft.unreadable.json` and the page says so.
+> `SavedWork`; one in another shape is moved to `draft.unreadable.json` and the page says so. A later one goes beside it
+> (`draft.unreadable-2.json`, and `<key>:unreadable:2` in the browser), never over it.
 >
 > **Plan check.** `_statuses` keeps the model after the steps that applied so far (`plan._Applied`), so each step is
 > applied once. A 64-step plan at the limits now takes about 70 ms. The verdicts match a replay of every earlier step

@@ -87,6 +87,33 @@ class ValueGuard(Contract):
         return f"{self.attribute} {SYMBOLS[self.op]} {shown}"
 
 
+TimeUnit = Literal["minutes", "hours", "days"]
+SECONDS: dict[str, int] = {"minutes": 60, "hours": 3600, "days": 86400}
+
+
+class Delay(Contract):
+    """A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has
+    been in its source state this long. Time is measured from when the record entered that state, which every
+    committed step does, a step back into the same state included. An unknown entry time never counts as due."""
+    amount: StrictInt = Field(ge=1, le=10_000)
+    unit: TimeUnit
+
+    @property
+    def seconds(self) -> int:
+        return self.amount * SECONDS[self.unit]
+
+    def due(self, elapsed: float | None) -> bool:
+        return elapsed is not None and math.isfinite(elapsed) and elapsed >= self.seconds
+
+    @property
+    def span(self) -> str:
+        """The duration in words: ``2 days``, ``1 hour``."""
+        return f"{self.amount} {self.unit[:-1] if self.amount == 1 else self.unit}"
+
+    def __str__(self) -> str:
+        return f"after({self.span})"
+
+
 class Transition(Contract):
     id: str = Field(pattern=r"^[A-Z][A-Z0-9_-]{0,63}$")
     action: str = Field(min_length=1, max_length=60)
@@ -99,12 +126,17 @@ class Transition(Contract):
     # Guards over the record's values (ADR-0234); all must hold. Empty is left out of every dump, so transitions
     # without them keep their exact bytes and hashes.
     conditions: tuple[ValueGuard, ...] = Field(default=(), max_length=8)
+    # A time event (ADR-0237): taken only once the record has been in the source state this long. None is left out of
+    # every dump, so transitions without one keep their exact bytes and hashes.
+    after: Delay | None = None
 
     @model_serializer(mode="wrap")
     def _omit_unconditional(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
         if not self.conditions:
             data.pop("conditions", None)
+        if self.after is None:
+            data.pop("after", None)
         return data
 
     def admits(self, values: dict[str, Any]) -> ValueGuard | None:
@@ -129,7 +161,7 @@ class Transition(Contract):
 def _shape(t: Transition) -> tuple[Any, ...]:
     """What every transition one action labels must share: all but its id and source state (ADR-0232)."""
     return (t.to_state, t.role, frozenset(t.guards), frozenset(t.required_effects), frozenset(t.forbidden_effects),
-            frozenset(t.conditions))
+            frozenset(t.conditions), t.after)
 
 
 class Workflow(Contract):
@@ -173,6 +205,12 @@ class Workflow(Contract):
         any transition it labels (they differ only in id and source, ADR-0232). None when the action is not modelled."""
         labelled = [t for t in self.transitions if t.action == action]
         return next((t for t in labelled if t.from_state == state), labelled[0] if labelled else None)
+
+    @property
+    def longest_wait(self) -> int:
+        """The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237). Waiting this
+        long in a state makes every time event leaving it due."""
+        return max((t.after.seconds for t in self.transitions if t.after is not None), default=0)
 
     def sources(self, action: str) -> tuple[str, ...]:
         """The states ``action`` leaves, in model order."""

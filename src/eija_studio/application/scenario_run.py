@@ -4,13 +4,14 @@ Every step is decided by `runtime.execute` on an in-memory session holding the p
 built app's kernel would decide it; nothing here re-encodes a rule. A scenario stops at its first step whose outcome
 differs from what it expects, and that step names the diagram elements involved so PlayIDE can show it.
 
-Pure: no IO, no clock, no randomness.
+Pure: no IO, no real clock (a step's `wait` moves a simulated one), no randomness.
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
-from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
+from eija_studio.domain.models import Delay, DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
 from eija_studio.domain.scenarios import Scenario, Scenarios, ScenarioStep, Then
@@ -34,9 +35,12 @@ class _Record:
     def state(self) -> str:
         return str(self.session.instances["r"]["state"])
 
-    def take(self, actor: str, action: str) -> Then:
-        """What the kernel does when `actor` takes `action` now: the state it moves to, or its refusal code."""
+    def take(self, actor: str, action: str, wait: Delay | None = None) -> Then:
+        """What the kernel does when `actor` takes `action`, after `wait` passes: the state it moves to, or its refusal
+        code. Time is simulated and passes only when a step says so (ADR-0237)."""
         self.steps += 1
+        if wait is not None:
+            self.session.wait(wait.seconds)
         version = self.session.instances["r"]["version"]
         command = ExecuteCommand(operation_id=f"op-{self.steps}", actor_id=actor, instance_id="r", action=action,
                                  expected_version=version)
@@ -61,7 +65,7 @@ def _said(then: Then) -> str:
 def _step_view(pack: Pack, model: Workflow, step: ScenarioStep, source: str, actual: Then | None) -> dict[str, Any]:
     actor = next((a for a in pack.fixtures.actors if a.id == step.actor), None)
     view = {"actor": step.actor, "role": actor.role if actor else None, "action": step.action, "from": source,
-            "expect": step.then.model_dump(exclude_none=True)}
+            "expect": step.then.model_dump(exclude_none=True)} | ({"wait": step.wait.span} if step.wait else {})
     if actual is None:
         return view | {"status": "NOT_RUN", "cells": _cells(model, step.action, source, None)}
     ok = actual == step.then
@@ -80,7 +84,7 @@ def run_scenario(pack: Pack, model: Workflow, scenario: Scenario) -> dict[str, A
     record, steps, failed = _Record(pack, model, start), [], None
     for index, step in enumerate(scenario.steps):
         source = record.state
-        view = _step_view(pack, model, step, source, None if failed is not None else record.take(step.actor, step.action))
+        view = _step_view(pack, model, step, source, None if failed is not None else record.take(step.actor, step.action, step.wait))
         if view["status"] == "FAIL":
             failed = index
         steps.append(view)
@@ -104,13 +108,18 @@ def run_scenarios(pack: Pack, model: Workflow, scenarios: Scenarios) -> dict[str
     return head | {"status": status, "passed": len(results) - failed, "failed": failed, "scenarios": results}
 
 
-def record_steps(pack: Pack, model: Workflow, start: str | None, steps: list[tuple[str, str]]) -> list[dict[str, Any]]:
+def record_steps(pack: Pack, model: Workflow, start: str | None,
+                 steps: Sequence[tuple[str, str] | tuple[str, str, Delay | None]]) -> list[dict[str, Any]]:
     """What the kernel does for each (actor, action) in turn, written as scenario steps that expect exactly that.
+    A step given as (actor, action, wait) lets that time pass first and keeps its wait (ADR-0237).
 
     This is how a person adds a test: try the steps, read what happened, and keep it if it is what should happen."""
     state = start or model.initial_state
     if state not in model.states:
         raise DomainError("STATE_UNKNOWN", f"{state} is not a state of this model")
-    record = _Record(pack, model, state)
-    return [ScenarioStep(actor=actor, action=action, then=record.take(actor, action)).model_dump(mode="json", exclude_none=True)
-            for actor, action in steps]
+    record, out = _Record(pack, model, state), []
+    for actor, action, *rest in steps:
+        wait = rest[0] if rest else None
+        step = ScenarioStep(actor=actor, action=action, wait=wait, then=record.take(actor, action, wait))
+        out.append(step.model_dump(mode="json", exclude_none=True))
+    return out
