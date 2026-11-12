@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Transition.guarded
   title: domain/models.py
   hash_method: ast-v2
-  sha256: 8e53db3d553ec91b02326837639cb17393e1e239c7c8e2491267fc8e2c40e99e
-notes_baseline: f64a7f0a770b62a5bf79cc94ac96924cda88981e2a6059c705b2c05ea711083a
+  sha256: 25e86019b780d62193298a8ca5cfe410ea3a05122249e8b63f1e2c03c44bad88
+notes_baseline: 8515ea403791c3e43df862db3474e942da3415830bfd0248ec47b75f458a317c
 ---
 
 # domain.models.Transition.guarded
@@ -43,4 +43,5 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.guard_keys](/symbols/domain/models/guard_keys.md) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 <!-- okf:generated:end links -->

@@ -26,6 +26,7 @@
 
 * [domain.models.canonical](canonical.md) - Canonical JSON text (sorted keys, no whitespace, no NaN) for a value or pydantic model.
 * [domain.models.fingerprint](fingerprint.md) - SHA-256 of the canonical JSON of a value: the identity primitive used for models, subjects, artifacts and command bindings.
+* [domain.models.guard_keys](guard_keys.md) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 * [domain.models.iso_date](iso_date.md) - The date a YYYY-MM-DD string names, or None.
 
 # Methods

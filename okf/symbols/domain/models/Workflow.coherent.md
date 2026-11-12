@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow.coherent
   title: domain/models.py
   hash_method: ast-v2
-  sha256: 59ff8c84dafe5615035145b29764f3d6fb7c9dcdb3ee0c280d4d5f4f23a26009
-notes_baseline: a3b72a49da655b59d597aece546c4e0e49458c2886fe9c199f1e4282becf798f
+  sha256: 725cefedb458ab5202365bce4a24c6221c18cd68285c53553d9803216a154002
+notes_baseline: 27e29b5873714c91b2ee297eb50978e22101e979e92791320513b2552d2e3eb5
 ---
 
 # domain.models.Workflow.coherent

@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-11-12
+
+* **Value-guard representatives verified (ADR-0236)**: synced ADR-0236, `guard_keys`, `Transition.guarded`, `Workflow.coherent`, `ValueGuard`, `ValueGuard.holds`, `points`, `check_values` and `changed_fields` after the property-suite fixes (large constants, overflow, non-finite values, `true` versus `1`, duplicate forbidden effects). No Notes were changed and no human source approval was recorded.
+
 ## 2026-11-11
 
 * **Built associations (issue #145, step 2)**: synced ADR-0235, `Association.built`, `references`, `record_fields` and `check_record` in `domain/data.py`, the generated app's object store and reference checks, the oracle's stocked objects and reference cases, the API contract's objects route and the class-build report. Re-read the Notes of `check_accessibility` as `process:claude-code`; they still hold. No human source approval was recorded. Review fixes: the 40-field limit for attributes and reference fields together, and `built` kept through UML interchange (`not_carried` on export, defaulted on import).

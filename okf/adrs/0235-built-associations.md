@@ -66,4 +66,8 @@ _No curated notes yet._
 ## Related decisions
 
 * [ADR-0205: The class diagram says what is drawn and what is built](/adrs/0205-the-class-diagram-says-what-is-drawn-and-what-is-built.md) - The built app stores records of the record class only (ADR-0150, ADR-0153).
+
+## Referenced by
+
+* [ADR-0236: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0236-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
 <!-- okf:generated:end links -->

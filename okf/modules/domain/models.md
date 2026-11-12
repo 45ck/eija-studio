@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: b4794644351bd00203084f645bf596748c375b2b1390da862af65602545beaae
-notes_baseline: 694bf6ac47343e9860e5c809e0d70f3feb9576dab9f3f172efe6db6671c1400a
+  sha256: 6ab4c9eaf8ac077fd0fb52ae35439957097d48d0ce052ef6b2a9db5dbd6dda89
+notes_baseline: 7dffccd0901ab9b690e6dfa2622e4332f6c37c8e7afce79352cc082d6c482474
 ---
 
 # domain.models
@@ -52,6 +52,7 @@ _The source carries no module docstring._
 * [`Workflow`](/symbols/domain/models/Workflow.md) (class) - no docstring
 * [`canonical`](/symbols/domain/models/canonical.md) (function) - no docstring
 * [`fingerprint`](/symbols/domain/models/fingerprint.md) (function) - no docstring
+* [`guard_keys`](/symbols/domain/models/guard_keys.md) (function) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 * [`iso_date`](/symbols/domain/models/iso_date.md) (function) - The date a YYYY-MM-DD string names, or None.
 <!-- okf:generated:end facts -->
 
@@ -174,5 +175,6 @@ _No curated notes yet._
 * [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…
 * [domain.models.canonical](/symbols/domain/models/canonical.md) - `def canonical(value: Any) -> str` in `domain/models`.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
+* [domain.models.guard_keys](/symbols/domain/models/guard_keys.md) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 * [domain.models.iso_date](/symbols/domain/models/iso_date.md) - The date a YYYY-MM-DD string names, or None.
 <!-- okf:generated:end links -->

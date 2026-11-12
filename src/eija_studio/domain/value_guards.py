@@ -11,8 +11,10 @@ Pure: no IO, no clock, no randomness.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date
 from itertools import pairwise, product
+import math
 from typing import Any
 
 from .data import DataModel, Entity
@@ -30,18 +32,46 @@ def guards_by_attribute(model: Workflow) -> dict[str, list[ValueGuard]]:
     return dict(sorted(found.items()))
 
 
+def _first_fitting(candidates: tuple[Callable[[], Any], ...], fits: Callable[[Any], bool]) -> list[Any]:
+    """The first candidate value that is a finite number and fits, as a one-item list; empty when none does. A
+    candidate that overflows a float is skipped."""
+    for candidate in candidates:
+        try:
+            value = candidate()
+        except OverflowError:
+            continue
+        if (not isinstance(value, float) or math.isfinite(value)) and fits(value):
+            return [value]
+    return []
+
+
 def _between(low: Any, high: Any, whole: bool) -> list[Any]:
     """A value strictly between two neighbouring constants, if there is one. Record numbers may be fractional, so
-    between 5 and 6 lies 5.5; days are whole, so between two consecutive days lies none."""
+    between 5 and 6 lies 5.5; days are whole, so between two consecutive days lies none. Near 2**53 and beyond the
+    plain midpoint can round onto a constant (or overflow), so the next float above ``low`` and the next whole number
+    are tried too; two constants with no int or float between them have no point between them."""
     if whole:
         return [(low + high) // 2] if high - low >= 2 else []
-    return [(low + high) / 2]
+    return _first_fitting((lambda: (low + high) / 2, lambda: low / 2 + high / 2,
+                           lambda: math.nextafter(float(low), math.inf), lambda: math.floor(low) + 1),
+                          lambda x: low < x < high)
+
+
+def _beyond(constant: Any, step: int) -> Any:
+    """A number strictly below (step -1) or above (step 1) ``constant``: one away when that is a different number,
+    else the next float, else a whole number (beyond the largest float)."""
+    rounding = math.floor if step < 0 else math.ceil
+    return _first_fitting((lambda: constant + step, lambda: math.nextafter(float(constant), step * math.inf),
+                           lambda: rounding(constant) + step),
+                          lambda x: x < constant if step < 0 else x > constant)[0]
 
 
 def _numbers(constants: list[Any], whole: bool = False) -> list[Any]:
     ordered = sorted(set(constants))
     inner = [x for a, b in pairwise(ordered) for x in _between(a, b, whole)]
-    return sorted({ordered[0] - 1, *ordered, *inner, ordered[-1] + 1})
+    if whole:
+        return sorted({ordered[0] - 1, *ordered, *inner, ordered[-1] + 1})
+    return sorted({_beyond(ordered[0], -1), *ordered, *inner, _beyond(ordered[-1], 1)})
 
 
 def _dates(constants: list[date]) -> list[str]:

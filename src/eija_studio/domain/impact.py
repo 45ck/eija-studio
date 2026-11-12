@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections import deque
 from typing import Any
-from .models import Transition, Workflow
+from .models import Transition, Workflow, guard_keys
 
 
 def closure(graph: dict[str, list[str]], roots: list[str], budget: int | None = None) -> dict[str, Any]:
@@ -27,8 +27,9 @@ def changed_fields(old: Transition, new: Transition) -> list[str]:
     as in `Workflow.semantic_hash`), so shuffling them is not a change. The single definition of "changed"
     shared by the ripple and the diagram diff."""
     fields = [name for name in ("id", "from_state", "to_state", "role") if getattr(old, name) != getattr(new, name)]
-    fields += [name for name in ("guards", "required_effects", "forbidden_effects", "conditions")
+    fields += [name for name in ("guards", "required_effects", "forbidden_effects")
                if set(getattr(old, name)) != set(getattr(new, name))]
+    fields += ["conditions"] if guard_keys(old.conditions) != guard_keys(new.conditions) else []
     return fields
 
 

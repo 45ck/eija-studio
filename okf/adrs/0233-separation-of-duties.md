@@ -50,5 +50,7 @@ notes_baseline: ec9b461ad6f807713e639e60b0cedae18af624485a01e45b4808f51850a46f3f
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [ADR-0236: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0236-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
 <!-- okf:generated:end links -->

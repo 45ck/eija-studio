@@ -8,6 +8,7 @@ is no second reading of the rules.
 from __future__ import annotations
 
 import json
+import math
 import re
 from datetime import date
 from pathlib import Path
@@ -209,6 +210,8 @@ def _text(attribute: Attribute, raw: Any) -> Any:
 def _number(attribute: Attribute, raw: Any) -> Any:
     if isinstance(raw, bool) or not isinstance(raw, int | float):
         raise DomainError("FIELD_TYPE", f"{attribute.name} must be a number")
+    if isinstance(raw, float) and not math.isfinite(raw):  # JSON parsers accept NaN and Infinity; no guard can order them
+        raise DomainError("FIELD_TYPE", f"{attribute.name} must be a finite number")
     return raw
 
 
