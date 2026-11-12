@@ -492,7 +492,7 @@ def run_suite(files: dict[str, str]) -> tuple[int, list[str], str]:
         out = Path(tmp)
         for relative, text in files.items():
             (out / relative).parent.mkdir(parents=True, exist_ok=True)
-            (out / relative).write_text(text, encoding="utf-8")
+            (out / relative).write_text(text, encoding="utf-8", newline="\n")  # the seal hashes LF bytes
         run = subprocess.run([sys.executable, "-I", "-B", "-m", "unittest", "discover", "-s", "tests", "-t", ".", "-v"],
                              cwd=out, env=env, capture_output=True, text=True, timeout=TIMEOUT_S, check=False)
     text = run.stderr + run.stdout
@@ -578,7 +578,7 @@ def main(argv: list[str] | None = None) -> int:
     ok = all(not r["missed"] and not any(law["missed"] for law in r["laws"]) for r in results)
     report = {"format": FORMAT, "status": "PASS" if ok else "FAIL", "equivalent": EQUIVALENT, "subjects": results}
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    args.out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     sys.stdout.write(f"{report['status']}: see {args.out}\n")
     return 0 if ok else 1
 

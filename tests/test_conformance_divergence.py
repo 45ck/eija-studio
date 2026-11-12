@@ -14,8 +14,10 @@ import json
 
 import pytest
 
-from verification.conformance.divergence import (CODE, EQUIVALENT, Divergence, _assemble, _divergent, divergences, judge,
-                                                  run_suite, shipped, variants)
+from eija_studio.application.app_runs import journeys
+from eija_studio.application.appgen import valid_values
+from verification.conformance.divergence import (CODE, EQUIVALENT, Divergence, _assemble, _divergent, _workflow,
+                                                  divergences, judge, run_suite, shipped, variants)
 
 SUBJECTS = {s.name: s for s in shipped() + variants()}
 IDENTITY = {"test_built_from_the_same_model", "setUpClass"}
@@ -117,3 +119,16 @@ def test_only_a_listed_equivalence_may_go_uncaught():
     subject, reviewed = _reviewed("library-loan")
     outcome = judge(subject, _find("library-loan", "forbidden-effect-dropped"), reviewed)
     assert outcome.status in ("EQUIVALENT", "REFUSED") and set(EQUIVALENT) == {"forbidden-effect-dropped"}
+
+
+def test_a_journey_starts_on_a_record_created_just_now():
+    """Review regression (PR #247): a journey's record is created by the app and acted on at once, so a time event
+    leaving the initial state is not yet due; the oracle once assumed every wait had passed and expected a commit."""
+    subject = SUBJECTS["refund-desk"]
+    first = next(t for t in subject.model.transitions if t.from_state == subject.model.initial_state)
+    timed = _workflow(subject.model, lambda raw: next(t for t in raw["transitions"] if t["id"] == first.id).update(
+        after={"amount": 2, "unit": "days"}))
+    assert not isinstance(timed, str)
+    found = journeys(subject.pack, timed, valid_values(subject.data))
+    assert found and all(step["expect"].get("code") != "TIMER_NOT_DUE" for j in found for step in j["steps"])
+    assert first.id not in {j["transition"] for j in found}

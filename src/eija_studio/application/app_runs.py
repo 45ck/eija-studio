@@ -39,9 +39,10 @@ def create_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
 def _first_taker(pack: Pack, model: Workflow, state: str, action: str, values: dict[str, Any],
                  acted: list[tuple[str, str]]) -> tuple[str, dict[str, Any]] | None:
     """The first fixture actor (by id) the kernel lets take `action` from `state` on a record with these values and
-    history, with the kernel's answer."""
+    history, with the kernel's answer. The record has just entered `state`, as it has on a run through the app, so a
+    time event leaving it is not yet due (ADR-0237) and the timer test, not a journey, covers it."""
     for actor in sorted(pack.fixtures.actors, key=lambda a: a.id):
-        session = OracleSession(pack, model, state, values)
+        session = OracleSession(pack, model, state, values, waited=0.0)
         session.acted = list(acted)
         answer = kernel_answer(pack, model, session, actor.id, action, 0)
         if answer["outcome"] == "COMMITTED":
@@ -73,7 +74,7 @@ def _walks(pack: Pack, model: Workflow, values: dict[str, Any]) -> list[dict[str
 
 def _answer_steps(pack: Pack, model: Workflow, values: dict[str, Any], steps: list[dict[str, Any]]) -> None:
     """The kernel's answer, and what it writes, for each step of one run on one record."""
-    session = OracleSession(pack, model, model.initial_state, values)
+    session = OracleSession(pack, model, model.initial_state, values, waited=0.0)  # created just now, as by the app
     for n, step in enumerate(steps):
         version = int(session.item["version"])
         step["expected_version"] = version
