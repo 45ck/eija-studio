@@ -48,10 +48,12 @@ def seed(svc: service.Service, state: str, values: dict | None = None, waited: f
 
 
 def stock(svc: service.Service) -> service.Service:
-    """The objects the oracle's records refer to (ADR-0235), stored so a reference field can name them."""
+    """The objects the oracle's records refer to (ADR-0235), stored so a reference field can name them: one with a
+    lifecycle starts in its initial state, as one the app creates does (ADR-0241)."""
     for item in ORACLE.get("objects", []):
-        svc.db.execute("INSERT INTO objects(id,class,fields,created_by) VALUES(?,?,?,'oracle')",
-                       (item["id"], item["class"], json.dumps(item["fields"])))
+        lifecycle = next((o for o in service.MODEL.objects if o.entity == item["class"]), None)
+        svc.db.execute("INSERT INTO objects(id,class,fields,created_by,state) VALUES(?,?,?,'oracle',?)",
+                       (item["id"], item["class"], json.dumps(item["fields"]), lifecycle and lifecycle.initial))
     return svc
 
 

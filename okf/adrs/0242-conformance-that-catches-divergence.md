@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0242-conformance-that-catches-divergence.md
   title: 0242-conformance-that-catches-divergence.md
   hash_method: lf-sha256-v1
-  sha256: f8fda1616bd6764712ab31b6f913969424f51fc0e3a308e7611de76a6c05c806
-notes_baseline: c5927235848c3be03bb7443950ad89515f5a73933ef0a903b7cd863b7e8b08da
+  sha256: 19b1c279cee5712c245db9abdbb5074c6f28089c58492f2f03ac0f7bb7ab7031
+notes_baseline: 39e0b03e9808c4625cefdf196b16019525bdd6e16e370248a173535cb44b4143
 ---
 
 # ADR-0242: Conformance that catches a divergent app by behaviour
@@ -35,6 +35,8 @@ notes_baseline: c5927235848c3be03bb7443950ad89515f5a73933ef0a903b7cd863b7e8b08da
 >   * a transition is dropped, moved to another source or target, or given another role;
 >   * the assignment guard is added or dropped, or a required effect is added or dropped;
 >   * a value guard is dropped or flipped;
+>   * a time event is dropped or lengthened (ADR-0237);
+>   * a step on a linked object is dropped, a linked object starts in another state, or one of its moves leads elsewhere (ADR-0241);
 >   * the initial state is moved, or an initiator is added or dropped;
 >   * an effect's kind or recipient is changed;
 >   * a fixture actor's active or assigned flag is flipped;
@@ -46,8 +48,6 @@ notes_baseline: c5927235848c3be03bb7443950ad89515f5a73933ef0a903b7cd863b7e8b08da
 > * **Code divergence.** One of 23 seeded faults in `app/service.py` or `app/server.py`, resealed the same way. A fault in code a subject's app never reaches is not applicable to it, not missed. For example, a fault in the value-guard check applies only to a model with value guards.
 >
 > Each divergence ends up CAUGHT, REFUSED (no app is built: the model is invalid or the protected policy refuses it), EQUIVALENT, or MISSED. Only one kind of divergence may be EQUIVALENT: dropping a forbidden effect. The kernel performs only required effects, and the policy checks forbidden ones at build time. Any MISSED divergence fails the check. For each law, the harness also runs the law proof on every model divergence, and every divergence the proof finds BROKEN must be CAUGHT or REFUSED.
->
-> The two feature variants exist only in the harness, so the shipped packs keep their bytes:
 >
 
 ## Sections

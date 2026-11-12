@@ -161,6 +161,22 @@ def _other(choices: list[str], *avoid: str) -> str | None:
     return next((c for c in choices if c not in avoid), None)
 
 
+def _linked_divergences(model: Workflow) -> Iterator[tuple[str, str, str, Workflow | str]]:
+    """A linked object's lifecycle changed: it starts in another state, or one of its moves leads elsewhere (ADR-0241)."""
+    for n, obj in enumerate(model.objects):
+        ref = f"object:{obj.link}"
+        start = _other(sorted(obj.states), obj.initial)
+        if start is not None:
+            yield "object-initial-moved", f"{ref}/initial", f"{obj.link} starts {start}, not {obj.initial}", _workflow(
+                model, lambda raw, i=n, v=start: raw["objects"][i].__setitem__("initial", v))
+        for m, move in enumerate(obj.moves):
+            elsewhere = _other(sorted(obj.states), move.to_state, move.from_state)
+            if elsewhere is not None:
+                yield "object-move-retargeted", f"{ref}/{move.event}", \
+                    f"{obj.link}.{move.event} leads to {elsewhere}, not {move.to_state}", _workflow(
+                    model, lambda raw, i=n, j=m, v=elsewhere: raw["objects"][i]["moves"][j].__setitem__("to_state", v))
+
+
 def _model_divergences(s: Subject) -> Iterator[tuple[str, str, str, Workflow | str]]:
     model, states = s.model, sorted(s.model.states)
     roles = sorted({r.id for r in s.pack.roles} | {t.role for t in model.transitions})
@@ -212,6 +228,10 @@ def _model_divergences(s: Subject) -> Iterator[tuple[str, str, str, Workflow | s
             flipped = {"eq": "ne", "ne": "eq", "lt": "ge", "le": "gt", "gt": "le", "ge": "lt"}[guard.op]
             yield "value-guard-flipped", f"{ref}/when:{guard}", f"{t.action} needs the opposite of [{guard}]", _workflow(
                 model, lambda raw, tid=tid, i=n, v=flipped: _transition(raw, tid)["conditions"][i].__setitem__("op", v))
+        for n, step in enumerate(t.then):
+            yield "linked-step-dropped", f"{ref}/then:{step}", f"{t.action} no longer does {step}", _workflow(
+                model, lambda raw, tid=tid, i=n: _transition(raw, tid)["then"].pop(i))
+    yield from _linked_divergences(model)
     for state in states:
         if state != model.initial_state:
             yield "initial-state-moved", "model:initial_state", f"records start in {state}, not {model.initial_state}", \

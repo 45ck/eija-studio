@@ -37,6 +37,8 @@ We built a harness that asks the real question. For library-loan, its first run 
   * a transition is dropped, moved to another source or target, or given another role;
   * the assignment guard is added or dropped, or a required effect is added or dropped;
   * a value guard is dropped or flipped;
+  * a time event is dropped or lengthened (ADR-0237);
+  * a step on a linked object is dropped, a linked object starts in another state, or one of its moves leads elsewhere (ADR-0241);
   * the initial state is moved, or an initiator is added or dropped;
   * an effect's kind or recipient is changed;
   * a fixture actor's active or assigned flag is flipped;
