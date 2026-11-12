@@ -540,7 +540,7 @@ def _compact_shell_geometry(page):
       const rect = selector => document.querySelector(selector).getBoundingClientRect();
       const canvas=rect('#canvas'), trace=rect('#live-trace'), hint=rect('#canvas-help');
       const main=document.querySelector('main.layout'), collisions=[], outside=[];
-      const selectors=['.bar .logo','.bar .brand > strong','#model-name','#system-controls button',
+      const selectors=['.bar .logo','.bar .brand > .brand-name','#model-name','#system-controls button',
         '#palette-open','#source-status','.layout-toggles button','.bar-end > a','.uml-anchor > button',
         '.toolbar button','.toolbar select','#run-status'];
       const controls=[...document.querySelectorAll(selectors.join(','))].filter(node=>node.getClientRects().length)
