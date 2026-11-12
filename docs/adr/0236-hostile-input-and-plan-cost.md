@@ -55,7 +55,8 @@ that is not a JSON object.
 **Autosave.** The page reopens a browser draft only when its shape is the one it writes. Any other draft is moved to
 `<key>:unreadable` and the page opens on the model in force, with a note. If a draft passes the shape check and still
 fails to reopen, the page sets it aside and opens anyway. On disk, `GET /api/play/draft` checks `draft.json` against
-`SavedWork`; one in another shape is moved to `draft.unreadable.json` and the page says so.
+`SavedWork`; one in another shape is moved to `draft.unreadable.json` and the page says so. A later one goes beside it
+(`draft.unreadable-2.json`, and `<key>:unreadable:2` in the browser), never over it.
 
 **Plan check.** `_statuses` keeps the model after the steps that applied so far (`plan._Applied`), so each step is
 applied once. A 64-step plan at the limits now takes about 70 ms. The verdicts match a replay of every earlier step

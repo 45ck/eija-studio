@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/system_library.py
   title: adapters/system_library.py
   hash_method: ast-api-v1
-  sha256: 6ce7a78e13b0ae2715f039d1867fb6de2e2447cbbb877d84c3768e8c7fe903cc
-notes_baseline: 4fd67477bed04e3038c1bec393983ff4e66b6e1b5dabef1144af43dade649b06
+  sha256: f358b405f850f437876fe19a912abb5696ac537993c1939538085bdaecd13210
+notes_baseline: 9a78766b8773c1ec1b82ffcb45bd21ae5135f96c7a09c59be69f09f2d5dbd1eb
 ---
 
 # adapters.system_library

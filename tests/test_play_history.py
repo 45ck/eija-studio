@@ -320,6 +320,12 @@ def test_a_kept_draft_the_page_cannot_read_is_set_aside_and_the_page_still_opens
                 assert page.is_hidden("#plan-banner") and page.is_disabled("#undo"), name  # the model in force, no plan
                 assert page.evaluate("k => localStorage.getItem(k + ':unreadable')", key) == raw, name  # set aside, not lost
                 assert "could not read" in page.text_content("#chat-log"), name
+            # A second unreadable draft is set aside beside the first, never over it.
+            raw = json.dumps(broken["no document"])
+            page.evaluate("([k, v]) => { localStorage.setItem(k + ':unreadable', 'earlier'); localStorage.setItem(k, v); }", [key, raw])
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=20_000)
+            assert page.evaluate("k => [localStorage.getItem(k + ':unreadable'), localStorage.getItem(k + ':unreadable:2')]", key) == ["earlier", raw]
             # A good draft still comes back.
             page.evaluate("([k, v]) => localStorage.setItem(k, v)", [key, json.dumps(real)])
             page.reload()

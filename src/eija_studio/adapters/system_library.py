@@ -103,10 +103,16 @@ class SystemLibrary:
 
     @staticmethod
     def set_aside_draft(workspace: Path) -> None:
-        """Move a draft that cannot be reopened to `draft.unreadable.json`, so the next Save does not overwrite it."""
+        """Move a draft that cannot be reopened to `draft.unreadable.json` (`draft.unreadable-2.json` and on when that is
+        taken), so neither the next Save nor a later draft set aside overwrites it."""
         path = Path(workspace) / DRAFT_FILE
-        if path.is_file():
-            os.replace(path, path.with_name("draft.unreadable.json"))
+        if not path.is_file():
+            return
+        target, n = path.with_name("draft.unreadable.json"), 1
+        while target.exists():
+            n += 1
+            target = path.with_name(f"draft.unreadable-{n}.json")
+        os.replace(path, target)
 
     @staticmethod
     def write_draft(workspace: Path, draft: dict[str, Any] | None) -> None:

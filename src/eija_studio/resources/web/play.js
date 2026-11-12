@@ -2639,7 +2639,12 @@
   }
   let recoveringRaw = null; // the kept draft as read, so a failed reopening can set it aside before anything rewrites it
   function setAsideDraft(raw) {
-    try { localStorage.setItem(draftKey() + ":unreadable", raw); localStorage.removeItem(draftKey()); } catch { /* left in place */ }
+    try {
+      let aside = draftKey() + ":unreadable", n = 1;
+      while (localStorage.getItem(aside) !== null && localStorage.getItem(aside) !== raw) aside = `${draftKey()}:unreadable:${++n}`; // never over an earlier one
+      localStorage.setItem(aside, raw);
+      localStorage.removeItem(draftKey());
+    } catch { /* left in place */ }
     say("ai", el("p", "This browser held a draft PlayIDE could not read, so the model in force is open. "
       + "The draft was set aside, not deleted.")).classList.add("recovered");
   }

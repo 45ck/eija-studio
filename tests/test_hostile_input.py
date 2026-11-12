@@ -268,5 +268,10 @@ def test_a_saved_draft_in_another_shape_is_set_aside_not_reopened(tmp_path, stor
         assert client.post("/api/play/draft", json={"steps": []}, headers=HEADERS).status_code == 200
         assert client.get("/api/play/draft", headers=HEADERS).json()["draft"]["steps"] == []
         assert (tmp_path / "workspace" / "draft.unreadable.json").is_file()
+        # A second unreadable draft is set aside beside the first, never over it.
+        draft.write_text(json.dumps({"steps": "second"}), encoding="utf-8")
+        assert client.get("/api/play/draft", headers=HEADERS).json()["set_aside"] is True
+        assert json.loads((tmp_path / "workspace" / "draft.unreadable.json").read_text()) == stored
+        assert json.loads((tmp_path / "workspace" / "draft.unreadable-2.json").read_text()) == {"steps": "second"}
     finally:
         app.state.play.stop()
