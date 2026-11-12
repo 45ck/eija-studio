@@ -197,3 +197,28 @@ def test_the_new_kernel_features_read_right_in_a_real_browser(tmp_path):
             assert errors == []
         finally:
             chrome.close()
+
+
+def test_a_witness_stays_within_the_choices_and_does_not_give_up_on_many_guards(tmp_path):
+    pack_dir = kernel_loan(tmp_path)
+    doc = json.loads((pack_dir / "pack.json").read_text(encoding="utf-8"))
+    checkout = next(t for t in doc["model"]["transitions"] if t["action"] == "CheckOut")
+    # Every choice but one is excluded: the witness is the remaining choice, never an undeclared "other".
+    checkout["conditions"] = [{"attribute": "format", "op": "ne", "value": c} for c in ("Book", "Audiobook", "DVD")]
+    (pack_dir / "pack.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\n")
+    pack = load_pack(pack_dir)
+    assert reach(pack, pack.model, "OnLoan")["values"] == {"format": "Magazine"}
+    # Excluding every choice leaves no record that may take it: not shown, although "other" would pass the guards.
+    checkout["conditions"].append({"attribute": "format", "op": "ne", "value": "Magazine"})
+    (pack_dir / "pack.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\n")
+    pack = load_pack(pack_dir)
+    assert reach(pack, pack.model, "OnLoan")["verdict"] == "NOT_SHOWN"
+    cell = matrix(pack, pack.model)["cells"]["Requested"]["Librarian"][0]
+    assert {a["refused"] for a in cell["actors"]} >= {"VALUE_GUARD_DENIED"}
+    # Many guarded attributes (far more combinations than the 256 the law proof enumerates) are solved one by one.
+    many = [{"attribute": name, "op": "eq", "value": 0} for name in ("renewals", "fineA", "fineB", "fineC", "fineD", "fineE")]
+    model = pack.model.model_copy(update={"transitions": tuple(
+        t.model_copy(update={"conditions": tuple(type(t.conditions[0]).model_validate(g) for g in many)}) if t.action == "CheckOut" else t
+        for t in pack.model.transitions)})
+    answer = reach(pack, model, "OnLoan")
+    assert answer["verdict"] == "REACHABLE" and answer["values"] == {g["attribute"]: 0 for g in many}
