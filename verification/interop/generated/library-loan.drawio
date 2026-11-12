@@ -1,4 +1,4 @@
-<mxfile host="PlayIDE (eija.uml-interop.v1)" agent="pack library-loan 1.0.0, model 3d7336da8fcbbef8c91c916f3740826fdf2393d6be4e82219cf009413477ffa8">
+<mxfile host="PlayIDE (eija.uml-interop.v1)" agent="pack library-loan 1.0.0, model 246996f89e9a77d1fa7441141309232dc5827b9f59a9c5ba620fcdda0c615549">
   <diagram id="page-0" name="State machine">
     <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
       <root>
@@ -37,7 +37,7 @@
         <mxCell id="transition-3" value="Return [role = Librarian] / Audit:LoanReturned" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="transition-4" value="ReturnLate [role = Librarian] / Audit:LoanReturnedLate" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-2" target="state-3">
+        <mxCell id="transition-4" value="ReturnLate [role = Librarian] / Audit:LoanReturnedLate, Signal:LateReturn" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-2" target="state-3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="final-0" value="">

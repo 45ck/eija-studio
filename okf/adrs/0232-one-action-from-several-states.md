@@ -75,5 +75,5 @@ _No curated notes yet._
 * [ADR-0239: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0239-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
 * [ADR-0240: Composite states](/adrs/0240-composite-states.md) - Issue #93, item 3.
 * [ADR-0241: Actions on linked objects](/adrs/0241-actions-on-linked-objects.md) - Issue #93, item 4.
-* [ADR-0242: Conformance that catches a divergent app by behaviour](/adrs/0242-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
+* [ADR-0243: Conformance that catches a divergent app by behaviour](/adrs/0243-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
 <!-- okf:generated:end links -->

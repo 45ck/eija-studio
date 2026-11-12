@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#CASE_KINDS
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 3c807c0338b00b8d44385ee6b80163bc5cf5b4ec64a0d6f9c9dcd438784e7dd4
-notes_baseline: d1e663c5c18e1387f8a4ad7470a2820f3531723b64426eff3bf7ab9734e6275f
+  sha256: 7524ef19f752a5083032de79485f155745ea964a136ceb9e8ffe50b78d49f9c4
+notes_baseline: cb098462e3cdc05c36ff59755276a4e0ac82193bfca7d49e64221e21ebc18402
 ---
 
 # application.appgen.CASE_KINDS
@@ -25,7 +25,7 @@ notes_baseline: d1e663c5c18e1387f8a4ad7470a2820f3531723b64426eff3bf7ab9734e6275f
 |---|---|
 | Kind | constant |
 | Module | [`application/appgen`](/modules/application/appgen.md) |
-| Signature | `CASE_KINDS = ('data_cases', 'start_cases', 'separation_cases', 'value_cases', 'timer_cases', 'linked_cases', 'create_cases', 'journeys', 'options_cases')` |
+| Signature | `CASE_KINDS = ('data_cases', 'start_cases', 'separation_cases', 'value_cases', 'timer_cases', 'linked_cases', 'signal_cases', 'create_cases', 'journeys', 'optio…` |
 | Code | `repo://src/eija_studio/application/appgen.py#CASE_KINDS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

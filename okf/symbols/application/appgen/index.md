@@ -27,6 +27,7 @@
 * [application.appgen.readme](readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 * [application.appgen.rules](rules.md) - The rule table the app shows: each action once, every state it leaves, where it leads and who takes it.
 * [application.appgen.separation_cases](separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0233).
+* [application.appgen.signal_cases](signal_cases.md) - Each signal the model receives, delivered with valid record values, and the kernel's answer (a record started in the initial state), then the first one under a name it does not receive and from a sender it does not hear…
 * [application.appgen.start_cases](start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [application.appgen.stock](stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [application.appgen.timer_cases](timer_cases.md) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state half the time and the whole time, and the kernel's answer (ADR-0237).

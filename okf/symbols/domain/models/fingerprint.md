@@ -56,6 +56,7 @@ Deterministic because [canonical](/symbols/domain/models/canonical.md) sorts key
 * [application.requirement_trace.compare_requirements](/symbols/application/requirement_trace/compare_requirements.md) - Compare prose only for existing IDs.
 * [application.requirement_trace.requirement_review](/symbols/application/requirement_trace/requirement_review.md) - Pinned requirement rows and declared model/law/source/test links with visible gaps.
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
+* [application.runtime.receive](/symbols/application/runtime/receive.md) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
 * [application.service.Studio.create](/symbols/application/service/Studio.create.md) - `def create(self, request: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.from_plan](/symbols/application/service/Studio.from_plan.md) - Select an exact owner-reviewed command batch; previews and provenance never grant authority.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.

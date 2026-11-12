@@ -69,6 +69,7 @@ Every view has one of three standings. **Executable**: the kernel runs it. **Che
 | Class diagram | «record» class and its attributes | executable | Values a record is created with, checked by type, choice, length and required-ness (`FIELD_*` codes). | `domain/data.py` `check_values` |
 | Class diagram | Built to-one association from the record class | executable | A reference field named by the role. The app stores objects of the other class and refuses an id that names none (`REFERENCE_UNKNOWN`, ADR-0235). | `domain/data.py` `check_record` |
 | State machine | Step on a linked object (`/ target.lock`) | executable | A transition may move the object a built reference names through its small lifecycle, in the same unit of work. The kernel refuses the step when the object has no move from its state (`LINKED_OBJECT_REFUSED`). The law proof tries every state of the object, the built app's oracle checks each one and the SCXML differential runs them (ADR-0241). | `domain/linked.py`, `application/runtime.py` `check_linked` |
+| Component diagram | Signal between workflows (`Signal:LateReturn`) | executable | A signal effect the sender's step writes to its outbox, and a `receives` entry that starts a record in the receiving workflow when it is delivered. Other signals are refused (`SIGNAL_NOT_ACCEPTED`) and redelivery is idempotent. The landscape checks both ends (ADR-0242). | `application/runtime.py` `receive`, `application/landscape.py` |
 | Class diagram | Other classes and associations | derived design | Drawn and kept with the model; not stored or checked by the app yet. | `domain/data.py` |
 | Use cases | Actor, use case, association | checked design | Roles and actions read from the state machine, plus "Create" for the record. They are the same facts, drawn another way. | `domain/screens.py` `use_cases` |
 | Use cases | Actor «human» (stick figure, the default) | checked design | A role held by a person. The kernel authorises it like any role; kind laws count it for `role_kinds: ["human"]` (ADR-0210). | `domain/pack.py` `Role.kind` |
@@ -174,7 +175,7 @@ The cost is expressiveness. A construct is executable only after it has been add
 | Deadlines and upper bounds (`within(3 days)`, `at(date)`) | Expiring offers, fixed cut-offs | `after` (ADR-0237) covers "at least this long"; an upper bound needs the law proof to stop assuming that waiting only adds steps |
 | Orthogonal regions and history states | A record doing two things at once; resuming where it left off | A record in a set of states; SCXML has both natively. Composite states are done (ADR-0240) |
 | Actors and laws on associated objects | "The bus company may cancel a booking" | Linked objects have a lifecycle a record step moves (ADR-0241); a full machine per class with its own actors needs the multi-entity runtime (#65) |
-| Messages between workflows | Component diagrams that run | Typed signals between packs over a port |
+| Signals that move an existing record, and a relay between built apps | "Paying the fine clears the member's block" | Signals that start a record are done (ADR-0242); moving an existing record needs a correlation between the two records |
 
 ## Why you can trust the state machine's meaning
 

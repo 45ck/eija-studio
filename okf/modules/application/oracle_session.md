@@ -63,7 +63,7 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0242): who may start one and where it starts, a run from a new record to each transi…
+* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0243): who may start one and where it starts, a run from a new record to each transi…
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.oracle_session.OracleSession.actor](/symbols/application/oracle_session/OracleSession.actor.md) - `def actor(self, actor_id: str) -> dict[str, Any]` in `application/oracle_session`.
 * [application.oracle_session.OracleSession.acts](/symbols/application/oracle_session/OracleSession.acts.md) - `def acts(self, instance_id: str) -> list[tuple[str, str]]` in `application/oracle_session`.

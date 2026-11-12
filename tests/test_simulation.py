@@ -55,8 +55,8 @@ def test_every_logged_step_is_the_kernels_answer():
 def test_committed_effects_are_written_through_the_packs_adapters():
     p = pack("library-loan")
     run = simulate(p, p.model, seed=5, steps=400)
-    notified = sum(run["transitions"][t.id]["committed"] for t in p.model.transitions
-                   if any(e.startswith("Notification:") for e in t.required_effects))
+    notified = sum(run["transitions"][t.id]["committed"] * sum(1 for e in t.required_effects if p.effect(e).kind != "audit")
+                   for t in p.model.transitions)  # notifications and signals both go to the outbox (ADR-0242)
     assert sum(run["effects"]["outbox"].values()) == notified > 0
 
 

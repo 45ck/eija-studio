@@ -232,6 +232,12 @@ def _model_divergences(s: Subject) -> Iterator[tuple[str, str, str, Workflow | s
             yield "linked-step-dropped", f"{ref}/then:{step}", f"{t.action} no longer does {step}", _workflow(
                 model, lambda raw, tid=tid, i=n: _transition(raw, tid)["then"].pop(i))
     yield from _linked_divergences(model)
+    for n, heard in enumerate(model.receives):  # signals from another workflow (ADR-0242)
+        ref = f"model:receives/{heard}"
+        yield "receive-dropped", ref, f"{heard} no longer starts a record", _workflow(
+            model, lambda raw, i=n: raw["receives"].pop(i))
+        yield "receive-sender-changed", ref, f"{heard.signal} is heard from another-workflow", _workflow(
+            model, lambda raw, i=n: raw["receives"][i].__setitem__("sender", "another-workflow"))
     for state in states:
         if state != model.initial_state:
             yield "initial-state-moved", "model:initial_state", f"records start in {state}, not {model.initial_state}", \

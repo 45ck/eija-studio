@@ -4,7 +4,7 @@
 
 * [application.access](access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a record reach this state without that role ever acting?".
 * [application.api_contract](api_contract.md) - The API contract of an app built from a workflow (ADR-0207): an OpenAPI 3.1 document of what the generated server serves, written from the model, the pack and the data model rather than by hand.
-* [application.app_runs](app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0242): who may start one and where it starts, a run from a new record to each transition, the actions offered in each state, and the rule table…
+* [application.app_runs](app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0243): who may start one and where it starts, a run from a new record to each transition, the actions offered in each state, and the rule table…
 * [application.appgen](appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.build_subject](build_subject.md) - Exact generated-build identity.
 * [application.c4](c4.md) - Read-only C4 views of generated source and declared model contracts.

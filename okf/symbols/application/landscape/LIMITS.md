@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/landscape.py#LIMITS
   title: application/landscape.py
   hash_method: ast-v2
-  sha256: af2d21ae9cf73ccd98f8ac2b0318b216ee316e887ce10004a56f75faf544f483
-notes_baseline: 60321c9cb9a969608158926e0376f8e46b724878cbc8247b416f5fdab61066dc
+  sha256: 7a9106dbd06dc659f1aef75464b2173f315aa74eb2db48f2d8a9e3b0c6cbd9ef
+notes_baseline: bfab917337358130baa7ee2be8ba44f34d1c7a51fefcfe72abc23b1767507d30
 ---
 
 # application.landscape.LIMITS
@@ -25,7 +25,7 @@ notes_baseline: 60321c9cb9a969608158926e0376f8e46b724878cbc8247b416f5fdab61066dc
 |---|---|
 | Kind | constant |
 | Module | [`application/landscape`](/modules/application/landscape.md) |
-| Signature | `LIMITS = 'Workflows are linked by the classes their class diagrams name; the built apps do not call each other yet, so a link is a design dependency the kernel…` |
+| Signature | `LIMITS = "Workflows are linked by the classes their class diagrams name, and by the signals one sends and another receives (issue #93, ADR-0242). A class link…` |
 | Code | `repo://src/eija_studio/application/landscape.py#LIMITS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

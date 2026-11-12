@@ -1,4 +1,4 @@
-"""The app oracle's runs that start from a record the app itself creates (ADR-0242): who may start one and where it
+"""The app oracle's runs that start from a record the app itself creates (ADR-0243): who may start one and where it
 starts, a run from a new record to each transition, the actions offered in each state, and the rule table shown.
 Each answer is the kernel's, asked through `OracleSession`."""
 from __future__ import annotations

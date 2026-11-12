@@ -15,7 +15,7 @@ from typing import Any
 from uuid import uuid4
 
 from eija_studio.application.runtime import (check_actor, check_due, check_guards, check_linked, check_separation, execute, initialise,
-                                             separations)
+                                             receive, separations)
 from eija_studio.domain.data import DataModel, check_record, check_values, references
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical
 from eija_studio.domain.pack import parse_pack
@@ -259,6 +259,24 @@ class Service:
         return {"record": record, "history": self.history(record_id),
                 "options": options(record["state"], actor_id, session.acts(record_id), record["fields"],
                                    session.elapsed(record_id), objects)}
+
+    def receive(self, signal: str, sender: str, operation_id: str, fields: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Start a record because another workflow of the system sent `signal` (ADR-0242). The signal carries the new
+        record's values, which this app's data model checks as it checks a record a person creates. Delivering the same
+        signal again under its operation id starts nothing new."""
+        values = check_record(DATA, fields or {}, self._exists) if DATA is not None else {}
+        if DATA is None and fields:
+            raise DomainError("UNKNOWN_FIELD", "This app's model has no record attributes")
+
+        def work(session: Session) -> dict[str, Any]:
+            result = receive(session, CASE, MODEL, signal, sender, operation_id, pack=PACK, values=values)
+            if result["duplicate"]:
+                return {"duplicate": True, "started": False, "record": self._record(result["original_result"]["instance"]["id"])}
+            record_id = result["instance"]["id"]
+            self.db.execute("UPDATE records SET title=?, created_by=?, fields=?, data_digest=? WHERE id=?",
+                            (f"{signal} from {sender}", sender, canonical(values), DATA_DIGEST, record_id))
+            return {"duplicate": False, "started": True, "record": self._record(record_id)}
+        return self._write(work)
 
     def outbox(self) -> list[dict[str, Any]]:
         return [dict(r) for r in self.db.execute("SELECT * FROM outbox ORDER BY rowid")]

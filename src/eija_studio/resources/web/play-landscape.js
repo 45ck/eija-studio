@@ -147,6 +147,9 @@
         const owned = "class:" + l.class, look = mark(owned);
         edge(cells["workflow:" + l.source], cells["workflow:" + l.target], `«use» ${l.class}`, look.strokeColor ? { strokeColor: look.strokeColor } : {});
       }
+      for (const s of result.signals || []) {  // a signal one workflow sends and another receives (ADR-0242)
+        edge(cells["workflow:" + s.source], cells["workflow:" + s.target], `«signal» ${s.signal.replace(/^Signal:/, "")}`, { dashed: false, endArrow: "block" });
+      }
     });
     graph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = graph.getSelectionCell();

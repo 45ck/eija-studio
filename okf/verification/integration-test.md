@@ -13,7 +13,7 @@ sources:
 - resource: repo://src/eija_studio/application/verifier.py#verify_runtime
   title: application/verifier.verify_runtime
   hash_method: ast-v2
-  sha256: 03c5ec6ea4e38f8eb179ccbcfdf9e5bca78568a76459762014cd32ec1143fe41
+  sha256: 314363d63716e1bb60510e2f2d119291df40bdbc210b66c9dcc4131051a22dd7
 - resource: repo://src/eija_studio/domain/evidence.py#assess_receipt
   title: domain/evidence.assess_receipt
   hash_method: ast-v2
@@ -22,7 +22,7 @@ sources:
   title: domain/evidence.aggregate_status
   hash_method: ast-v2
   sha256: 5b13b09743b7cd7d127d74542c01219ab6d666aeeed54b4951357f9395aaf8b0
-notes_baseline: ab06e4e7d2b36db447614c3ad4cef16194d8d021324841fe7ebdef4c1f7c7259
+notes_baseline: 5e7fc33e6937fd8ef0df12005ef8472649d4855b7463bd9ab44924707d1bf68b
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -36,6 +36,10 @@ verified:
   at: '2026-11-11T13:00:00Z'
   notes_sha256: 654d3341987ee594594ac8ee72ceffd2a980139e9862b7de85de5ba63dd36aed
   sources_sha256: ab06e4e7d2b36db447614c3ad4cef16194d8d021324841fe7ebdef4c1f7c7259
+- by: process:claude-code
+  at: '2026-11-12T04:32:06Z'
+  notes_sha256: 654d3341987ee594594ac8ee72ceffd2a980139e9862b7de85de5ba63dd36aed
+  sources_sha256: 5e7fc33e6937fd8ef0df12005ef8472649d4855b7463bd9ab44924707d1bf68b
 ---
 
 # Bounded runtime matrix (integration_test)

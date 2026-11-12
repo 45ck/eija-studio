@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: cca08e76c02a51439f61fc48f8197b78ba5a31b7a866c87908f53dccbb18c60b
+  sha256: b7a7dbd91b86b461698fd82b0fcee9ee1f165b1d020477493d32b7d13e0ee1f4
 description_override: Immutable typed states, transitions, roles, guards and effect declarations with a normalised semantic hash.
-notes_baseline: 2c92440d7be2a12e2fda10dcb37fa1960691c6845812e16a87dd957a66322735
+notes_baseline: 5b5fd018414bb16ac255ee4b4bdb46cc612be780cf06e6f9b07ab2afd8f9ed9e
 verified:
 - by: process:eija-wbs-1.3-agent
   at: '2026-09-29T08:20:47Z'
@@ -46,6 +46,10 @@ verified:
   at: '2026-11-12T04:00:08Z'
   notes_sha256: 0cd3cef1bffef4627d2270f31d0fef840fa7cd90b83945981dafd60463ada769
   sources_sha256: 2c92440d7be2a12e2fda10dcb37fa1960691c6845812e16a87dd957a66322735
+- by: process:claude-code
+  at: '2026-11-12T04:32:06Z'
+  notes_sha256: da7ebd079be596d37fc009e9e3a1ea2a7ff062d9a1b90f5161b6a18c259b77d6
+  sources_sha256: 5b5fd018414bb16ac255ee4b4bdb46cc612be780cf06e6f9b07ab2afd8f9ed9e
 ---
 
 # domain.models.Workflow
@@ -75,6 +79,7 @@ _The source carries no docstring._
 | `initiators` | `tuple[str, ...]` | `Field(default=(), max_length=16)` |
 | `composites` | `tuple[Composite, ...]` | `Field(default=(), max_length=16)` |
 | `objects` | `tuple[LinkedObject, ...]` | `Field(default=(), max_length=8)` |
+| `receives` | `tuple[Receive, ...]` | `Field(default=(), max_length=16)` |
 
 ## Methods
 
@@ -86,6 +91,7 @@ _The source carries no docstring._
 * [`lifecycle`](/symbols/domain/models/Workflow.lifecycle.md) - `def lifecycle(self, link: str) -> LinkedObject \| None`
 * [`longest_wait`](/symbols/domain/models/Workflow.longest_wait.md) - `def longest_wait(self) -> int`
 * [`parent`](/symbols/domain/models/Workflow.parent.md) - `def parent(self, name: str) -> str \| None`
+* [`receiving`](/symbols/domain/models/Workflow.receiving.md) - `def receiving(self, signal: str, sender: str) -> Receive \| None`
 * [`semantic_hash`](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str`
 * [`sources`](/symbols/domain/models/Workflow.sources.md) - `def sources(self, action: str) -> tuple[str, ...]`
 * [`transition_for`](/symbols/domain/models/Workflow.transition_for.md) - `def transition_for(self, action: str, state: str \| None=None) -> Transition \| None`
@@ -93,7 +99,7 @@ _The source carries no docstring._
 
 ## Notes
 
-The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237). `composites` groups the states into a tree of UML composite states, left out when empty; `parent`, `ancestors`, `leaves` and `entry` read it, and the kernel still runs the flat machine (ADR-0240). `objects` declares the lifecycles of the objects the record links to, left out when empty; every step in a transition's `then` must name one with that event, and `lifecycle(link)` reads it (ADR-0241).
+The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237). `composites` groups the states into a tree of UML composite states, left out when empty; `parent`, `ancestors`, `leaves` and `entry` read it, and the kernel still runs the flat machine (ADR-0240). `objects` declares the lifecycles of the objects the record links to, left out when empty; every step in a transition's `then` must name one with that event, and `lifecycle(link)` reads it (ADR-0241). `receives` lists the signals from other workflows that start a record, left out when empty; `receiving(signal, sender)` reads it (ADR-0242).
 
 <!-- okf:generated:begin links -->
 ## Depends on
@@ -101,6 +107,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.models.Composite](/symbols/domain/models/Composite.md) - A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the child a transition into the group enters first.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.LinkedObject](/symbols/domain/models/LinkedObject.md) - The lifecycle of the object a record links to through a reference field, such as a deploy request's `target` service (issue #93 item 4, ADR-0241): a small stat…
+* [domain.models.Receive](/symbols/domain/models/Receive.md) - A signal another workflow of the system sends that starts a record here (issue #93 item 5, ADR-0242): the signal effect `signal` declared by the pack `sender`.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
 
 ## Referenced by
@@ -122,6 +129,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
+* [application.appgen.signal_cases](/symbols/application/appgen/signal_cases.md) - Each signal the model receives, delivered with valid record values, and the kernel's answer (a record started in the initial state), then the first one under a…
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [application.appgen.timer_cases](/symbols/application/appgen/timer_cases.md) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state half the time and the whole time, and th…
 * [application.appgen.value_cases](/symbols/application/appgen/value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart…
@@ -178,6 +186,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.runtime.check_linked](/symbols/application/runtime/check_linked.md) - The moves a transition makes on the objects the record links to, given each object's state (ADR-0241).
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
+* [application.runtime.receive](/symbols/application/runtime/receive.md) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
 * [application.runtime.separations](/symbols/application/runtime/separations.md) - The pack's separation-of-duties laws in force on ``model`` that name ``action`` (issue #149, ADR-0233).
 * [application.scenario_run.record_steps](/symbols/application/scenario_run/record_steps.md) - What the kernel does for each (actor, action) in turn, written as scenario steps that expect exactly that.
 * [application.scenario_run.run_scenario](/symbols/application/scenario_run/run_scenario.md) - Run one scenario; it stops at the first step whose outcome differs from what it expects.
@@ -222,6 +231,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.models.Workflow.lifecycle](/symbols/domain/models/Workflow.lifecycle.md) - `def lifecycle(self, link: str) -> LinkedObject | None` in `domain/models`.
 * [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow.parent](/symbols/domain/models/Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.
+* [domain.models.Workflow.receiving](/symbols/domain/models/Workflow.receiving.md) - The declaration that `signal` from `sender` starts a record here, if there is one (ADR-0242).
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.
 * [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…

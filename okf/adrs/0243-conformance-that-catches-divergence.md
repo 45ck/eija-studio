@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0242: Conformance that catches a divergent app by behaviour'
+title: 'ADR-0243: Conformance that catches a divergent app by behaviour'
 description: The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
-resource: repo://docs/adr/0242-conformance-that-catches-divergence.md
+resource: repo://docs/adr/0243-conformance-that-catches-divergence.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0242-conformance-that-catches-divergence.md
-  title: 0242-conformance-that-catches-divergence.md
+- resource: repo://docs/adr/0243-conformance-that-catches-divergence.md
+  title: 0243-conformance-that-catches-divergence.md
   hash_method: lf-sha256-v1
-  sha256: 19b1c279cee5712c245db9abdbb5074c6f28089c58492f2f03ac0f7bb7ab7031
-notes_baseline: 39e0b03e9808c4625cefdf196b16019525bdd6e16e370248a173535cb44b4143
+  sha256: eb9c41428ac12d089373e5f7ba850377dc2bdd1d45c176f07f55657c8a8de0bb
+notes_baseline: a38b01e906150e54ea122c251d3d5a89710b14dc26ce58e7a6fd68ad393d56d1
 ---
 
-# ADR-0242: Conformance that catches a divergent app by behaviour
+# ADR-0243: Conformance that catches a divergent app by behaviour
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 39e0b03e9808c4625cefdf196b16019525bdd6e16e370248a173535cb44b4143
 | Status | accepted |
 | Date | 2026-11-12 |
 | Lane | app generation / verification |
-| Source | `repo://docs/adr/0242-conformance-that-catches-divergence.md` |
+| Source | `repo://docs/adr/0243-conformance-that-catches-divergence.md` |
 
 ## Decision outcome (verbatim)
 
@@ -36,6 +36,7 @@ notes_baseline: 39e0b03e9808c4625cefdf196b16019525bdd6e16e370248a173535cb44b4143
 >   * the assignment guard is added or dropped, or a required effect is added or dropped;
 >   * a value guard is dropped or flipped;
 >   * a time event is dropped or lengthened (ADR-0237);
+>   * a received signal is dropped or heard from another sender (ADR-0242);
 >   * a step on a linked object is dropped, a linked object starts in another state, or one of its moves leads elsewhere (ADR-0241);
 >   * the initial state is moved, or an initiator is added or dropped;
 >   * an effect's kind or recipient is changed;
@@ -48,7 +49,6 @@ notes_baseline: 39e0b03e9808c4625cefdf196b16019525bdd6e16e370248a173535cb44b4143
 > * **Code divergence.** One of 23 seeded faults in `app/service.py` or `app/server.py`, resealed the same way. A fault in code a subject's app never reaches is not applicable to it, not missed. For example, a fault in the value-guard check applies only to a model with value guards.
 >
 > Each divergence ends up CAUGHT, REFUSED (no app is built: the model is invalid or the protected policy refuses it), EQUIVALENT, or MISSED. Only one kind of divergence may be EQUIVALENT: dropping a forbidden effect. The kernel performs only required effects, and the policy checks forbidden ones at build time. Any MISSED divergence fails the check. For each law, the harness also runs the law proof on every model divergence, and every divergence the proof finds BROKEN must be CAUGHT or REFUSED.
->
 
 ## Sections
 
@@ -77,4 +77,5 @@ _No curated notes yet._
 * [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
 * [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
 * [ADR-0241: Actions on linked objects](/adrs/0241-actions-on-linked-objects.md) - Issue #93, item 4.
+* [ADR-0242: Messages between workflows](/adrs/0242-messages-between-workflows.md) - Issue #93, item 5.
 <!-- okf:generated:end links -->

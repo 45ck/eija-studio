@@ -22,7 +22,7 @@
      "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
     {"id": "TR-RETURNLATE", "action": "ReturnLate", "from_state": "Overdue", "to_state": "Returned", "role": "Librarian",
      "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
-     "required_effects": ["Audit:LoanReturnedLate"],
+     "required_effects": ["Audit:LoanReturnedLate", "Signal:LateReturn"],
      "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]}
   ]
 }

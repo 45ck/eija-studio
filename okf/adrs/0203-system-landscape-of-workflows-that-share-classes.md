@@ -69,4 +69,5 @@ _No curated notes yet._
 * [ADR-0206: A deployment view read from the built app's files](/adrs/0206-a-deployment-view-read-from-the-built-apps-files.md) - PlayIDE had no deployment view.
 * [ADR-0207: Each built app's API contract, written from the model](/adrs/0207-each-built-apps-api-contract-written-from-the-model.md) - The System lens (ADR-0203) draws each workflow's provided interface as its actions.
 * [ADR-0208: Moments for real checks, and the run as traffic on the diagram](/adrs/0208-check-moments-and-traffic.md) - ADR-0157 gave PlayIDE a checks ring and points that reward checking, never producing.
+* [ADR-0242: Messages between workflows](/adrs/0242-messages-between-workflows.md) - Issue #93, item 5.
 <!-- okf:generated:end links -->

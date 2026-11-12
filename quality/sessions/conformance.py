@@ -1,4 +1,4 @@
-"""Conformance-divergence gate (ADR-0242): a generated app that stops matching its model fails its own tests.
+"""Conformance-divergence gate (ADR-0243): a generated app that stops matching its model fails its own tests.
 
 `conformance_divergence` builds apps that are wrong in one model element or one seeded code fault, reseals their build
 identity so only behaviour can catch them, and runs each app's generated suite. Any divergence the suite misses, other

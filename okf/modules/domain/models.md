@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: 19e85932241521a6d173314d32dec25dbddc2d1498ad510b077189645e09317e
-notes_baseline: 01c40d72330534d402695674b760a0143ca37837b840582806ebc68b7c5f9f46
+  sha256: d6b26cb55bd2ddc71998fb3d68f9239f0e6774c8fb1d7b6ac9963d9c26a45862
+notes_baseline: 6a448370c0f177b150dbc371912efd7defaf17c381c84c1b0d265a6db1cb18d3
 ---
 
 # domain.models
@@ -52,6 +52,7 @@ _The source carries no module docstring._
 * [`OWNER`](/symbols/domain/models/OWNER.md) (constant) - no docstring
 * [`Principal`](/symbols/domain/models/Principal.md) (class) - no docstring
 * [`Proposal`](/symbols/domain/models/Proposal.md) (class) - no docstring
+* [`Receive`](/symbols/domain/models/Receive.md) (class) - A signal another workflow of the system sends that starts a record here (issue #93 item 5, ADR-0242): the signal effect…
 * [`SECONDS`](/symbols/domain/models/SECONDS.md) (constant) - no docstring
 * [`SYMBOLS`](/symbols/domain/models/SYMBOLS.md) (constant) - no docstring
 * [`SemanticTransaction`](/symbols/domain/models/SemanticTransaction.md) (class) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
@@ -88,7 +89,7 @@ _No curated notes yet._
 * [adapters.system_library](/modules/adapters/system_library.md) - Where a person's own systems live on disk (ADR-0185): one folder per system under a systems home, the recent list, and the saved draft of the work in progress.
 * [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
 * [application.api_contract](/modules/application/api_contract.md) - The API contract of an app built from a workflow (ADR-0207): an OpenAPI 3.1 document of what the generated server serves, written from the model, the pack and…
-* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0242): who may start one and where it starts, a run from a new record to each transi…
+* [application.app_runs](/modules/application/app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0243): who may start one and where it starts, a run from a new record to each transi…
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.build_subject](/modules/application/build_subject.md) - Exact generated-build identity.
 * [application.c4](/modules/application/c4.md) - Read-only C4 views of generated source and declared model contracts.
@@ -185,6 +186,7 @@ _No curated notes yet._
 * [domain.models.Principal.require](/symbols/domain/models/Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.Proposal.unique](/symbols/domain/models/Proposal.unique.md) - `def unique(self) -> Proposal` in `domain/models`.
+* [domain.models.Receive](/symbols/domain/models/Receive.md) - A signal another workflow of the system sends that starts a record here (issue #93 item 5, ADR-0242): the signal effect `signal` declared by the pack `sender`.
 * [domain.models.SECONDS](/symbols/domain/models/SECONDS.md) - Constant `SECONDS` in `domain/models`.
 * [domain.models.SYMBOLS](/symbols/domain/models/SYMBOLS.md) - Constant `SYMBOLS` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
@@ -204,6 +206,7 @@ _No curated notes yet._
 * [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.models.Workflow.parent](/symbols/domain/models/Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.
+* [domain.models.Workflow.receiving](/symbols/domain/models/Workflow.receiving.md) - The declaration that `signal` from `sender` starts a record here, if there is one (ADR-0242).
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.
 * [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…

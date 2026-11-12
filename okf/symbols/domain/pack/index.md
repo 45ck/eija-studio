@@ -29,6 +29,7 @@
 * [domain.pack.PACK_ID](PACK_ID.md) - Constant `PACK_ID` in `domain/pack`.
 * [domain.pack.PACK_SCHEMA](PACK_SCHEMA.md) - Constant `PACK_SCHEMA` in `domain/pack`.
 * [domain.pack.REPO_URI](REPO_URI.md) - Constant `REPO_URI` in `domain/pack`.
+* [domain.pack.SIGNAL](SIGNAL.md) - Constant `SIGNAL` in `domain/pack`.
 
 # Functions
 

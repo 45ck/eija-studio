@@ -1,4 +1,4 @@
-# ADR-0242: Conformance that catches a divergent app by behaviour
+# ADR-0243: Conformance that catches a divergent app by behaviour
 
 * Status: accepted
 * Date: 2026-11-12
@@ -38,6 +38,7 @@ We built a harness that asks the real question. For library-loan, its first run 
   * the assignment guard is added or dropped, or a required effect is added or dropped;
   * a value guard is dropped or flipped;
   * a time event is dropped or lengthened (ADR-0237);
+  * a received signal is dropped or heard from another sender (ADR-0242);
   * a step on a linked object is dropped, a linked object starts in another state, or one of its moves leads elsewhere (ADR-0241);
   * the initial state is moved, or an initiator is added or dropped;
   * an effect's kind or recipient is changed;
@@ -56,7 +57,7 @@ The two feature variants exist only in the harness, so the shipped packs keep th
 * refund-desk with initiators, a separation-of-duties law and a value guard;
 * library-loan with its record's associations built, and `Return` leaving two states.
 
-**The oracle gains four lists, and the generated suite gains five tests** (it now runs 16, with the time-event test from ADR-0237 and the linked-object test from ADR-0241):
+**The oracle gains four lists, and the generated suite gains five tests** (it now runs 17, with the time-event test from ADR-0237, the linked-object test from ADR-0241 and the signal test from ADR-0242):
 
 * `written` on every committed case and journey step holds the kernel's audit entries and outbox rows `[effect, recipient]`, recorded by the oracle session. The effects test compares them, and checks that each outbox row names the record.
 * `create_cases`: every fixture actor, and one unknown actor, starting a record with valid values. The case gives the state and version the record starts in, or the refusal (`UNKNOWN_ACTOR`, `ACTOR_REVOKED`, `ROLE_CANNOT_START`).

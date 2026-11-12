@@ -23,11 +23,13 @@ from eija_studio.domain.screens import Screens, default_screens, require_buildab
 from eija_studio.domain.value_guards import MAX_VALUATIONS, combinations, guard_problems
 from .app_runs import create_cases, journeys, options_cases, rules
 from .oracle_session import UNKNOWN_ACTOR, OracleSession as _OracleSession, absent, kernel_answer as _kernel
+from .runtime import receive
+from .simulation import MemorySession
 
 FORMAT = "eija.app-build.v1"
-# The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0242 added the last three).
-CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "timer_cases", "linked_cases", "create_cases",
-              "journeys", "options_cases")
+# The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0243 added the last three).
+CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "timer_cases", "linked_cases", "signal_cases",
+              "create_cases", "journeys", "options_cases")
 UNDECLARED_ACTION = "UndeclaredAction"
 LIMITS = (
     "The app runs the EIJA kernel itself (eija-studio must be installed). Records created under an earlier model are "
@@ -205,12 +207,35 @@ def _admitting(t: Transition) -> dict[str, Any]:
     return next((v for v in combinations(dict(sorted(grouped.items()))) or [] if t.admits(v) is None), {})
 
 
-def _people_cases(pack: Pack, model: Workflow) -> dict[str, Any]:
+def _people_cases(pack: Pack, model: Workflow, data: DataModel | None = None) -> dict[str, Any]:
     """The oracle's checks of who may start a record and who may not act twice, present only when the model or pack
     asks for them, so every other oracle keeps its exact bytes."""
     found = {"separation_cases": separation_cases(pack, model), "value_cases": value_cases(pack, model),
-             "timer_cases": timer_cases(pack, model), "linked_cases": linked_cases(pack, model)}
+             "timer_cases": timer_cases(pack, model), "linked_cases": linked_cases(pack, model),
+             "signal_cases": signal_cases(pack, model, data)}
     return ({"start_cases": start_cases(pack, model)} if model.initiators else {}) | {k: v for k, v in found.items() if v}
+
+
+def signal_cases(pack: Pack, model: Workflow, data: DataModel | None) -> list[dict[str, Any]]:
+    """Each signal the model receives, delivered with valid record values, and the kernel's answer (a record started in
+    the initial state), then the first one under a name it does not receive and from a sender it does not hear: both
+    refused (ADR-0242). Empty when the model receives none, so other oracles keep their exact bytes."""
+    if not model.receives:
+        return []
+    fields = data_cases(pack, data, model)[0]["fields"] if data is not None else {}
+    first = model.receives[0]
+    tries = [(r.signal, r.sender) for r in model.receives]
+    tries += [(absent("Signal:Unheard", {r.signal for r in model.receives}), first.sender),
+              (first.signal, absent("unheard-workflow", {r.sender for r in model.receives}))]
+    cases = []
+    for n, (signal, sender) in enumerate(tries, start=1):
+        try:
+            receive(MemorySession(pack), "app", model, signal, sender, f"signal-{n}", pack=pack)  # type: ignore[arg-type]
+            expect: dict[str, Any] = {"outcome": "STARTED", "state": model.initial_state}
+        except DomainError as refused:
+            expect = {"outcome": "REFUSED", "code": refused.code}
+        cases.append({"signal": signal, "sender": sender, "fields": fields, "expect": expect})
+    return cases
 
 
 def _creator(pack: Pack, model: Workflow | None) -> str:
@@ -380,7 +405,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
         oracle |= {"data_digest": data.digest, "data_cases": data_cases(pack, data, model)}
         oracle |= {"objects": stock(data)} if references(data) else {}
         files["app/data.json"] = canonical(data) + "\n"
-    oracle |= _people_cases(pack, model)
+    oracle |= _people_cases(pack, model, data)
     oracle |= {"waited": model.longest_wait} if model.longest_wait else {}  # how long ordinary cases' records waited
     oracle |= {"linked": along(model)} if model.objects else {}  # where ordinary cases' linked objects were (ADR-0241)
     valid = valid_values(data)
