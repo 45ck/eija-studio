@@ -310,6 +310,7 @@
     if ($("live-trace")) new MutationObserver(refit).observe($("live-trace"), { attributes: true, attributeFilter: ["hidden"] });
     checksPopover();
     tabKeys();
+    toolbarKeys();
     statusBar();
     toggles();
     tabOverflow();
@@ -350,6 +351,24 @@
     });
     new MutationObserver(roveAll).observe(document.body, { attributes: true, attributeFilter: ["aria-selected", "hidden"], subtree: true, childList: true });
     roveAll();
+  }
+
+  // Toolbars (undo/redo, the run bar, the UML palette, the role lens, the change tools) follow the WAI-ARIA toolbar
+  // keys: the arrow keys move between the enabled controls, Home and End go to the ends. Tab still reaches each one.
+  function toolbarKeys() {
+    document.addEventListener("keydown", (event) => {
+      const bar = event.target.closest?.("[role=toolbar]");
+      if (!bar || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.target.matches("select, input, textarea")) return;
+      const vertical = bar.getAttribute("aria-orientation") === "vertical";
+      const keys = vertical ? { ArrowDown: 1, ArrowUp: -1 } : { ArrowRight: 1, ArrowLeft: -1 };
+      if (!(event.key in keys) && event.key !== "Home" && event.key !== "End") return;
+      const items = [...bar.querySelectorAll("button, select, a[href]")].filter((b) => b.closest("[role=toolbar]") === bar && !b.disabled && !b.hidden && b.offsetParent !== null);
+      const at = items.indexOf(event.target.closest("button, select, a[href]"));
+      if (at < 0) return;
+      const next = event.key === "Home" ? items[0] : event.key === "End" ? items[items.length - 1] : items[(at + keys[event.key] + items.length) % items.length];
+      event.preventDefault();
+      next.focus();
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

@@ -94,7 +94,9 @@
         event.preventDefault();
         items[(i + (event.key === "ArrowDown" ? 1 : items.length - 1)) % items.length].focus();
       }
+      if (event.key === "Home" || event.key === "End") { event.preventDefault(); items[event.key === "Home" ? 0 : items.length - 1].focus(); }
     });
+    pop.addEventListener("focusout", (event) => { if (!pop.hidden && !anchor.contains(event.relatedTarget) && event.relatedTarget) closeMenu(); });
     document.addEventListener("click", (event) => { if (!anchor.contains(event.target)) closeMenu(); });
     anchor.append(opener, pop, file);
     const end = document.querySelector(".bar-end");
