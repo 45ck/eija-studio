@@ -453,6 +453,9 @@ def test_exact_generated_app_is_reviewed_activated_and_reopened_in_a_fresh_proce
                     "({code:error.code})))", view["case"]["id"])
                 assert duplicate["code"] == "CASE_CLOSED"
                 assert workspace_snapshot(workspace) == current
+                # Leave the page before its server stops: a request the page still has queued (What's missing
+                # refreshes after an apply) would otherwise reach a closed port, which says nothing about the app.
+                page.goto("about:blank")
             with exact_app_server(workspace) as restarted:
                 synthetic_capabilities.add(restarted.token)
                 phase = "fresh process reopen"

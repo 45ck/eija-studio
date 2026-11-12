@@ -5,6 +5,7 @@
 
 * **Hostile input and plan cost**: synced ADR-0236 (and again after the Codex review: set-aside drafts never overwrite each other) and the pages for `adapters.system_library` (`set_aside_draft`), `interfaces.cli` (`failure_report`) and `application.plan.preview_plan` (each step applied once). None of these pages has curated Notes. Nothing was recorded as verified.
 * **Composite states (issue #93, item 3)**: synced ADR-0238, `Composite`, `Workflow.composites` and its tree helpers, the SCXML nesting (`hoisted`), nested clusters in the diagram emitters, the diff's composite summary and the state edits that keep composites coherent. Re-read the Notes of `Workflow` and `Workflow.semantic_hash` as `process:claude-code` and updated both. No human source approval was recorded.
+* **PlayIDE browser QA of the new kernel features**: synced ADR-0232 and ADR-0234 (amendments: chat names the source of an action that leaves several states; tests and permissions give the record values), `Scenario.values`, `scenario_run`, `access.matrix`/`reach`, `plan_proposals` and `system_describer`. The modules' Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
 
 ## 2026-11-11
 

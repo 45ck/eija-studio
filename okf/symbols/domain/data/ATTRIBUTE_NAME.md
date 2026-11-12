@@ -45,5 +45,6 @@ _No curated notes yet._
 * [application.data_steps.SetRequired](/symbols/application/data_steps/SetRequired.md) - `class SetRequired(Contract)` in `application/data_steps`.
 * [application.new_system.FIELD](/symbols/application/new_system/FIELD.md) - Constant `FIELD` in `application/new_system`.
 * [domain.data.Attribute](/symbols/domain/data/Attribute.md) - `class Attribute(Contract)` in `domain/data`.
+* [domain.scenarios.Scenario.named_values](/symbols/domain/scenarios/Scenario.named_values.md) - `def named_values(self) -> Scenario` in `domain/scenarios`.
 * [domain.screens.ScreenField](/symbols/domain/screens/ScreenField.md) - `class ScreenField(Contract)` in `domain/screens`.
 <!-- okf:generated:end links -->

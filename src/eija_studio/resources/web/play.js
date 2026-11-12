@@ -517,7 +517,9 @@
       }
     };
     fill("outline-states", model.states.map((s) => ["state:" + s, s + (s === model.initial_state ? " (initial)" : "")]));
-    fill("outline-transitions", model.transitions.map((t) => ["transition:" + t.id, label(t)]));
+    // An action that labels transitions from several states (ADR-0232) names the state each one leaves.
+    const several = (t) => model.transitions.filter((x) => x.action === t.action).length > 1;
+    fill("outline-transitions", model.transitions.map((t) => ["transition:" + t.id, label(t) + (several(t) ? ` from ${t.from_state}` : "")]));
     fill("outline-classes", data ? data.entities.map((e) => ["class:" + e.name, e.name + (e.name === data.record ? " «record»" : "")]) : []);
     if (!data) $("outline-classes").replaceChildren(el("li", "No data model yet", { class: "muted" }));
     // A role is an actor of the use case diagram: choosing one shows what it may do, its screens and its fixture
@@ -723,10 +725,10 @@
       // then each initiator is associated with it (issue #142, ADR-0231).
       const starters = new Set(model.initiators || []);
       const create = useCaseGraph.insertVertex({ parent, id: "uc:create", value: `Create ${data ? data.record : "record"}`, position: [boundary.x + 60, TOP - 4],
-        size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#ffffff", strokeColor: "#5b74d6", fontSize: 13 } });
+        size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", perimeter: "ellipsePerimeter", fillColor: "#ffffff", strokeColor: "#5b74d6", fontSize: 13 } });
       cases.forEach((t, i) => {
         cells[t.id] = useCaseGraph.insertVertex({ parent, id: "uc:" + t.id, value: changeMark(t.status) + t.action, position: [boundary.x + 60, rowY(i)],
-          size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#eef2ff", strokeColor: "#5b74d6", fontSize: 13, ...changeLook(t.status, "box") } });
+          size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", perimeter: "ellipsePerimeter", fillColor: "#eef2ff", strokeColor: "#5b74d6", fontSize: 13, ...changeLook(t.status, "box") } });
       });
       roles.forEach((role, i) => {
         const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
@@ -1954,7 +1956,14 @@
       try {
         await loadComponents();
       } catch (error) {
-        box.replaceChildren(el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty" }));
+        // Below the lens bar, which floats over the top of the canvas; a screen problem says where to fix it.
+        const said = el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty under-bar" });
+        if (error.code === "SCREENS_BLOCKED") {
+          const open = el("button", "Fix them in Screens", { type: "button", class: "quiet" });
+          open.addEventListener("click", () => showTab("screens"));
+          said.append(" ", open);
+        }
+        box.replaceChildren(said);
         return;
       }
     }
@@ -2182,10 +2191,10 @@
     const name = input(f.label, `Label for ${f.attribute}`, (v) => { f.label = v; changed(`relabel ${f.attribute}`); });
     name.placeholder = f.attribute;
     const preview = el("span", a ? (a.type === "choice" ? `one of ${a.choices.join(", ")}` : a.type) + (a.required ? " · required" : "") : "not in the record", { class: "muted small field-meta" });
-    const up = el("button", "↑", { type: "button", class: "quiet", "aria-label": `Move ${f.attribute} up` });
+    const up = el("button", "↑", { type: "button", class: "quiet", "aria-label": `Move ${f.attribute} up`, title: `Move ${f.attribute} up` });
     up.disabled = i === 0;
     up.addEventListener("click", () => moveField(i, i - 1));
-    const remove = el("button", "×", { type: "button", class: "quiet", "aria-label": `Remove ${f.attribute}` });
+    const remove = el("button", "×", { type: "button", class: "quiet", "aria-label": `Remove ${f.attribute}`, title: `Remove ${f.attribute}` });
     remove.addEventListener("click", () => { screen.fields = screen.fields.filter((_, j) => j !== i); changed(`remove ${f.attribute} from the ${screen.title} screen`); });
     li.append(grip, el("code", f.attribute), name, preview, up, remove);
     return li;

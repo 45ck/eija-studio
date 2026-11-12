@@ -51,11 +51,13 @@
       ["Start records here", `start in ${s}`],
       ["Remove", `remove state ${s}`],
     ],
-    transition: (t) => [
+    // An action may label transitions from several states (ADR-0232): its role and target are shared, but its source
+    // and its removal are said of the one transition chosen, by the state it leaves.
+    transition: (t, several) => [
       ["Change who may", `allow ‹role› to ${t.action}`],
       ["Move its target", `move ${t.action} target to ‹state›`],
-      ["Move its source", `move ${t.action} source to ‹state›`],
-      ["Remove", `remove ${t.action}`],
+      ["Move its source", `move ${t.action}${several ? ` from ${t.from_state}` : ""} source to ‹state›`],
+      ["Remove", `remove ${t.action}${several ? ` from ${t.from_state}` : ""}`],
     ],
   };
 
@@ -68,7 +70,7 @@
       phrases = PHRASES.state(id.slice(6));
     } else if (id && id.startsWith("transition:")) {
       const t = model.transitions.find((x) => x.id === id.slice(11));
-      if (t) { title = `About ${t.action}`; phrases = PHRASES.transition(t); }
+      if (t) { title = `About ${t.action}`; phrases = PHRASES.transition(t, model.transitions.filter((x) => x.action === t.action).length > 1); }
     }
     const row = el("div", undefined, { class: "suggest-row" });
     for (const [name, phrase] of phrases) {
@@ -375,8 +377,8 @@
       }
     });
     dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
-    const opener = el("button", undefined, { id: "palette-open", type: "button", class: "quiet palette-open command-center", title: "Commands: every command and element",
-      "aria-label": "Commands", "aria-keyshortcuts": isMac ? "Meta+K" : "Control+K" });
+    const opener = el("button", undefined, { id: "palette-open", type: "button", class: "quiet palette-open command-center", title: "Search commands, diagrams and elements",
+      "aria-label": "Search commands, diagrams and elements", "aria-keyshortcuts": isMac ? "Meta+K" : "Control+K" });
     opener.append(el("span", "Search commands, diagrams and elements"), el("kbd", `${MOD}K`)); // the title bar's command center (ADR-0173)
     opener.addEventListener("click", openPalette);
     (document.querySelector(".bar .brand") || document.body).after(opener);

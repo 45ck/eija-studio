@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_emitters.py#emit
   title: application/diagram_emitters.py
   hash_method: ast-v2
-  sha256: 39e0bcb80ab3938b5a47a83af727f228d106ab22ba59930996003e914d022d98
-notes_baseline: 5ea16d8d178e7be31fea8fae80c0ed7f5c35cb1868eb7c0dfbdd75b91559c0fe
+  sha256: 314257bc77e04148e7c7659a19204674479662d3f88d332c5eeb1b2f31676079
+notes_baseline: 7af74e2cd356adb32e08d0d52fc10717cf386da5270ada4a3e39f6cd4ff3be21
 ---
 
 # application.diagram_emitters.emit

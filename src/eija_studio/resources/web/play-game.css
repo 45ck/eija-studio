@@ -8,7 +8,7 @@
 #health-ring circle.game-pop{animation:game-pop .7s ease;transform-box:fill-box;transform-origin:center}
 @keyframes game-bump{40%{transform:scale(1.08)}}
 @keyframes game-burst{0%{box-shadow:0 0 0 0 rgba(23,115,74,.55)}70%{box-shadow:0 0 0 14px rgba(23,115,74,0)}100%{box-shadow:0 0 0 1px #9bd3b5 inset}}
-@keyframes game-drain{0%,100%{background:transparent}30%{background:#fdf1dc}}
+@keyframes game-drain{0%,100%{background:transparent}30%{background:var(--warn-bg)}}
 @keyframes game-pop{0%{stroke-width:4}40%{stroke-width:7}100%{stroke-width:4}}
 .checks-anchor{position:relative}
 .game-notes{position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);display:flex;justify-content:flex-end;pointer-events:none;z-index:40}
