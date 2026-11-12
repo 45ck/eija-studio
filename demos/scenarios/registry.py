@@ -103,6 +103,14 @@ SCENARIOS: tuple[Scenario, ...] = (
              "draws both models on one UML diagram, ranks each change by risk and shows what the kernel does differently "
              "for every fixture user. The reviewer predicts before each answer, catches the deleted path, asks for a "
              "change, rejects the step, reviews again and builds the result. Nothing is approved or applied."),
+    Scenario("playide_kernel_rules", "New in the kernel: rules you draw, the kernel enforces", "recorded", (),
+             "A library loan with the November 2026 kernel features switched on (a variant written under .tmp/, no "
+             "shipped pack changes): CheckOut [renewals <= 3] on the diagram and in the permissions table (ADR-0234), Return "
+             "leaving two states (ADR-0232), only a Member starts a loan (ADR-0231), a four-eyes law proved over every run "
+             "(ADR-0233), the built borrower reference (ADR-0235) and the LateReturn signal that starts a fine (ADR-0242). "
+             "The app is built and its conformance suite passes. Then two shipped templates: the refund desk's composite "
+             "state and after(2 days) timer (ADR-0240, ADR-0237) and the AI ops window that locks its target (ADR-0241). "
+             "Nothing is approved or applied."),
     Scenario("agent_change_review","Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "

@@ -156,6 +156,12 @@ We want engineering to be something you want to come back to. Enjoyment and bett
 
 Fixture actors, local records and inspected recordings. The normal source-review gate remains enforced; the longer clip does not establish legitimate owner review. [Checks, exact identities and limitations](docs/demos/assets/playide-react-20261012/manifest.json) · [Post-restart native frame](docs/assets/readme/renewal-after-restart-20261012.png).
 
+### New in the kernel · 3:02 · 12 November 2026
+
+[![Watch guards over values, four eyes, checked references, signals between workflows, composite states, timers and linked objects in PlayIDE](docs/demos/assets/playide-kernel-20261112/playide-kernel-rules-poster.png)](docs/demos/assets/playide-kernel-20261112/playide-kernel-rules.mp4)
+
+Rules a UML engineer draws and the kernel enforces: `CheckOut [renewals ≤ 3]`, one action from two states, who may start a record, a four-eyes law, a checked borrower reference and a `«signal»` that starts a fine in another workflow. The built app passes its conformance suite. Then composite states and `after(2 days)` on the refund desk, and `/ target.lock` on the AI ops deploy. The library loan has these rules switched on for the take; no shipped pack changes. [What is real and what is not shown](docs/demos/2026-11-12-PLAYIDE-KERNEL-RULES.md).
+
 <details>
 <summary>Earlier recording: RefundDesk recovery and C4 · 1:03 · 11 October 2026</summary>
 
@@ -227,9 +233,9 @@ The checklist is [issue #221](https://github.com/45ck/eija-studio/issues/221). I
 
 ## Watch the product tours
 
-These retained recordings show the actual application **before the newer exact-draft activation, Design + Play, live-trace and C4 work**. Their chat uses the labelled offline phrase reader. They are earlier demonstrations, not current release acceptance.
+The highlights and the start-from-a-sentence tour were re-recorded on 12 November 2026 from current `main`. The full tour is from 30 October 2026, before the exact-draft activation, Design + Play, live-trace and C4 work. Their chat uses the labelled offline phrase reader. They are demonstrations, not release acceptance.
 
-| Highlights · 4:04 | Start from a sentence · 4:52 | Full tour · 14:28 |
+| Highlights · 4:03 | Start from a sentence · 4:59 | Full tour · 14:28 |
 |---|---|---|
 | [![UML changes and their consequences](docs/demos/assets/playide-showcase/playide-highlights-poster.png)](docs/demos/assets/playide-showcase/playide-highlights.mp4) | [![Create a supported coffee-shop workflow](docs/demos/assets/playide-showcase/playide-greenfield-poster.png)](docs/demos/assets/playide-showcase/playide-greenfield.mp4) | [![Models, checks, screens and system views](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4) |
 | Review changes, discover a broken scenario and inspect a refusal. | A fixed-shape offline request produces a model you can inspect and edit. | Explore diagrams, permissions, templates and UML interchange. |

@@ -20,6 +20,8 @@ python -m demos run assurance_loop               # record demos/output/assurance
 python -m demos finish playide_showcase          # frame a take on a 1080p stage: demos/output/<key>.mp4 (ffmpeg)
 ```
 
+A scenario normally names a shipped `PACK`. One that needs a variant (for example kernel features no shipped pack uses yet) defines `PREPARE_PACK()`, which writes the pack under `.tmp/` and returns its folder; see `playide_kernel_rules`.
+
 `finish` only frames the take (scaled, rounded corners, shadow, gradient stage, H.264). It never cuts, speeds up or
 reorders it, and the `.webm` stays the evidence the manifest hashes. Zooms (`Scene.zoom`), chapter chips
 (`Scene.chapter`) and captions are recorded live by the scenario. The showcase's storyboard is
