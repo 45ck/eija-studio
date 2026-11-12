@@ -18,17 +18,17 @@
 .review-items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .review-item{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:.88rem}
 .review-item.risk-high{border-left-color:var(--bad)}
-.review-item.risk-medium{border-left-color:#c27c0e}
+.review-item.risk-medium{border-left-color:var(--warn-line)}
 .review-item.risk-low{border-left-color:var(--state-line)}
 .review-item.ok{box-shadow:inset 0 0 0 1px var(--ok)}
-.review-item.concern{box-shadow:inset 0 0 0 1px #c27c0e}
+.review-item.concern{box-shadow:inset 0 0 0 1px var(--warn-line)}
 .review-item p{margin:0}
 .review-item-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .review-item-head strong{flex:1;min-width:12em}
 .review-item-head .show{padding:2px 9px;font-size:.78rem;min-height:24px}
 .risk,.change{font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 7px;border-radius:999px}
 .risk.high{background:var(--bad-bg);color:var(--bad)}
-.risk.medium{background:#fdf4e3;color:var(--warn)}
+.risk.medium{background:var(--warn-bg);color:var(--warn)}
 .risk.low{background:var(--state);color:var(--accent)}
 .change{background:var(--busy-bg);color:var(--muted)}
 .change.added{color:var(--ok)}
@@ -48,7 +48,7 @@
 .flip.now-refused{color:var(--bad)}
 .verdict-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .verdict-tools button[aria-pressed="true"]{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);font-weight:600}
-.review-item.concern .verdict-tools button[aria-pressed="true"]{background:#fdf4e3;border-color:#c27c0e;color:var(--warn)}
+.review-item.concern .verdict-tools button[aria-pressed="true"]{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn)}
 .review-item label{display:flex;flex-direction:column;gap:3px;color:var(--muted)}
 .review-item textarea{font:inherit;font-size:.86rem;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
 .review-summary{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel)}
