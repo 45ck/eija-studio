@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/data.py#check_values
   title: domain/data.py
   hash_method: ast-v2
-  sha256: 1d4e03a363f5be62822ae07680920b0d00ad97149e2fb3a6488e2712226fd4b7
-notes_baseline: d471c7c96d07a8ad4db41b950a21711d441933cf5e298b49a7c2667ddef64d6b
+  sha256: 230a55cade3d687021b3ba424da8f41c1885bda7f5d7878371c268789017f946
+notes_baseline: 9fe02ddc558a6b513b203ef3a50f89365145dc51c2d7cf30cc6952a3aa1a8cc4
 ---
 
 # domain.data.check_values

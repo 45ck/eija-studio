@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/value_guards.py#points
   title: domain/value_guards.py
   hash_method: ast-v2
-  sha256: 566940b2926fbc96db5275003dbb03d9c3b72000a90c8039f4c4ad39316eecf2
-notes_baseline: d53f2ebe28e17f9b116f6a45084858b55a637cc51764f72db361b1b1c05ee574
+  sha256: 239a7daad7ce63241a1494d9088f98c43678a008191e5bdf7ea1254d8ccc7351
+notes_baseline: ed277e8011bf9dc53c8bebc3b84b651b615d7f2f16dcb3a1be0256f95610add8
 ---
 
 # domain.value_guards.points

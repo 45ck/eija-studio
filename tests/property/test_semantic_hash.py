@@ -88,16 +88,12 @@ def test_semantic_transactions_are_last_writer_wins(sources):
     assert normal_form(model) == normal_form(direct)
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "KERNEL FINDING (found by the deep profile): Transition rejects duplicate required_effects and duplicate "
-    "guards but accepts duplicate forbidden_effects, and semantic_hash sorts without de-duplicating. "
-    "forbidden_effects=['X'] and ['X', 'X'] mean the same but hash differently, so evidence for one model is "
-    "spuriously STALE for the other. Fail-safe, not a collision. Fix in a separate kernel change: reject the "
-    "duplicate (mirroring required_effects) or de-duplicate in semantic_hash."))
 @settings(max_examples=examples(60))
 @given(st.data())
 def test_duplicate_forbidden_effect_is_not_a_semantic_difference(data):
-    """A duplicated forbidden effect is either refused by the contract or hashes like the original."""
+    """A duplicated forbidden effect is either refused by the contract or hashes like the original. Was a strict
+    xfail (a kernel finding of the deep profile): the contract now refuses the duplicate, as it does a duplicate
+    required effect."""
     workflow = data.draw(workflows())
     index = data.draw(st.integers(0, len(workflow.transitions) - 1))
     forbidden = workflow.transitions[index].forbidden_effects
