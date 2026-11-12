@@ -1112,7 +1112,7 @@
       return;
     }
     if (ripple.error) { box.append(el("p", `${ripple.error.code || "ERROR"}: ${ripple.error.message}`, { class: "refusal" })); return; }
-    box.append(el("h4", ripple.agree ? "Ripple: every diagram still agrees" : "Ripple: the diagrams no longer agree", { class: ripple.agree ? "ok" : "bad" }));
+    box.append(el("h4", ripple.agree ? "Ripple: every diagram still agrees" : "Ripple: the diagrams no longer agree", { class: ripple.agree ? "ok" : "bad", "aria-level": "3" }));
     const list = el("ul", undefined, { class: "ripple-list" });
     for (const [key, name] of Object.entries(RIPPLE)) {
       for (const item of ripple.diagrams[key] || []) {
@@ -1133,7 +1133,7 @@
 
   function followOnList() {
     const wrap = el("div", undefined, { class: "follow-ons" });
-    wrap.append(el("h4", "AI follow-ons"),
+    wrap.append(el("h4", "AI follow-ons", { "aria-level": "3" }),
       el("p", `${ripple.provider}${ripple.live ? "" : " · offline fixture, not a live model"} · each re-checked by the server`, { class: "muted small" }));
     const list = el("ol");
     for (const f of ripple.follow_ons) {
@@ -2752,7 +2752,7 @@
 
   function effectsRequirements(box, report) {
     const trace = report.traceability, affected = trace.requirements.filter((item) => item.affected);
-    box.append(el("h4", `Requirements & laws · ${trace.coverage.status}`), el("p", `${affected.length} affected requirement(s) within declared links. Unmodeled dependencies remain unknown. ${trace.coverage.scope}`, { class: "muted small" }));
+    box.append(el("h4", `Requirements & laws · ${trace.coverage.status}`, { "aria-level": "3" }), el("p", `${affected.length} affected requirement(s) within declared links. Unmodeled dependencies remain unknown. ${trace.coverage.scope}`, { class: "muted small" }));
     const list = el("ul");
     for (const item of affected) {
       const li = el("li", `${item.id} · ${item.area} · current evidence ${item.observed_status}`);

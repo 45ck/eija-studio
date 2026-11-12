@@ -6,6 +6,7 @@
 .assurance-header{display:flex;justify-content:space-between;align-items:center;gap:18px}
 .assurance-header h2{margin:0;font-size:1.2rem}
 .assurance-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+.assurance-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .assurance-tools [aria-selected="true"],.assurance-aspects [aria-pressed="true"]{border-color:var(--accent);background:var(--busy-bg);color:var(--accent)}
 .assurance-layout{display:grid;grid-template-columns:225px minmax(0,1fr);gap:20px;margin:16px 0}
 .assurance-aspects{display:flex;flex-direction:column;gap:6px;align-self:start}

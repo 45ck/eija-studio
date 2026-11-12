@@ -179,12 +179,13 @@
   function init() {
     if (P || !window.PlayIDE || !$("assurance")) return;
     P = window.PlayIDE;
-    const dialog = $("assurance"), header = P.el("header", undefined, { class: "assurance-header" });
+    const dialog = $("assurance"), header = P.el("div", undefined, { class: "assurance-header" });
     header.append(P.el("h2", "Capabilities & requirements", { id: "assurance-title" }), button("Close", () => dialog.close(), { id: "assurance-close", "aria-label": "Close capabilities and requirements" }));
-    const tabs = P.el("div", undefined, { class: "assurance-tools", role: "tablist", "aria-label": "Assurance view" });
-    tabs.append(button("Capabilities", () => showSection("capabilities"), { id: "assurance-capabilities-tab", role: "tab", "aria-selected": "true" }),
-      button("Requirements & laws", () => showSection("requirements"), { id: "assurance-requirements-tab", role: "tab", "aria-selected": "false" }),
-      button("Refresh current subject", refresh, { id: "assurance-refresh" }));
+    const tabs = P.el("div", undefined, { class: "assurance-tools" });
+    const tablist = P.el("div", undefined, { class: "assurance-tabs", role: "tablist", "aria-label": "Assurance view" });
+    tablist.append(button("Capabilities", () => showSection("capabilities"), { id: "assurance-capabilities-tab", role: "tab", "aria-selected": "true" }),
+      button("Requirements & laws", () => showSection("requirements"), { id: "assurance-requirements-tab", role: "tab", "aria-selected": "false" }));
+    tabs.append(tablist, button("Refresh current subject", refresh, { id: "assurance-refresh" }));
     dialog.append(header, P.el("p", "SOURCE_REVIEW_REQUIRED", { id: "assurance-source-status", class: "assurance-source required" }), tabs,
       P.el("p", "", { id: "assurance-status", role: "status", "aria-live": "polite" }),
       P.el("div", undefined, { id: "assurance-content", class: "assurance-content" }),
