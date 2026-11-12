@@ -78,7 +78,7 @@ def _observed(chart: Any, case: dict[str, Any], actors: dict[str, dict[str, Any]
     machine = chart(model=Record(), start_value=scxml_id(case["state"]))
     machine.send(scxml_id(case["action"]), **event_data(actors.get(case["actor"]), case.get("expected_version", 0),
                                                         case.get("values"), attributes, case.get("waited", waited), waited > 0))
-    current = sorted(names.get(s.id, s.id) for s in machine.configuration)
+    current = sorted(names[s.id] for s in machine.configuration if s.id in names)  # plain states; composites hold them
     return {"state": current[0] if len(current) == 1 else current, "version": machine.model.version,
             "effects": list(machine.model.effects)}
 
@@ -93,7 +93,7 @@ def compare(pack: Pack, model: Workflow | None = None, document: str | None = No
     names = {scxml_id(s): s for s in model.states}
     actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
     fresh = chart()
-    initial = sorted(names.get(s.id, s.id) for s in fresh.configuration)
+    initial = sorted(names[s.id] for s in fresh.configuration if s.id in names)
     disagreements = []
     if initial != [model.initial_state]:
         disagreements.append({"check": "initial", "expected": model.initial_state, "observed": initial})

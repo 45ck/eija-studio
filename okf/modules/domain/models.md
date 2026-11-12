@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: 028589c898b01be609e3cb08248fa98ab8a0ba2b41ae15e569f41493b570a67c
-notes_baseline: a750b32c86ad75707228eaa52611a4af2907bd0160dba590e81ced391dbaa063
+  sha256: d4cd150cc588fb5f34f57ced6a84e673b3acc524803945375af81a92b819e52c
+notes_baseline: 3eedeca11f1efeb32e629edfe2f3c18dc195829cfc8fe1a466cf424f54a219b6
 ---
 
 # domain.models
@@ -36,6 +36,7 @@ _The source carries no module docstring._
 * [`Alternative`](/symbols/domain/models/Alternative.md) (class) - no docstring
 * [`BASE_GUARDS`](/symbols/domain/models/BASE_GUARDS.md) (constant) - no docstring
 * [`Comparison`](/symbols/domain/models/Comparison.md) (type-alias) - no docstring
+* [`Composite`](/symbols/domain/models/Composite.md) (class) - A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the child a t…
 * [`Contract`](/symbols/domain/models/Contract.md) (class) - no docstring
 * [`Delay`](/symbols/domain/models/Delay.md) (class) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been i…
 * [`DomainError`](/symbols/domain/models/DomainError.md) (class) - Stable error code: never expose provider secrets or arbitrary exception text.
@@ -153,6 +154,7 @@ _No curated notes yet._
 * [domain.models.Alternative](/symbols/domain/models/Alternative.md) - `class Alternative(Contract)` in `domain/models`.
 * [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
 * [domain.models.Comparison](/symbols/domain/models/Comparison.md) - Type alias `Comparison` in `domain/models`.
+* [domain.models.Composite](/symbols/domain/models/Composite.md) - A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the child a transition into the group enters first.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.Delay.due](/symbols/domain/models/Delay.due.md) - `def due(self, elapsed: float | None) -> bool` in `domain/models`.
 * [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
@@ -179,9 +181,14 @@ _No curated notes yet._
 * [domain.models.ValueGuard.comparable](/symbols/domain/models/ValueGuard.comparable.md) - `def comparable(self) -> ValueGuard` in `domain/models`.
 * [domain.models.ValueGuard.holds](/symbols/domain/models/ValueGuard.holds.md) - `def holds(self, values: dict[str, Any]) -> bool` in `domain/models`.
 * [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
+* [domain.models.Workflow.ancestors](/symbols/domain/models/Workflow.ancestors.md) - The composites holding a state or composite, innermost first.
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
+* [domain.models.Workflow.composite](/symbols/domain/models/Workflow.composite.md) - `def composite(self, name: str) -> Composite | None` in `domain/models`.
+* [domain.models.Workflow.entry](/symbols/domain/models/Workflow.entry.md) - The plain state a transition into `name` enters: a composite's initial child, followed down.
+* [domain.models.Workflow.leaves](/symbols/domain/models/Workflow.leaves.md) - The plain states inside a composite, in model order; a plain state is its own only leaf.
 * [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.models.Workflow.parent](/symbols/domain/models/Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.
 * [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…

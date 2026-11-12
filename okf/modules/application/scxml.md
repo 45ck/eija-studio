@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py
   title: application/scxml.py
   hash_method: ast-api-v1
-  sha256: 670bdb8369295f0325efff15dc7f15da04e747781540b697336b4e840a23475a
-notes_baseline: 10099af15af59cefe705a670b2dfdfbb5c5752b4131e36b1fc0ff3fbf4a1f7e6
+  sha256: f139140de296fae175390a1c6d6063227b83d0a07e1d207522549d64a8b80954
+notes_baseline: a398f20e50464e89f1bce20f6f08d8d3cab0d79ad0504b6f45399f7c88e91d85
 ---
 
 # application.scxml
@@ -39,7 +39,10 @@ case of the app oracle (ADR-0150) on the exported chart and requires the same ou
 The export is a projection of one run-to-completion step of `runtime.execute`, not a second interpreter that anything
 runs in production. What it keeps and what it leaves to the kernel:
 
-* A state is an atomic `<state>`; the initial state is the chart's `initial`.
+* A state is an atomic `<state>`; the initial state is the chart's `initial`. A composite state (ADR-0240) is a
+  compound `<state>` holding its children, with its initial child as `initial`. An action that leaves every state
+  inside a composite is carried once, on the composite, so the engine's own hierarchy decides it, and the differential
+  checks that against the kernel's flat machine.
 * An action is an event. A transition fires on its action's event from its source state only (`state_equals`).
 * The actor is resolved by whoever sends the event, as the kernel's `UnitOfWork.actor` port does, and travels in the
   event data (`event_data`). `actor_active`, `role_current` and `actor_assigned` (when the transition has it) become
@@ -71,6 +74,7 @@ Pure: no IO, no clock. The same pack and model always give the same bytes.
 * [`NAMESPACE`](/symbols/application/scxml/NAMESPACE.md) (constant) - no docstring
 * [`event_data`](/symbols/application/scxml/event_data.md) (function) - What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, the record's…
 * [`guard_condition`](/symbols/application/scxml/guard_condition.md) (function) - The transition's `cond`: the actor checks of `runtime.check_actor`, its guards over record values and the version check…
+* [`hoisted`](/symbols/application/scxml/hoisted.md) (function) - The transitions each state or composite carries in the chart.
 * [`scxml_id`](/symbols/application/scxml/scxml_id.md) (function) - An XML/SCXML-safe id for a state or event name.
 * [`to_scxml`](/symbols/application/scxml/to_scxml.md) (function) - The model as an SCXML document.
 
@@ -99,6 +103,7 @@ _No curated notes yet._
 * [application.scxml.NAMESPACE](/symbols/application/scxml/NAMESPACE.md) - Constant `NAMESPACE` in `application/scxml`.
 * [application.scxml.event_data](/symbols/application/scxml/event_data.md) - What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, the record's value of each guarded attribute in `attr…
 * [application.scxml.guard_condition](/symbols/application/scxml/guard_condition.md) - The transition's `cond`: the actor checks of `runtime.check_actor`, its guards over record values and the version check, over the event data.
+* [application.scxml.hoisted](/symbols/application/scxml/hoisted.md) - The transitions each state or composite carries in the chart.
 * [application.scxml.scxml_id](/symbols/application/scxml/scxml_id.md) - An XML/SCXML-safe id for a state or event name.
 * [application.scxml.to_scxml](/symbols/application/scxml/to_scxml.md) - The model as an SCXML document.
 <!-- okf:generated:end links -->

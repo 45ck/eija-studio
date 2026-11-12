@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 12 November 2026: composite states
+
+- A workflow may group its states into UML composite states, nested to any depth ([ADR-0240](docs/adr/0240-composite-states.md), issue #93 item 3). The kernel still runs the flat machine, so the grouping never changes what a step does.
+- The SCXML chart nests the states and carries an action that leaves every state of a composite once, on the composite. The differential checks the engine's hierarchy against the kernel and catches a chart that carries it on the wrong composite.
+- Mermaid, PlantUML and DOT draw composites as boxes, and so does PlayIDE's state machine, which lays each composite's states out together. The diff reports regrouping, and renaming or removing a state keeps its composite coherent.
+- The refund desk groups its states into `Deciding` and `PayingOut`.
+
 ### 12 November 2026: time events in the kernel
 
 - A transition may carry UML's `after(2 days)` ([ADR-0237](docs/adr/0237-time-events.md), issue #93 item 2). The kernel refuses the step with `TIMER_NOT_DUE` until the record has been in its source state that long, reading the time through a new `UnitOfWork.elapsed` port; an unknown time is never due.

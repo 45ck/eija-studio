@@ -61,6 +61,7 @@ class Workflow <<value-object>> {
   +str initial_state
   +tuple<U+003C>str> states
   +tuple<U+003C>str> initiators
+  +tuple<U+003C>Composite> composites
 }
 enum Guard {
   actor_active

@@ -163,6 +163,37 @@ class Transition(Contract):
         return self
 
 
+def _is_tree(states: tuple[str, ...], composites: tuple[Composite, ...]) -> bool:
+    """Composite names are new and unique, each holds known, distinct children including its initial one, each state or
+    composite has at most one parent, and no composite holds itself. True when there are none."""
+    names = [c.name for c in composites]
+    return (_distinct(names) and not set(names) & set(states) and _known_children(states, composites)
+            and _acyclic({child: c.name for c in composites for child in c.states}))
+
+
+def _distinct(items: list[str]) -> bool:
+    return len(set(items)) == len(items)
+
+
+def _known_children(states: tuple[str, ...], composites: tuple[Composite, ...]) -> bool:
+    """Each child is a state or a composite, held by one composite only, and each composite's initial is its child."""
+    children = [child for c in composites for child in c.states]
+    known = set(states) | {c.name for c in composites}
+    return _distinct(children) and set(children) <= known and all(c.initial in c.states for c in composites)
+
+
+def _acyclic(parent: dict[str, str]) -> bool:
+    """No chain of parents comes back to where it started."""
+    for start in parent:
+        seen, node = {start}, start
+        while node in parent:
+            node = parent[node]
+            if node in seen:
+                return False
+            seen.add(node)
+    return True
+
+
 def guard_keys(conditions: tuple[ValueGuard, ...]) -> frozenset[str]:
     """Value guards as a set compared by their JSON, as the semantic hash compares them. Pydantic equality would make
     ``[x = true]`` equal ``[x = 1]`` (``True == 1`` in Python), though no record value satisfies both."""
@@ -175,6 +206,16 @@ def _shape(t: Transition) -> tuple[Any, ...]:
             guard_keys(t.conditions), t.after)
 
 
+class Composite(Contract):
+    """A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the
+    child a transition into the group enters first. A record is always in exactly one plain state; the composite is the
+    set of states inside it. The kernel runs the flat machine, so a composite never changes what a step does. A
+    transition the group's states all share is drawn once from the group, and SCXML gets a nested `<state>`."""
+    name: str = Field(min_length=1, max_length=60)
+    states: tuple[str, ...] = Field(min_length=1, max_length=32)  # its children: states or other composites
+    initial: str = Field(min_length=1, max_length=60)
+
+
 class Workflow(Contract):
     schema_version: Literal["eija.workflow.v1"] = "eija.workflow.v1"
     id: str = Field(pattern=r"^[a-z][a-z0-9-]{0,39}$")  # the id of the domain pack the workflow belongs to
@@ -184,12 +225,16 @@ class Workflow(Contract):
     # Roles that may start a record (ADR-0231, issue #142). Empty means any active actor, as before: an empty tuple is
     # left out of every dump, so models that do not name initiators keep their exact bytes and hashes.
     initiators: tuple[str, ...] = Field(default=(), max_length=16)
+    # Composite states (ADR-0240). Empty is left out of every dump, so flat models keep their exact bytes and hashes.
+    composites: tuple[Composite, ...] = Field(default=(), max_length=16)
 
     @model_serializer(mode="wrap")
     def _omit_open_start(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
         if not self.initiators:
             data.pop("initiators", None)
+        if not self.composites:
+            data.pop("composites", None)
         return data
 
     @model_validator(mode="after")
@@ -207,9 +252,44 @@ class Workflow(Contract):
             if t.id in ids or (t.from_state, t.action) in keys or shapes.setdefault(t.action, _shape(t)) != _shape(t):
                 raise ValueError("Duplicate or ambiguous transition/action")
             ids.add(t.id); keys.add((t.from_state, t.action))
+        return self._grouped()
+
+    def _grouped(self) -> Workflow:
+        """Initiators are distinct and composite states form a tree (ADR-0231, ADR-0240)."""
         if len(set(self.initiators)) != len(self.initiators):
             raise ValueError("Duplicate initiator role")
+        if not _is_tree(self.states, self.composites):
+            raise ValueError("Composite states must form a tree over the states")
         return self
+
+    def composite(self, name: str) -> Composite | None:
+        return next((c for c in self.composites if c.name == name), None)
+
+    def parent(self, name: str) -> str | None:
+        """The composite that directly holds a state or composite, or None at the top level."""
+        return next((c.name for c in self.composites if name in c.states), None)
+
+    def ancestors(self, name: str) -> tuple[str, ...]:
+        """The composites holding a state or composite, innermost first."""
+        found: list[str] = []
+        parent = self.parent(name)
+        while parent is not None:
+            found.append(parent)
+            parent = self.parent(parent)
+        return tuple(found)
+
+    def leaves(self, name: str) -> tuple[str, ...]:
+        """The plain states inside a composite, in model order; a plain state is its own only leaf."""
+        group = self.composite(name)
+        if group is None:
+            return (name,) if name in self.states else ()
+        inside = {leaf for child in group.states for leaf in self.leaves(child)}
+        return tuple(s for s in self.states if s in inside)
+
+    def entry(self, name: str) -> str:
+        """The plain state a transition into `name` enters: a composite's initial child, followed down."""
+        group = self.composite(name)
+        return name if group is None else self.entry(group.initial)
 
     def transition_for(self, action: str, state: str | None = None) -> Transition | None:
         """The transition ``action`` takes from ``state``; without a state, or when it does not leave that state,
@@ -235,6 +315,9 @@ class Workflow(Contract):
         data["transitions"] = sorted(data["transitions"], key=lambda x: x["id"])
         if "initiators" in data:  # who may start a record is a set (ADR-0231); absent when empty, so old hashes hold
             data["initiators"] = sorted(data["initiators"])
+        if "composites" in data:  # a set of groups, each over a set of children (ADR-0240); absent when empty
+            data["composites"] = sorted(({**c, "states": sorted(c["states"])} for c in data["composites"]),
+                                        key=lambda c: c["name"])
         for t in data["transitions"]:
             for key in ("guards", "required_effects", "forbidden_effects"):
                 t[key] = sorted(t[key])

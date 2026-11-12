@@ -122,3 +122,4 @@
 * [ADR-0237: Time events on transitions](0237-time-events.md) - Issue #93, item 2.
 * [ADR-0238: Integers in request contracts are JSON integers](0238-json-integers-in-request-contracts.md) - `contracts/*.schema.json` declare integer fields as `"type": "integer"`.
 * [ADR-0239: Verify value-guard representatives by property and mutation, and fix what that found](0239-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
+* [ADR-0240: Composite states](0240-composite-states.md) - Issue #93, item 3.

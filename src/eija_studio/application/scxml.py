@@ -8,7 +8,10 @@ case of the app oracle (ADR-0150) on the exported chart and requires the same ou
 The export is a projection of one run-to-completion step of `runtime.execute`, not a second interpreter that anything
 runs in production. What it keeps and what it leaves to the kernel:
 
-* A state is an atomic `<state>`; the initial state is the chart's `initial`.
+* A state is an atomic `<state>`; the initial state is the chart's `initial`. A composite state (ADR-0240) is a
+  compound `<state>` holding its children, with its initial child as `initial`. An action that leaves every state
+  inside a composite is carried once, on the composite, so the engine's own hierarchy decides it, and the differential
+  checks that against the kernel's flat machine.
 * An action is an event. A transition fires on its action's event from its source state only (`state_equals`).
 * The actor is resolved by whoever sends the event, as the kernel's `UnitOfWork.actor` port does, and travels in the
   event data (`event_data`). `actor_active`, `role_current` and `actor_assigned` (when the transition has it) become
@@ -108,6 +111,64 @@ def _transition(parent: ET.Element, transition: Transition) -> None:
         ET.SubElement(element, "assign", {"location": "effects", "expr": f"effects + [{_literal(effect)}]"})
 
 
+def hoisted(model: Workflow) -> dict[str, list[Transition]]:
+    """The transitions each state or composite carries in the chart. Where one action leaves every state inside a
+    composite (ADR-0232 makes those transitions alike but for their source), the chart carries it once, on the
+    composite, as UML draws it (ADR-0240). Larger composites are tried first, so the outermost group that fits wins."""
+    carried: dict[str, list[Transition]] = {}
+    groups = sorted(model.composites, key=lambda c: (-len(model.leaves(c.name)), c.name))
+    for action in sorted({t.action for t in model.transitions}):
+        for name, t in _carriers(model, groups, action):
+            carried.setdefault(name, []).append(t)
+    return {name: sorted(ts, key=lambda t: t.id) for name, ts in carried.items()}
+
+
+def _carriers(model: Workflow, groups: list[Any], action: str) -> list[tuple[str, Transition]]:
+    """Where one action's transitions sit in the chart: on each composite it leaves entirely, else on its source."""
+    left = {t.from_state: t for t in sorted((t for t in model.transitions if t.action == action), key=lambda t: t.id)}
+    found: list[tuple[str, Transition]] = []
+    for group in groups:
+        inside = model.leaves(group.name)
+        if _fits(inside, left):
+            found.append((group.name, left[inside[0]]))
+            for s in inside:
+                del left[s]
+    return found + list(left.items())
+
+
+def _fits(inside: tuple[str, ...], left: dict[str, Transition]) -> bool:
+    """Whether one action leaves every state of a composite, by transitions alike but for id and source."""
+    return bool(inside) and all(s in left for s in inside) and _alike([left[s] for s in inside])
+
+
+def _alike(transitions: list[Transition]) -> bool:
+    """Whether the transitions are the same step but for id and source, effects in the same order included: the
+    model compares effects as sets, but the kernel performs them in the order each transition declares."""
+    shapes = [t.model_dump(mode="json", exclude={"id", "from_state"}) for t in transitions]
+    return all(shape == shapes[0] for shape in shapes)
+
+
+def _top_level(model: Workflow) -> list[str]:
+    """States and composites at the top of the chart, in the order their first state appears in the model."""
+    tops: list[str] = []
+    for state in model.states:
+        top = (model.ancestors(state) or (state,))[-1]
+        if top not in tops:
+            tops.append(top)
+    return tops
+
+
+def _element(parent: ET.Element, model: Workflow, name: str, leaving: dict[str, list[Transition]]) -> None:
+    """One `<state>`: a plain state, or a composite holding its children with its initial child (ADR-0240)."""
+    group = model.composite(name)
+    attributes = {"id": scxml_id(name)} | ({"initial": scxml_id(group.initial)} if group else {})
+    element = ET.SubElement(parent, "state", attributes)
+    for transition in leaving.get(name, []):
+        _transition(element, transition)
+    for child in group.states if group else ():
+        _element(element, model, child, leaving)
+
+
 def to_scxml(pack: Pack, model: Workflow | None = None) -> str:
     """The model as an SCXML document. Refuses a model the protected policy blocks, as `eija build` does."""
     model = model if model is not None else pack.model
@@ -122,10 +183,9 @@ def to_scxml(pack: Pack, model: Workflow | None = None) -> str:
     datamodel = ET.SubElement(root, "datamodel")
     ET.SubElement(datamodel, "data", {"id": "version", "expr": "0"})
     ET.SubElement(datamodel, "data", {"id": "effects", "expr": "[]"})
-    for state in model.states:
-        element = ET.SubElement(root, "state", {"id": scxml_id(state)})
-        for transition in sorted((t for t in model.transitions if t.from_state == state), key=lambda t: t.id):
-            _transition(element, transition)
+    leaving = hoisted(model)
+    for name in _top_level(model):
+        _element(root, model, name, leaving)
     ET.indent(root, space="  ")
     note = (f"Generated by EIJA ({FORMAT}) from pack {pack.id} {pack.pack.version}, model {model.semantic_hash}. "
             "Do not edit: change the model and export again.").replace("--", "- -")  # "--" may not appear in a comment

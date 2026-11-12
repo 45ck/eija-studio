@@ -60,7 +60,8 @@
       const key = `${t.id} ${t.from_state} ${t.to_state}`;
       if (!seen.has(key)) { seen.add(key); transitions.push(t); }
     }
-    return { states: [...new Set(models.flatMap((w) => w.states))], initials: [...new Set(models.map((w) => w.initial_state))], transitions };
+    return { states: [...new Set(models.flatMap((w) => w.states))], initials: [...new Set(models.map((w) => w.initial_state))], transitions,
+      composites: models[models.length - 1].composites || [] };
   }
 
   // The state machine runs left to right, or top to bottom when that draws it clearly larger in the canvas: on a laptop
@@ -81,12 +82,19 @@
   }
 
   function laidOut(shape, rankdir) {
-    const g = new dagre.graphlib.Graph({ multigraph: true });
+    const grouped = shape.composites.length > 0; // a flat machine is laid out exactly as before
+    const g = new dagre.graphlib.Graph({ multigraph: true, compound: grouped });
     g.setGraph(rankdir === "TB" ? { rankdir, nodesep: 60, ranksep: 70, edgesep: 30, marginx: 30, marginy: 30 }
       : { rankdir, nodesep: 60, ranksep: 120, edgesep: 30, marginx: 30, marginy: 30 });
     g.setDefaultEdgeLabel(() => ({}));
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
     for (const s of shape.states) g.setNode(s, { ...STATE });
+    // Composite states (ADR-0240) are dagre clusters, so the states each holds are laid out together inside its box.
+    for (const c of shape.composites) g.setNode("composite:" + c.name, {});
+    for (const c of shape.composites) for (const child of c.states) {
+      const id = shape.composites.some((k) => k.name === child) ? "composite:" + child : child;
+      if (g.hasNode(id)) g.setParent(id, "composite:" + c.name);
+    }
     for (const s of shape.initials) g.setEdge("__initial", s, {}, s);
     // Each label is laid out at its real size, centred on its edge, so dagre leaves room for it: the labels of a
     // back-and-forth pair, or of two transitions between the same states, never overlap (#153). liftLabels puts
@@ -269,6 +277,22 @@
   function after(t) { return t.after ? ` after(${t.after.amount} ${t.after.amount === 1 ? t.after.unit.slice(0, -1) : t.after.unit})` : ""; }
   function label(t) { return `${t.action}${after(t)}${when(t) ? ` [${when(t)}]` : ""} [${t.role}]`; }
 
+  // Composite states (ADR-0240): one box around the states each holds, outermost first so it sits behind the inner ones.
+  // The kernel runs the flat machine; the box only shows the grouping, and it follows the states on the next redraw.
+  function composites(workflow, place) {
+    const groups = workflow.composites || [];
+    const byName = Object.fromEntries(groups.map((c) => [c.name, c]));
+    const leaves = (name) => byName[name] ? byName[name].states.flatMap(leaves) : [name];
+    const depth = (name) => { const up = groups.find((c) => c.states.includes(name)); return up ? 1 + depth(up.name) : 0; };
+    const height = (name) => byName[name] ? 1 + Math.max(...byName[name].states.map(height)) : 0;
+    return groups.map((c) => {
+      const at = leaves(c.name).map((s) => place.at("state:" + s)), pad = 14 * height(c.name);
+      const x = Math.min(...at.map((p) => p[0])) - pad, y = Math.min(...at.map((p) => p[1])) - pad - 18;
+      const w = Math.max(...at.map((p) => p[0])) + STATE.width + pad - x, h = Math.max(...at.map((p) => p[1])) + STATE.height + pad - y;
+      return { name: c.name, depth: depth(c.name), box: { position: [x, y], size: [w, h] } };
+    }).sort((a, b) => a.depth - b.depth);
+  }
+
   function draw(workflow) {
     const { Graph, InternalEvent } = maxgraph;
     const box = $("canvas");
@@ -282,10 +306,15 @@
     graph.getPlugin("SelectionHandler").scrollOnMove = false; // a state dropped near the edge stays there; the view does not slide to show all of it
     graph.setTooltips(true);
     graph.getTooltipForCell = (cell) => tooltip(cell);
-    graph.isCellMovable = (cell) => cell.isVertex(); // states and the initial dot move; edges follow
+    const boxed = (cell) => cell.id && cell.id.startsWith("composite:");
+    graph.isCellMovable = (cell) => cell.isVertex() && !boxed(cell); // states and the initial dot move; edges follow
+    graph.isCellSelectable = (cell) => !boxed(cell); // a composite state is drawn around its states (ADR-0240)
     const parent = graph.getDefaultParent(), place = arrange(workflow, layout(workflow)), cells = {};
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
     graph.batchUpdate(() => {
+      for (const c of composites(workflow, place)) graph.insertVertex({ parent, id: "composite:" + c.name, value: c.name, ...c.box,
+        style: { ...font, rounded: true, arcSize: 6, fillColor: "none", strokeColor: "#8c959f", dashed: false, fontSize: 12,
+          fontStyle: 1, verticalAlign: "top", align: "left", spacingLeft: 8, spacingTop: 4, resizable: false } });
       const initial = graph.insertVertex({ parent, id: "initial", position: place.at("initial"), size: [INITIAL, INITIAL],
         style: { shape: "ellipse", fillColor: "#1b2130", strokeColor: "#1b2130", resizable: false, editable: false } });
       for (const s of workflow.states) {
