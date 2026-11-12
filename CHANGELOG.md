@@ -4,10 +4,42 @@
 
 ### 12 November 2026: conformance that catches a wrong app
 
-- New `python -m verification.conformance.divergence` ([ADR-0237](docs/adr/0237-conformance-that-catches-divergence.md)). For every pack, it builds apps that are wrong in one model element (a transition, role, guard, effect, recipient, initial state, initiator, actor, attribute or association) or one of 23 seeded code faults. It reseals each app so a hash cannot catch it, and requires the app's own generated tests to fail. Before this change the generated suite missed, among others, a wrong initial state, a wrong notification recipient, records the app itself created, the actions it offers, and its HTTP API.
-- The generated conformance suite runs 14 tests, up from 9. New: who may start a record and where it starts; a run from a new record to every transition, with a second record that must stay untouched; the actions offered to each actor in each state; the rule table; and every case again over HTTP. Effects are checked with their recipients. Data cases now include text at its exact limit, every choice, and a record with only its required values.
+- New `python -m verification.conformance.divergence` ([ADR-0241](docs/adr/0241-conformance-that-catches-divergence.md)). For every pack, it builds apps that are wrong in one model element (a transition, role, guard, effect, recipient, initial state, initiator, actor, attribute or association) or one of 23 seeded code faults. It reseals each app so a hash cannot catch it, and requires the app's own generated tests to fail. Before this change the generated suite missed, among others, a wrong initial state, a wrong notification recipient, records the app itself created, the actions it offers, and its HTTP API.
+- The generated conformance suite runs 15 tests, up from 10. New: who may start a record and where it starts; a run from a new record to every transition, with a second record that must stay untouched; the actions offered to each actor in each state; the rule table; and every case again over HTTP. Effects are checked with their recipients. Data cases now include text at its exact limit, every choice, and a record with only its required values.
 - Fixed: each outbox row now names the record it is about (it held the case id `app`). Fixed: the generated app's rule table lists every state an action leaves (ADR-0232); before, it showed only one.
 - The repository's eight seeded app breaks in `tests/test_appgen.py` were each caught by the build-identity seal, not by a behavioural test. `tests/test_conformance_divergence.py` now checks behaviour, with a resealed control app that must pass.
+### 12 November 2026: composite states
+
+- A workflow may group its states into UML composite states, nested to any depth ([ADR-0240](docs/adr/0240-composite-states.md), issue #93 item 3). The kernel still runs the flat machine, so the grouping never changes what a step does.
+- The SCXML chart nests the states and carries an action that leaves every state of a composite once, on the composite. The differential checks the engine's hierarchy against the kernel and catches a chart that carries it on the wrong composite.
+- Mermaid, PlantUML and DOT draw composites as boxes, and so does PlayIDE's state machine, which lays each composite's states out together. The diff reports regrouping, and renaming or removing a state keeps its composite coherent.
+- The refund desk groups its states into `Deciding` and `PayingOut`.
+
+### 12 November 2026: time events in the kernel
+
+- A transition may carry UML's `after(2 days)` ([ADR-0237](docs/adr/0237-time-events.md), issue #93 item 2). The kernel refuses the step with `TIMER_NOT_DUE` until the record has been in its source state that long, reading the time through a new `UnitOfWork.elapsed` port; an unknown time is never due.
+- The refund desk's `EscalateStale` now waits two days in `AwaitingApproval`. A scenario step may `wait` first, and the refund desk's `timer-escalates` scenario shows the escalation refused after one day and taken after two.
+- The law proof lets time pass, Simulate has simulated time, the built app stores when each record entered its state and its conformance run gains a time-event test (ten tests now), and the SCXML chart carries the time as a `cond` term that the differential checks. The TLA+, SMT and BMC encodings refuse a timed model.
+
+### 12 November 2026: PlayIDE stands up to bad input, and big plans check fast
+
+- A UML file with an escape that names no character, a count of thousands of digits, an XMI bound such as `²` or a draw.io position that is not a number is now read or refused with a reason. Before, the import failed with an unexplained error ([ADR-0236](docs/adr/0236-hostile-input-and-plan-cost.md)).
+- A draft kept in the browser in a shape PlayIDE cannot read no longer stops the page from opening. It is set aside, not deleted, and the page says so. A saved `draft.json` in another shape is moved to `draft.unreadable.json` in the same way.
+- `eija` commands say what is wrong with a bad input: `FILE_NOT_FOUND`, `NOT_A_FILE`, `PERMISSION_DENIED`, `NOT_UTF8`, `INVALID_JSON` (with line and column), `SCHEMA_INVALID` (with each field, never its value) or `INPUT_TOO_DEEP`. `eija check-export` no longer prints a traceback for a file that is not a JSON object.
+- Checking a 64-step chat plan at the model's limits takes about 70 ms instead of 1.2 s, with the same verdicts.
+- How it was tested, and what was found: [HOSTILE-INPUT](docs/engineering/HOSTILE-INPUT.md).
+- Integer fields in requests now read as the published contracts say: `"5"` and `true` are refused where a number is expected, and `1.0` is accepted as `1` for a case version ([ADR-0238](docs/adr/0238-json-integers-in-request-contracts.md), issue #235).
+
+### 12 November 2026: value guards checked against every value
+
+- The property suite now generates value guards and initiators, and a new property says the values the law proof tries for a guard stand for every value a record can hold ([ADR-0239](docs/adr/0239-value-guard-representatives-verified.md)). It found five kernel defects, all fixed with fast-tier regression tests:
+  - guards over numbers at or beyond 2**53 had no value tried on the far side of the constant, so a law could read HOLDS without the proof trying the record that breaks it;
+  - two integer constants beyond the float range crashed the law proof with `OverflowError`;
+  - records accepted `NaN` and `Infinity` as numbers, and NaN satisfied every `≠` guard; they are now refused with `FIELD_TYPE`;
+  - `[x = true]` and `[x = 1]` counted as the same guard, so two transitions of one action could carry different guards (ADR-0232) and the ripple missed the change;
+  - a duplicate forbidden effect is now refused, like a duplicate required effect (was a known strict xfail).
+- `value_guards.py` and `laws.py` are mutation targets: 432 mutants, none survive. Their floors are in `quality/mutation/baseline.json`.
+- The full-tier `mutation_quick` gate was red on main: no test of the protected policy asserted the `UNDECLARED_INITIATOR` code (ADR-0231). A direct test now does, and every `policy.py` mutant is killed again.
 
 ### 11 November 2026: repo clean-up
 

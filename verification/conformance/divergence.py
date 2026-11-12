@@ -200,6 +200,12 @@ def _model_divergences(s: Subject) -> Iterator[tuple[str, str, str, Workflow | s
             yield "forbidden-effect-dropped", f"{ref}/forbidden:{effect}", f"{t.action} no longer forbids {effect}", _workflow(
                 model, lambda raw, tid=tid, v=effect: _transition(raw, tid).__setitem__(
                     "forbidden_effects", [e for e in _transition(raw, tid)["forbidden_effects"] if e != v]))
+        if t.after is not None:
+            yield "time-event-dropped", f"{ref}/after", f"{t.action} no longer waits {t.after.span}", _workflow(
+                model, lambda raw, tid=tid: _transition(raw, tid).pop("after"))
+            longer = min(10_000, t.after.amount * 2)
+            yield "time-event-lengthened", f"{ref}/after", f"{t.action} waits {longer} {t.after.unit}", _workflow(
+                model, lambda raw, tid=tid, v=longer: _transition(raw, tid)["after"].update(amount=v))
         for n, guard in enumerate(t.conditions):
             yield "value-guard-dropped", f"{ref}/when:{guard}", f"{t.action} no longer needs [{guard}]", _workflow(
                 model, lambda raw, tid=tid, i=n: _transition(raw, tid)["conditions"].pop(i))

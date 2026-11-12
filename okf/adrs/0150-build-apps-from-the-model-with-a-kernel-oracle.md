@@ -71,5 +71,5 @@ _No curated notes yet._
 * [ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check](/adrs/0165-executable-uml-on-the-eija-kernel.md) - PlayIDE draws six UML views (state machine, class, use case, screens, component, sequence) over one model (ADR-0093), and `eija build` turns the model into a r…
 * [ADR-0205: The class diagram says what is drawn and what is built](/adrs/0205-the-class-diagram-says-what-is-drawn-and-what-is-built.md) - The built app stores records of the record class only (ADR-0150, ADR-0153).
 * [ADR-0207: Each built app's API contract, written from the model](/adrs/0207-each-built-apps-api-contract-written-from-the-model.md) - The System lens (ADR-0203) draws each workflow's provided interface as its actions.
-* [ADR-0237: Conformance that catches a divergent app by behaviour](/adrs/0237-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
+* [ADR-0241: Conformance that catches a divergent app by behaviour](/adrs/0241-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
 <!-- okf:generated:end links -->

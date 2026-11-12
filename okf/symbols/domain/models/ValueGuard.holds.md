@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#ValueGuard.holds
   title: domain/models.py
   hash_method: ast-v2
-  sha256: b72771dc682877c7a0393ccaad002af674006fab5f87b83daa42e0ad1725d8c8
-notes_baseline: 10cd62c85a195640301c7f68eb5aa47286d50a5291b8b7fbeb8aff51a48c2261
+  sha256: 0abf4edce7fd81ee947d5e3a56cd01ddb74b756fef8aa3bd4d259791cd9c1747
+notes_baseline: 542d59b8f4aba727ed97bce77eb2066055f9aaa262d15e6bd768a7e9e8497ab0
 ---
 
 # domain.models.ValueGuard.holds

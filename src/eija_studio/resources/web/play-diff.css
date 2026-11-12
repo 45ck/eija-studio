@@ -24,13 +24,13 @@
 .diff-fields.diff-detail{width:auto;margin:2px 0 6px 1.6em;font-size:.8rem}
 .key{font-weight:600}
 .key.added,.diff-item.added .mark{color:var(--ok)}
-.key.changed,.key.moved,.diff-item.changed .mark,.diff-item.moved .mark{color:#8a5a08}
+.key.changed,.key.moved,.diff-item.changed .mark,.diff-item.moved .mark{color:var(--warn)}
 .key.removed,.diff-item.removed .mark{color:var(--bad)}
 .diff-list{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:4px}
 .diff-list li{display:flex}
 .diff-item{width:100%;align-content:start;display:grid;grid-template-columns:1.4em 1fr;gap:4px;text-align:left;padding:5px 8px;font-size:.84rem;border:0;border-left:3px solid var(--line);border-radius:0 6px 6px 0;background:var(--busy-bg)}
 .diff-item.added{border-left-color:var(--ok)}
-.diff-item.changed,.diff-item.moved{border-left-color:#c27c0e}
+.diff-item.changed,.diff-item.moved{border-left-color:var(--warn-line)}
 .diff-item.removed{border-left-color:var(--bad)}
 .diff-item.removed span:last-child{text-decoration:line-through;text-decoration-color:rgba(161,47,47,.5)}
 .diff-item[aria-current="true"]{background:var(--state);box-shadow:inset 0 0 0 1.5px var(--state-line)}
@@ -43,15 +43,15 @@
 .show-changes{display:inline-flex;align-items:center;gap:2px}
 .show-changes[hidden]{display:none}
 .show-changes[aria-pressed="true"]{background:var(--state);border-color:var(--state-line)}
-.show-changes .badge{display:inline-block;min-width:1.3em;margin-left:5px;padding:0 5px;border-radius:999px;background:#fdf1dc;color:#8a5a08;font-size:.7rem;line-height:1.35em;text-align:center}
+.show-changes .badge{font-variant-numeric:tabular-nums;display:inline-block;min-width:1.3em;margin-left:5px;padding:0 5px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:.7rem;line-height:1.35em;text-align:center}
 .diff-tip{white-space:pre-line}
 .diff-consider{margin:0 0 12px;padding:8px 10px;border-radius:8px;background:var(--busy-bg)}
 .diff-consider h3{margin:0 0 4px}
 .diff-consider ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:.84rem}
 .diff-consider .ok{color:var(--ok)}
-.diff-consider .warn{color:#8a5a08}
+.diff-consider .warn{color:var(--warn)}
 .diff-consider .bad{color:var(--bad);font-weight:600}
-.diff-consider button.link{border:0;background:none;padding:0;color:var(--accent,#3557d6);text-decoration:underline;font:inherit;cursor:pointer}
+.diff-consider button.link{border:0;background:none;padding:0;color:var(--accent);text-decoration:underline;font:inherit;cursor:pointer}
 .diff-item .who{margin-right:5px;vertical-align:1px}
 .diff-consider details ul{margin:4px 0 2px 1em;font-weight:400}
 .diff-consider summary{cursor:pointer}

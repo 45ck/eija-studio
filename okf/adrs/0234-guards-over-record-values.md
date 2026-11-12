@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0234-guards-over-record-values.md
   title: 0234-guards-over-record-values.md
   hash_method: lf-sha256-v1
-  sha256: d674a3b038edd56aa45773010b0a37a4ed26d99b622803bf377902b524c3acd3
-notes_baseline: f876508c61f12afa37e2596d7978bc5b5ef446c67e6225d96f840030a724e2ee
+  sha256: 90b0eb49e67ec42892175aad3f9bef31ac8cebb2c72e583925a990c6210e43b1
+notes_baseline: 8d0588e5b34d70ade10686d47d92196f8dbda0813656b95d93b539abbca006b0
 ---
 
 # ADR-0234: Guards over record values
@@ -56,6 +56,7 @@ notes_baseline: f876508c61f12afa37e2596d7978bc5b5ef446c67e6225d96f840030a724e2ee
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 12 November 2026: tests and permissions give the record values
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -67,4 +68,9 @@ _No curated notes yet._
 
 * [ADR-0153: Data models as UML class diagrams, checked in the built app](/adrs/0153-data-models-as-uml-class-diagrams.md) - Until now, records in a built app (ADR-0150) carried only a title, because the model had no data.
 * [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
+* [ADR-0233: Separation of duties](/adrs/0233-separation-of-duties.md) - Issue #149.
+
+## Referenced by
+
+* [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
 <!-- okf:generated:end links -->

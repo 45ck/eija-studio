@@ -17,7 +17,7 @@ from eija_studio.domain.data import DataModel, Entity
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack
 
-from .model import (ACTOR_KINDS, GENERATOR, PERSON_STEREOTYPES, Parsed, attribute_type, enumerations, export_report, multiplicity, terminals,
+from .model import (ACTOR_KINDS, GENERATOR, PERSON_STEREOTYPES, Parsed, attribute_type, character, enumerations, export_report, multiplicity, terminals,
                     transition_label, use_case_links)
 from .textual import read_body, read_relation, read_transition
 
@@ -34,7 +34,7 @@ def _text(text: str) -> str:
 
 
 def unescape(text: str) -> str:
-    return re.sub(r"<U\+([0-9A-Fa-f]{4,6})>", lambda m: chr(int(m.group(1), 16)), text)
+    return re.sub(r"<U\+([0-9A-Fa-f]{4,6})>", lambda m: character(int(m.group(1), 16)) or m.group(), text)
 
 
 def _alias(name: str, prefix: str) -> str:

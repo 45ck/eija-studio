@@ -1,4 +1,4 @@
-"""The generated conformance suite catches an app that stops matching its model, by behaviour alone (ADR-0237).
+"""The generated conformance suite catches an app that stops matching its model, by behaviour alone (ADR-0241).
 
 `verification.conformance.divergence` builds a real app that is wrong in one way, keeps the reviewed oracle, re-points
 only its identity fields and reseals the build identity, then runs the app's own generated tests. These tests run a
@@ -45,7 +45,7 @@ def test_identity_is_re_pointed_so_only_behaviour_can_fail():
     assert oracle["cases"] == reviewed["cases"] and oracle["create_cases"] == reviewed["create_cases"]
 
 
-# Each was MISSED before ADR-0237: the old suite seeded every record straight into a state, compared effect names only,
+# Each was MISSED before ADR-0241: the old suite seeded every record straight into a state, compared effect names only,
 # never started a record through the app, never asked what it offers, and never spoke HTTP.
 ONCE_MISSED = [
     ("library-loan", "initial-state-moved", ""),

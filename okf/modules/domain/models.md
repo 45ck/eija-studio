@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: b4794644351bd00203084f645bf596748c375b2b1390da862af65602545beaae
-notes_baseline: 694bf6ac47343e9860e5c809e0d70f3feb9576dab9f3f172efe6db6671c1400a
+  sha256: d4cd150cc588fb5f34f57ced6a84e673b3acc524803945375af81a92b819e52c
+notes_baseline: 3eedeca11f1efeb32e629edfe2f3c18dc195829cfc8fe1a466cf424f54a219b6
 ---
 
 # domain.models
@@ -36,22 +36,28 @@ _The source carries no module docstring._
 * [`Alternative`](/symbols/domain/models/Alternative.md) (class) - no docstring
 * [`BASE_GUARDS`](/symbols/domain/models/BASE_GUARDS.md) (constant) - no docstring
 * [`Comparison`](/symbols/domain/models/Comparison.md) (type-alias) - no docstring
+* [`Composite`](/symbols/domain/models/Composite.md) (class) - A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the child a t…
 * [`Contract`](/symbols/domain/models/Contract.md) (class) - no docstring
+* [`Delay`](/symbols/domain/models/Delay.md) (class) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been i…
 * [`DomainError`](/symbols/domain/models/DomainError.md) (class) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [`ExecuteCommand`](/symbols/domain/models/ExecuteCommand.md) (class) - no docstring
 * [`Guard`](/symbols/domain/models/Guard.md) (type-alias) - no docstring
+* [`JsonInt`](/symbols/domain/models/JsonInt.md) (type-alias) - no docstring
 * [`LayoutChange`](/symbols/domain/models/LayoutChange.md) (class) - no docstring
 * [`MEANING_ID`](/symbols/domain/models/MEANING_ID.md) (constant) - no docstring
 * [`OWNER`](/symbols/domain/models/OWNER.md) (constant) - no docstring
 * [`Principal`](/symbols/domain/models/Principal.md) (class) - no docstring
 * [`Proposal`](/symbols/domain/models/Proposal.md) (class) - no docstring
+* [`SECONDS`](/symbols/domain/models/SECONDS.md) (constant) - no docstring
 * [`SYMBOLS`](/symbols/domain/models/SYMBOLS.md) (constant) - no docstring
 * [`SemanticTransaction`](/symbols/domain/models/SemanticTransaction.md) (class) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
+* [`TimeUnit`](/symbols/domain/models/TimeUnit.md) (type-alias) - no docstring
 * [`Transition`](/symbols/domain/models/Transition.md) (class) - no docstring
 * [`ValueGuard`](/symbols/domain/models/ValueGuard.md) (class) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [`Workflow`](/symbols/domain/models/Workflow.md) (class) - no docstring
 * [`canonical`](/symbols/domain/models/canonical.md) (function) - no docstring
 * [`fingerprint`](/symbols/domain/models/fingerprint.md) (function) - no docstring
+* [`guard_keys`](/symbols/domain/models/guard_keys.md) (function) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 * [`iso_date`](/symbols/domain/models/iso_date.md) (function) - The date a YYYY-MM-DD string names, or None.
 <!-- okf:generated:end facts -->
 
@@ -148,10 +154,16 @@ _No curated notes yet._
 * [domain.models.Alternative](/symbols/domain/models/Alternative.md) - `class Alternative(Contract)` in `domain/models`.
 * [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
 * [domain.models.Comparison](/symbols/domain/models/Comparison.md) - Type alias `Comparison` in `domain/models`.
+* [domain.models.Composite](/symbols/domain/models/Composite.md) - A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the child a transition into the group enters first.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.Delay.due](/symbols/domain/models/Delay.due.md) - `def due(self, elapsed: float | None) -> bool` in `domain/models`.
+* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
+* [domain.models.Delay.seconds](/symbols/domain/models/Delay.seconds.md) - `def seconds(self) -> int` in `domain/models`.
+* [domain.models.Delay.span](/symbols/domain/models/Delay.span.md) - The duration in words: ``2 days``, ``1 hour``.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.Guard](/symbols/domain/models/Guard.md) - Type alias `Guard` in `domain/models`.
+* [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
 * [domain.models.MEANING_ID](/symbols/domain/models/MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
 * [domain.models.OWNER](/symbols/domain/models/OWNER.md) - Constant `OWNER` in `domain/models`.
@@ -159,20 +171,29 @@ _No curated notes yet._
 * [domain.models.Principal.require](/symbols/domain/models/Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.Proposal.unique](/symbols/domain/models/Proposal.unique.md) - `def unique(self) -> Proposal` in `domain/models`.
+* [domain.models.SECONDS](/symbols/domain/models/SECONDS.md) - Constant `SECONDS` in `domain/models`.
 * [domain.models.SYMBOLS](/symbols/domain/models/SYMBOLS.md) - Constant `SYMBOLS` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
+* [domain.models.TimeUnit](/symbols/domain/models/TimeUnit.md) - Type alias `TimeUnit` in `domain/models`.
 * [domain.models.Transition.admits](/symbols/domain/models/Transition.admits.md) - The first condition these record values fail, or None when the transition's conditions all hold.
 * [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
 * [domain.models.ValueGuard.comparable](/symbols/domain/models/ValueGuard.comparable.md) - `def comparable(self) -> ValueGuard` in `domain/models`.
 * [domain.models.ValueGuard.holds](/symbols/domain/models/ValueGuard.holds.md) - `def holds(self, values: dict[str, Any]) -> bool` in `domain/models`.
 * [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
+* [domain.models.Workflow.ancestors](/symbols/domain/models/Workflow.ancestors.md) - The composites holding a state or composite, innermost first.
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
+* [domain.models.Workflow.composite](/symbols/domain/models/Workflow.composite.md) - `def composite(self, name: str) -> Composite | None` in `domain/models`.
+* [domain.models.Workflow.entry](/symbols/domain/models/Workflow.entry.md) - The plain state a transition into `name` enters: a composite's initial child, followed down.
+* [domain.models.Workflow.leaves](/symbols/domain/models/Workflow.leaves.md) - The plain states inside a composite, in model order; a plain state is its own only leaf.
+* [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.models.Workflow.parent](/symbols/domain/models/Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.
 * [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…
 * [domain.models.canonical](/symbols/domain/models/canonical.md) - `def canonical(value: Any) -> str` in `domain/models`.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
+* [domain.models.guard_keys](/symbols/domain/models/guard_keys.md) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 * [domain.models.iso_date](/symbols/domain/models/iso_date.md) - The date a YYYY-MM-DD string names, or None.
 <!-- okf:generated:end links -->

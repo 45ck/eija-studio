@@ -60,7 +60,8 @@
       const key = `${t.id} ${t.from_state} ${t.to_state}`;
       if (!seen.has(key)) { seen.add(key); transitions.push(t); }
     }
-    return { states: [...new Set(models.flatMap((w) => w.states))], initials: [...new Set(models.map((w) => w.initial_state))], transitions };
+    return { states: [...new Set(models.flatMap((w) => w.states))], initials: [...new Set(models.map((w) => w.initial_state))], transitions,
+      composites: models[models.length - 1].composites || [] };
   }
 
   // The state machine runs left to right, or top to bottom when that draws it clearly larger in the canvas: on a laptop
@@ -81,12 +82,19 @@
   }
 
   function laidOut(shape, rankdir) {
-    const g = new dagre.graphlib.Graph({ multigraph: true });
+    const grouped = shape.composites.length > 0; // a flat machine is laid out exactly as before
+    const g = new dagre.graphlib.Graph({ multigraph: true, compound: grouped });
     g.setGraph(rankdir === "TB" ? { rankdir, nodesep: 60, ranksep: 70, edgesep: 30, marginx: 30, marginy: 30 }
       : { rankdir, nodesep: 60, ranksep: 120, edgesep: 30, marginx: 30, marginy: 30 });
     g.setDefaultEdgeLabel(() => ({}));
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
     for (const s of shape.states) g.setNode(s, { ...STATE });
+    // Composite states (ADR-0240) are dagre clusters, so the states each holds are laid out together inside its box.
+    for (const c of shape.composites) g.setNode("composite:" + c.name, {});
+    for (const c of shape.composites) for (const child of c.states) {
+      const id = shape.composites.some((k) => k.name === child) ? "composite:" + child : child;
+      if (g.hasNode(id)) g.setParent(id, "composite:" + c.name);
+    }
     for (const s of shape.initials) g.setEdge("__initial", s, {}, s);
     // Each label is laid out at its real size, centred on its edge, so dagre leaves room for it: the labels of a
     // back-and-forth pair, or of two transitions between the same states, never overlap (#153). liftLabels puts
@@ -266,7 +274,24 @@
   const SYMBOL = { eq: "=", ne: "≠", lt: "<", le: "≤", gt: ">", ge: "≥" };
   function condition(c) { return `${c.attribute} ${SYMBOL[c.op] || c.op} ${typeof c.value === "string" ? JSON.stringify(c.value) : c.value}`; }
   function when(t) { return (t.conditions || []).map(condition).join(" and "); }
-  function label(t) { return `${t.action}${when(t) ? ` [${when(t)}]` : ""} [${t.role}]`; }
+  function after(t) { return t.after ? ` after(${t.after.amount} ${t.after.amount === 1 ? t.after.unit.slice(0, -1) : t.after.unit})` : ""; }
+  function label(t) { return `${t.action}${after(t)}${when(t) ? ` [${when(t)}]` : ""} [${t.role}]`; }
+
+  // Composite states (ADR-0240): one box around the states each holds, outermost first so it sits behind the inner ones.
+  // The kernel runs the flat machine; the box only shows the grouping, and it follows the states on the next redraw.
+  function composites(workflow, place) {
+    const groups = workflow.composites || [];
+    const byName = Object.fromEntries(groups.map((c) => [c.name, c]));
+    const leaves = (name) => byName[name] ? byName[name].states.flatMap(leaves) : [name];
+    const depth = (name) => { const up = groups.find((c) => c.states.includes(name)); return up ? 1 + depth(up.name) : 0; };
+    const height = (name) => byName[name] ? 1 + Math.max(...byName[name].states.map(height)) : 0;
+    return groups.map((c) => {
+      const at = leaves(c.name).map((s) => place.at("state:" + s)), pad = 14 * height(c.name);
+      const x = Math.min(...at.map((p) => p[0])) - pad, y = Math.min(...at.map((p) => p[1])) - pad - 18;
+      const w = Math.max(...at.map((p) => p[0])) + STATE.width + pad - x, h = Math.max(...at.map((p) => p[1])) + STATE.height + pad - y;
+      return { name: c.name, depth: depth(c.name), box: { position: [x, y], size: [w, h] } };
+    }).sort((a, b) => a.depth - b.depth);
+  }
 
   function draw(workflow) {
     const { Graph, InternalEvent } = maxgraph;
@@ -281,10 +306,15 @@
     graph.getPlugin("SelectionHandler").scrollOnMove = false; // a state dropped near the edge stays there; the view does not slide to show all of it
     graph.setTooltips(true);
     graph.getTooltipForCell = (cell) => tooltip(cell);
-    graph.isCellMovable = (cell) => cell.isVertex(); // states and the initial dot move; edges follow
+    const boxed = (cell) => cell.id && cell.id.startsWith("composite:");
+    graph.isCellMovable = (cell) => cell.isVertex() && !boxed(cell); // states and the initial dot move; edges follow
+    graph.isCellSelectable = (cell) => !boxed(cell); // a composite state is drawn around its states (ADR-0240)
     const parent = graph.getDefaultParent(), place = arrange(workflow, layout(workflow)), cells = {};
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
     graph.batchUpdate(() => {
+      for (const c of composites(workflow, place)) graph.insertVertex({ parent, id: "composite:" + c.name, value: c.name, ...c.box,
+        style: { ...font, rounded: true, arcSize: 6, fillColor: "none", strokeColor: "#8c959f", dashed: false, fontSize: 12,
+          fontStyle: 1, verticalAlign: "top", align: "left", spacingLeft: 8, spacingTop: 4, resizable: false } });
       const initial = graph.insertVertex({ parent, id: "initial", position: place.at("initial"), size: [INITIAL, INITIAL],
         style: { shape: "ellipse", fillColor: "#1b2130", strokeColor: "#1b2130", resizable: false, editable: false } });
       for (const s of workflow.states) {
@@ -487,7 +517,9 @@
       }
     };
     fill("outline-states", model.states.map((s) => ["state:" + s, s + (s === model.initial_state ? " (initial)" : "")]));
-    fill("outline-transitions", model.transitions.map((t) => ["transition:" + t.id, label(t)]));
+    // An action that labels transitions from several states (ADR-0232) names the state each one leaves.
+    const several = (t) => model.transitions.filter((x) => x.action === t.action).length > 1;
+    fill("outline-transitions", model.transitions.map((t) => ["transition:" + t.id, label(t) + (several(t) ? ` from ${t.from_state}` : "")]));
     fill("outline-classes", data ? data.entities.map((e) => ["class:" + e.name, e.name + (e.name === data.record ? " «record»" : "")]) : []);
     if (!data) $("outline-classes").replaceChildren(el("li", "No data model yet", { class: "muted" }));
     // A role is an actor of the use case diagram: choosing one shows what it may do, its screens and its fixture
@@ -693,10 +725,10 @@
       // then each initiator is associated with it (issue #142, ADR-0231).
       const starters = new Set(model.initiators || []);
       const create = useCaseGraph.insertVertex({ parent, id: "uc:create", value: `Create ${data ? data.record : "record"}`, position: [boundary.x + 60, TOP - 4],
-        size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#ffffff", strokeColor: "#5b74d6", fontSize: 13 } });
+        size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", perimeter: "ellipsePerimeter", fillColor: "#ffffff", strokeColor: "#5b74d6", fontSize: 13 } });
       cases.forEach((t, i) => {
         cells[t.id] = useCaseGraph.insertVertex({ parent, id: "uc:" + t.id, value: changeMark(t.status) + t.action, position: [boundary.x + 60, rowY(i)],
-          size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#eef2ff", strokeColor: "#5b74d6", fontSize: 13, ...changeLook(t.status, "box") } });
+          size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", perimeter: "ellipsePerimeter", fillColor: "#eef2ff", strokeColor: "#5b74d6", fontSize: 13, ...changeLook(t.status, "box") } });
       });
       roles.forEach((role, i) => {
         const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
@@ -909,7 +941,7 @@
     const tools = el("div", undefined, { class: "plan-tools" });
     const preview = el("button", "Preview on the diagram", { type: "button", class: "primary" });
     preview.addEventListener("click", () => (plan.previewing ? leavePreview() : enterPreview()));
-    const review = el("button", "Review it", { type: "button", class: "review-it", title: "Review the previewed change: what changed, how risky, what the kernel does differently" });
+    const review = el("button", "Review the change", { type: "button", class: "review-it", title: "Review the previewed change: what changed, how risky, what the kernel does differently" });
     review.addEventListener("click", () => { if (!plan.previewing) enterPreview(); if (plan.previewing) showTab("review"); });
     tools.append(preview, review);
     const keep = el("button", "Review & activate", { type: "button", class: "plan-activate" });
@@ -1112,7 +1144,7 @@
       return;
     }
     if (ripple.error) { box.append(el("p", `${ripple.error.code || "ERROR"}: ${ripple.error.message}`, { class: "refusal" })); return; }
-    box.append(el("h4", ripple.agree ? "Ripple: every diagram still agrees" : "Ripple: the diagrams no longer agree", { class: ripple.agree ? "ok" : "bad" }));
+    box.append(el("h4", ripple.agree ? "Ripple: every diagram still agrees" : "Ripple: the diagrams no longer agree", { class: ripple.agree ? "ok" : "bad", "aria-level": "3" }));
     const list = el("ul", undefined, { class: "ripple-list" });
     for (const [key, name] of Object.entries(RIPPLE)) {
       for (const item of ripple.diagrams[key] || []) {
@@ -1133,7 +1165,7 @@
 
   function followOnList() {
     const wrap = el("div", undefined, { class: "follow-ons" });
-    wrap.append(el("h4", "AI follow-ons"),
+    wrap.append(el("h4", "AI follow-ons", { "aria-level": "3" }),
       el("p", `${ripple.provider}${ripple.live ? "" : " · offline fixture, not a live model"} · each re-checked by the server`, { class: "muted small" }));
     const list = el("ol");
     for (const f of ripple.follow_ons) {
@@ -1924,7 +1956,14 @@
       try {
         await loadComponents();
       } catch (error) {
-        box.replaceChildren(el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty" }));
+        // Below the lens bar, which floats over the top of the canvas; a screen problem says where to fix it.
+        const said = el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty under-bar" });
+        if (error.code === "SCREENS_BLOCKED") {
+          const open = el("button", "Fix them in Screens", { type: "button", class: "quiet" });
+          open.addEventListener("click", () => showTab("screens"));
+          said.append(" ", open);
+        }
+        box.replaceChildren(said);
         return;
       }
     }
@@ -2081,7 +2120,7 @@
     box.className = "a11y " + (a11y.failed ? "bad" : warned ? "warn" : "ok");
     box.open = Boolean(a11y.failed) || box.open;
     const summary = el("summary");
-    summary.append(el("span", a11y.failed ? "✗" : "✓", { class: "a11y-mark" }),
+    summary.append(el("span", a11y.failed ? "✗" : warned ? "⚠" : "✓", { class: "a11y-mark", "aria-hidden": "true" }),
       el("span", `Accessibility (${a11y.standard}): ${a11y.passed} of ${a11y.checks.length} checks pass` + (a11y.failed ? `, ${a11y.failed} fail` : "") + (warned ? `, ${warned} to look at` : "")));
     const list = el("ul", undefined, { class: "a11y-checks" });
     for (const c of a11y.checks) {
@@ -2152,10 +2191,10 @@
     const name = input(f.label, `Label for ${f.attribute}`, (v) => { f.label = v; changed(`relabel ${f.attribute}`); });
     name.placeholder = f.attribute;
     const preview = el("span", a ? (a.type === "choice" ? `one of ${a.choices.join(", ")}` : a.type) + (a.required ? " · required" : "") : "not in the record", { class: "muted small field-meta" });
-    const up = el("button", "↑", { type: "button", class: "quiet", "aria-label": `Move ${f.attribute} up` });
+    const up = el("button", "↑", { type: "button", class: "quiet", "aria-label": `Move ${f.attribute} up`, title: `Move ${f.attribute} up` });
     up.disabled = i === 0;
     up.addEventListener("click", () => moveField(i, i - 1));
-    const remove = el("button", "×", { type: "button", class: "quiet", "aria-label": `Remove ${f.attribute}` });
+    const remove = el("button", "×", { type: "button", class: "quiet", "aria-label": `Remove ${f.attribute}`, title: `Remove ${f.attribute}` });
     remove.addEventListener("click", () => { screen.fields = screen.fields.filter((_, j) => j !== i); changed(`remove ${f.attribute} from the ${screen.title} screen`); });
     li.append(grip, el("code", f.attribute), name, preview, up, remove);
     return li;
@@ -2623,6 +2662,32 @@
     renderSaveStatus();
   }
 
+  // Browser storage is untrusted: a draft written by an older page, cut short by a full disk, or edited by hand. The
+  // page reopens only a draft in the shape persist() writes. Any other draft is set aside under its own key, never
+  // deleted, and the page opens on the model in force, so one bad draft cannot stop it from opening on every reload.
+  const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+  const readableStep = (step) => isRecord(step) && isRecord(step.transaction) && typeof step.transaction.kind === "string";
+  const readablePlan = (p) => p == null || (isRecord(p) && Array.isArray(p.steps) && p.steps.every(readableStep)
+    && Array.isArray(p.accepted) && (p.uid === undefined || Number.isInteger(p.uid)));
+  const readableEntry = (entry) => isRecord(entry) && isRecord(entry.doc) && readablePlan(entry.doc.plan)
+    && (entry.doc.screens == null || isRecord(entry.doc.screens));
+  function readableDraft(draft) {
+    return isRecord(draft) && draft.v === 1 && Array.isArray(draft.stack) && draft.stack.length > 0
+      && draft.stack.length <= 2 * STORED + 1 && Number.isInteger(draft.at) && draft.at >= 0 && draft.at < draft.stack.length
+      && draft.stack.every(readableEntry);
+  }
+  let recoveringRaw = null; // the kept draft as read, so a failed reopening can set it aside before anything rewrites it
+  function setAsideDraft(raw) {
+    try {
+      let aside = draftKey() + ":unreadable", n = 1;
+      while (localStorage.getItem(aside) !== null && localStorage.getItem(aside) !== raw) aside = `${draftKey()}:unreadable:${++n}`; // never over an earlier one
+      localStorage.setItem(aside, raw);
+      localStorage.removeItem(draftKey());
+    } catch { /* left in place */ }
+    say("ai", el("p", "This browser held a draft PlayIDE could not read, so the model in force is open. "
+      + "The draft was set aside, not deleted.")).classList.add("recovered");
+  }
+
   // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
   // restored plan again; a step that no longer applies (the model in force changed) is shown as such.
   async function recover() {
@@ -2630,9 +2695,12 @@
     edits.at = 0;
     renderHistory();
     if (REVIEW_VIEW) return;
-    let draft = null;
-    try { draft = JSON.parse(localStorage.getItem(draftKey()) || "null"); } catch { draft = null; }
-    if (!draft || draft.v !== 1 || !Array.isArray(draft.stack) || !draft.stack[draft.at]) return;
+    let draft = null, raw = null;
+    try { raw = localStorage.getItem(draftKey()); } catch { return; } // storage blocked: nothing to recover
+    if (raw === null) return;
+    recoveringRaw = raw;
+    try { draft = JSON.parse(raw); } catch { draft = null; }
+    if (!readableDraft(draft)) { setAsideDraft(raw); return; }
     if (draft.model !== modelPrint()) {
       const note = el("p", "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams.");
       const reopen = el("button", "Reopen earlier draft", { type: "button", class: "quiet" });
@@ -2752,7 +2820,7 @@
 
   function effectsRequirements(box, report) {
     const trace = report.traceability, affected = trace.requirements.filter((item) => item.affected);
-    box.append(el("h4", `Requirements & laws · ${trace.coverage.status}`), el("p", `${affected.length} affected requirement(s) within declared links. Unmodeled dependencies remain unknown. ${trace.coverage.scope}`, { class: "muted small" }));
+    box.append(el("h4", `Requirements & laws · ${trace.coverage.status}`, { "aria-level": "3" }), el("p", `${affected.length} affected requirement(s) within declared links. Unmodeled dependencies remain unknown. ${trace.coverage.scope}`, { class: "muted small" }));
     const list = el("ul");
     for (const item of affected) {
       const li = el("li", `${item.id} · ${item.area} · current evidence ${item.observed_status}`);
@@ -2983,7 +3051,13 @@
     document.addEventListener("keydown", historyKeys);
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
-    await recover();
+    try { await recover(); } catch {
+      // A kept draft the shape check let through still failed to reopen: open the model in force, and keep the draft.
+      if (recoveringRaw !== null) setAsideDraft(recoveringRaw);
+      edits.stack = [{ label: "open the model", doc: { plan: null, screens: null }, card: null, at: Date.now() }];
+      edits.at = 0;
+      renderHistory();
+    }
     document.body.dataset.ready = "true";
     document.dispatchEvent(new CustomEvent("playide:ready"));
     recoverNavigation();

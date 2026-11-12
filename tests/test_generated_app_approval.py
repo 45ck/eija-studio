@@ -34,7 +34,7 @@ def observation(binding):
     return {"binding_digest": binding.digest, "subject_digest": binding.subject.digest,
             "checker": binding.checker.model_dump(mode="json"), "configuration": binding.configuration.model_dump(mode="json"),
             "before": binding.subject.digest, "after": binding.subject.digest,
-            "returncode": 0, "timed_out": False, "tests_run": 14, "stdout": "", "stderr": "Synthetic checker fixture"}
+            "returncode": 0, "timed_out": False, "tests_run": 15, "stdout": "", "stderr": "Synthetic checker fixture"}
 
 
 @pytest.fixture
@@ -282,8 +282,8 @@ def test_real_generated_checker_runs_the_retained_selected_artifact(studio):
     checked = studio.verify(case["id"], case["version"])
     generated = next(r for r in checked["receipts"] if r["claim"] == "generated_app_conformance")
     assert generated["artifact"]["returncode"] == 0
-    assert generated["artifact"]["tests_run"] == 14  # creation, journeys, offered actions, rule table and HTTP checks (ADR-0237)
-    assert "Ran 14 tests" in generated["artifact"]["stderr"]
+    assert generated["artifact"]["tests_run"] == 15  # time events (ADR-0237); creation, journeys, offered actions, rule table and HTTP checks (ADR-0241)
+    assert "Ran 15 tests" in generated["artifact"]["stderr"]
     assert studio.view(case["id"])["packet"]["app_build"]["conformance"]["status"] == "PASS"
 
 

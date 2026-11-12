@@ -16,7 +16,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, ValidationError
 
 from eija_studio.application.data_steps import parse_step
 from eija_studio.application.describe_system import MAX_DESCRIPTION, describe_documents, described_summary
@@ -77,6 +77,15 @@ class SavedWork(Contract):
     accepted: list[bool] = Field(default_factory=list, max_length=MAX_DRAFT_STEPS)
     screens: dict[str, Any] | None = None
     scenarios: dict[str, Any] | None = None  # the Tests tab's draft (eija.scenarios.v1), kept with the work (ADR-0216)
+
+
+def _reopenable(draft: dict[str, Any]) -> bool:
+    """A saved draft in the shape Save writes (`SavedWork`); its steps are checked again by the kernel when reopened."""
+    try:
+        SavedWork.model_validate({key: draft[key] for key in SavedWork.model_fields if key in draft})
+    except ValidationError:
+        return False
+    return not isinstance(draft.get("saved", 0), bool) and isinstance(draft.get("saved", 0), int)
 
 
 def templates() -> list[dict[str, Any]]:
@@ -237,6 +246,10 @@ def register(app, systems: Systems) -> None:
     def play_draft():
         """The saved work in progress on the system open now, or null; `moved` when the model in force has changed since."""
         draft = systems.library.read_draft(workspace())
+        if draft is not None and not _reopenable(draft):
+            # A draft.json edited by hand or written by another version: the page would fail on it, so it is set aside.
+            systems.library.set_aside_draft(workspace())
+            return {"draft": None, "system": systems.current, "moved": False, "set_aside": True}
         return {"draft": draft, "system": systems.current, "moved": draft is not None and draft.get("model") != in_force()}
 
     @app.post("/api/play/draft")

@@ -24,7 +24,7 @@ body.resizing iframe{pointer-events:none}
 .icon-btn:disabled{opacity:.35;cursor:default}
 .icon-btn svg{fill:none;stroke:currentColor;stroke-width:1.4}
 .icon-btn[aria-pressed="true"] svg .fill{fill:currentColor;stroke:none}
-.bar a.quiet{padding:5px 10px;font-size:.84rem}
+.bar a.quiet,.bar #uml-menu{padding:5px 10px;font-size:.84rem}
 
 /* Toolbar: run bar, Simulate, Build & run, and the checks ring (Visual Studio's standard and debug toolbars) */
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
@@ -48,6 +48,8 @@ body[data-chat="closed"] .side,body[data-chat="closed"] #split-chat{display:none
 .layout>*{grid-row:1;min-width:0}
 .split{background:transparent;position:relative;z-index:4;touch-action:none}
 .split::after{content:"";position:absolute;inset:0;transition:background .15s}
+.split::before{content:"";position:absolute;inset:0 -3px}
+.split.h::before,body[data-play-arrangement="stacked"] #split-play::before{inset:-3px 0}  /* stacked, the local-app splitter runs across */
 .split:hover::after,.split:focus-visible::after{background:var(--accent);opacity:.45}
 .split.v{cursor:col-resize}
 .split.h{cursor:row-resize;height:5px}
@@ -127,6 +129,7 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 .dock-tabs{display:flex;gap:0;margin-right:auto}
 .dock-tabs button{border:0;border-radius:0;background:transparent;padding:7px 12px;font-size:.74rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent}
 .dock-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--tab-line)}
+.dock-tabs button:hover{color:var(--ink);background:transparent}
 .dock-tabs button[hidden]{display:none}
 .dock-body{flex:1;min-height:0;overflow:auto;padding:10px 14px}
 .dock-body>section{display:none;border:0;border-radius:0;padding:0;background:transparent}
@@ -156,13 +159,14 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 .statusbar .end{margin-left:auto;display:flex;align-items:center;gap:14px}
 .statusbar button{border:0;background:transparent;color:inherit;padding:2px 6px;font-size:inherit;border-radius:4px}
 .statusbar button:hover{background:rgba(255,255,255,.12)}
-.statusbar .plan-chip{padding:1px 8px;border-radius:999px;background:#2f8f5b;color:#fff;font-weight:600}
+.statusbar .plan-chip{padding:1px 8px;border-radius:999px;background:#277d50;color:#fff;font-weight:600}
 .statusbar .plan-chip[hidden]{display:none}
 .statusbar .toast{color:#9ff0c3}
 .statusbar .saved{opacity:.8}
 .statusbar .saved.bad{opacity:1;color:#ffc9c9}
+.statusbar #health-text,#health-text{font-variant-numeric:tabular-nums}
 .statusbar .score{padding:1px 8px;background:rgba(255,255,255,.14);color:inherit}
-.statusbar .score.ok{background:#2f8f5b;color:#fff}
+.statusbar .score.ok{background:#277d50;color:#fff}
 .statusbar .score.bad{background:#a33b3b;color:#fff}
 .statusbar kbd{font:inherit;padding:0 5px;border:1px solid rgba(255,255,255,.35);border-radius:3px}
 
@@ -237,7 +241,7 @@ body[data-play="open"][data-play-arrangement="stacked"] .play-empty-mark{width:4
 @media(max-width:1180px){
   .bar{flex-wrap:wrap;justify-content:flex-start;gap:8px}
   .bar .brand{flex:1 1 100%;flex-wrap:wrap;gap:8px}
-  .bar .brand>.logo,.bar .brand>strong{flex:none}
+  .bar .brand>.logo,.bar .brand>.brand-name{flex:none}
   .bar .model-name{flex:1 1 10rem;min-width:0;max-width:100%}
   .bar .system-controls{margin-left:0;flex-wrap:wrap;max-width:100%}
   .bar .palette-open.command-center{flex:1 1 12rem;min-width:0;width:auto}
@@ -272,3 +276,12 @@ body[data-play="open"][data-play-arrangement="stacked"] .play-empty-mark{width:4
   .statusbar{padding-inline:8px;font-size:.72rem}
 }
 @media(prefers-reduced-motion:reduce){.stage-tools .tabs{scroll-behavior:auto}.split::after{transition:none}}
+/* Windows High Contrast and other forced-colour modes: backgrounds are replaced, so selection, pressed and current
+   states that were drawn only with a background or a pseudo-element bar get an outline or a system colour. */
+@media (forced-colors:active){
+  button,select,summary{border-color:ButtonText}
+  .outline li button,.missing-head,.run-btn,.run-speed,.icon-btn,#draw-palette button,.findings li button,.seq-list li button,.screen-list li button{outline:1px solid ButtonBorder;outline-offset:-1px}
+  [role=tab][aria-selected="true"],button[aria-pressed="true"],button[aria-checked="true"],button[aria-current="true"]{outline:2px solid Highlight;outline-offset:-2px}
+  .stage-tools .tabs button[aria-selected="true"]::before{background:Highlight;forced-color-adjust:none}
+  :focus-visible{outline:2px solid Highlight}
+}

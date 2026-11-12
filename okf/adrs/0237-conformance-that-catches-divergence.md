@@ -6,7 +6,7 @@ resource: repo://docs/adr/0237-conformance-that-catches-divergence.md
 tags:
 - adr
 - accepted
-status: stable
+status: deprecated
 generated:
   by: process:eija-okf-sync
 sources:

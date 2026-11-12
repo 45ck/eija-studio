@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: ad7abe27104171339678cbf50e9a4d4c044a3c16c90c7ff4802100530838c88c
-notes_baseline: fb143df4915bf0eb1597c09fa148af802498d28235f5f713693f2d64cc7482c0
+  sha256: 12927dc02586423f93417d6ceba932b0712c0d2de3dbcdd8e982c31ebe2ea773
+notes_baseline: 9d8330a5ed033807202d961234ed78d7944f177af688fb55872e5570f93095ce
 ---
 
 # application.appgen
@@ -64,6 +64,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`separation_cases`](/symbols/application/appgen/separation_cases.md) (function) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record;…
 * [`start_cases`](/symbols/application/appgen/start_cases.md) (function) - Each active fixture actor starting a record, and the kernel's answer.
 * [`stock`](/symbols/application/appgen/stock.md) (function) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
+* [`timer_cases`](/symbols/application/appgen/timer_cases.md) (function) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state…
 * [`valid_values`](/symbols/application/appgen/valid_values.md) (function) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 * [`value_cases`](/symbols/application/appgen/value_cases.md) (function) - For each transition with guards over record values, an actor who may take it tries it on records holding every combinat…
 
@@ -126,6 +127,7 @@ _No curated notes yet._
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
+* [application.appgen.timer_cases](/symbols/application/appgen/timer_cases.md) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state half the time and the whole time, and th…
 * [application.appgen.valid_values](/symbols/application/appgen/valid_values.md) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 * [application.appgen.value_cases](/symbols/application/appgen/value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart…
 <!-- okf:generated:end links -->

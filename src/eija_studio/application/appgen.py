@@ -24,8 +24,9 @@ from .memo import model_hash
 from .runtime import execute, initialise
 
 FORMAT = "eija.app-build.v1"
-# The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0237 added the last three).
-CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "create_cases", "journeys", "options_cases")
+# The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0241 added the last three).
+CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "timer_cases", "create_cases", "journeys",
+              "options_cases")
 UNDECLARED_ACTION = "UndeclaredAction"
 UNKNOWN_ACTOR = "unknown-actor"
 LIMITS = (
@@ -42,8 +43,12 @@ LIMITS = (
 class _OracleSession:
     """In-memory answers to exactly the port calls `execute` makes for one instance. Nothing persists."""
 
-    def __init__(self, pack: Pack, model: Workflow, state: str, values: dict[str, Any] | None = None):
+    def __init__(self, pack: Pack, model: Workflow, state: str, values: dict[str, Any] | None = None,
+                 waited: float | None = None):
         self.record_values = dict(values or {})
+        # How long the record has been in its state: the model's longest time event unless a case says otherwise, so
+        # every time event is due in the ordinary cases (ADR-0237). A committed step enters a state afresh.
+        self.since = float(model.longest_wait if waited is None else waited)
         self.actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
         self.item: dict[str, Any] = {"id": "r1", "case_id": "app", "model_hash": model_hash(model), "state": state, "version": 0}
         self.operations: dict[str, dict[str, Any]] = {}
@@ -66,6 +71,9 @@ class _OracleSession:
     def values(self, instance_id: str) -> dict[str, Any]:
         return dict(self.record_values)
 
+    def elapsed(self, instance_id: str) -> float | None:
+        return self.since
+
     def actor(self, actor_id: str) -> dict[str, Any]:
         if actor_id not in self.actors:
             raise DomainError("UNKNOWN_ACTOR", "Actor is not in the trusted fixture directory")
@@ -76,6 +84,7 @@ class _OracleSession:
 
     def update_instance(self, item: dict[str, Any], expected: int) -> None:
         self.item = dict(item)
+        self.since = 0.0
 
     def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None:
         self.operations[operation_id] = {"binding": binding, "result": result}
@@ -226,10 +235,36 @@ def value_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
     return cases
 
 
+def timer_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
+    """For each transition with a time event, an actor who may take it tries it on a record that has been in the source
+    state half the time and the whole time, and the kernel's answer (ADR-0237). Empty for a model without time events,
+    so every other oracle keeps its exact bytes."""
+    cases: list[dict[str, object]] = []
+    for t in sorted((t for t in model.transitions if t.after is not None), key=lambda t: t.id):
+        actor = _taker(pack, t)
+        if actor is None or t.after is None:
+            continue
+        for waited in (t.after.seconds / 2, float(t.after.seconds)):
+            session = _OracleSession(pack, model, t.from_state, _admitting(t), waited)
+            cases.append({"state": t.from_state, "action": t.action, "actor": actor, "waited": waited,
+                          **({"values": _admitting(t)} if t.conditions else {}),
+                          "expect": _kernel(pack, model, session, actor, t.action, 0)})
+    return cases
+
+
+def _admitting(t: Transition) -> dict[str, Any]:
+    """Record values every value guard of `t` admits, when some combination does; {} otherwise."""
+    grouped: dict[str, list[ValueGuard]] = {}
+    for guard in t.conditions:
+        grouped.setdefault(guard.attribute, []).append(guard)
+    return next((v for v in combinations(dict(sorted(grouped.items()))) or [] if t.admits(v) is None), {})
+
+
 def _people_cases(pack: Pack, model: Workflow) -> dict[str, Any]:
     """The oracle's checks of who may start a record and who may not act twice, present only when the model or pack
     asks for them, so every other oracle keeps its exact bytes."""
-    found = {"separation_cases": separation_cases(pack, model), "value_cases": value_cases(pack, model)}
+    found = {"separation_cases": separation_cases(pack, model), "value_cases": value_cases(pack, model),
+             "timer_cases": timer_cases(pack, model)}
     return ({"start_cases": start_cases(pack, model)} if model.initiators else {}) | {k: v for k, v in found.items() if v}
 
 
@@ -501,6 +536,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
         oracle |= {"objects": stock(data)} if references(data) else {}
         files["app/data.json"] = canonical(data) + "\n"
     oracle |= _people_cases(pack, model)
+    oracle |= {"waited": model.longest_wait} if model.longest_wait else {}  # how long ordinary cases' records waited
     oracle |= {"create_cases": create_cases(pack, model, data), "journeys": journeys(pack, model, data),
                "options_cases": options_cases(pack, model, data), "rules": rules(model)}
     files["tests/oracle.json"] = canonical(oracle) + "\n"

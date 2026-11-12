@@ -249,10 +249,41 @@ def not_carried(pack: Pack, data: DataModel | None, *extra: str) -> list[str]:
 
 def export_report(fmt: str, pack: Pack, model: Workflow, data: DataModel | None, *extra: str) -> dict[str, Any]:
     return {"format": "eija.uml-export.v1", "to": fmt, "pack": pack.id, "model": model.semantic_hash,
-            "data": data.digest if data else None, "not_carried": not_carried(pack, data, *extra)}
+            "data": data.digest if data else None, "not_carried": not_carried(pack, data, *_guards_not_carried(model), *extra)}
+
+
+def _guards_not_carried(model: Workflow) -> list[str]:
+    """Guards over record values (ADR-0234), time events (ADR-0237) and composite states (ADR-0240), which the
+    exported files do not write yet."""
+    valued = sum(bool(t.conditions) for t in model.transitions)
+    timed = sum(t.after is not None for t in model.transitions)
+    return ([f"guards over record values on {valued} transition(s) (ADR-0234)"] if valued else []) + \
+        ([f"time events on {timed} transition(s), such as after(2 days) (ADR-0237)"] if timed else []) + \
+        ([f"{len(model.composites)} composite state(s) grouping the states (ADR-0240)"] if model.composites else [])
 
 
 MAX_XML_BYTES = 8_000_000  # XMI and draw.io files
+_LARGEST = 10 ** 18  # beyond every limit the kernel and the data model set
+
+
+def whole(digits: str) -> int:
+    """A count written in a file (a multiplicity, a length): ASCII digits as an int. A number longer than 18 digits is
+    read as 10**18, which every limit refuses as the number itself would be: Python will not convert one of more
+    than 4,300 digits, and a file must not be able to stop an import that way."""
+    if not (digits.isascii() and digits.isdigit()):
+        raise ValueError(f"not a count: {digits[:20]!r}")
+    return int(digits) if len(digits) <= 18 else _LARGEST
+
+
+def is_count(text: str) -> bool:
+    """True for ASCII digits only: `str.isdigit` also accepts characters such as `²` that `int` refuses."""
+    return text.isascii() and text.isdigit()
+
+
+def character(code: int) -> str | None:
+    """The character for an escaped code point, or None for one that is not a character (a surrogate, or beyond
+    U+10FFFF): the escape is then left as written instead of failing the import."""
+    return chr(code) if code <= 0x10FFFF and not 0xD800 <= code <= 0xDFFF else None
 
 
 def xml_root(text: str, what: str) -> ET.Element:

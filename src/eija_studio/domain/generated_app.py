@@ -67,7 +67,7 @@ class GeneratedAppActivation(Contract):
     subject_hash: Digest
 
 
-GENERATED_TESTS = 14  # the conformance template's test methods; ADR-0237 added creation, journeys, offered actions, rules and HTTP
+GENERATED_TESTS = 15  # the conformance template's test methods: time events joined in ADR-0237; creation, journeys, offered actions, rules and HTTP in ADR-0241
 
 
 def generated_receipt_status(receipt: dict[str, Any], binding: GeneratedAppBinding,

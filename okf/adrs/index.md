@@ -118,4 +118,10 @@
 * [ADR-0233: Separation of duties](0233-separation-of-duties.md) - Issue #149.
 * [ADR-0234: Guards over record values](0234-guards-over-record-values.md) - Issue #93, item 1.
 * [ADR-0235: Built associations as checked reference fields](0235-built-associations.md) - Issue #145, step 2.
+* [ADR-0236: Hostile input at PlayIDE's edges, and the cost of a plan at the model's limits](0236-hostile-input-and-plan-cost.md) - Robustness is PlayIDE's stated edge over other UML tools.
 * [ADR-0237: Conformance that catches a divergent app by behaviour](0237-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
+* [ADR-0237: Time events on transitions](0237-time-events.md) - Issue #93, item 2.
+* [ADR-0238: Integers in request contracts are JSON integers](0238-json-integers-in-request-contracts.md) - `contracts/*.schema.json` declare integer fields as `"type": "integer"`.
+* [ADR-0239: Verify value-guard representatives by property and mutation, and fix what that found](0239-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
+* [ADR-0240: Composite states](0240-composite-states.md) - Issue #93, item 3.
+* [ADR-0241: Conformance that catches a divergent app by behaviour](0241-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.

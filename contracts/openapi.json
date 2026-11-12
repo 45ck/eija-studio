@@ -2894,6 +2894,67 @@
         "type": "object",
         "title": "ChangeRequest"
       },
+      "Composite": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "states": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "States"
+          },
+          "initial": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Initial"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "states",
+          "initial"
+        ],
+        "title": "Composite",
+        "description": "A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the\nchild a transition into the group enters first. A record is always in exactly one plain state; the composite is the\nset of states inside it. The kernel runs the flat machine, so a composite never changes what a step does. A\ntransition the group's states all share is drawn once from the group, and SCXML gets a nested `<state>`."
+      },
+      "Delay": {
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Amount"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "minutes",
+              "hours",
+              "days"
+            ],
+            "title": "Unit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "amount",
+          "unit"
+        ],
+        "title": "Delay",
+        "description": "A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has\nbeen in its source state this long. Time is measured from when the record entered that state, which every\ncommitted step does, a step back into the same state included. An unknown entry time never counts as due."
+      },
       "Edit": {
         "properties": {
           "expected_version": {
@@ -4483,6 +4544,16 @@
             "maxItems": 8,
             "title": "Conditions",
             "default": []
+          },
+          "after": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Delay"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -4569,17 +4640,44 @@
           },
           "steps": {
             "items": {
-              "prefixItems": [
+              "anyOf": [
                 {
-                  "type": "string"
+                  "prefixItems": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "type": "array",
+                  "maxItems": 2,
+                  "minItems": 2
                 },
                 {
-                  "type": "string"
+                  "prefixItems": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/Delay"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  ],
+                  "type": "array",
+                  "maxItems": 3,
+                  "minItems": 3
                 }
-              ],
-              "type": "array",
-              "maxItems": 2,
-              "minItems": 2
+              ]
             },
             "type": "array",
             "maxItems": 40,
@@ -4792,6 +4890,15 @@
             "type": "array",
             "maxItems": 16,
             "title": "Initiators",
+            "default": []
+          },
+          "composites": {
+            "items": {
+              "$ref": "#/components/schemas/Composite"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "title": "Composites",
             "default": []
           }
         },

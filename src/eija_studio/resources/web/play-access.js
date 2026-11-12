@@ -73,6 +73,8 @@
       path.append(li);
     }
     box.append(path);
+    // One record took the whole path, with values that meet every guard over values on it (ADR-0234).
+    if (r.values) box.append(P.el("p", "On a record with " + Object.entries(r.values).map(([k, v]) => `${k} = ${typeof v === "string" ? JSON.stringify(v) : v}`).join(", ") + ".", { class: "muted small reach-values" }));
   }
 
   // ---- What a previewed plan changes --------------------------------------------------------------------------------
@@ -130,6 +132,8 @@
     name.addEventListener("click", () => P.select("transition:" + c.transition, true));
     box.append(name);
     if (c.assigned_only) box.append(P.el("span", "assigned only", { class: "tag" }));
+    // A guard over the record's values (ADR-0234): the actors were tried on a record whose values meet it.
+    if (c.when) box.append(P.el("span", `when [${c.when.join(" and ")}]`, { class: "tag when", title: "Tried on a record whose values meet this guard; on other values the kernel refuses (VALUE_GUARD_DENIED)" }));
     if (isNew) box.append(P.el("span", "new", { class: "tag new" }));
     const who = P.el("ul", undefined, { class: "who-can", "aria-label": "Fixture actors the kernel tried" });
     for (const a of c.actors) {

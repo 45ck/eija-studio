@@ -2,7 +2,14 @@
 
 ## 2026-11-12
 
-* **Conformance that catches a divergent app (ADR-0237)**: synced ADR-0237, the new oracle lists in `application/appgen.py` (`create_cases`, `journeys`, `options_cases`, `rules`, `valid_values`, and `written` on committed cases), and the `conformance_divergence` gates. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
+* **Conformance that catches a divergent app (ADR-0241)**: synced ADR-0241, the new oracle lists in `application/appgen.py` (`create_cases`, `journeys`, `options_cases`, `rules`, `valid_values`, and `written` on committed cases), and the `conformance_divergence` gates. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
+* **Time events (issue #93, item 2)**: synced ADR-0237, `Delay`, `Transition.after`, `Workflow.longest_wait`, the runtime's `TIMER_NOT_DUE` check, the `elapsed` port, Simulate's clock, the law proof's waiting, the oracle's timer cases, the generated app's entry time, the SCXML projection, scenario waits and the formal scope. Re-read the Notes of the runtime module, `execute`, `UnitOfWork`, `Transition` and `Workflow` as `process:claude-code` and updated the last four. No human source approval was recorded.
+
+* **Hostile input and plan cost**: synced ADR-0236 (and again after the Codex review: set-aside drafts never overwrite each other) and the pages for `adapters.system_library` (`set_aside_draft`), `interfaces.cli` (`failure_report`) and `application.plan.preview_plan` (each step applied once). None of these pages has curated Notes. Nothing was recorded as verified.
+* **Composite states (issue #93, item 3)**: synced ADR-0240, `Composite`, `Workflow.composites` and its tree helpers, the SCXML nesting (`hoisted`), nested clusters in the diagram emitters, the diff's composite summary and the state edits that keep composites coherent. Re-read the Notes of `Workflow` and `Workflow.semantic_hash` as `process:claude-code` and updated both. No human source approval was recorded.
+* **PlayIDE browser QA of the new kernel features**: synced ADR-0232 and ADR-0234 (amendments: chat names the source of an action that leaves several states; tests and permissions give the record values), `Scenario.values`, `scenario_run`, `access.matrix`/`reach`, `plan_proposals` and `system_describer`. The modules' Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
+
+* **Value-guard representatives verified (ADR-0239)**: synced ADR-0239 (renumbered: 0236 is hostile input, 0237 time events, 0238 JSON integers), `guard_keys`, `Transition.guarded`, `Workflow.coherent`, `ValueGuard`, `ValueGuard.holds`, `points`, `check_values` and `changed_fields` after the property-suite fixes (large constants, overflow, non-finite values, `true` versus `1`, duplicate forbidden effects). No Notes were changed and no human source approval was recorded.
 
 ## 2026-11-11
 

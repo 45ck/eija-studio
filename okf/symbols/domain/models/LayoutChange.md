@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#LayoutChange
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 3d5f9c0eb4e730f07838ce087f37dc476dfb3e55eda3eff1ae975527d64f8cb0
-notes_baseline: cd09a63596504bb009dd6615a2853fa8faf26218dd03658c4663d0180e43550e
+  sha256: b6c6929032fad43585c16f7890882b0df18b5609422484ccf32c62426ee6f946
+notes_baseline: 7409df5370ad0926a2473349b017d9e7789f9f741d644df25ab350f42fd2e318
 ---
 
 # domain.models.LayoutChange
@@ -38,8 +38,8 @@ _The source carries no docstring._
 | Field | Annotation | Default |
 |---|---|---|
 | `node` | `str` | `Field(min_length=1, max_length=60)` |
-| `x` | `int` | `Field(ge=0, le=2000)` |
-| `y` | `int` | `Field(ge=0, le=2000)` |
+| `x` | `JsonInt` | `Field(ge=0, le=2000)` |
+| `y` | `JsonInt` | `Field(ge=0, le=2000)` |
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -50,6 +50,7 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 
 ## Referenced by
 

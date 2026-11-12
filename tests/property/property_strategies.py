@@ -12,12 +12,35 @@ from typing import Any
 from hypothesis import assume, strategies as st
 from pydantic import ValidationError
 
-from eija_studio.domain.models import BASE_GUARDS, Workflow
+from eija_studio.domain.models import BASE_GUARDS, Workflow, iso_date
 
 NAMES = st.text(alphabet=st.characters(blacklist_categories=("Cs", "Cc")), min_size=1, max_size=10)
 IDENTIFIERS = st.from_regex(r"[A-Z][A-Z0-9_-]{0,10}", fullmatch=True)
 EFFECTS = st.text(alphabet="ABCDEFGHIJ:_", min_size=1, max_size=8)
 OPTIONAL_GUARDS = ("actor_assigned",)
+ATTRIBUTES = st.sampled_from(("amount", "due", "urgent", "kind"))
+DATES = st.dates().map(lambda d: d.isoformat())
+
+
+@st.composite
+def value_guards(draw) -> dict[str, Any]:
+    """One guard over a record value (ADR-0234) that the contract accepts: ordering only on numbers and dates."""
+    value = draw(st.one_of(st.integers(-10**6, 10**6), st.floats(allow_nan=False, allow_infinity=False),
+                           st.booleans(), DATES, st.text(max_size=6)))
+    ordered = (isinstance(value, int | float) and not isinstance(value, bool)) or (isinstance(value, str) and iso_date(value))
+    op = draw(st.sampled_from(("eq", "ne", "lt", "le", "gt", "ge") if ordered else ("eq", "ne")))
+    return {"attribute": draw(ATTRIBUTES), "op": op, "value": value}
+
+
+def guard_identity(guard: Any) -> tuple:
+    """A value guard as its author wrote it: ``1``, ``1.0`` and ``true`` are three different literals."""
+    value = guard["value"] if isinstance(guard, dict) else guard.value
+    attribute, op = (guard["attribute"], guard["op"]) if isinstance(guard, dict) else (guard.attribute, guard.op)
+    return (attribute, op, type(value).__name__, repr(value))
+
+
+def condition_lists(max_size: int = 3):
+    return st.lists(value_guards(), max_size=max_size, unique_by=guard_identity)
 
 
 @st.composite
@@ -28,7 +51,8 @@ def transition_parts(draw, states: list[str], transition_id: str, action: str) -
     cut = draw(st.integers(0, len(effects)))
     return {"id": transition_id, "action": action, "from_state": draw(st.sampled_from(states)),
             "to_state": draw(st.sampled_from(states)), "role": draw(NAMES), "guards": list(guards),
-            "required_effects": effects[:cut], "forbidden_effects": draw(st.permutations(effects[cut:]))}
+            "required_effects": effects[:cut], "forbidden_effects": draw(st.permutations(effects[cut:])),
+            "conditions": draw(condition_lists())}
 
 
 @st.composite
@@ -41,7 +65,7 @@ def workflows(draw, max_states: int = 6, max_transitions: int = 6) -> Workflow:
     transitions = [draw(transition_parts(states, i, a)) for i, a in zip(ids, actions, strict=False)]
     pack_id = draw(st.from_regex(r"[a-z][a-z0-9-]{0,39}", fullmatch=True))  # Workflow.id is the pack id (WBS 1.1)
     return Workflow.model_validate({"id": pack_id, "states": states, "initial_state": draw(st.sampled_from(states)),
-                                    "transitions": transitions})
+                                    "transitions": transitions, "initiators": draw(st.lists(NAMES, max_size=3, unique=True))})
 
 
 @st.composite
@@ -50,8 +74,12 @@ def reordered(draw, workflow: Workflow) -> Workflow:
     data = workflow.model_dump(mode="json")
     data["states"] = draw(st.permutations(data["states"]))
     data["transitions"] = draw(st.permutations(data["transitions"]))
+    if "initiators" in data:
+        data["initiators"] = draw(st.permutations(data["initiators"]))
     for transition in data["transitions"]:
-        for key in ("guards", "required_effects", "forbidden_effects"):
+        for key in ("guards", "required_effects", "forbidden_effects", "conditions"):
+            if key not in transition:  # an empty ``conditions`` is left out of the dump
+                continue
             transition[key] = draw(st.permutations(transition[key]))
     return Workflow.model_validate(data)
 
@@ -60,12 +88,14 @@ def normal_form(workflow: Workflow) -> tuple:
     """Order-free identity of a workflow, independent of ``semantic_hash``."""
     return (workflow.schema_version, workflow.id, frozenset(workflow.states), workflow.initial_state, frozenset(
         (t.id, t.action, t.from_state, t.to_state, t.role, frozenset(t.guards),
-         frozenset(t.required_effects), frozenset(t.forbidden_effects)) for t in workflow.transitions))
+         frozenset(t.required_effects), frozenset(t.forbidden_effects), frozenset(map(guard_identity, t.conditions)))
+        for t in workflow.transitions), frozenset(workflow.initiators))
 
 
 EDIT_KINDS = ("change_pack_id", "rename_state", "add_state", "set_initial", "retarget_from", "retarget_to", "change_role",
               "rename_action", "rename_id", "toggle_guard", "add_required_effect", "add_forbidden_effect",
-              "drop_effect", "move_effect", "drop_transition", "add_transition", "swap_ids")
+              "drop_effect", "move_effect", "drop_transition", "add_transition", "swap_ids",
+              "add_condition", "drop_condition", "retype_condition", "toggle_initiator")
 
 
 @st.composite
@@ -121,6 +151,20 @@ def semantic_edits(draw, workflow: Workflow) -> tuple[str, Workflow]:
         data["transitions"].pop(index)
     elif kind == "add_transition":
         data["transitions"].append(draw(transition_parts(data["states"], draw(IDENTIFIERS), draw(NAMES))))
+    elif kind == "add_condition":
+        t.setdefault("conditions", []).append(draw(value_guards()))
+    elif kind == "drop_condition":
+        assume(t.get("conditions"))
+        t["conditions"].pop(draw(st.integers(0, len(t["conditions"]) - 1)))
+    elif kind == "retype_condition":  # the same number as another literal: 1 -> 1.0 -> true (ADR-0234 fails closed on kind)
+        assume(t.get("conditions"))
+        guard = t["conditions"][draw(st.integers(0, len(t["conditions"]) - 1))]
+        assume(guard["op"] in ("eq", "ne") and type(guard["value"]) in (int, float, bool))
+        guard["value"] = draw(st.sampled_from([v for v in (1, 1.0, True) if repr(v) != repr(guard["value"])]))
+    elif kind == "toggle_initiator":
+        role = draw(NAMES)
+        current = data.get("initiators", [])
+        data["initiators"] = [r for r in current if r != role] if role in current else [*current, role]
     else:  # swap_ids
         other = draw(st.integers(0, len(data["transitions"]) - 1))
         data["transitions"][other]["id"], t["id"] = t["id"], data["transitions"][other]["id"]

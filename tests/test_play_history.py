@@ -5,6 +5,7 @@ Chrome, or the Chromium at EIJA_CHROMIUM, and never downloads a browser.
 """
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -274,5 +275,62 @@ def test_navigation_is_restored_after_the_draft_model_is_checked():
             assert "Lost" not in page.evaluate("PlayIDE.base().states")
             assert "Lost" in page.evaluate("PlayIDE.model().states")
             assert page.evaluate("PlayIDE.runningBuild()") is None
+        finally:
+            chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_a_kept_draft_the_page_cannot_read_is_set_aside_and_the_page_still_opens():
+    """Browser storage is untrusted (ADR-0236): before, a draft in another shape stopped the page opening on every reload."""
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            key = page.evaluate("() => `playide.draft.v1:${PlayIDE.pack().id}:`")
+            page.click('#draw-palette [data-kind="state"]')
+            box = page.locator("#canvas").bounding_box()
+            page.mouse.click(box["x"] + 12, box["y"] + 12)
+            page.wait_for_selector(".inline-edit input:focus")
+            page.keyboard.type("Archived")
+            page.keyboard.press("Enter")
+            page.wait_for_selector("#plan-banner:not([hidden])")
+            real = page.evaluate("k => JSON.parse(localStorage.getItem(k))", key)
+            good = real["stack"][-1]
+            broken = {
+                "at as text": {**real, "at": str(real["at"])},
+                "plan without steps": {**real, "stack": [{**good, "doc": {"plan": {"uid": 1}}}], "at": 0},
+                "an empty entry": {**real, "stack": [None, good], "at": 1},
+                "no document": {**real, "stack": [{**good, "doc": None}], "at": 0},
+                "steps not a list": {**real, "stack": [{**good, "doc": {"plan": {"uid": 1, "steps": "x", "accepted": []}}}], "at": 0},
+            }
+            for name, draft in broken.items():
+                raw = json.dumps(draft)
+                page.evaluate("([k, v]) => { localStorage.removeItem(k + ':unreadable'); localStorage.setItem(k, v); }", [key, raw])
+                page.reload()
+                page.wait_for_selector("body[data-ready=true]", timeout=20_000)
+                assert page.is_hidden("#plan-banner") and page.is_disabled("#undo"), name  # the model in force, no plan
+                assert page.evaluate("k => localStorage.getItem(k + ':unreadable')", key) == raw, name  # set aside, not lost
+                assert "could not read" in page.text_content("#chat-log"), name
+            # A second unreadable draft is set aside beside the first, never over it.
+            raw = json.dumps(broken["no document"])
+            page.evaluate("([k, v]) => { localStorage.setItem(k + ':unreadable', 'earlier'); localStorage.setItem(k, v); }", [key, raw])
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=20_000)
+            assert page.evaluate("k => [localStorage.getItem(k + ':unreadable'), localStorage.getItem(k + ':unreadable:2')]", key) == ["earlier", raw]
+            # A good draft still comes back.
+            page.evaluate("([k, v]) => localStorage.setItem(k, v)", [key, json.dumps(real)])
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=20_000)
+            assert "Recovered your unsaved work" in page.text_content("#chat-log")
+            assert errors == []
         finally:
             chrome.close()

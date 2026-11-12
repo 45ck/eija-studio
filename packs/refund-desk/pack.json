@@ -21,6 +21,24 @@
       "Declined",
       "Withdrawn"
     ],
+    "composites": [
+      {
+        "name": "Deciding",
+        "states": [
+          "AwaitingApproval",
+          "WithSupervisor"
+        ],
+        "initial": "AwaitingApproval"
+      },
+      {
+        "name": "PayingOut",
+        "states": [
+          "Approved",
+          "PayoutFailed"
+        ],
+        "initial": "Approved"
+      }
+    ],
     "transitions": [
       {
         "id": "TR-TRIAGE",
@@ -150,7 +168,11 @@
         "forbidden_effects": [
           "CardDataSentToModel",
           "RefundSentUnapproved"
-        ]
+        ],
+        "after": {
+          "amount": 2,
+          "unit": "days"
+        }
       },
       {
         "id": "TR-RESOLVE",

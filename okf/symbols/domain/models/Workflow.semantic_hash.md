@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow.semantic_hash
   title: domain/models.py
   hash_method: ast-v2
-  sha256: f58dcbe4fc5d1fd0fa283b0b120a63f55ef7cc6ccc821f4104e93468e9f1dcd9
+  sha256: 1990fd03392fecce24daf35c5db3689d125d00010fcb9d7cae899830f2cf1126
 description_override: 'Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.'
-notes_baseline: c9199bd4bb2e922d493c5bae9c4aabdfced54805f28524b40a96d1e44acfdd29
+notes_baseline: a0bc00921d30ead8ee369828f12cc7909edcee8fea9902b80b608af20b18302c
 verified:
 - by: process:claude-code
   at: '2026-11-11T13:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-11-11T22:00:00Z'
   notes_sha256: f64f5f2801fbd3418f505054d7ad87c365301d1d6d73b99ee15a5735df5f7583
   sources_sha256: c9199bd4bb2e922d493c5bae9c4aabdfced54805f28524b40a96d1e44acfdd29
+- by: process:claude-code
+  at: '2026-11-12T03:40:00Z'
+  notes_sha256: 37ffe83169f82f47763b5d6d8e5320acadad43bb46d39cbe66d42123b33b761d
+  sources_sha256: a0bc00921d30ead8ee369828f12cc7909edcee8fea9902b80b608af20b18302c
 ---
 
 # domain.models.Workflow.semantic_hash
@@ -47,7 +51,7 @@ _The source carries no docstring._
 
 ## Notes
 
-Sorted states, transitions by id, sorted guards/effects and sorted initiators (when named, ADR-0231) and each transition's sorted value guards (when it has them, ADR-0234) go through [fingerprint](/symbols/domain/models/fingerprint.md). A changed hash makes old [Preview Instances](/language/preview-instance.md) stale (`STALE_INSTANCE`) and invalidates evidence bound to the previous semantic dimension.
+Sorted states, transitions by id, sorted guards/effects and sorted initiators (when named, ADR-0231) each transition's sorted value guards (when it has them, ADR-0234) and the composite states sorted by name with sorted children (when there are any, ADR-0240) go through [fingerprint](/symbols/domain/models/fingerprint.md). A changed hash makes old [Preview Instances](/language/preview-instance.md) stale (`STALE_INSTANCE`) and invalidates evidence bound to the previous semantic dimension.
 
 <!-- okf:generated:begin links -->
 ## Depends on

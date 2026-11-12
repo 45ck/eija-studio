@@ -20,6 +20,7 @@
 
 # Methods
 
+* [domain.scenarios.Scenario.named_values](Scenario.named_values.md) - `def named_values(self) -> Scenario` in `domain/scenarios`.
 * [domain.scenarios.Scenarios.digest](Scenarios.digest.md) - `def digest(self) -> str` in `domain/scenarios`.
 * [domain.scenarios.Scenarios.unique](Scenarios.unique.md) - `def unique(self) -> Scenarios` in `domain/scenarios`.
 * [domain.scenarios.Then.one](Then.one.md) - `def one(self) -> Then` in `domain/scenarios`.

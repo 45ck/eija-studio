@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/impact.py#changed_fields
   title: domain/impact.py
   hash_method: ast-v2
-  sha256: 5778fef3409f1bd095fa36a2ac43e5e90d5eca99753d0f9f83a80d236d31001d
-notes_baseline: 11495e357a9e190b418aca24881486922d4c662075580402ce1d7e9672e0bccb
+  sha256: d0e640dbd14d42e780e26a2fbf64a0a387a7e682bfe96acee9b5b690b49e6de9
+notes_baseline: ffb19947bba88f446c2e256f21ad2436a40569e9f44bf834303c754294be5e0f
 ---
 
 # domain.impact.changed_fields
@@ -46,6 +46,7 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
+* [domain.models.guard_keys](/symbols/domain/models/guard_keys.md) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 
 ## Referenced by
 

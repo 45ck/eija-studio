@@ -65,7 +65,7 @@
     },
     {
       "id": "timer-escalates",
-      "title": "Nobody decides in time, the timer escalates and a supervisor resolves it",
+      "title": "Nobody decides in two days, the timer escalates and a supervisor resolves it",
       "steps": [
         {
           "actor": "support-bot",
@@ -85,7 +85,22 @@
           "actor": "sla-clock",
           "action": "EscalateStale",
           "then": {
+            "refused": "TIMER_NOT_DUE"
+          },
+          "wait": {
+            "amount": 1,
+            "unit": "days"
+          }
+        },
+        {
+          "actor": "sla-clock",
+          "action": "EscalateStale",
+          "then": {
             "state": "WithSupervisor"
+          },
+          "wait": {
+            "amount": 1,
+            "unit": "days"
           }
         },
         {

@@ -8,7 +8,7 @@
 #health-ring circle.game-pop{animation:game-pop .7s ease;transform-box:fill-box;transform-origin:center}
 @keyframes game-bump{40%{transform:scale(1.08)}}
 @keyframes game-burst{0%{box-shadow:0 0 0 0 rgba(23,115,74,.55)}70%{box-shadow:0 0 0 14px rgba(23,115,74,0)}100%{box-shadow:0 0 0 1px #9bd3b5 inset}}
-@keyframes game-drain{0%,100%{background:transparent}30%{background:#fdf1dc}}
+@keyframes game-drain{0%,100%{background:transparent}30%{background:var(--warn-bg)}}
 @keyframes game-pop{0%{stroke-width:4}40%{stroke-width:7}100%{stroke-width:4}}
 .checks-anchor{position:relative}
 .game-notes{position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);display:flex;justify-content:flex-end;pointer-events:none;z-index:40}
@@ -20,7 +20,7 @@
 .game-note.caught::before{content:"\1F6E1\FE0F  "}
 .game-note.guard{background:#f1edff;color:#4a3a8c;border-color:#c9bdf2}
 .game-legend{margin:2px 0 6px}
-.game-note.stale{color:#8a5a00;border-color:#efd39b}
+.game-note.stale{color:var(--warn);border-color:#efd39b}
 @keyframes game-note{from{opacity:0;transform:translateX(8px)}}
 #build.game-stale,#simulate.game-stale{box-shadow:0 0 0 2px #f0b44c;animation:game-stale 1.8s ease-in-out infinite}
 @keyframes game-stale{50%{box-shadow:0 0 0 4px rgba(240,180,76,.35)}}

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#OwnerPlanStep
   title: domain/change_case.py
   hash_method: ast-sig-v1
-  sha256: f73f0745e609031e69875d8cb96690e61d92928e643aaeecada2ee39da0f838a
-notes_baseline: 1ed33e73f27bdf296e7c436cfa8d1f82bfc2d6bd4627c14023b6cc43b8fa5957
+  sha256: 1caef0c31a87f87e6d45adfd7fc3ec3b78bfb04bf8d1c2b5538a9f1fcbabeafc
+notes_baseline: 65311399665ac1d1b40efe52fec406c5902e35f4f5ba9c77da97a09eb3b1bc50
 ---
 
 # domain.change_case.OwnerPlanStep
@@ -41,7 +41,7 @@ Reported proposal provenance, never a capability or an owner decision.
 |---|---|---|
 | `transaction` | `Transaction` |  |
 | `author` | `Literal['you', 'ai']` |  |
-| `round` | `int` | `Field(ge=1, strict=True)` |
+| `round` | `JsonInt` | `Field(ge=1)` |
 | `request` | `str` | `Field(max_length=6000)` |
 <!-- okf:generated:end facts -->
 
@@ -53,6 +53,7 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
 * [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 
 ## Referenced by

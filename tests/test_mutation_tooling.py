@@ -451,3 +451,18 @@ def test_a_checked_run_writes_its_ratchet_verdict_into_the_summary_and_an_unchec
     assert "status" not in json.loads((out / "summary.json").read_text(encoding="utf-8"))
     assert cli.main(["run", "--quick", "--check", "--out", str(out)]) == 1       # no mutants: the ratchet refuses it
     assert json.loads((out / "summary.json").read_text(encoding="utf-8"))["status"] == "FAIL"
+
+
+def test_resume_fingerprint_covers_nested_tests(tmp_path, monkeypatch):
+    """A changed property test under tests/property must invalidate a cached shard (Codex review on PR #238).
+    Pure: the engine version is pinned, so this runs without the mutation extra."""
+    from quality.mutation import runner
+    monkeypatch.setattr(runner, "engine_version", lambda: "cosmic-ray test")
+    fingerprint = runner.fingerprint
+    nested = tmp_path / "tests" / "property"
+    nested.mkdir(parents=True)
+    (tmp_path / "src" / "eija_studio").mkdir(parents=True)
+    (nested / "test_x.py").write_text("def test_x():\n    assert True\n", encoding="utf-8")
+    before = fingerprint(tmp_path, TARGETS[0], None, (0, 2))
+    (nested / "test_x.py").write_text("def test_x():\n    assert False\n", encoding="utf-8")
+    assert fingerprint(tmp_path, TARGETS[0], None, (0, 2)) != before
