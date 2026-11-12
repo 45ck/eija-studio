@@ -2,7 +2,7 @@
 
 Owner ask, 12 November 2026: "do 100 small fixes and 200 small polishes, quantitative UI/UX, do not change the UI from the original design". So every item here keeps the existing layout, visual language and flows, and every item has a number that moved.
 
-Status: **24 of 100 fixes and 72 of 200 polishes** have landed. Batches ship as small PRs; this file is the running tally.
+Status: **25 of 100 fixes and 74 of 200 polishes** have landed. Batches ship as small PRs; this file is the running tally.
 
 Labels as in the rest of `docs/hci/`. **MEASURED**: computed by a script run on the real PlayIDE served by `eija serve` (offline provider, synthetic data) in headless Chromium, or computed from the stylesheet. Nothing here is a measurement of people; no usability claim is made.
 
@@ -28,6 +28,8 @@ A second script probes behaviour: popover and dialog open/close by keyboard, Esc
 Baseline (MEASURED, main at 497bd89): 130 distinct findings on `library-loan` and 153 on `excursion` at 1440x900; 31 of 34 behaviour probes passed. After batch 1: 12 and 16 findings, 34 of 34 probes. Batch 2 adds a hover, cursor, forced-colours, reduced-motion and text-spacing pass: controls with no hover feedback 54 -> 18 (the 18 are the selected or current item of a list, which keeps its selected look), borderless controls in forced colours 21 -> 5, reduced-motion and text-spacing findings 0 before and after.
 
 Correction in batch 3: batch 1's wider splitter grab (3 px either side) also widened the Design + Play splitter sideways when the local app is stacked under the model, which made the page 3 px wider than a 320 or 760 px window (`tests/test_play_shell.py` compact geometry, opt-in browser test). The stacked splitter now grows only up and down; it is not counted as a fix. The behaviour probes grew to 61 (round 2: toolbars, chat send keys, inline edit, Ctrl+S, F10, dialog tabs, outline, menus; round 3: Export menu, More tabs, checks popover, the palette).
+
+Batch 4 comes from a manual screenshot walkthrough at 1280x760, since the automated detectors above now report only their known false positives. Probe rounds 4 and 5 added 22 checks (dialog open, Escape and focus return for Systems, Review & activate and Requirements; Simulate; Rename and Escape; F9 breakpoints; Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z; Ctrl+Z inside the chat box). All 22 passed before any change, so none is counted. A Permissions polish (wrapped transition names centred) landed from another thread first and is not counted here either.
 
 Not fixed on purpose: the chat box is a `textarea` with `role=combobox` for name completion (axe `aria-allowed-role`). Changing the role changes how screen readers announce completion, so it waits for a screen-reader pass. The 13 px plan-step checkboxes sit inside their labels, which are the real targets.
 
@@ -60,6 +62,7 @@ Not fixed on purpose: the chat box is a `textarea` with `role=combobox` for name
 | F022 | 3 | Import / Export menu | Tabbing out of the open menu left it open over the toolbar; it now closes when focus leaves it | menu left open after focus leaves: yes -> no |
 | F023 | 3 | Sequences | The Export menu ignored Escape; Escape now closes it and returns focus to Export | probe: Escape closes 0/1 -> 1/1 |
 | F024 | 3 | Sequences | The Export menu stayed open after a click elsewhere and after Download or Reset (Copy already closed it); all now close it | probe: click outside closes 0/1 -> 1/1 |
+| F025 | 4 | Screen designer | The accessibility summary showed a pass tick (✓) even when checks were left to look at ("8 of 9 checks pass, 1 to look at"); it now shows ⚠ in that case, as the ripple list does, and the mark is hidden from screen readers since the words say it | summaries with a pass mark over a warning: 1 -> 0 (library-loan Create screen) |
 
 ## Polishes
 
@@ -137,3 +140,5 @@ Not fixed on purpose: the chat box is a `textarea` with `role=combobox` for name
 | P070 | 2 | Screen designer | Field ↑ and × buttons show a tooltip naming the field | icon-only controls without a tooltip: 2 per field -> 0 |
 | P071 | 2 | Bottom panel | Hide-panel ✕ declares its Ctrl+Alt+P shortcut to assistive technology, as its tooltip already does | shortcuts shown but not declared: 1 -> 0 |
 | P072 | 3 | UML palette | The palette is a vertical column, and now says so (aria-orientation), so Up and Down move along it | toolbar orientation declared: 0 of 1 vertical toolbars -> 1 of 1 |
+| P073 | 4 | Chat plan | The chat's "Review it" button now says "Review the change", the same words as the plan banner button and the Review tab heading it opens | labels for the one action 2 -> 1 |
+| P074 | 4 | Chat plan | Plan review keys (J, K, Space, S, P) are set as keys, like Ctrl K in the title bar and status bar | shortcut keys shown as plain letters 5 -> 0 |
