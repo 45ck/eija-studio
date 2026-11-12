@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0232-one-action-from-several-states.md
   title: 0232-one-action-from-several-states.md
   hash_method: lf-sha256-v1
-  sha256: 816c45e9b3947c074a9dcd7745a7e87391be5257aa17286f2ae87614bc0c4627
-notes_baseline: 1781a0d8bf12fe3fe71ddabea630601f406db4d940d476da5ae1baa6f5a89c08
+  sha256: fb2e94d7e4d8cdd7b8eafe0926f7b9a2532d5791b0f6571bac7e3e596419ba99
+notes_baseline: f78a24662ce943c2fa8018cff1b81db2cebf14b68de4b1d512afe6d3f4d7fbdc
 ---
 
 # ADR-0232: One action from several states
@@ -54,6 +54,7 @@ notes_baseline: 1781a0d8bf12fe3fe71ddabea630601f406db4d940d476da5ae1baa6f5a89c08
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 12 November 2026: chat and the outline name the source
 
 ## Code and docs mentioned
 

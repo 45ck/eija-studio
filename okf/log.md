@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-11-12
+
+* **PlayIDE browser QA of the new kernel features**: synced ADR-0232 and ADR-0234 (amendments: chat names the source of an action that leaves several states; tests and permissions give the record values), `Scenario.values`, `scenario_run`, `access.matrix`/`reach`, `plan_proposals` and `system_describer`. The modules' Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
+
 ## 2026-11-11
 
 * **Built associations (issue #145, step 2)**: synced ADR-0235, `Association.built`, `references`, `record_fields` and `check_record` in `domain/data.py`, the generated app's object store and reference checks, the oracle's stocked objects and reference cases, the API contract's objects route and the class-build report. Re-read the Notes of `check_accessibility` as `process:claude-code`; they still hold. No human source approval was recorded. Review fixes: the 40-field limit for attributes and reference fields together, and `built` kept through UML interchange (`not_carried` on export, defaulted on import).

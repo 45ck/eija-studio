@@ -8,11 +8,14 @@ as a failing test. They live in an optional `scenarios.json` beside the pack's `
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field, ValidationError, model_validator
+from pydantic import (Field, SerializerFunctionWrapHandler, StrictBool, StrictFloat, StrictInt, StrictStr, ValidationError,
+                      model_serializer, model_validator)
 
+from .data import ATTRIBUTE_NAME
 from .models import Contract, DomainError, fingerprint
 from .pack import Pack, pack_directory
 
@@ -38,11 +41,31 @@ class ScenarioStep(Contract):
     then: Then
 
 
+_Value = StrictBool | StrictInt | StrictFloat | StrictStr  # a value a guard over values compares (ADR-0234)
+
+
 class Scenario(Contract):
     id: str = Field(pattern=r"^[a-z][a-z0-9-]{0,59}$")
     title: str = Field(min_length=1, max_length=120)
     start: str | None = Field(default=None, pattern=NAME)  # None starts where a new record starts
+    # The record's values, which guards over values read (ADR-0234), such as {"amount": 300}: without them a guarded
+    # transition is refused, as the kernel fails closed. Empty is left out of every dump, so existing digests hold.
+    values: dict[str, _Value] = Field(default_factory=dict, max_length=40)
     steps: tuple[ScenarioStep, ...] = Field(min_length=1, max_length=40)
+
+    @model_serializer(mode="wrap")
+    def _omit_no_values(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.values:
+            data.pop("values", None)
+        return data
+
+    @model_validator(mode="after")
+    def named_values(self) -> Scenario:
+        bad = sorted(name for name in self.values if not re.fullmatch(ATTRIBUTE_NAME, name))
+        if bad:
+            raise ValueError(f"not an attribute name: {', '.join(bad)}")
+        return self
 
 
 class Scenarios(Contract):

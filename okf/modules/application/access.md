@@ -54,6 +54,7 @@ actor could take it in the kernel; other actors might. Nothing persists and no e
 * [`application/simulation`](/modules/application/simulation.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
+* [`domain/value_guards`](/modules/domain/value_guards.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -67,6 +68,7 @@ _No curated notes yet._
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
+* [domain.value_guards](/modules/domain/value_guards.md) - Guards over a record's values (issue #93, ADR-0234): which values can decide them, and whether they fit the data model.
 
 ## Referenced by
 

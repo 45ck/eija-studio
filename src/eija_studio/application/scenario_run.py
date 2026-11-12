@@ -24,11 +24,13 @@ CASE = "scenario"
 class _Record:
     """One record in an in-memory session, advanced one step at a time by the kernel."""
 
-    def __init__(self, pack: Pack, model: Workflow, state: str):
+    def __init__(self, pack: Pack, model: Workflow, state: str, values: dict[str, Any] | None = None):
         self.pack, self.model = pack, model
         self.session = MemorySession(pack)
         self.session.create_instance({"id": "r", "case_id": CASE, "model_hash": model.semantic_hash, "state": state, "version": 0})
+        self.session.record_values["r"] = dict(values or {})  # what guards over values read (ADR-0234)
         self.steps = 0
+        self.refusal = ""  # the kernel's words for the last refusal
 
     @property
     def state(self) -> str:
@@ -43,6 +45,7 @@ class _Record:
         try:
             result = runtime.execute(self.session, CASE, self.model, command, pack=self.pack)  # type: ignore[arg-type]
         except DomainError as error:
+            self.refusal = str(error)
             return Then(refused=error.code)
         return Then(state=result["instance"]["state"])
 
@@ -58,7 +61,12 @@ def _said(then: Then) -> str:
     return f"moves to {then.state}" if then.state else f"is refused ({then.refused})"
 
 
-def _step_view(pack: Pack, model: Workflow, step: ScenarioStep, source: str, actual: Then | None) -> dict[str, Any]:
+def _hint(actual: Then, refusal: str) -> str:
+    """A refusal by a guard over values says which guard, and how a test meets it (ADR-0234)."""
+    return f" {refusal}: give the test record values that meet it." if actual.refused == "VALUE_GUARD_DENIED" and refusal else ""
+
+
+def _step_view(pack: Pack, model: Workflow, step: ScenarioStep, source: str, actual: Then | None, refusal: str = "") -> dict[str, Any]:
     actor = next((a for a in pack.fixtures.actors if a.id == step.actor), None)
     view = {"actor": step.actor, "role": actor.role if actor else None, "action": step.action, "from": source,
             "expect": step.then.model_dump(exclude_none=True)}
@@ -66,21 +74,21 @@ def _step_view(pack: Pack, model: Workflow, step: ScenarioStep, source: str, act
         return view | {"status": "NOT_RUN", "cells": _cells(model, step.action, source, None)}
     ok = actual == step.then
     return view | {"status": "PASS" if ok else "FAIL", "actual": actual.model_dump(exclude_none=True),
-                   "why": f"Expected it {_said(step.then)}; it {_said(actual)}." if not ok else _said(actual).capitalize() + ".",
+                   "why": f"Expected it {_said(step.then)}; it {_said(actual)}.{_hint(actual, refusal)}" if not ok else _said(actual).capitalize() + ".",
                    "cells": _cells(model, step.action, source, actual.state)}
 
 
 def run_scenario(pack: Pack, model: Workflow, scenario: Scenario) -> dict[str, Any]:
     """Run one scenario; it stops at the first step whose outcome differs from what it expects."""
     start = scenario.start or model.initial_state
-    head = {"id": scenario.id, "title": scenario.title, "start": start}
+    head = {"id": scenario.id, "title": scenario.title, "start": start} | ({"values": dict(scenario.values)} if scenario.values else {})
     if start not in model.states:
         return head | {"status": "FAIL", "why": f"It starts in {start}, which this model does not have.",
                        "steps": [_step_view(pack, model, s, start, None) for s in scenario.steps], "failed_step": None}
-    record, steps, failed = _Record(pack, model, start), [], None
+    record, steps, failed = _Record(pack, model, start, scenario.values), [], None
     for index, step in enumerate(scenario.steps):
         source = record.state
-        view = _step_view(pack, model, step, source, None if failed is not None else record.take(step.actor, step.action))
+        view = _step_view(pack, model, step, source, None if failed is not None else record.take(step.actor, step.action), record.refusal)
         if view["status"] == "FAIL":
             failed = index
         steps.append(view)
@@ -104,13 +112,15 @@ def run_scenarios(pack: Pack, model: Workflow, scenarios: Scenarios) -> dict[str
     return head | {"status": status, "passed": len(results) - failed, "failed": failed, "scenarios": results}
 
 
-def record_steps(pack: Pack, model: Workflow, start: str | None, steps: list[tuple[str, str]]) -> list[dict[str, Any]]:
+def record_steps(pack: Pack, model: Workflow, start: str | None, steps: list[tuple[str, str]],
+                 values: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     """What the kernel does for each (actor, action) in turn, written as scenario steps that expect exactly that.
 
-    This is how a person adds a test: try the steps, read what happened, and keep it if it is what should happen."""
+    This is how a person adds a test: try the steps, read what happened, and keep it if it is what should happen.
+    `values` are the record's values, which guards over values read (ADR-0234)."""
     state = start or model.initial_state
     if state not in model.states:
         raise DomainError("STATE_UNKNOWN", f"{state} is not a state of this model")
-    record = _Record(pack, model, state)
+    record = _Record(pack, model, state, values)
     return [ScenarioStep(actor=actor, action=action, then=record.take(actor, action)).model_dump(mode="json", exclude_none=True)
             for actor, action in steps]

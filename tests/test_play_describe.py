@@ -168,3 +168,20 @@ def test_a_system_with_no_tests_can_have_them_recorded(served):
     assert "Sequences shows a draft" in tests["items"][0]["text"]
     updated = post(client, "/api/play/tests/update", {})
     assert updated["changes"] == [{"change": "added", "title": "Job reaches Done"}]
+
+
+@pytest.mark.parametrize(("text", "fields"), [
+    # A clause is not a field ("agents resolve them", "customers can reopen within 7 days"), and the field after
+    # "tickets that have" is the field; slashes list its choices, which replace the template's own.
+    ("A ticketing system for IT support with tickets that have priority low/medium/high, agents resolve them and "
+     "customers can reopen within 7 days.", {"priority": ("choice", ["Low", "Medium", "High"])}),
+    # "agents" is not an age: a number is a whole word, as in "age" or "number of guests".
+    ("Bookings have an age, a number of guests and an agent name.",
+     {"age": ("number", None), "numberOfGuests": ("number", None), "agentName": ("text", None)}),
+])
+def test_the_offline_reader_takes_fields_not_clauses(text, fields):
+    read = OfflineSystemDescriber().describe(text)
+    said = next(r for r in read["reading"] if r.startswith("Fields from your words: "))
+    names = said.removeprefix("Fields from your words: ").rstrip(".").split(", ")
+    own = {f["name"]: (f["type"], f.get("choices")) for f in read["fields"] if f["name"] in names}
+    assert own == fields, read["reading"]
