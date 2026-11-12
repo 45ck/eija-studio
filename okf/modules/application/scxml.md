@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py
   title: application/scxml.py
   hash_method: ast-api-v1
-  sha256: 5a3cb70dd987944e95d873ecc91db3cdbe878ea84bf28c8e736c6cf13466257e
-notes_baseline: 8176d080a1fce9f300122901ad46ad5dc21dc1bd84ac873209122a88087f95d9
+  sha256: 670bdb8369295f0325efff15dc7f15da04e747781540b697336b4e840a23475a
+notes_baseline: 10099af15af59cefe705a670b2dfdfbb5c5752b4131e36b1fc0ff3fbf4a1f7e6
 ---
 
 # application.scxml
@@ -48,7 +48,7 @@ runs in production. What it keeps and what it leaves to the kernel:
   sends the event reads the record's values, as the kernel's `UnitOfWork.values` port does, and attaches each guarded
   attribute as `value_<name>` with `has_<name>` (False when the record has no value). The data model has already
   checked each value's type, so the chart compares without a type test.
-* A time event (`after(14 days)`, ADR-0236) becomes a `cond` term over the event data as well: whoever sends the event
+* A time event (`after(14 days)`, ADR-0237) becomes a `cond` term over the event data as well: whoever sends the event
   reads how long the record has been in its state, as the kernel's `UnitOfWork.elapsed` port does, and attaches it as
   `elapsed` in seconds, with `has_elapsed` False when it is unknown, which is never due. It is not a delayed `<send>`: in the kernel a time
   event makes a step allowed, and an actor (usually a «timer» role) still takes it through the same checks.

@@ -45,7 +45,7 @@ def check_guards(transition: Transition, values: dict[str, Any]) -> None:
 
 def check_due(transition: Transition, elapsed: float | None) -> None:
     """Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that
-    long (ADR-0236). An unknown entry time is never due (fail closed)."""
+    long (ADR-0237). An unknown entry time is never due (fail closed)."""
     if transition.after is not None and not transition.after.due(elapsed):
         raise DomainError("TIMER_NOT_DUE", f"{transition.action} is due only {transition.after} in {transition.from_state}",
                           {"codes": ["TIMER_NOT_DUE"], "refs": [f"transition:{transition.id}", f"state:{transition.from_state}"]})

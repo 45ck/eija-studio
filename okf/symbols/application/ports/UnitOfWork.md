@@ -90,7 +90,7 @@ Structural interface implemented by adapters; not a class to instantiate.
 
 Adapters implement it structurally ([SQLite store](/modules/adapters/sqlite_store.md)); domain and application never import SQL types. A new backend must reproduce compare-and-swap, replay and atomicity before use.
 
-`values` returns a record's values for a transition with guards over them (ADR-0234); a store without record values returns `{}`, so such guards fail closed. `elapsed` returns how many seconds the record has been in its current state, by the adapter's clock, read only for a transition with a time event ([ADR-0236](/adrs/0236-time-events.md)); a store that keeps no clock returns None, which is never due. `acts` and `record_act` keep who took which action on a record, read and written only for actions a separation-of-duties law names ([ADR-0233](/adrs/0233-separation-of-duties.md)).
+`values` returns a record's values for a transition with guards over them (ADR-0234); a store without record values returns `{}`, so such guards fail closed. `elapsed` returns how many seconds the record has been in its current state, by the adapter's clock, read only for a transition with a time event ([ADR-0237](/adrs/0237-time-events.md)); a store that keeps no clock returns None, which is never due. `acts` and `record_act` keep who took which action on a record, read and written only for actions a separation-of-duties law names ([ADR-0233](/adrs/0233-separation-of-duties.md)).
 
 set_active also accepts the optional generated-app association. Adapters commit the new baseline, association and applied case together; a workflow-only activation clears an earlier exact-app association rather than borrowing it.
 

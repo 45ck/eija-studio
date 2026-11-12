@@ -67,7 +67,7 @@ class GeneratedAppActivation(Contract):
     subject_hash: Digest
 
 
-GENERATED_TESTS = 10  # the conformance template's test methods; the time-event check joined them in ADR-0236
+GENERATED_TESTS = 10  # the conformance template's test methods; the time-event check joined them in ADR-0237
 
 
 def generated_receipt_status(receipt: dict[str, Any], binding: GeneratedAppBinding,

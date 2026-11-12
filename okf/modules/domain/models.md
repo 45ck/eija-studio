@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: 0bd1c26618343dfb38805696a9c7ffe7a586d3d170ff7055a683ad6b03695632
-notes_baseline: cff5a17450f50b67f42584911d56f1dbea5d8cf4a0b09b5bce15e4f43ad0cba8
+  sha256: 76d1ea18e5200b8337a7adaa51a0925623286795761679833cc6cf89196a2256
+notes_baseline: 2d985160a05e2ba16bcc044309c4ab4c6551818a150d234c2e7084fe4ab618ad
 ---
 
 # domain.models
@@ -37,7 +37,7 @@ _The source carries no module docstring._
 * [`BASE_GUARDS`](/symbols/domain/models/BASE_GUARDS.md) (constant) - no docstring
 * [`Comparison`](/symbols/domain/models/Comparison.md) (type-alias) - no docstring
 * [`Contract`](/symbols/domain/models/Contract.md) (class) - no docstring
-* [`Delay`](/symbols/domain/models/Delay.md) (class) - A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has been i…
+* [`Delay`](/symbols/domain/models/Delay.md) (class) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been i…
 * [`DomainError`](/symbols/domain/models/DomainError.md) (class) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [`ExecuteCommand`](/symbols/domain/models/ExecuteCommand.md) (class) - no docstring
 * [`Guard`](/symbols/domain/models/Guard.md) (type-alias) - no docstring
@@ -153,7 +153,7 @@ _No curated notes yet._
 * [domain.models.Comparison](/symbols/domain/models/Comparison.md) - Type alias `Comparison` in `domain/models`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.Delay.due](/symbols/domain/models/Delay.due.md) - `def due(self, elapsed: float | None) -> bool` in `domain/models`.
-* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has been in its source state this long.
+* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
 * [domain.models.Delay.seconds](/symbols/domain/models/Delay.seconds.md) - `def seconds(self) -> int` in `domain/models`.
 * [domain.models.Delay.span](/symbols/domain/models/Delay.span.md) - The duration in words: ``2 days``, ``1 hour``.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
@@ -177,7 +177,7 @@ _No curated notes yet._
 * [domain.models.ValueGuard.holds](/symbols/domain/models/ValueGuard.holds.md) - `def holds(self, values: dict[str, Any]) -> bool` in `domain/models`.
 * [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
-* [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0236).
+* [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.

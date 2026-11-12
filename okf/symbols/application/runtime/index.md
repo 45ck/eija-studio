@@ -3,7 +3,7 @@
 # Functions
 
 * [application.runtime.check_actor](check_actor.md) - Denies a command unless the trusted actor is active, holds the transition's role and, where guarded, is assigned.
-* [application.runtime.check_due](check_due.md) - Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (ADR-0236).
+* [application.runtime.check_due](check_due.md) - Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (ADR-0237).
 * [application.runtime.check_guards](check_guards.md) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
 * [application.runtime.check_separation](check_separation.md) - Refuse an actor who already took another action of a separation law on this record.
 * [application.runtime.execute](execute.md) - Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.

@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 import xml.etree.ElementTree as ET
 
-from .model import Attr, Edge, Klass, Link, Parsed, xml_root
+from .model import Attr, Edge, Klass, Link, Parsed, is_count, whole, xml_root
 from .xmi_document import (XmiDocument, bounds_of, children, comment_text, local, located, multiplicity_of, of_type, texts,
                            uml_type, xattr)
 
@@ -97,7 +97,7 @@ def _property(doc: XmiDocument, prop: ET.Element, rules: dict[str, int]) -> Attr
     target = doc.ref(prop, "type")
     type_name = doc.name(target) if target is not None else ""
     lower, upper = bounds_of(prop)
-    return Attr(name=prop.get("name") or "", type=type_name, lower=int(lower) if lower.isdigit() else 0, upper=upper,
+    return Attr(name=prop.get("name") or "", type=type_name, lower=whole(lower) if is_count(lower) else 0, upper=upper,
                 max_length=rules.get(xattr(prop, "id") or ""), description=comment_text(prop), where=located(prop))
 
 
@@ -107,7 +107,7 @@ def _rules(doc: XmiDocument, klass: ET.Element) -> dict[str, int]:
         found = re.search(r"(\w+)\.size\(\)\s*<=\s*(\d+)", _spec_text(doc, rule))
         constrained = (rule.get("constrainedElement") or "").split()
         if found and constrained:
-            out[constrained[0]] = int(found.group(2))
+            out[constrained[0]] = whole(found.group(2))
     return out
 
 

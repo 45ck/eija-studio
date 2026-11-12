@@ -36,7 +36,7 @@ class ScenarioStep(Contract):
     actor: str = Field(min_length=1, max_length=60)  # a fixture actor id
     action: str = Field(pattern=NAME)
     then: Then
-    # Time that passes before the step, for a model with time events (ADR-0236). None is left out of every dump, so
+    # Time that passes before the step, for a model with time events (ADR-0237). None is left out of every dump, so
     # scenarios without waits keep their exact bytes and digests.
     wait: Delay | None = None
 

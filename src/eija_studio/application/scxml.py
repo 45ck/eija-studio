@@ -17,7 +17,7 @@ runs in production. What it keeps and what it leaves to the kernel:
   sends the event reads the record's values, as the kernel's `UnitOfWork.values` port does, and attaches each guarded
   attribute as `value_<name>` with `has_<name>` (False when the record has no value). The data model has already
   checked each value's type, so the chart compares without a type test.
-* A time event (`after(14 days)`, ADR-0236) becomes a `cond` term over the event data as well: whoever sends the event
+* A time event (`after(14 days)`, ADR-0237) becomes a `cond` term over the event data as well: whoever sends the event
   reads how long the record has been in its state, as the kernel's `UnitOfWork.elapsed` port does, and attaches it as
   `elapsed` in seconds, with `has_elapsed` False when it is unknown, which is never due. It is not a delayed `<send>`: in the kernel a time
   event makes a step allowed, and an actor (usually a «timer» role) still takes it through the same checks.

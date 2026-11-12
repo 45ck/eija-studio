@@ -124,7 +124,7 @@ class Conformance(unittest.TestCase):
                 self.assertEqual(observe(svc, record_id, attempt), case["expect"])
 
     def test_time_events_match_the_kernel(self):
-        """A record that has been in its state half the time is refused, and one in it the whole time is not (ADR-0236)."""
+        """A record that has been in its state half the time is refused, and one in it the whole time is not (ADR-0237)."""
         if not any(t.after for t in service.MODEL.transitions):
             self.assertNotIn("timer_cases", ORACLE)
         for case in ORACLE.get("timer_cases", []):

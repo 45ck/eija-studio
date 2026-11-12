@@ -282,7 +282,7 @@ def test_real_generated_checker_runs_the_retained_selected_artifact(studio):
     checked = studio.verify(case["id"], case["version"])
     generated = next(r for r in checked["receipts"] if r["claim"] == "generated_app_conformance")
     assert generated["artifact"]["returncode"] == 0
-    assert generated["artifact"]["tests_run"] == 10  # the conformance template gained the time-event check (ADR-0236)
+    assert generated["artifact"]["tests_run"] == 10  # the conformance template gained the time-event check (ADR-0237)
     assert "Ran 10 tests" in generated["artifact"]["stderr"]
     assert studio.view(case["id"])["packet"]["app_build"]["conformance"]["status"] == "PASS"
 

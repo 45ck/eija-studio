@@ -70,5 +70,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [ADR-0236: Time events on transitions](/adrs/0236-time-events.md) - Issue #93, item 2.
+* [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
 <!-- okf:generated:end links -->

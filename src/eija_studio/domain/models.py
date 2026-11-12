@@ -92,7 +92,7 @@ SECONDS: dict[str, int] = {"minutes": 60, "hours": 3600, "days": 86400}
 
 
 class Delay(Contract):
-    """A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has
+    """A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has
     been in its source state this long. Time is measured from when the record entered that state, which every
     committed step does, a step back into the same state included. An unknown entry time never counts as due."""
     amount: StrictInt = Field(ge=1, le=10_000)
@@ -126,7 +126,7 @@ class Transition(Contract):
     # Guards over the record's values (ADR-0234); all must hold. Empty is left out of every dump, so transitions
     # without them keep their exact bytes and hashes.
     conditions: tuple[ValueGuard, ...] = Field(default=(), max_length=8)
-    # A time event (ADR-0236): taken only once the record has been in the source state this long. None is left out of
+    # A time event (ADR-0237): taken only once the record has been in the source state this long. None is left out of
     # every dump, so transitions without one keep their exact bytes and hashes.
     after: Delay | None = None
 
@@ -208,7 +208,7 @@ class Workflow(Contract):
 
     @property
     def longest_wait(self) -> int:
-        """The longest time event on any transition, in seconds; 0 when the model has none (ADR-0236). Waiting this
+        """The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237). Waiting this
         long in a state makes every time event leaving it due."""
         return max((t.after.seconds for t in self.transitions if t.after is not None), default=0)
 

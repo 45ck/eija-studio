@@ -3,7 +3,7 @@
 #c4-panel[hidden]{display:none}
 .c4-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .c4-header h2{font-size:1.4rem;letter-spacing:-.025em;margin:4px 0 16px}
-.c4-eyebrow{font-size:.68rem;font-weight:750;letter-spacing:.08em;color:var(--accent);margin:0}
+.c4-eyebrow{font-size:.7rem;font-weight:750;letter-spacing:.08em;color:var(--accent);margin:0}
 #c4-levels{display:flex;gap:6px;flex-wrap:wrap;padding:6px;background:var(--busy-bg);border:1px solid var(--line);border-radius:11px}
 #c4-levels button{flex:1;padding:10px 12px;white-space:normal;border-color:transparent;background:transparent}
 #c4-levels button[aria-pressed=true]{background:var(--panel);border-color:var(--accent);color:var(--accent);box-shadow:0 2px 6px #3157d512}
@@ -33,7 +33,7 @@
 .c4-technology{font-size:.7rem;font-weight:650;color:var(--muted);overflow-wrap:anywhere}
 .c4-description{font-size:.74rem;line-height:1.45;overflow-wrap:anywhere}
 .c4-support{font-size:.63rem;line-height:1.4;font-weight:750;padding-top:6px;color:var(--accent);text-transform:uppercase;letter-spacing:.03em}
-.c4-drill-hint{font-size:.66rem;font-weight:650;margin-top:6px;color:var(--accent)}
+.c4-drill-hint{font-size:.7rem;font-weight:650;margin-top:6px;color:var(--accent)}
 #c4-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
 .c4-edge{fill:none;stroke:#a7b7d6;stroke-width:1.5;stroke-dasharray:4 3}
 .c4-edge.selected{stroke:var(--accent);stroke-width:2.5;stroke-dasharray:none}

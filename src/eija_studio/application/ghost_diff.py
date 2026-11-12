@@ -46,7 +46,7 @@ def _edge(t: Transition, key: str, status: str, **extra: Any) -> dict[str, Any]:
 
 def _field_text(f: dict[str, Any]) -> str:
     before, after = f["before"], f["after"]
-    if f["field"] == "after":  # a time event (ADR-0236): none, or after(2 days)
+    if f["field"] == "after":  # a time event (ADR-0237): none, or after(2 days)
         return f"{FIELD_TEXT['after']} {before or 'none'} → {after or 'none'}"
     if isinstance(before, list):
         parts = [f"+{x}" for x in after if x not in before] + [f"-{x}" for x in before if x not in after]

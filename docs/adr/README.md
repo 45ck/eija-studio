@@ -116,7 +116,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0233](0233-separation-of-duties.md) | Separation of duties | accepted |
 | [0234](0234-guards-over-record-values.md) | Guards over record values | accepted |
 | [0235](0235-built-associations.md) | Built associations as checked reference fields | accepted |
-| [0236](0236-time-events.md) | Time events on transitions | accepted |
+| [0236](0236-hostile-input-and-plan-cost.md) | Hostile input at PlayIDE's edges, and the cost of a plan at the model's limits | accepted |
+| [0237](0237-time-events.md) | Time events on transitions | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

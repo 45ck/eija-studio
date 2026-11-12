@@ -48,7 +48,7 @@ MIGRATIONS = {"fields": "ALTER TABLE records ADD COLUMN fields TEXT NOT NULL DEF
               "data_digest": "ALTER TABLE records ADD COLUMN data_digest TEXT NOT NULL DEFAULT ''",
               "entered_at": "ALTER TABLE records ADD COLUMN entered_at REAL"}  # NULL: a time event is never due on it
 
-now = time.time  # the app's clock, which the kernel reads only through `Session.elapsed` (ADR-0236)
+now = time.time  # the app's clock, which the kernel reads only through `Session.elapsed` (ADR-0237)
 
 Refused = DomainError  # what the kernel raises; `code` is its stable refusal code
 
@@ -93,7 +93,7 @@ class Session:
         return json.loads(row["fields"]) if row else {}
 
     def elapsed(self, instance_id: str) -> float | None:
-        """Seconds since the record entered its state, which the model's time events read (ADR-0236). Every committed
+        """Seconds since the record entered its state, which the model's time events read (ADR-0237). Every committed
         step enters its target state afresh. None for a record from a build that kept no entry time."""
         row = self.db.execute("SELECT entered_at FROM records WHERE id=?", (instance_id,)).fetchone()
         return None if row is None or row["entered_at"] is None else now() - row["entered_at"]

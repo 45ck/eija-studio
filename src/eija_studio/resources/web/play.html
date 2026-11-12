@@ -50,7 +50,7 @@
 </head>
 <body>
 <header class="bar">
-  <div class="brand"><span class="logo" aria-hidden="true">▶</span><strong>PlayIDE</strong><span id="model-name" class="model-name"></span>
+  <div class="brand"><span class="logo" aria-hidden="true">▶</span><h1 class="brand-name">PlayIDE</h1><span id="model-name" class="model-name"></span>
     <span id="system-controls" class="system-controls" hidden>
       <button id="system-new" class="quiet system-new" type="button" aria-haspopup="dialog" aria-controls="systems-dialog" title="New app: describe it and get every model and view of it">＋ New</button>
       <button id="system-menu" class="quiet system-menu" type="button" aria-haspopup="dialog" aria-controls="systems-dialog" title="Open another system or start a new one">Systems</button>
@@ -68,7 +68,7 @@
     <a class="quiet" href="/">Review workbench</a>
   </div>
 </header>
-<div class="toolbar">
+<div class="toolbar" role="region" aria-label="Tools">
   <div id="history" class="runbar edit-tools" role="toolbar" aria-label="Edit history">
     <button id="undo" class="run-btn" type="button" aria-label="Undo" title="Undo (Ctrl+Z)" aria-keyshortcuts="Control+Z" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M5.5 3 1.5 7l4 4V8.2h4a3 3 0 0 1 0 6H8v1.5h1.5a4.5 4.5 0 0 0 0-9h-4z"/></svg></button>
     <button id="redo" class="run-btn" type="button" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" aria-keyshortcuts="Control+Shift+Z Control+Y" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M10.5 3l4 4-4 4V8.2h-4a3 3 0 0 0 0 6H8v1.5H6.5a4.5 4.5 0 0 1 0-9h4z"/></svg></button>
@@ -203,8 +203,8 @@
             <a id="screens-download" class="quiet" download="screens.json">Download screens.json</a>
           </div>
         </div>
-        <aside class="palette" aria-labelledby="palette-title"><h3 id="palette-title">Record attributes</h3>
-          <p class="muted small">Drag onto the screen, or press Add.</p><ul id="palette"></ul></aside>
+        <section class="palette" aria-labelledby="palette-title"><h3 id="palette-title">Record attributes</h3>
+          <p class="muted small">Drag onto the screen, or press Add.</p><ul id="palette"></ul></section>
       </div>
       <div id="laws" class="laws" role="tabpanel" aria-labelledby="tab-laws" hidden>
         <div class="laws-head">
@@ -320,7 +320,7 @@
           <h3>Breakpoints</h3>
           <label class="check"><input id="break-refusal" type="checkbox"> Break when the kernel refuses</label>
           <ul id="debug-breakpoints" class="breakpoints"></ul>
-          <h3>Steps so far</h3><ol id="debug-log" class="log"></ol>
+          <h3>Steps so far</h3><ol id="debug-log" class="log" tabindex="0" aria-label="Steps so far"></ol>
           <p class="muted small" id="debug-limits"></p>
         </section>
         <section id="sim" class="sim" aria-labelledby="sim-title" hidden>
@@ -330,7 +330,7 @@
           <div id="sim-codes" class="chips"></div>
           <ul id="sim-kinds" class="sim-kinds" aria-label="Who acted, by kind of actor" hidden></ul>
           <h3>Worth a look</h3><ul id="sim-findings" class="findings"></ul>
-          <h3>Run log</h3><ol id="sim-log" class="log"></ol>
+          <h3>Run log</h3><ol id="sim-log" class="log" tabindex="0" aria-label="Run log"></ol>
           <p class="muted small" id="sim-limits"></p>
         </section>
         <section id="run" class="run" aria-labelledby="run-title" hidden>

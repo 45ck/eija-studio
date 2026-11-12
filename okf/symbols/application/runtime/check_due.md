@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.runtime.check_due
-description: Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (ADR-0236).
+description: Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (ADR-0237).
 resource: repo://src/eija_studio/application/runtime.py#check_due
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#check_due
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: ef9da7e61524eb0cbabfab3a80ad2f075c7de41ef776eb057925a1fc831b14c3
-notes_baseline: 780ab66b074106a450ebcf1d0bdda5d0fe6a1279a2dc88ce9a4f271a40cbc362
+  sha256: 8d6df2acfa9eb5610bab20641fd1b4a618379aedaad9fb3ff9ab1d8cedc1c6a6
+notes_baseline: 04ce28cf006231d04ae27dc880702743710000a9d5ccf1c70a2c724fdede1b8b
 ---
 
 # application.runtime.check_due
@@ -33,7 +33,7 @@ notes_baseline: 780ab66b074106a450ebcf1d0bdda5d0fe6a1279a2dc88ce9a4f271a40cbc362
 
 ~~~text
 Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that
-long (ADR-0236). An unknown entry time is never due (fail closed).
+long (ADR-0237). An unknown entry time is never due (fail closed).
 ~~~
 <!-- okf:generated:end facts -->
 

@@ -5,7 +5,7 @@ and tries an action: usually one their role is offered from the record's state, 
 and sometimes with an out-of-date version (someone else got there first). Revoked or unassigned actors still try, as
 people do, and the kernel refuses them. `runtime.execute` decides each attempt against an in-memory unit of work, so
 the counts, refusal codes and effects are the kernel's own answers, not a second reading of the model. The same seed
-gives the same run. Nothing persists and no effect leaves the process. For a model with time events (ADR-0236), each
+gives the same run. Nothing persists and no effect leaves the process. For a model with time events (ADR-0237), each
 step lets simulated time pass, so the longest one falls due within a few steps of a record entering its state.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ TRACE_LIMIT = 60  # steps kept in order for the run log and the sequence view
 NEW_RECORD = 0.2  # chance a step starts a new record instead of acting on an open one
 SLIP = 0.1  # chance a user tries a declared action that does not leave the record's state
 STALE = 0.05  # chance a user acts on a version someone else has already changed
-TICKS = 12  # with time events (ADR-0236), simulated time passes the longest one in this many steps
+TICKS = 12  # with time events (ADR-0237), simulated time passes the longest one in this many steps
 
 
 class MemorySession:
@@ -39,7 +39,7 @@ class MemorySession:
         self.operations: dict[str, dict[str, Any]] = {}
         self.acted: dict[str, list[tuple[str, str]]] = {}  # per record, (action, actor) for separation laws (ADR-0233)
         self.record_values: dict[str, dict[str, Any]] = {}  # per record, the values its value guards read (ADR-0234)
-        self.clock = 0.0  # simulated seconds; only `wait` moves it, so nothing here reads the real time (ADR-0236)
+        self.clock = 0.0  # simulated seconds; only `wait` moves it, so nothing here reads the real time (ADR-0237)
         self.entered: dict[str, float] = {}  # per record, the clock when it entered its current state
         self.audit: list[str] = []
         self.outbox: list[str] = []

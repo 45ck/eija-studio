@@ -111,7 +111,7 @@ class ScenariosRequest(BuildRequest):
 
 class TryRequest(BuildRequest):
     start: str | None = Field(default=None, min_length=1, max_length=60)
-    # (fixture actor, action) in turn, or (actor, action, wait) for a step that waits first (ADR-0236)
+    # (fixture actor, action) in turn, or (actor, action, wait) for a step that waits first (ADR-0237)
     steps: list[tuple[str, str] | tuple[str, str, Delay | None]] = Field(min_length=1, max_length=40)
 
 

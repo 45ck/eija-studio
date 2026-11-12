@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0236: Time events on transitions'
+title: 'ADR-0237: Time events on transitions'
 description: 'Issue #93, item 2.'
-resource: repo://docs/adr/0236-time-events.md
+resource: repo://docs/adr/0237-time-events.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0236-time-events.md
-  title: 0236-time-events.md
+- resource: repo://docs/adr/0237-time-events.md
+  title: 0237-time-events.md
   hash_method: lf-sha256-v1
-  sha256: f5b2cb8e3702c9511ff142b24a0a1d9cbca4a6acf1a5d97b0f6125e1f6a47fc7
-notes_baseline: a1a6a6ff045a815e0638f2aa257651e085edb4591480a52135349d5b30f4b9f0
+  sha256: ce813a262947dbac6cd1fb824a0dcae9ba865fa4aabcc2bd2b12be5b27516296
+notes_baseline: cc8358b2f5feea9c5caf89688488f9982c5c1dada6282bc2f9c55b61c1bfffc8
 ---
 
-# ADR-0236: Time events on transitions
+# ADR-0237: Time events on transitions
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: a1a6a6ff045a815e0638f2aa257651e085edb4591480a52135349d5b30f4b9f0
 | Status | accepted |
 | Date | 2026-11-12 |
 | Lane | kernel / executable UML |
-| Source | `repo://docs/adr/0236-time-events.md` |
+| Source | `repo://docs/adr/0237-time-events.md` |
 
 ## Decision outcome (verbatim)
 

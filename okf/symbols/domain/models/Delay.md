@@ -1,7 +1,7 @@
 ---
 type: Class
 title: domain.models.Delay
-description: 'A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has been in its source state this long.'
+description: 'A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.'
 resource: repo://src/eija_studio/domain/models.py#Delay
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Delay
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 189a7a2bef70395d9dd28fb60bec222bbaccebefbe0772c7ca4aba1c7da89177
-notes_baseline: 6a2eef8c186b1273cf163c3a5c45715028d04ed9fe0c164ada25083c0190ba4e
+  sha256: 9f9a9399db3d64d6bf33d905063b93cc2e8d1a2e867e10c40255017e9da3a588
+notes_baseline: 07711c4826052dc8c9990fe95792d0109d1c93381d05e12d8a31427fb653b7f8
 ---
 
 # domain.models.Delay
@@ -32,7 +32,7 @@ notes_baseline: 6a2eef8c186b1273cf163c3a5c45715028d04ed9fe0c164ada25083c0190ba4e
 ## Docstring
 
 ~~~text
-A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has
+A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has
 been in its source state this long. Time is measured from when the record entered that state, which every
 committed step does, a step back into the same state included. An unknown entry time never counts as due.
 ~~~
@@ -63,6 +63,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.scenario_run.record_steps](/symbols/application/scenario_run/record_steps.md) - What the kernel does for each (actor, action) in turn, written as scenario steps that expect exactly that.
 * [domain.models.Delay.due](/symbols/domain/models/Delay.due.md) - `def due(self, elapsed: float | None) -> bool` in `domain/models`.
 * [domain.models.Delay.seconds](/symbols/domain/models/Delay.seconds.md) - `def seconds(self) -> int` in `domain/models`.
 * [domain.models.Delay.span](/symbols/domain/models/Delay.span.md) - The duration in words: ``2 days``, ``1 hour``.

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py
   title: application/law_proof.py
   hash_method: ast-api-v1
-  sha256: ce17864d51c1fcb69eae44cdfdde75b4403889abd09e0d4636bf773d910a1b3a
-notes_baseline: 5f3a809adfdbf6b64b5b0d6423729b1572c952f7a092bb585b5e0f5bf2ccac58
+  sha256: c6cfd95f566faaba9366c2fe6049c83a39c5f1f656eb761be28d02564ef88db1
+notes_baseline: acd83245a87685ddff15338d209304f369ccefb85c23f166eb6ef45bc51e7c93
 ---
 
 # application.law_proof
@@ -46,7 +46,7 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   where the model has guards over them: one search per combination its guards can tell apart (ADR-0234). Every other law kind is
   judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
   how each kind is judged and a test fails if a new kind is not classified.
-* Time events (`after(14 days)`, ADR-0236): time can always pass, so each step is tried once the longest of them is
+* Time events (`after(14 days)`, ADR-0237): time can always pass, so each step is tried once the longest of them is
   due. Waiting only makes more steps possible, never fewer, so this is every run the kernel allows.
 * `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
   committed during the search, so a record is stuck only where the kernel itself leaves no way to an end (ADR-0221).

@@ -43,7 +43,7 @@ class _OracleSession:
                  waited: float | None = None):
         self.record_values = dict(values or {})
         # How long the record has been in its state: the model's longest time event unless a case says otherwise, so
-        # every time event is due in the ordinary cases (ADR-0236). A committed step enters a state afresh.
+        # every time event is due in the ordinary cases (ADR-0237). A committed step enters a state afresh.
         self.since = float(model.longest_wait if waited is None else waited)
         self.actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
         self.item = {"id": "r1", "case_id": "app", "model_hash": model_hash(model), "state": state, "version": 0}
@@ -210,7 +210,7 @@ def value_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
 
 def timer_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
     """For each transition with a time event, an actor who may take it tries it on a record that has been in the source
-    state half the time and the whole time, and the kernel's answer (ADR-0236). Empty for a model without time events,
+    state half the time and the whole time, and the kernel's answer (ADR-0237). Empty for a model without time events,
     so every other oracle keeps its exact bytes."""
     cases: list[dict[str, object]] = []
     for t in sorted((t for t in model.transitions if t.after is not None), key=lambda t: t.id):

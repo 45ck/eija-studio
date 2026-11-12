@@ -24,7 +24,7 @@
 .diff-fields.diff-detail{width:auto;margin:2px 0 6px 1.6em;font-size:.8rem}
 .key{font-weight:600}
 .key.added,.diff-item.added .mark{color:var(--ok)}
-.key.changed,.key.moved,.diff-item.changed .mark,.diff-item.moved .mark{color:#8a5a08}
+.key.changed,.key.moved,.diff-item.changed .mark,.diff-item.moved .mark{color:var(--warn)}
 .key.removed,.diff-item.removed .mark{color:var(--bad)}
 .diff-list{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:4px}
 .diff-list li{display:flex}
@@ -43,13 +43,13 @@
 .show-changes{display:inline-flex;align-items:center;gap:2px}
 .show-changes[hidden]{display:none}
 .show-changes[aria-pressed="true"]{background:var(--state);border-color:var(--state-line)}
-.show-changes .badge{display:inline-block;min-width:1.3em;margin-left:5px;padding:0 5px;border-radius:999px;background:#fdf1dc;color:#8a5a08;font-size:.7rem;line-height:1.35em;text-align:center}
+.show-changes .badge{display:inline-block;min-width:1.3em;margin-left:5px;padding:0 5px;border-radius:999px;background:#fdf1dc;color:var(--warn);font-size:.7rem;line-height:1.35em;text-align:center}
 .diff-tip{white-space:pre-line}
 .diff-consider{margin:0 0 12px;padding:8px 10px;border-radius:8px;background:var(--busy-bg)}
 .diff-consider h3{margin:0 0 4px}
 .diff-consider ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:.84rem}
 .diff-consider .ok{color:var(--ok)}
-.diff-consider .warn{color:#8a5a08}
+.diff-consider .warn{color:var(--warn)}
 .diff-consider .bad{color:var(--bad);font-weight:600}
 .diff-consider button.link{border:0;background:none;padding:0;color:var(--accent,#3557d6);text-decoration:underline;font:inherit;cursor:pointer}
 .diff-item .who{margin-right:5px;vertical-align:1px}

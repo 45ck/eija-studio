@@ -41,5 +41,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has been in its source state this long.
+* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
 <!-- okf:generated:end links -->

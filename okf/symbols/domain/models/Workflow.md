@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 9608268b8335cf5e614e1c23720e725b78b8d081b630d086ecfbe8002830ac8e
+  sha256: 3a58006224e61dd4f37d8176d2dde01efc782e96ca9cdb2b3635b86fc7604aa5
 description_override: Immutable typed states, transitions, roles, guards and effect declarations with a normalised semantic hash.
-notes_baseline: 768a643d2c7faf0e14291aad1f966befb65e7e4a7ada9d30a9132f55f56ab2d9
+notes_baseline: d6bcd2ea4db909659047fe9e9c220ed1db421c70296f01c5982a01eb332f3e4a
 verified:
 - by: process:eija-wbs-1.3-agent
   at: '2026-09-29T08:20:47Z'
@@ -34,6 +34,10 @@ verified:
   at: '2026-11-12T03:00:00Z'
   notes_sha256: 8e236a0d75b93f72354cdb0a8b853cf2e6dea7ed5077a3af244bbcb0026bd96d
   sources_sha256: 768a643d2c7faf0e14291aad1f966befb65e7e4a7ada9d30a9132f55f56ab2d9
+- by: process:claude-code
+  at: '2026-11-12T05:00:00Z'
+  notes_sha256: a8eec18967e8167ce7b6d3a2bde007b82c6843bab3e90139f1134e65cd26a0a7
+  sources_sha256: d6bcd2ea4db909659047fe9e9c220ed1db421c70296f01c5982a01eb332f3e4a
 ---
 
 # domain.models.Workflow
@@ -73,7 +77,7 @@ _The source carries no docstring._
 
 ## Notes
 
-The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0236).
+The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237).
 
 <!-- okf:generated:begin links -->
 ## Depends on
@@ -179,7 +183,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
-* [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0236).
+* [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.
 * [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…

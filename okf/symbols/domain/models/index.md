@@ -4,7 +4,7 @@
 
 * [domain.models.Alternative](Alternative.md) - `class Alternative(Contract)` in `domain/models`.
 * [domain.models.Contract](Contract.md) - Base class for every domain contract: frozen and strict, unknown fields rejected.
-* [domain.models.Delay](Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has been in its source state this long.
+* [domain.models.Delay](Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
 * [domain.models.DomainError](DomainError.md) - Error carrying a stable code and safe message; never provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](ExecuteCommand.md) - A preview command bound to an operation id, actor, instance, action and expected version.
 * [domain.models.LayoutChange](LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
@@ -42,7 +42,7 @@
 * [domain.models.ValueGuard.comparable](ValueGuard.comparable.md) - `def comparable(self) -> ValueGuard` in `domain/models`.
 * [domain.models.ValueGuard.holds](ValueGuard.holds.md) - `def holds(self, values: dict[str, Any]) -> bool` in `domain/models`.
 * [domain.models.Workflow.coherent](Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
-* [domain.models.Workflow.longest_wait](Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0236).
+* [domain.models.Workflow.longest_wait](Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow.semantic_hash](Workflow.semantic_hash.md) - Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.
 * [domain.models.Workflow.sources](Workflow.sources.md) - The states ``action`` leaves, in model order.
 * [domain.models.Workflow.transition_for](Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and source, ADR-0232).

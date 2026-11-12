@@ -97,7 +97,7 @@ def compare(pack: Pack, model: Workflow | None = None, document: str | None = No
     disagreements = []
     if initial != [model.initial_state]:
         disagreements.append({"check": "initial", "expected": model.initial_state, "observed": initial})
-    # value cases: guards over record values (ADR-0234); timer cases: time events (ADR-0236). Other cases' records have
+    # value cases: guards over record values (ADR-0234); timer cases: time events (ADR-0237). Other cases' records have
     # waited the longest time event, as the oracle's did.
     cases = oracle_cases(pack, model) + value_cases(pack, model) + timer_cases(pack, model)
     attributes = tuple(sorted(guards_by_attribute(model)))

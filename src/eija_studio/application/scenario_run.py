@@ -37,7 +37,7 @@ class _Record:
 
     def take(self, actor: str, action: str, wait: Delay | None = None) -> Then:
         """What the kernel does when `actor` takes `action`, after `wait` passes: the state it moves to, or its refusal
-        code. Time is simulated and passes only when a step says so (ADR-0236)."""
+        code. Time is simulated and passes only when a step says so (ADR-0237)."""
         self.steps += 1
         if wait is not None:
             self.session.wait(wait.seconds)
@@ -111,7 +111,7 @@ def run_scenarios(pack: Pack, model: Workflow, scenarios: Scenarios) -> dict[str
 def record_steps(pack: Pack, model: Workflow, start: str | None,
                  steps: Sequence[tuple[str, str] | tuple[str, str, Delay | None]]) -> list[dict[str, Any]]:
     """What the kernel does for each (actor, action) in turn, written as scenario steps that expect exactly that.
-    A step given as (actor, action, wait) lets that time pass first and keeps its wait (ADR-0236).
+    A step given as (actor, action, wait) lets that time pass first and keeps its wait (ADR-0237).
 
     This is how a person adds a test: try the steps, read what happened, and keep it if it is what should happen."""
     state = start or model.initial_state

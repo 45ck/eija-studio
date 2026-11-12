@@ -1,7 +1,7 @@
 ---
 type: Method
 title: domain.models.Workflow.longest_wait
-description: The longest time event on any transition, in seconds; 0 when the model has none (ADR-0236).
+description: The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 resource: repo://src/eija_studio/domain/models.py#Workflow.longest_wait
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow.longest_wait
   title: domain/models.py
   hash_method: ast-v2
-  sha256: a0d1be8d345e0d0522fea12442006f213a2da6d86b6d161539c1415cb2fb8905
-notes_baseline: 314e241020030b652df6bbabb96a421687a107cf95d9ef69a1915c12ce884c1c
+  sha256: 43d0a821d2fe39ead4e07718114d2bdc6f454f904e573666bf2de60c14916902
+notes_baseline: 0a609f502ff44c115abd1a870d247490fe285dd383d54eae41dca928bd572fc6
 ---
 
 # domain.models.Workflow.longest_wait
@@ -33,7 +33,7 @@ notes_baseline: 314e241020030b652df6bbabb96a421687a107cf95d9ef69a1915c12ce884c1c
 ## Docstring
 
 ~~~text
-The longest time event on any transition, in seconds; 0 when the model has none (ADR-0236). Waiting this
+The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237). Waiting this
 long in a state makes every time event leaving it due.
 ~~~
 <!-- okf:generated:end facts -->

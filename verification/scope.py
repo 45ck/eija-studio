@@ -1,4 +1,4 @@
-"""The formal models' scope: one rule per action (ADR-0232) and no guards over record values (ADR-0234), no time events (ADR-0236).
+"""The formal models' scope: one rule per action (ADR-0232) and no guards over record values (ADR-0234), no time events (ADR-0237).
 
 The kernel lets one action leave several states (issue #148) and lets a transition carry guards over the record's
 values or a time event (issue #93). The TLA+, SMT, Bend and BMC encodings still describe a workflow as one value-free transition per

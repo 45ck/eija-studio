@@ -83,7 +83,7 @@ def _statuses(model: Workflow, pack: Pack, transactions: list[Step], accepted: l
     """Whether each accepted step applies after the accepted steps before it, with the step in words. `named` is the
     pack the words call names new against, when the plan may grow the vocabulary. A data-model step applies to the
     data model after the accepted data-model steps before it (ADR-0202)."""
-    kept: list[Step] = []
+    applied = _Applied(model, pack)
     status: list[dict[str, Any]] = []
     for tx, keep in zip(transactions, accepted, strict=True):
         text = describe(tx, model, named, transactions)
@@ -91,22 +91,31 @@ def _statuses(model: Workflow, pack: Pack, transactions: list[Step], accepted: l
             status.append({"status": "rejected", "text": text})
             continue
         try:
-            _try(model, pack, [*kept, tx], tx)
-            kept.append(tx)
+            applied.add(tx)
             status.append({"status": "applies", "text": text})
         except DomainError as error:
             status.append({"status": "does_not_apply", "text": text, "code": error.code, "message": error.message})
     return status
 
 
-def _try(model: Workflow, pack: Pack, steps: list[Step], step: Step) -> None:
-    transactions, data_steps = split(steps)
-    if isinstance(step, SetRoleKind):
-        set_kinds(pack, [step])
-    elif is_data(step):
-        apply_data(data_for(pack), data_steps)
-    else:
-        apply_structural_all(model, transactions, pack)
+class _Applied:
+    """The accepted steps that applied so far. The structural model after them is kept, so each next step is applied
+    once to it instead of replaying every step before it (a 64-step plan made about 2,000 replays, ADR-0236). The
+    verdicts are the same: a structural edit depends only on the model it is applied to and the pack's actions."""
+
+    def __init__(self, model: Workflow, pack: Pack):
+        self.model, self.pack = model, pack
+        self.data_steps: list[Step] = []
+
+    def add(self, step: Step) -> None:
+        """Apply `step` after the steps kept so far and keep it; `DomainError`, keeping nothing, when it does not apply."""
+        if isinstance(step, SetRoleKind):
+            set_kinds(self.pack, [step])
+        elif is_data(step):
+            apply_data(data_for(self.pack), [*self.data_steps, step])  # type: ignore[list-item]
+            self.data_steps.append(step)
+        else:
+            self.model = apply_structural_all(self.model, [step], self.pack)  # type: ignore[list-item]
 
 
 def _refusal(error: DomainError, pack: Pack) -> dict[str, Any]:

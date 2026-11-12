@@ -183,7 +183,7 @@ def test_the_state_diagram_writes_the_guard_and_the_formal_encodings_refuse_it()
     with pytest.raises(OutsideFormalScope):
         require_formal_scope(model)
     plain = Workflow.model_validate(DESK.model.model_dump(mode="json", exclude={"transitions": {"__all__": {"after"}}}))
-    assert require_formal_scope(plain) is plain  # refund-desk's time event (ADR-0236) is outside the scope too
+    assert require_formal_scope(plain) is plain  # refund-desk's time event (ADR-0237) is outside the scope too
 
 
 def _guarded_pack(tmp_path: Path) -> Path:

@@ -66,13 +66,13 @@ _The source carries no docstring._
 
 ## Notes
 
-The validator [guarded](/symbols/domain/models/Transition.guarded.md) refuses removal of any mandatory guard, duplicate guards or effects, an effect that is both required and forbidden, and a duplicate guard over record values. `conditions` holds those value guards (`[amount ≤ 500]`, [ADR-0234](/adrs/0234-guards-over-record-values.md)); it is left out of the dump when empty, so unguarded transitions keep their bytes. `after` holds a time event (`after(2 days)`, [ADR-0236](/adrs/0236-time-events.md)) and is left out of the dump when absent. Extra fields are rejected (`extra=forbid`), which is how unknown operators fail before preview.
+The validator [guarded](/symbols/domain/models/Transition.guarded.md) refuses removal of any mandatory guard, duplicate guards or effects, an effect that is both required and forbidden, and a duplicate guard over record values. `conditions` holds those value guards (`[amount ≤ 500]`, [ADR-0234](/adrs/0234-guards-over-record-values.md)); it is left out of the dump when empty, so unguarded transitions keep their bytes. `after` holds a time event (`after(2 days)`, [ADR-0237](/adrs/0237-time-events.md)) and is left out of the dump when absent. Extra fields are rejected (`extra=forbid`), which is how unknown operators fail before preview.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
-* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0236): the transition may be taken only once the record has been in its source state this long.
+* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
 * [domain.models.Guard](/symbols/domain/models/Guard.md) - Type alias `Guard` in `domain/models`.
 * [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 
@@ -81,7 +81,7 @@ The validator [guarded](/symbols/domain/models/Transition.guarded.md) refuses re
 * [Execution](/contexts/execution.md) - Owns Trusted fixture actor state, preview instances, command replay, committed effect intents
 * [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
-* [application.runtime.check_due](/symbols/application/runtime/check_due.md) - Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (ADR-0236).
+* [application.runtime.check_due](/symbols/application/runtime/check_due.md) - Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (ADR-0237).
 * [application.runtime.check_guards](/symbols/application/runtime/check_guards.md) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
 * [application.scxml.guard_condition](/symbols/application/scxml/guard_condition.md) - The transition's `cond`: the actor checks of `runtime.check_actor`, its guards over record values and the version check, over the event data.
 * [domain.impact.changed_fields](/symbols/domain/impact/changed_fields.md) - Semantic differences of one action's transition.

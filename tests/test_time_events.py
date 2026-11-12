@@ -1,4 +1,4 @@
-"""Time events on transitions (issue #93 item 2, ADR-0236).
+"""Time events on transitions (issue #93 item 2, ADR-0237).
 
 A transition may carry UML's `after(2 days)`: it may be taken only once the record has been in its source state that
 long. The kernel reads the time through the `UnitOfWork.elapsed` port and refuses with TIMER_NOT_DUE before then; an

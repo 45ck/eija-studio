@@ -1,4 +1,4 @@
-# ADR-0236: Time events on transitions
+# ADR-0237: Time events on transitions
 
 * Status: accepted
 * Date: 2026-11-12

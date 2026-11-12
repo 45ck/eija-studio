@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py
   title: application/simulation.py
   hash_method: ast-api-v1
-  sha256: 7bcbb7a70397a6a3be03dc2a025e0d128b8e1df31c0a6209721447ed9254f934
-notes_baseline: f97a613a74405f17d9191aae6d8402db5aa6fe85beaff36afeb54a9d3c9cd02f
+  sha256: cfa5ef41be9a74428e06df1571669d48b5ff67d90c903e57f9cbbe446b954772
+notes_baseline: 83aa0b486d6046757d7c6d07611084ed63ef1e450dc847f1db4d88110ca2c87b
 ---
 
 # application.simulation
@@ -36,7 +36,7 @@ and tries an action: usually one their role is offered from the record's state, 
 and sometimes with an out-of-date version (someone else got there first). Revoked or unassigned actors still try, as
 people do, and the kernel refuses them. `runtime.execute` decides each attempt against an in-memory unit of work, so
 the counts, refusal codes and effects are the kernel's own answers, not a second reading of the model. The same seed
-gives the same run. Nothing persists and no effect leaves the process. For a model with time events (ADR-0236), each
+gives the same run. Nothing persists and no effect leaves the process. For a model with time events (ADR-0237), each
 step lets simulated time pass, so the longest one falls due within a few steps of a record entering its state.
 ~~~
 

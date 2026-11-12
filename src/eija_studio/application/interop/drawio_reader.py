@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import binascii
 import html
+import math
 import re
 import xml.etree.ElementTree as ET
 import zlib
@@ -59,11 +60,20 @@ def _get(element: ET.Element, key: str) -> str:
     return element.get(key) or ""
 
 
+def _coordinate(text: str | None) -> float:
+    """A position on the page, used only to order what was drawn: an unreadable or infinite one counts as 0."""
+    try:
+        value = float(text or "0")
+    except ValueError:
+        return 0.0
+    return value if math.isfinite(value) else 0.0
+
+
 def _position(cell: ET.Element) -> tuple[float, float]:
     geometry = cell.find("mxGeometry")
     if geometry is None:
         return 0.0, 0.0
-    return float(geometry.get("x", "0")), float(geometry.get("y", "0"))
+    return _coordinate(geometry.get("x")), _coordinate(geometry.get("y"))
 
 
 class _Cell:

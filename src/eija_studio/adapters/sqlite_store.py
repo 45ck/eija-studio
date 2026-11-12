@@ -98,7 +98,7 @@ class Session:
         return {}
 
     def elapsed(self, instance_id: str) -> float | None:
-        """Studio preview records keep no clock, so a time event is never due here (fail closed, ADR-0236). Simulate
+        """Studio preview records keep no clock, so a time event is never due here (fail closed, ADR-0237). Simulate
         and the built app have clocks."""
         return None
 
