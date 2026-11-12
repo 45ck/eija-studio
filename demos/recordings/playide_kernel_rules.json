@@ -1,0 +1,11 @@
+{
+  "mode": "record",
+  "platform": "Linux 6.18.44-fc-v378 / Python 3.13.18",
+  "scenario": "playide_kernel_rules",
+  "scenario_sha256": "835ad7725655d930d127fe3ab90fa8d94a94c4585ecd18064fe6a0743faa83dd",
+  "skipped": [],
+  "status": "PASS",
+  "video": "demos/output/playide_kernel_rules.webm",
+  "video_bytes": 20405257,
+  "video_sha256": "ccee9928d041b12b0128c8ab5e6b0aba35593cf712c8ce2643bf432fa1a43c56"
+}

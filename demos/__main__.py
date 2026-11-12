@@ -180,6 +180,10 @@ def _execute(scenario: Scenario, *, dry_run: bool, headed: bool, seed: int) -> t
     # A scenario that tours source navigation sets CONNECT_REPOSITORY (this checkout, read-only) and may name a PACK.
     repo = ROOT if getattr(module, "CONNECT_REPOSITORY", False) else None
     pack = ROOT / module.PACK if getattr(module, "PACK", None) else None
+    # A scenario may instead build its pack before the take (PREPARE_PACK), e.g. a shipped pack with features no
+    # shipped pack uses yet. It writes only under .tmp/ and returns the folder to serve.
+    if callable(getattr(module, "PREPARE_PACK", None)):
+        pack = module.PREPARE_PACK()
     with ephemeral_eija_server(repo=repo, pack=pack) as server, Recorder(headless=not headed).session(
         out_dir, dry_run=dry_run, seed=seed
     ) as scene:
