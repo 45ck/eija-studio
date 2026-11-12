@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from eija_studio.domain.linked import along
 from eija_studio.domain.models import Delay, DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
@@ -30,6 +31,8 @@ class _Record:
         self.session = MemorySession(pack)
         self.session.create_instance({"id": "r", "case_id": CASE, "model_hash": model.semantic_hash, "state": state, "version": 0})
         self.session.record_values["r"] = dict(values or {})  # what guards over values read (ADR-0234)
+        for link, at in along(model).get(state, {o.link: o.initial for o in model.objects}).items():
+            self.session.link("r", link, link, at)  # its linked objects as a run of this record alone leaves them (ADR-0241)
         self.steps = 0
         self.refusal = ""  # the kernel's words for the last refusal
 

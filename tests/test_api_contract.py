@@ -14,7 +14,7 @@ from hypothesis_jsonschema import from_schema
 
 from eija_studio.application.api_contract import REFUSALS, api_contract
 from eija_studio.bootstrap import source_identity
-from eija_studio.domain.data import check_values, data_for
+from eija_studio.domain.data import check_record, check_values, data_for
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import PACKS_ROOT, load_pack
 from eija_studio.interfaces.app_build import app_files
@@ -76,13 +76,13 @@ def test_the_actions_and_actors_come_from_the_model_and_the_pack():
 @pytest.mark.parametrize("pack_id", PACKS)
 def test_every_record_the_field_schema_allows_passes_check_values(pack_id):
     pack, document = contract(pack_id)
-    record = data_for(pack).entity(data_for(pack).record)
+    data = data_for(pack)
     schema = {**document["components"]["schemas"]["Fields"], "$defs": {}}
 
     @settings(max_examples=60, deadline=None, suppress_health_check=list(HealthCheck))
     @given(from_schema(schema))
     def allowed(values):
-        check_values(record, values)
+        check_record(data, values, lambda _cls, _id: True)  # a reference field names a stored object (ADR-0235)
 
     allowed()
 

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 12 November 2026: actions on linked objects
+
+- A workflow may give the object a built reference names a small lifecycle, and a transition may move it: `/ target.lock` ([ADR-0241](docs/adr/0241-actions-on-linked-objects.md), issue #93 item 4). The kernel moves the object in the same unit of work as the record, and refuses the step with `LINKED_OBJECT_REFUSED` when the object has no move from its state.
+- The `ai-ops` pack locks the target service while a deploy window is open, so a second window on a service that is already rolling out is refused.
+- The law proof tries every state of a linked object, Simulate shares a few objects between records, the built app stores each object's state and its conformance run gains a linked-object test (eleven tests now), and the SCXML chart carries the object's state as a `cond` term and the move as an `<assign>`, which the differential checks. The TLA+, SMT and BMC encodings refuse a model with linked objects.
+
 ### 12 November 2026: composite states
 
 - A workflow may group its states into UML composite states, nested to any depth ([ADR-0240](docs/adr/0240-composite-states.md), issue #93 item 3). The kernel still runs the flat machine, so the grouping never changes what a step does.

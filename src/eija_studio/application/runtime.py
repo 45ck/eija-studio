@@ -51,13 +51,30 @@ def check_due(transition: Transition, elapsed: float | None) -> None:
                           {"codes": ["TIMER_NOT_DUE"], "refs": [f"transition:{transition.id}", f"state:{transition.from_state}"]})
 
 
-def _admitted(session: UnitOfWork, transition: Transition, instance_id: str) -> None:
-    """Read the record's clock only for a transition with a time event, and its values only for one with value guards;
-    most transitions touch neither."""
+def check_linked(model: Workflow, transition: Transition, states: dict[str, str | None]) -> list[dict[str, str]]:
+    """The moves a transition makes on the objects the record links to, given each object's state (ADR-0241). Refuses
+    the whole step when an object is unknown, its state is, or its lifecycle has no move for the event from there."""
+    moves = []
+    for step in transition.then:
+        lifecycle, state = model.lifecycle(step.link), states.get(step.link)
+        target = lifecycle.move(step.event, state) if lifecycle is not None else None
+        if target is None or state is None:
+            raise DomainError("LINKED_OBJECT_REFUSED", f"{transition.action} needs {step} but {step.link} is {state or 'unknown'}",
+                              {"codes": ["LINKED_OBJECT_REFUSED"], "refs": [f"transition:{transition.id}", f"link:{step.link}"]})
+        moves.append({"link": step.link, "event": step.event, "from": state, "to": target})
+    return moves
+
+
+def _admitted(session: UnitOfWork, model: Workflow, transition: Transition, instance_id: str) -> list[dict[str, str]]:
+    """Read the record's clock only for a transition with a time event, its values only for one with value guards and
+    its linked objects only for one that moves them; most transitions touch none. Returns the objects' moves."""
     if transition.after is not None:
         check_due(transition, session.elapsed(instance_id))
     if transition.conditions:
         check_guards(transition, session.values(instance_id))
+    if not transition.then:
+        return []
+    return check_linked(model, transition, {s.link: session.object_state(instance_id, s.link) for s in transition.then})
 
 
 def _separate(session: UnitOfWork, laws: list[DistinctActors], action: str, actor_id: str, instance_id: str) -> None:
@@ -77,6 +94,20 @@ def _perform(session: UnitOfWork, pack: Pack, effect: str, case_id: str, command
                                "instance_id": command.instance_id, "result": result})
     else:
         session.enqueue(case_id, command.operation_id, effect, declared.recipient or "")
+
+
+def _enter(session: UnitOfWork, instance: dict[str, Any], t: Transition, expected: int, moves: list[dict[str, str]]) -> None:
+    """Move the record to the transition's target and its linked objects with it, in the same unit of work (ADR-0241)."""
+    instance.update(state=t.to_state, version=instance["version"] + 1)
+    session.update_instance(instance, expected)
+    for move in moves:
+        session.move_object(instance["id"], move["link"], move["to"])
+
+
+def _committed(instance: dict[str, Any], t: Transition, moves: list[dict[str, str]]) -> dict[str, Any]:
+    """The result of a committed step; `moved` only for a step on a linked object, so other results keep their bytes."""
+    result = {"duplicate": False, "committed": True, "instance": instance, "effects": list(t.required_effects)}
+    return result | ({"moved": moves} if moves else {})
 
 
 def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None = None,
@@ -124,13 +155,12 @@ def execute(
         raise DomainError("STALE_VERSION", "Instance changed; reload before acting")
     if instance["state"] != t.from_state:
         raise DomainError("STATE_DENIED", "Action is invalid from the current state")
-    _admitted(session, t, instance["id"])
+    moves = _admitted(session, model, t, instance["id"])
     _separate(session, separations(pack, model, t.action), t.action, command.actor_id, instance["id"])
-    instance.update(state=t.to_state, version=instance["version"] + 1)
-    session.update_instance(instance, command.expected_version)
+    _enter(session, instance, t, command.expected_version, moves)
     if fault:
         fault("after_state")
-    result = {"duplicate": False, "committed": True, "instance": instance, "effects": list(t.required_effects)}
+    result = _committed(instance, t, moves)
     for effect in t.required_effects:
         _perform(session, pack, effect, case_id, command, result)
     if fault:

@@ -77,6 +77,9 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 * [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
+* [domain.models.LinkedObject](/symbols/domain/models/LinkedObject.md) - The lifecycle of the object a record links to through a reference field, such as a deploy request's `target` service (issue #93 item 4, ADR-0241): a small stat…
+* [domain.models.LinkedStep](/symbols/domain/models/LinkedStep.md) - What a transition does to an object the record links to, written ``target.lock`` (issue #93 item 4, ADR-0241): the object named by the record's `link` field ta…
+* [domain.models.Move](/symbols/domain/models/Move.md) - One transition in a linked object's lifecycle: `event` moves it from `from_state` to `to_state` (ADR-0241).
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).

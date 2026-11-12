@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 4b10295950d49753ecc1ddc6bd3d1ca4684ed3e113ebc582dda636c009783f89
+  sha256: cca08e76c02a51439f61fc48f8197b78ba5a31b7a866c87908f53dccbb18c60b
 description_override: Immutable typed states, transitions, roles, guards and effect declarations with a normalised semantic hash.
-notes_baseline: 0b8a16c09e98a1f1dea5da6ab59ca321cc7afa0a52dfe41d7f2421dc77e1af42
+notes_baseline: 2c92440d7be2a12e2fda10dcb37fa1960691c6845812e16a87dd957a66322735
 verified:
 - by: process:eija-wbs-1.3-agent
   at: '2026-09-29T08:20:47Z'
@@ -42,6 +42,10 @@ verified:
   at: '2026-11-12T05:30:00Z'
   notes_sha256: b76d097e1976f277a03bb7b6ee7d3cfb2b1f5137103bd5c04a4486f4e7c253dd
   sources_sha256: 0b8a16c09e98a1f1dea5da6ab59ca321cc7afa0a52dfe41d7f2421dc77e1af42
+- by: process:claude-code
+  at: '2026-11-12T04:00:08Z'
+  notes_sha256: 0cd3cef1bffef4627d2270f31d0fef840fa7cd90b83945981dafd60463ada769
+  sources_sha256: 2c92440d7be2a12e2fda10dcb37fa1960691c6845812e16a87dd957a66322735
 ---
 
 # domain.models.Workflow
@@ -70,6 +74,7 @@ _The source carries no docstring._
 | `transitions` | `tuple[Transition, ...]` | `Field(min_length=1, max_length=64)` |
 | `initiators` | `tuple[str, ...]` | `Field(default=(), max_length=16)` |
 | `composites` | `tuple[Composite, ...]` | `Field(default=(), max_length=16)` |
+| `objects` | `tuple[LinkedObject, ...]` | `Field(default=(), max_length=8)` |
 
 ## Methods
 
@@ -78,6 +83,7 @@ _The source carries no docstring._
 * [`composite`](/symbols/domain/models/Workflow.composite.md) - `def composite(self, name: str) -> Composite \| None`
 * [`entry`](/symbols/domain/models/Workflow.entry.md) - `def entry(self, name: str) -> str`
 * [`leaves`](/symbols/domain/models/Workflow.leaves.md) - `def leaves(self, name: str) -> tuple[str, ...]`
+* [`lifecycle`](/symbols/domain/models/Workflow.lifecycle.md) - `def lifecycle(self, link: str) -> LinkedObject \| None`
 * [`longest_wait`](/symbols/domain/models/Workflow.longest_wait.md) - `def longest_wait(self) -> int`
 * [`parent`](/symbols/domain/models/Workflow.parent.md) - `def parent(self, name: str) -> str \| None`
 * [`semantic_hash`](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str`
@@ -87,13 +93,14 @@ _The source carries no docstring._
 
 ## Notes
 
-The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237). `composites` groups the states into a tree of UML composite states, left out when empty; `parent`, `ancestors`, `leaves` and `entry` read it, and the kernel still runs the flat machine (ADR-0240).
+The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237). `composites` groups the states into a tree of UML composite states, left out when empty; `parent`, `ancestors`, `leaves` and `entry` read it, and the kernel still runs the flat machine (ADR-0240). `objects` declares the lifecycles of the objects the record links to, left out when empty; every step in a transition's `then` must name one with that event, and `lifecycle(link)` reads it (ADR-0241).
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [domain.models.Composite](/symbols/domain/models/Composite.md) - A UML composite state (issue #93 item 3, ADR-0240): a named group of states, or of other composites, with the child a transition into the group enters first.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.LinkedObject](/symbols/domain/models/LinkedObject.md) - The lifecycle of the object a record links to through a reference field, such as a deploy request's `target` service (issue #93 item 4, ADR-0241): a small stat…
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
 
 ## Referenced by
@@ -106,6 +113,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.api_contract.api_contract](/symbols/application/api_contract/api_contract.md) - The OpenAPI 3.1 document of the app this pack, model and data model build.
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
+* [application.appgen.linked_cases](/symbols/application/appgen/linked_cases.md) - For each transition that moves linked objects, an actor who may take it tries it with the objects in every state of their lifecycles, and the kernel's answer,…
 * [application.appgen.may_start](/symbols/application/appgen/may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
@@ -161,6 +169,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.review.review_change](/symbols/application/review/review_change.md) - Everything a reviewer needs to check a change: what changed, how risky, and what the kernel does differently.
 * [application.ripple.check_follow_ons](/symbols/application/ripple/check_follow_ons.md) - The proposer's follow-on steps, each re-checked on its own on top of the plan: a state-machine step through the policy (`base` with `plan` and the step), a scr…
 * [application.ripple.ripple](/symbols/application/ripple/ripple.md) - Every diagram's effects of going from `base` to `candidate`.
+* [application.runtime.check_linked](/symbols/application/runtime/check_linked.md) - The moves a transition makes on the objects the record links to, given each object's state (ADR-0241).
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
 * [application.runtime.separations](/symbols/application/runtime/separations.md) - The pack's separation-of-duties laws in force on ``model`` that name ``action`` (issue #149, ADR-0233).
@@ -194,11 +203,17 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
 * [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [domain.linked.admitting](/symbols/domain/linked/admitting.md) - The first combination of states (as `combinations` orders them) from which `transition` can move every object it names; `{}` when it moves none, None when no c…
+* [domain.linked.advance](/symbols/domain/linked/advance.md) - The objects' states after `transition` (unchanged when it moves none), or None when one of its moves is not possible from their states.
+* [domain.linked.along](/symbols/domain/linked/along.md) - For each state a record can reach, the states its linked objects are in when only this record moves them, from every object in its initial state: the first suc…
+* [domain.linked.combinations](/symbols/domain/linked/combinations.md) - Every combination of states of the objects `transition` moves, one dict per combination; `[{}]` when it moves none.
+* [domain.linked.drift](/symbols/domain/linked/drift.md) - The states the objects can be in after one move another record makes: any one object takes any move of its lifecycle from its state (ADR-0241).
 * [domain.models.Workflow.ancestors](/symbols/domain/models/Workflow.ancestors.md) - The composites holding a state or composite, innermost first.
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
 * [domain.models.Workflow.composite](/symbols/domain/models/Workflow.composite.md) - `def composite(self, name: str) -> Composite | None` in `domain/models`.
 * [domain.models.Workflow.entry](/symbols/domain/models/Workflow.entry.md) - The plain state a transition into `name` enters: a composite's initial child, followed down.
 * [domain.models.Workflow.leaves](/symbols/domain/models/Workflow.leaves.md) - The plain states inside a composite, in model order; a plain state is its own only leaf.
+* [domain.models.Workflow.lifecycle](/symbols/domain/models/Workflow.lifecycle.md) - `def lifecycle(self, link: str) -> LinkedObject | None` in `domain/models`.
 * [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow.parent](/symbols/domain/models/Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.

@@ -102,6 +102,14 @@ class Session:
         and the built app have clocks."""
         return None
 
+    def object_state(self, instance_id: str, link: str) -> str | None:
+        """Studio preview records link to no objects, so a step on a linked object is refused here (fail closed,
+        ADR-0241). Simulate and the built app keep objects."""
+        return None
+
+    def move_object(self, instance_id: str, link: str, state: str) -> None:  # never reached: object_state is None
+        raise AssertionError("the Studio preview keeps no linked objects")
+
     def find_operation(self, operation_id: str) -> dict | None:
         row = self.db.execute("SELECT binding,body FROM operations WHERE id=?", (operation_id,)).fetchone()
         return {"binding": row[0], "result": json.loads(row[1])} if row else None

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py#MemorySession
   title: application/simulation.py
   hash_method: ast-sig-v1
-  sha256: bae0680324d014b1e62cd8b651e3783f4801cd013ea62acbd6504dbc0970fbe9
-notes_baseline: 2b0d0057fccb8ced55ad47beb8aa0d88b63d7f5a2b4991b6bd9e65918d52bb4e
+  sha256: b9aeef30362b142e2ee0d6f370cb34095e375450301d2d0a0c24d78823a22e0a
+notes_baseline: 5527f058f4a78ba6f4f0190ec2cb05cc16a6f58d0d55b3cec68c81cb95d49946
 ---
 
 # application.simulation.MemorySession
@@ -45,6 +45,9 @@ The kernel's unit-of-work port over plain dictionaries, keeping every record, op
 * [`event`](/symbols/application/simulation/MemorySession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None`
 * [`find_instance`](/symbols/application/simulation/MemorySession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] \| None`
 * [`find_operation`](/symbols/application/simulation/MemorySession.find_operation.md) - `def find_operation(self, operation_id: str) -> dict[str, Any] \| None`
+* [`link`](/symbols/application/simulation/MemorySession.link.md) - `def link(self, instance_id: str, link: str, key: str, state: str \| None=None) -> None`
+* [`move_object`](/symbols/application/simulation/MemorySession.move_object.md) - `def move_object(self, instance_id: str, link: str, state: str) -> None`
+* [`object_state`](/symbols/application/simulation/MemorySession.object_state.md) - `def object_state(self, instance_id: str, link: str) -> str \| None`
 * [`record_act`](/symbols/application/simulation/MemorySession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None`
 * [`record_operation`](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None`
 * [`update_instance`](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None`
@@ -71,6 +74,9 @@ _No curated notes yet._
 * [application.simulation.MemorySession.event](/symbols/application/simulation/MemorySession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.find_instance](/symbols/application/simulation/MemorySession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None` in `application/simulation`.
 * [application.simulation.MemorySession.find_operation](/symbols/application/simulation/MemorySession.find_operation.md) - `def find_operation(self, operation_id: str) -> dict[str, Any] | None` in `application/simulation`.
+* [application.simulation.MemorySession.link](/symbols/application/simulation/MemorySession.link.md) - Link a record to an object, setting the object's state if given or the object is new (ADR-0241).
+* [application.simulation.MemorySession.move_object](/symbols/application/simulation/MemorySession.move_object.md) - `def move_object(self, instance_id: str, link: str, state: str) -> None` in `application/simulation`.
+* [application.simulation.MemorySession.object_state](/symbols/application/simulation/MemorySession.object_state.md) - `def object_state(self, instance_id: str, link: str) -> str | None` in `application/simulation`.
 * [application.simulation.MemorySession.record_act](/symbols/application/simulation/MemorySession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.record_operation](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.update_instance](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/simulation`.

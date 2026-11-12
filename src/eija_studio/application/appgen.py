@@ -14,6 +14,7 @@ from typing import Any
 
 from eija_studio.domain.data import Attribute, DataModel, check_record, record_fields, references
 from eija_studio.domain.laws import DistinctActors
+from eija_studio.domain.linked import along, combinations as linked_combinations
 from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, ValueGuard, Workflow, canonical, fingerprint
 from eija_studio.domain.navigation import navigation_for
 from eija_studio.domain.pack import Pack
@@ -40,8 +41,11 @@ class _OracleSession:
     """In-memory answers to exactly the port calls `execute` makes for one instance. Nothing persists."""
 
     def __init__(self, pack: Pack, model: Workflow, state: str, values: dict[str, Any] | None = None,
-                 waited: float | None = None):
+                 waited: float | None = None, objects: dict[str, str] | None = None):
         self.record_values = dict(values or {})
+        # The states of the record's linked objects: as a run of this record alone leaves them unless a case says
+        # otherwise (ADR-0241). Empty for a model without linked objects.
+        self.objects = dict(along(model).get(state, {}) if objects is None else objects)
         # How long the record has been in its state: the model's longest time event unless a case says otherwise, so
         # every time event is due in the ordinary cases (ADR-0237). A committed step enters a state afresh.
         self.since = float(model.longest_wait if waited is None else waited)
@@ -64,6 +68,12 @@ class _OracleSession:
 
     def elapsed(self, instance_id: str) -> float | None:
         return self.since
+
+    def object_state(self, instance_id: str, link: str) -> str | None:
+        return self.objects.get(link)
+
+    def move_object(self, instance_id: str, link: str, state: str) -> None:
+        self.objects[link] = state
 
     def actor(self, actor_id: str) -> dict[str, Any]:
         if actor_id not in self.actors:
@@ -225,6 +235,24 @@ def timer_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
     return cases
 
 
+def linked_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
+    """For each transition that moves linked objects, an actor who may take it tries it with the objects in every
+    state of their lifecycles, and the kernel's answer, with the objects' states after a commit (ADR-0241). Empty for a
+    model without linked objects, so every other oracle keeps its exact bytes."""
+    cases: list[dict[str, object]] = []
+    for t in sorted((t for t in model.transitions if t.then), key=lambda t: t.id):
+        actor = _taker(pack, t)
+        if actor is None:
+            continue
+        for objects in linked_combinations(model, t):
+            session = _OracleSession(pack, model, t.from_state, _admitting(t), objects=objects)
+            expect = _kernel(pack, model, session, actor, t.action, 0)
+            case: dict[str, object] = {"state": t.from_state, "action": t.action, "actor": actor, "objects": objects,
+                                       **({"values": _admitting(t)} if t.conditions else {}), "expect": expect}
+            cases.append(case | ({"after": dict(session.objects)} if expect["outcome"] == "COMMITTED" else {}))
+    return cases
+
+
 def _admitting(t: Transition) -> dict[str, Any]:
     """Record values every value guard of `t` admits, when some combination does; {} otherwise."""
     grouped: dict[str, list[ValueGuard]] = {}
@@ -237,7 +265,7 @@ def _people_cases(pack: Pack, model: Workflow) -> dict[str, Any]:
     """The oracle's checks of who may start a record and who may not act twice, present only when the model or pack
     asks for them, so every other oracle keeps its exact bytes."""
     found = {"separation_cases": separation_cases(pack, model), "value_cases": value_cases(pack, model),
-             "timer_cases": timer_cases(pack, model)}
+             "timer_cases": timer_cases(pack, model), "linked_cases": linked_cases(pack, model)}
     return ({"start_cases": start_cases(pack, model)} if model.initiators else {}) | {k: v for k, v in found.items() if v}
 
 
@@ -297,6 +325,7 @@ def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
         first = _kernel(pack, model, session, actor, action, version)
         case = {"state": state, "action": action, "actor": actor, "expected_version": version, "expect": first}
         if first["outcome"] == "COMMITTED":
+            case |= {"after": dict(session.objects)} if model.objects else {}  # linked objects after it (ADR-0241)
             case["replay"] = _kernel(pack, model, session, actor, action, version)
         cases.append(case)
     return cases
@@ -351,6 +380,11 @@ def _require_data(pack: Pack, model: Workflow, data: DataModel | None) -> None:
     if problems:
         raise DomainError("VALUE_GUARD_INVALID", "A guard over record values does not fit the data model; no app is built",
                           {"codes": problems})
+    built = {(r.name, r.target) for r in references(data)}
+    unlinked = [o.link for o in model.objects if (o.link, o.entity) not in built]
+    if unlinked:  # a lifecycle needs a reference field naming its object (ADR-0235, ADR-0241)
+        raise DomainError("LINK_NOT_BUILT", "A linked object's lifecycle needs a built association from the record to "
+                          f"its class: {', '.join(unlinked)}; no app is built", {"refs": [f"link:{x}" for x in unlinked]})
 
 
 def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None = None,
@@ -380,9 +414,10 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
         files["app/data.json"] = canonical(data) + "\n"
     oracle |= _people_cases(pack, model)
     oracle |= {"waited": model.longest_wait} if model.longest_wait else {}  # how long ordinary cases' records waited
+    oracle |= {"linked": along(model)} if model.objects else {}  # where ordinary cases' linked objects were (ADR-0241)
     files["tests/oracle.json"] = canonical(oracle) + "\n"
     total = len(cases) + sum(len(oracle.get(k, [])) for k in ("data_cases", "start_cases", "separation_cases", "value_cases",
-                                                                 "timer_cases"))
+                                                                 "timer_cases", "linked_cases"))
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": total, "hash": fingerprint(oracle)},
                 "data": {"digest": data.digest, "record": data.record} if data else None,

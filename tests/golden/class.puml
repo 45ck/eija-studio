@@ -54,6 +54,7 @@ class Transition <<value-object>> {
   +tuple<U+003C>str> forbidden_effects
   +tuple<U+003C>ValueGuard> conditions
   +Delay | None after
+  +tuple<U+003C>LinkedStep> then
 }
 class Workflow <<value-object>> {
   +Literal<U+003C>eija.workflow.v1> schema_version
@@ -62,6 +63,7 @@ class Workflow <<value-object>> {
   +tuple<U+003C>str> states
   +tuple<U+003C>str> initiators
   +tuple<U+003C>Composite> composites
+  +tuple<U+003C>LinkedObject> objects
 }
 enum Guard {
   actor_active

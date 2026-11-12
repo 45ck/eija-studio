@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ghost_diff.py#FIELD_TEXT
   title: application/ghost_diff.py
   hash_method: ast-v2
-  sha256: 5316ae38e14bc3d171acd0caa3e3bce25ede6ff3ea4fd0e6b5688e115da8cdc3
-notes_baseline: 67895862511e5c04f3221f804705807b61b143bf565da985f9cb2328ff848963
+  sha256: bd053b179317de0ecc6b911dcb2b345394d2eb7ac8586cf6717a0a5f11c4c182
+notes_baseline: f3c6b5f8c323cf18f8ecc402f34c4b378f3bc62380dac1dc9ad243d6d354a147
 ---
 
 # application.ghost_diff.FIELD_TEXT

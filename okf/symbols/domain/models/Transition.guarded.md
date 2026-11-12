@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Transition.guarded
   title: domain/models.py
   hash_method: ast-v2
-  sha256: 25e86019b780d62193298a8ca5cfe410ea3a05122249e8b63f1e2c03c44bad88
-notes_baseline: 8515ea403791c3e43df862db3474e942da3415830bfd0248ec47b75f458a317c
+  sha256: 1bf91e8798b83c5d8ccf2914d3f75b955f70cbe47fedcb1f9069eecdb49893b0
+notes_baseline: d824e9a48a1ea146c8dc6b360ccaa4ef416eda96f97ce995921910979bc5c3cf
 ---
 
 # domain.models.Transition.guarded

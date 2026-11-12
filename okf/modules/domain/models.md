@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: d4cd150cc588fb5f34f57ced6a84e673b3acc524803945375af81a92b819e52c
-notes_baseline: 3eedeca11f1efeb32e629edfe2f3c18dc195829cfc8fe1a466cf424f54a219b6
+  sha256: 19e85932241521a6d173314d32dec25dbddc2d1498ad510b077189645e09317e
+notes_baseline: 01c40d72330534d402695674b760a0143ca37837b840582806ebc68b7c5f9f46
 ---
 
 # domain.models
@@ -43,8 +43,12 @@ _The source carries no module docstring._
 * [`ExecuteCommand`](/symbols/domain/models/ExecuteCommand.md) (class) - no docstring
 * [`Guard`](/symbols/domain/models/Guard.md) (type-alias) - no docstring
 * [`JsonInt`](/symbols/domain/models/JsonInt.md) (type-alias) - no docstring
+* [`LINK`](/symbols/domain/models/LINK.md) (constant) - no docstring
 * [`LayoutChange`](/symbols/domain/models/LayoutChange.md) (class) - no docstring
+* [`LinkedObject`](/symbols/domain/models/LinkedObject.md) (class) - The lifecycle of the object a record links to through a reference field, such as a deploy request's `target` service (i…
+* [`LinkedStep`](/symbols/domain/models/LinkedStep.md) (class) - What a transition does to an object the record links to, written ``target.lock`` (issue #93 item 4, ADR-0241): the obje…
 * [`MEANING_ID`](/symbols/domain/models/MEANING_ID.md) (constant) - no docstring
+* [`Move`](/symbols/domain/models/Move.md) (class) - One transition in a linked object's lifecycle: `event` moves it from `from_state` to `to_state` (ADR-0241).
 * [`OWNER`](/symbols/domain/models/OWNER.md) (constant) - no docstring
 * [`Principal`](/symbols/domain/models/Principal.md) (class) - no docstring
 * [`Proposal`](/symbols/domain/models/Proposal.md) (class) - no docstring
@@ -131,6 +135,7 @@ _No curated notes yet._
 * [domain.generated_app](/modules/domain/generated_app.md) - Versioned exact generated-app selection and evidence contracts; no authority is implied by a hash.
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
+* [domain.linked](/modules/domain/linked.md) - Linked objects (issue #93 item 4, ADR-0241): the states a record's linked objects are in, as the checkers try them.
 * [domain.navigation](/modules/domain/navigation.md) - The generated app's bounded navigation, derived from its existing contracts.
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
@@ -164,8 +169,15 @@ _No curated notes yet._
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.Guard](/symbols/domain/models/Guard.md) - Type alias `Guard` in `domain/models`.
 * [domain.models.JsonInt](/symbols/domain/models/JsonInt.md) - Type alias `JsonInt` in `domain/models`.
+* [domain.models.LINK](/symbols/domain/models/LINK.md) - Constant `LINK` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
+* [domain.models.LinkedObject.closed](/symbols/domain/models/LinkedObject.closed.md) - `def closed(self) -> LinkedObject` in `domain/models`.
+* [domain.models.LinkedObject.events](/symbols/domain/models/LinkedObject.events.md) - `def events(self) -> set[str]` in `domain/models`.
+* [domain.models.LinkedObject](/symbols/domain/models/LinkedObject.md) - The lifecycle of the object a record links to through a reference field, such as a deploy request's `target` service (issue #93 item 4, ADR-0241): a small stat…
+* [domain.models.LinkedObject.move](/symbols/domain/models/LinkedObject.move.md) - The state `event` moves the object to from `state`, or None when it has no such move (or the state is unknown).
+* [domain.models.LinkedStep](/symbols/domain/models/LinkedStep.md) - What a transition does to an object the record links to, written ``target.lock`` (issue #93 item 4, ADR-0241): the object named by the record's `link` field ta…
 * [domain.models.MEANING_ID](/symbols/domain/models/MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
+* [domain.models.Move](/symbols/domain/models/Move.md) - One transition in a linked object's lifecycle: `event` moves it from `from_state` to `to_state` (ADR-0241).
 * [domain.models.OWNER](/symbols/domain/models/OWNER.md) - Constant `OWNER` in `domain/models`.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 * [domain.models.Principal.require](/symbols/domain/models/Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
@@ -186,6 +198,7 @@ _No curated notes yet._
 * [domain.models.Workflow.composite](/symbols/domain/models/Workflow.composite.md) - `def composite(self, name: str) -> Composite | None` in `domain/models`.
 * [domain.models.Workflow.entry](/symbols/domain/models/Workflow.entry.md) - The plain state a transition into `name` enters: a composite's initial child, followed down.
 * [domain.models.Workflow.leaves](/symbols/domain/models/Workflow.leaves.md) - The plain states inside a composite, in model order; a plain state is its own only leaf.
+* [domain.models.Workflow.lifecycle](/symbols/domain/models/Workflow.lifecycle.md) - `def lifecycle(self, link: str) -> LinkedObject | None` in `domain/models`.
 * [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.models.Workflow.parent](/symbols/domain/models/Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.

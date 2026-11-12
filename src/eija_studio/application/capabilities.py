@@ -20,7 +20,7 @@ def capability_map(pack: Pack, model: Workflow) -> dict[str, Any]:
             ("Arbitrary prose as executable policy", "unsupported", "No inference from requirement wording to authority or behaviour.")]),
         ("data", "Data", [
             (f"Record attributes{': ' + record if record else ''}", "executable" if record else "unsupported", "The generated app validates and stores its one record class." if record else "This pack declares no record data model."),
-            ("Other classes and associations", "checked_design", "Drawn and checked for structural agreement; no related records or multiplicity enforcement."),
+            ("Other classes and associations", "checked_design", "Drawn and checked for structural agreement. A built to-one association is a checked reference field (ADR-0235), and its object may have a lifecycle the record's steps move (ADR-0241); other associations have no related records or multiplicity enforcement."),
             ("Action inputs, record updates and migrations", "unsupported", "No general typed action-input/update/migration semantics yet.")]),
         ("behaviour", "Behaviour", [
             ("Flat states, transitions and supported guards", "executable", f"{len(model.states)} states and {len(model.transitions)} transitions in this model; the kernel decides each supported operation."),

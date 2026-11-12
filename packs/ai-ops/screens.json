@@ -20,6 +20,10 @@
         {
           "attribute": "agentRationale",
           "label": "Agent's rationale"
+        },
+        {
+          "attribute": "target",
+          "label": "Target microservice"
         }
       ],
       "button": "Open request"

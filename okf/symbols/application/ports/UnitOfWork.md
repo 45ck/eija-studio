@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#UnitOfWork
   title: application/ports.py
   hash_method: ast-sig-v1
-  sha256: f53141e77d0b90679dc9894057a85b1175dd2e756683277dc811e305d987ada6
+  sha256: a86ccebf6eecd7887c9c30b15390d170333d717e59d48d4d7803c5307dbbe742
 description_override: 'The application-owned persistence port: all mutations on it commit together or roll back together.'
-notes_baseline: ff2b9471c12f8f4ac45f48d285a9a9c03a1f742d82c82452e8fefbc74de9da9a
+notes_baseline: 9e90e724fcd0e2e22ef7231c62111723241f7db412f01297cc7aac4d952d6b5c
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -42,6 +42,10 @@ verified:
   at: '2026-11-12T03:00:00Z'
   notes_sha256: b1b4962665107c932cf5e618b0ff32e900b4403e9e68d1034359d1ad16517d45
   sources_sha256: ff2b9471c12f8f4ac45f48d285a9a9c03a1f742d82c82452e8fefbc74de9da9a
+- by: process:claude-code
+  at: '2026-11-12T04:00:08Z'
+  notes_sha256: 3782b99a4129bf5e20f249ec2d393ce9c9c0e931dcecb065b29226041cc467ff
+  sources_sha256: 9e90e724fcd0e2e22ef7231c62111723241f7db412f01297cc7aac4d952d6b5c
 ---
 
 # application.ports.UnitOfWork
@@ -79,6 +83,8 @@ Structural interface implemented by adapters; not a class to instantiate.
 * `def record_act(self, instance_id: str, action: str, actor_id: str) -> None`
 * `def values(self, instance_id: str) -> dict[str, Any]`
 * `def elapsed(self, instance_id: str) -> float \| None`
+* `def object_state(self, instance_id: str, link: str) -> str \| None`
+* `def move_object(self, instance_id: str, link: str, state: str) -> None`
 * `def find_operation(self, operation_id: str) -> dict[str, Any] \| None`
 * `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None`
 * `def enqueue(self, case_id: str, operation_id: str, effect: str, recipient: str) -> None`
@@ -90,7 +96,7 @@ Structural interface implemented by adapters; not a class to instantiate.
 
 Adapters implement it structurally ([SQLite store](/modules/adapters/sqlite_store.md)); domain and application never import SQL types. A new backend must reproduce compare-and-swap, replay and atomicity before use.
 
-`values` returns a record's values for a transition with guards over them (ADR-0234); a store without record values returns `{}`, so such guards fail closed. `elapsed` returns how many seconds the record has been in its current state, by the adapter's clock, read only for a transition with a time event ([ADR-0237](/adrs/0237-time-events.md)); a store that keeps no clock returns None, which is never due. `acts` and `record_act` keep who took which action on a record, read and written only for actions a separation-of-duties law names ([ADR-0233](/adrs/0233-separation-of-duties.md)).
+`values` returns a record's values for a transition with guards over them (ADR-0234); a store without record values returns `{}`, so such guards fail closed. `elapsed` returns how many seconds the record has been in its current state, by the adapter's clock, read only for a transition with a time event ([ADR-0237](/adrs/0237-time-events.md)); a store that keeps no clock returns None, which is never due. `acts` and `record_act` keep who took which action on a record, read and written only for actions a separation-of-duties law names ([ADR-0233](/adrs/0233-separation-of-duties.md)). `object_state` and `move_object` read and write the state of the object a record links to, only for a transition that moves one ([ADR-0241](/adrs/0241-actions-on-linked-objects.md)); a store that keeps no objects returns None, which refuses the step.
 
 set_active also accepts the optional generated-app association. Adapters commit the new baseline, association and applied case together; a workflow-only activation clears an earlier exact-app association rather than borrowing it.
 

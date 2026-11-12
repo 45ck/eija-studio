@@ -9,6 +9,9 @@
 * [domain.models.DomainError](DomainError.md) - Error carrying a stable code and safe message; never provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](ExecuteCommand.md) - A preview command bound to an operation id, actor, instance, action and expected version.
 * [domain.models.LayoutChange](LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
+* [domain.models.LinkedObject](LinkedObject.md) - The lifecycle of the object a record links to through a reference field, such as a deploy request's `target` service (issue #93 item 4, ADR-0241): a small state machine of its own, moved only by the record's steps (`Tra…
+* [domain.models.LinkedStep](LinkedStep.md) - What a transition does to an object the record links to, written ``target.lock`` (issue #93 item 4, ADR-0241): the object named by the record's `link` field takes `event` in its own lifecycle, in the same step.
+* [domain.models.Move](Move.md) - One transition in a linked object's lifecycle: `event` moves it from `from_state` to `to_state` (ADR-0241).
 * [domain.models.Principal](Principal.md) - A named holder of capabilities (select, edit, approve, apply); OWNER has all four, AGENT has none.
 * [domain.models.Proposal](Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.SemanticTransaction](SemanticTransaction.md) - One typed business-meaning edit: enable recommendation or set the registrar rejection source.
@@ -20,6 +23,7 @@
 
 * [domain.models.AGENT](AGENT.md) - Constant `AGENT` in `domain/models`.
 * [domain.models.BASE_GUARDS](BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.LINK](LINK.md) - Constant `LINK` in `domain/models`.
 * [domain.models.MEANING_ID](MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
 * [domain.models.OWNER](OWNER.md) - Constant `OWNER` in `domain/models`.
 * [domain.models.SECONDS](SECONDS.md) - Constant `SECONDS` in `domain/models`.
@@ -37,6 +41,9 @@
 * [domain.models.Delay.due](Delay.due.md) - `def due(self, elapsed: float | None) -> bool` in `domain/models`.
 * [domain.models.Delay.seconds](Delay.seconds.md) - `def seconds(self) -> int` in `domain/models`.
 * [domain.models.Delay.span](Delay.span.md) - The duration in words: ``2 days``, ``1 hour``.
+* [domain.models.LinkedObject.closed](LinkedObject.closed.md) - `def closed(self) -> LinkedObject` in `domain/models`.
+* [domain.models.LinkedObject.events](LinkedObject.events.md) - `def events(self) -> set[str]` in `domain/models`.
+* [domain.models.LinkedObject.move](LinkedObject.move.md) - The state `event` moves the object to from `state`, or None when it has no such move (or the state is unknown).
 * [domain.models.Principal.require](Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
 * [domain.models.Proposal.unique](Proposal.unique.md) - `def unique(self) -> Proposal` in `domain/models`.
 * [domain.models.Transition.admits](Transition.admits.md) - The first condition these record values fail, or None when the transition's conditions all hold.
@@ -48,6 +55,7 @@
 * [domain.models.Workflow.composite](Workflow.composite.md) - `def composite(self, name: str) -> Composite | None` in `domain/models`.
 * [domain.models.Workflow.entry](Workflow.entry.md) - The plain state a transition into `name` enters: a composite's initial child, followed down.
 * [domain.models.Workflow.leaves](Workflow.leaves.md) - The plain states inside a composite, in model order; a plain state is its own only leaf.
+* [domain.models.Workflow.lifecycle](Workflow.lifecycle.md) - `def lifecycle(self, link: str) -> LinkedObject | None` in `domain/models`.
 * [domain.models.Workflow.longest_wait](Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow.parent](Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.
 * [domain.models.Workflow.semantic_hash](Workflow.semantic_hash.md) - Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.

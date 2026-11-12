@@ -77,7 +77,8 @@
       "target": "Microservice",
       "role": "target",
       "source_multiplicity": "0..*",
-      "target_multiplicity": "1"
+      "target_multiplicity": "1",
+      "built": true
     },
     {
       "source": "DeployRequest",

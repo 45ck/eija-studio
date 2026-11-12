@@ -3562,6 +3562,107 @@
         ],
         "title": "LayoutChange"
       },
+      "LinkedObject": {
+        "properties": {
+          "link": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9_]{0,39}$",
+            "title": "Link"
+          },
+          "entity": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9]{0,39}$",
+            "title": "Entity"
+          },
+          "states": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "States"
+          },
+          "initial": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Initial"
+          },
+          "moves": {
+            "items": {
+              "$ref": "#/components/schemas/Move"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Moves"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "link",
+          "entity",
+          "states",
+          "initial",
+          "moves"
+        ],
+        "title": "LinkedObject",
+        "description": "The lifecycle of the object a record links to through a reference field, such as a deploy request's `target`\nservice (issue #93 item 4, ADR-0241): a small state machine of its own, moved only by the record's steps\n(`Transition.then`). An object in a state with no move for the event refuses the record's step; so does an unknown\nobject or state."
+      },
+      "LinkedStep": {
+        "properties": {
+          "link": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9_]{0,39}$",
+            "title": "Link"
+          },
+          "event": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9]{0,39}$",
+            "title": "Event"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "link",
+          "event"
+        ],
+        "title": "LinkedStep",
+        "description": "What a transition does to an object the record links to, written ``target.lock`` (issue #93 item 4, ADR-0241): the\nobject named by the record's `link` field takes `event` in its own lifecycle, in the same step."
+      },
+      "Move": {
+        "properties": {
+          "event": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9]{0,39}$",
+            "title": "Event"
+          },
+          "from_state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "From State"
+          },
+          "to_state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "To State"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event",
+          "from_state",
+          "to_state"
+        ],
+        "title": "Move",
+        "description": "One transition in a linked object's lifecycle: `event` moves it from `from_state` to `to_state` (ADR-0241)."
+      },
       "NewCase": {
         "properties": {
           "request": {
@@ -4554,6 +4655,15 @@
                 "type": "null"
               }
             ]
+          },
+          "then": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedStep"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "title": "Then",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -4899,6 +5009,15 @@
             "type": "array",
             "maxItems": 16,
             "title": "Composites",
+            "default": []
+          },
+          "objects": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedObject"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Objects",
             "default": []
           }
         },

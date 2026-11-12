@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#generate
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: f285efd677833d35d8ae1effda95ed2dcc524a140198f346843f34f71659e5c1
-notes_baseline: 422d2a33efa12fe803ff785247cb20415462d98c08afd9bfc413423ef0e97eae
+  sha256: 616b8c68bf9a460c14f1128229a29d46536f3707dab75c88f8edcbf23d53e743
+notes_baseline: 5d4a21f95a6d0a4034458213c00a7a0485f1ec073914b621691a98aed57622d4
 ---
 
 # application.appgen.generate
@@ -54,6 +54,7 @@ _No curated notes yet._
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.data.references](/symbols/domain/data/references.md) - The record's reference fields, one per built association, in declaration order.
+* [domain.linked.along](/symbols/domain/linked/along.md) - For each state a record can reach, the states its linked objects are in when only this record moves them, from every object in its initial state: the first suc…
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.models.canonical](/symbols/domain/models/canonical.md) - `def canonical(value: Any) -> str` in `domain/models`.

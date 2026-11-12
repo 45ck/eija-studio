@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: d0868b0fca05e99c187c0fe180c3008957c4ad3c78ebd55bc0743fcf5f7870f6
-notes_baseline: a7314359651ce3982d8ab1697ee4b959088ce8315752ccb5d0156103abc51515
+  sha256: 7be3916ddd15d48527f2bea5ab73caeddd853160204e3899c891a56b9933e994
+notes_baseline: 10692d8337a8f67ae3e1bba533051820bcd91c949b790f63171d07c51014822a
 ---
 
 # application.appgen
@@ -53,6 +53,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`app_limits`](/symbols/application/appgen/app_limits.md) (function) - no docstring
 * [`data_cases`](/symbols/application/appgen/data_cases.md) (function) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, e…
 * [`generate`](/symbols/application/appgen/generate.md) (function) - Return the per-model files and the build manifest (without file hashes or test results).
+* [`linked_cases`](/symbols/application/appgen/linked_cases.md) (function) - For each transition that moves linked objects, an actor who may take it tries it with the objects in every state of the…
 * [`may_start`](/symbols/application/appgen/may_start.md) (function) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
@@ -68,6 +69,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`application/runtime`](/modules/application/runtime.md)
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/laws`](/modules/domain/laws.md)
+* [`domain/linked`](/modules/domain/linked.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/navigation`](/modules/domain/navigation.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -87,6 +89,7 @@ _No curated notes yet._
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
+* [domain.linked](/modules/domain/linked.md) - Linked objects (issue #93 item 4, ADR-0241): the states a record's linked objects are in, as the checkers try them.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.navigation](/modules/domain/navigation.md) - The generated app's bounded navigation, derived from its existing contracts.
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
@@ -110,6 +113,7 @@ _No curated notes yet._
 * [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
+* [application.appgen.linked_cases](/symbols/application/appgen/linked_cases.md) - For each transition that moves linked objects, an actor who may take it tries it with the objects in every state of their lifecycles, and the kernel's answer,…
 * [application.appgen.may_start](/symbols/application/appgen/may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
