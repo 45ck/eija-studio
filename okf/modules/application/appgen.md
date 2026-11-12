@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 7be3916ddd15d48527f2bea5ab73caeddd853160204e3899c891a56b9933e994
-notes_baseline: 10692d8337a8f67ae3e1bba533051820bcd91c949b790f63171d07c51014822a
+  sha256: 1f55b7e62b0d1a890d65e6e95cacddb3cd460f57fb80f988b01c973982b2fc33
+notes_baseline: 3954a97940feb1bd753aeb3f399449722410ad94a27eb6889d2a9428dc3d9e3d
 ---
 
 # application.appgen
@@ -58,6 +58,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
 * [`separation_cases`](/symbols/application/appgen/separation_cases.md) (function) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record;…
+* [`signal_cases`](/symbols/application/appgen/signal_cases.md) (function) - Each signal the model receives, delivered with valid record values, and the kernel's answer (a record started in the in…
 * [`start_cases`](/symbols/application/appgen/start_cases.md) (function) - Each active fixture actor starting a record, and the kernel's answer.
 * [`stock`](/symbols/application/appgen/stock.md) (function) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [`timer_cases`](/symbols/application/appgen/timer_cases.md) (function) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state…
@@ -67,6 +68,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 
 * [`application/memo`](/modules/application/memo.md)
 * [`application/runtime`](/modules/application/runtime.md)
+* [`application/simulation`](/modules/application/simulation.md)
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/laws`](/modules/domain/laws.md)
 * [`domain/linked`](/modules/domain/linked.md)
@@ -87,6 +89,7 @@ _No curated notes yet._
 
 * [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
+* [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.linked](/modules/domain/linked.md) - Linked objects (issue #93 item 4, ADR-0241): the states a record's linked objects are in, as the checkers try them.
@@ -118,6 +121,7 @@ _No curated notes yet._
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
+* [application.appgen.signal_cases](/symbols/application/appgen/signal_cases.md) - Each signal the model receives, delivered with valid record values, and the kernel's answer (a record started in the initial state), then the first one under a…
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [application.appgen.timer_cases](/symbols/application/appgen/timer_cases.md) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state half the time and the whole time, and th…

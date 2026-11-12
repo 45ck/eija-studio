@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#coherence_problems
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: 4b8d78bc8e02b514424a97690f3ad9b66696337a093746c565d046731fb0b689
-notes_baseline: 4a703d3a8ef964dc5db222557fdc6e6570ee85d212d35bec1d0a0996c5bc003a
+  sha256: 6bac8420a49479ab48397631d1f780d6f4a02418f3bdcac9a57c9ccb70c4dde3
+notes_baseline: 6dd559c9f53f6569820ebed31b1b887682f5e019fd456253f41a7e3d89a4bc9e
 ---
 
 # domain.pack.coherence_problems

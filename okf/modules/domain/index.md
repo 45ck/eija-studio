@@ -21,5 +21,6 @@
 * [domain.policy](policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.scenarios](scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 * [domain.screens](screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
+* [domain.signals](signals.md) - Signals between workflows (issue #93 item 5, ADR-0242): what makes a signal effect well formed.
 * [domain.transactions](transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 * [domain.value_guards](value_guards.md) - Guards over a record's values (issue #93, ADR-0234): which values can decide them, and whether they fit the data model.

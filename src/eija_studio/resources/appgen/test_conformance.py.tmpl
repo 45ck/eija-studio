@@ -161,6 +161,24 @@ class Conformance(unittest.TestCase):
                 after = {link: session.object_state(record_id, link) for link in case["objects"]}
                 self.assertEqual(after, case.get("after", case["objects"]))
 
+    def test_signals_start_records_as_the_kernel_says(self):
+        """A signal the model receives starts one record in its initial state, once however often it is delivered; any
+        other signal or sender is refused (ADR-0242)."""
+        self.assertEqual(bool(ORACLE.get("signal_cases")), bool(service.MODEL.receives))
+        for n, case in enumerate(ORACLE.get("signal_cases", []), start=1):
+            with self.subTest(signal=case["signal"], sender=case["sender"]):
+                svc = stock(service.Service())
+                try:
+                    started = svc.receive(case["signal"], case["sender"], f"signal-{n}", case["fields"])
+                except service.Refused as refused:
+                    self.assertEqual({"outcome": "REFUSED", "code": refused.code}, case["expect"])
+                    self.assertEqual(svc.records(), [])
+                    continue
+                self.assertEqual({"outcome": "STARTED", "state": started["record"]["state"]}, case["expect"])
+                again = svc.receive(case["signal"], case["sender"], f"signal-{n}", case["fields"])
+                self.assertEqual((again["started"], again["record"]["id"]), (False, started["record"]["id"]))
+                self.assertEqual(len(svc.records()), 1)
+
     def test_records_from_another_data_model_are_refused(self):
         """A record whose values another data model checked is never acted on: its values may not fit this one."""
         case = next(c for c in ORACLE["cases"] if c["expect"]["outcome"] == "COMMITTED")

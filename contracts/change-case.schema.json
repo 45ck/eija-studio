@@ -658,6 +658,28 @@
       "title": "Proposal",
       "type": "object"
     },
+    "Receive": {
+      "additionalProperties": false,
+      "description": "A signal another workflow of the system sends that starts a record here (issue #93 item 5, ADR-0242): the\nsignal effect `signal` declared by the pack `sender`.",
+      "properties": {
+        "signal": {
+          "pattern": "^Signal:[A-Z][A-Za-z0-9]{0,59}$",
+          "title": "Signal",
+          "type": "string"
+        },
+        "sender": {
+          "pattern": "^[a-z][a-z0-9-]{0,39}$",
+          "title": "Sender",
+          "type": "string"
+        }
+      },
+      "required": [
+        "signal",
+        "sender"
+      ],
+      "title": "Receive",
+      "type": "object"
+    },
     "RemoveState": {
       "additionalProperties": false,
       "properties": {
@@ -1101,6 +1123,15 @@
           },
           "maxItems": 8,
           "title": "Objects",
+          "type": "array"
+        },
+        "receives": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Receive"
+          },
+          "maxItems": 16,
+          "title": "Receives",
           "type": "array"
         }
       },

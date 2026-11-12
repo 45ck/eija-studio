@@ -4104,6 +4104,28 @@
         ],
         "title": "ReachRequest"
       },
+      "Receive": {
+        "properties": {
+          "signal": {
+            "type": "string",
+            "pattern": "^Signal:[A-Z][A-Za-z0-9]{0,59}$",
+            "title": "Signal"
+          },
+          "sender": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,39}$",
+            "title": "Sender"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "signal",
+          "sender"
+        ],
+        "title": "Receive",
+        "description": "A signal another workflow of the system sends that starts a record here (issue #93 item 5, ADR-0242): the\nsignal effect `signal` declared by the pack `sender`."
+      },
       "RemoveState": {
         "properties": {
           "kind": {
@@ -5018,6 +5040,15 @@
             "type": "array",
             "maxItems": 8,
             "title": "Objects",
+            "default": []
+          },
+          "receives": {
+            "items": {
+              "$ref": "#/components/schemas/Receive"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "title": "Receives",
             "default": []
           }
         },

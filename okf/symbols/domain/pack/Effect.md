@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#Effect
   title: domain/pack.py
   hash_method: ast-sig-v1
-  sha256: 2ec5f889acc94b38d0ab51c3bc4acd014d8a80e9c9620c47d55612814d4f375f
-notes_baseline: 82fc2396e4dc9d3a909df18abca01036ee7c86a621727880b68af311a7306f47
+  sha256: 885ec425f5a64c94bafe054e96207298dcce1094e283b69bd8f8e22f39463ece
+notes_baseline: 312d1abf153e84fe0d0a5a97d416c87ab45b25b1e22e1c4182d0282c33a248df
 ---
 
 # domain.pack.Effect
@@ -32,7 +32,8 @@ notes_baseline: 82fc2396e4dc9d3a909df18abca01036ee7c86a621727880b68af311a7306f47
 ## Docstring
 
 ~~~text
-A typed effect. ``audit`` is written to the audit log, ``notification`` to the outbox for ``recipient``.
+A typed effect. ``audit`` is written to the audit log, ``notification`` to the outbox for ``recipient``, and
+``signal`` to the outbox for the workflow ``recipient`` names, another pack of the system (ADR-0242).
 ~~~
 
 ## Fields
@@ -40,7 +41,7 @@ A typed effect. ``audit`` is written to the audit log, ``notification`` to the o
 | Field | Annotation | Default |
 |---|---|---|
 | `id` | `str` | `Field(min_length=1, max_length=80)` |
-| `kind` | `Literal['audit', 'notification']` |  |
+| `kind` | `Literal['audit', 'notification', 'signal']` |  |
 | `recipient` | `str \| None` | `Field(default=None, max_length=60)` |
 <!-- okf:generated:end facts -->
 

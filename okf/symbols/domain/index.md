@@ -21,5 +21,6 @@
 * [policy](policy/) - Symbols of domain.policy
 * [scenarios](scenarios/) - Symbols of domain.scenarios
 * [screens](screens/) - Symbols of domain.screens
+* [signals](signals/) - Symbols of domain.signals
 * [transactions](transactions/) - Symbols of domain.transactions
 * [value_guards](value_guards/) - Symbols of domain.value_guards

@@ -14,6 +14,7 @@
 * [domain.models.Move](Move.md) - One transition in a linked object's lifecycle: `event` moves it from `from_state` to `to_state` (ADR-0241).
 * [domain.models.Principal](Principal.md) - A named holder of capabilities (select, edit, approve, apply); OWNER has all four, AGENT has none.
 * [domain.models.Proposal](Proposal.md) - `class Proposal(Contract)` in `domain/models`.
+* [domain.models.Receive](Receive.md) - A signal another workflow of the system sends that starts a record here (issue #93 item 5, ADR-0242): the signal effect `signal` declared by the pack `sender`.
 * [domain.models.SemanticTransaction](SemanticTransaction.md) - One typed business-meaning edit: enable recommendation or set the registrar rejection source.
 * [domain.models.Transition](Transition.md) - One typed edge: action, from/to state, required role, guards, required effects and forbidden effects.
 * [domain.models.ValueGuard](ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
@@ -58,6 +59,7 @@
 * [domain.models.Workflow.lifecycle](Workflow.lifecycle.md) - `def lifecycle(self, link: str) -> LinkedObject | None` in `domain/models`.
 * [domain.models.Workflow.longest_wait](Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow.parent](Workflow.parent.md) - The composite that directly holds a state or composite, or None at the top level.
+* [domain.models.Workflow.receiving](Workflow.receiving.md) - The declaration that `signal` from `sender` starts a record here, if there is one (ADR-0242).
 * [domain.models.Workflow.semantic_hash](Workflow.semantic_hash.md) - Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.
 * [domain.models.Workflow.sources](Workflow.sources.md) - The states ``action`` leaves, in model order.
 * [domain.models.Workflow.transition_for](Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and source, ADR-0232).

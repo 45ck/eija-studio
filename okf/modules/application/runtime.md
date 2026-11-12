@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py
   title: application/runtime.py
   hash_method: ast-api-v1
-  sha256: 0d62c143c489aca20e2d42d5b53c982b87183b62cf557141964b3808691b943f
-notes_baseline: c5bc21c3114f0fb05f7fffabfb714a54db5638f6823a81f648f22460ee393441
+  sha256: 31a8cb94dadbeac4f51a38588d0ba3eddcb75bd8348dea120083f4b8a697c9a1
+notes_baseline: b57d3477b0f5612276270989766e2dc9c5c507859ed3650faea2c322e99d033b
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -48,6 +48,14 @@ verified:
   at: '2026-11-12T04:00:08Z'
   notes_sha256: 059515f5bcc55670dd7aab22e019848b2e55a70784bd41a92ca5afb742d4507f
   sources_sha256: c5bc21c3114f0fb05f7fffabfb714a54db5638f6823a81f648f22460ee393441
+- by: process:claude-code
+  at: '2026-11-12T04:32:06Z'
+  notes_sha256: dc4e2c9439ef0135548c10708a16ed205efa4c6841498bd927c73112acf6aafd
+  sources_sha256: 49fc76fbb9d5a85984b053e8a9b7fb008c861b7fb99663ddfda752c533e181fd
+- by: process:claude-code
+  at: '2026-11-12T04:45:19Z'
+  notes_sha256: dc4e2c9439ef0135548c10708a16ed205efa4c6841498bd927c73112acf6aafd
+  sources_sha256: b57d3477b0f5612276270989766e2dc9c5c507859ed3650faea2c322e99d033b
 ---
 
 # application.runtime
@@ -74,6 +82,7 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 * [`check_separation`](/symbols/application/runtime/check_separation.md) (function) - Refuse an actor who already took another action of a separation law on this record.
 * [`execute`](/symbols/application/runtime/execute.md) (function) - no docstring
 * [`initialise`](/symbols/application/runtime/initialise.md) (function) - Start a record.
+* [`receive`](/symbols/application/runtime/receive.md) (function) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
 * [`separations`](/symbols/application/runtime/separations.md) (function) - The pack's separation-of-duties laws in force on ``model`` that name ``action`` (issue #149, ADR-0233).
 
 ## Internal imports
@@ -88,7 +97,7 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 
 ## Notes
 
-The generic execution algorithm. Policy, laws and typed effects come from the domain pack ([domain.pack](/modules/domain/pack.md), [domain.policy](/modules/domain/policy.md)); nothing here names a domain. Every check that reads more than the record (time, values, separation, linked objects) reads through a [UnitOfWork](/symbols/application/ports/UnitOfWork.md) port only when the transition needs it, so a model without the feature never touches the port.
+The generic execution algorithm. Policy, laws and typed effects come from the domain pack ([domain.pack](/modules/domain/pack.md), [domain.policy](/modules/domain/policy.md)); nothing here names a domain. Every check that reads more than the record (time, values, separation, linked objects) reads through a [UnitOfWork](/symbols/application/ports/UnitOfWork.md) port only when the transition needs it, so a model without the feature never touches the port. `receive` starts a record because another workflow sent a signal, as a unit of work of its own ([ADR-0242](/adrs/0242-messages-between-workflows.md)).
 
 <!-- okf:generated:begin links -->
 ## Imports
@@ -116,5 +125,6 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 * [application.runtime.check_separation](/symbols/application/runtime/check_separation.md) - Refuse an actor who already took another action of a separation law on this record.
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
+* [application.runtime.receive](/symbols/application/runtime/receive.md) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
 * [application.runtime.separations](/symbols/application/runtime/separations.md) - The pack's separation-of-duties laws in force on ``model`` that name ``action`` (issue #149, ADR-0233).
 <!-- okf:generated:end links -->

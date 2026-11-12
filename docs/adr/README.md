@@ -122,6 +122,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0239](0239-value-guard-representatives-verified.md) | Verify value-guard representatives by property and mutation, and fix what that found | accepted |
 | [0240](0240-composite-states.md) | Composite states | accepted |
 | [0241](0241-actions-on-linked-objects.md) | Actions on linked objects | accepted |
+| [0242](0242-messages-between-workflows.md) | Messages between workflows | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

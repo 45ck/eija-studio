@@ -115,6 +115,15 @@ def handler_for(service: Service):
                     if not isinstance(fields, dict):
                         raise Refused("BAD_REQUEST", "fields must be a JSON object")
                     return self._json(201, service.create(str(body.get("title", "")), str(body.get("actor", "")), fields))
+                if url.path == "/api/signals" and MODEL.receives:  # another workflow's signal starts a record (ADR-0242)
+                    fields = body.get("fields", {})
+                    if not isinstance(fields, dict):
+                        raise Refused("BAD_REQUEST", "fields must be a JSON object")
+                    operation = body.get("operation_id")  # a delivery's identity: never defaulted or cut short
+                    if not isinstance(operation, str) or not 1 <= len(operation) <= 100:
+                        raise Refused("BAD_REQUEST", "operation_id must be a string of 1 to 100 characters")
+                    started = service.receive(str(body.get("signal", "")), str(body.get("sender", "")), operation, fields)
+                    return self._json(201 if started["started"] else 200, started)
                 stored = OBJECTS.match(url.path)
                 if stored:
                     fields = body.get("fields", {})

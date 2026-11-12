@@ -30,7 +30,7 @@
        "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
       {"id": "TR-RETURNLATE", "action": "ReturnLate", "from_state": "Overdue", "to_state": "Returned", "role": "Librarian",
        "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
-       "required_effects": ["Audit:LoanReturnedLate"],
+       "required_effects": ["Audit:LoanReturnedLate", "Signal:LateReturn"],
        "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]}
     ]
   },
@@ -49,7 +49,7 @@
     {"id": "Return", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
      "required_effects": ["Audit:LoanReturned"]},
     {"id": "ReturnLate", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
-     "required_effects": ["Audit:LoanReturnedLate"]},
+     "required_effects": ["Audit:LoanReturnedLate", "Signal:LateReturn"]},
     {"id": "Renew", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
      "required_effects": ["Audit:LoanRenewed"]}
   ],
@@ -62,7 +62,8 @@
       {"id": "Notification:OverdueNoticeQueued", "kind": "notification", "recipient": "member"},
       {"id": "Audit:LoanReturned", "kind": "audit"},
       {"id": "Audit:LoanReturnedLate", "kind": "audit"},
-      {"id": "Audit:LoanRenewed", "kind": "audit"}
+      {"id": "Audit:LoanRenewed", "kind": "audit"},
+      {"id": "Signal:LateReturn", "kind": "signal", "recipient": "library-fines"}
     ],
     "forbidden": ["FineWaivedSilently", "MemberDataShared"]
   },
