@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 12 November 2026: time events in the kernel
+
+- A transition may carry UML's `after(2 days)` ([ADR-0237](docs/adr/0237-time-events.md), issue #93 item 2). The kernel refuses the step with `TIMER_NOT_DUE` until the record has been in its source state that long, reading the time through a new `UnitOfWork.elapsed` port; an unknown time is never due.
+- The refund desk's `EscalateStale` now waits two days in `AwaitingApproval`. A scenario step may `wait` first, and the refund desk's `timer-escalates` scenario shows the escalation refused after one day and taken after two.
+- The law proof lets time pass, Simulate has simulated time, the built app stores when each record entered its state and its conformance run gains a time-event test (ten tests now), and the SCXML chart carries the time as a `cond` term that the differential checks. The TLA+, SMT and BMC encodings refuse a timed model.
+
 ### 12 November 2026: PlayIDE stands up to bad input, and big plans check fast
 
 - A UML file with an escape that names no character, a count of thousands of digits, an XMI bound such as `²` or a draw.io position that is not a number is now read or refused with a reason. Before, the import failed with an unexplained error ([ADR-0236](docs/adr/0236-hostile-input-and-plan-cost.md)).
@@ -12,7 +18,7 @@
 
 ### 12 November 2026: value guards checked against every value
 
-- The property suite now generates value guards and initiators, and a new property says the values the law proof tries for a guard stand for every value a record can hold ([ADR-0237](docs/adr/0237-value-guard-representatives-verified.md)). It found five kernel defects, all fixed with fast-tier regression tests:
+- The property suite now generates value guards and initiators, and a new property says the values the law proof tries for a guard stand for every value a record can hold ([ADR-0238](docs/adr/0238-value-guard-representatives-verified.md)). It found five kernel defects, all fixed with fast-tier regression tests:
   - guards over numbers at or beyond 2**53 had no value tried on the far side of the constant, so a law could read HOLDS without the proof trying the record that breaks it;
   - two integer constants beyond the float range crashed the law proof with `OverflowError`;
   - records accepted `NaN` and `Infinity` as numbers, and NaN satisfied every `≠` guard; they are now refused with `FIELD_TYPE`;

@@ -25,7 +25,8 @@ def capability_map(pack: Pack, model: Workflow) -> dict[str, Any]:
         ("behaviour", "Behaviour", [
             ("Flat states, transitions and supported guards", "executable", f"{len(model.states)} states and {len(model.transitions)} transitions in this model; the kernel decides each supported operation."),
             ("Sequence scenarios", "executable", "Fixture actor/action steps are executed against the same kernel."),
-            ("Calculations, value conditions and parallel state regions", "unsupported", "Not represented by the current Workflow contract.")]),
+            ("Guards over record values and time events", "executable", "One attribute compared with a constant (ADR-0234) and after(n minutes, hours or days) in a state (ADR-0237), checked by the kernel at commit time."),
+            ("Calculations and parallel state regions", "unsupported", "Not represented by the current Workflow contract.")]),
         ("collaboration", "Collaboration", [
             ("Local owner capability and optimistic versions", "executable", "Named capabilities and version checks govern the supported local review service; they are not institutional identity."),
             ("Review, replay and exact-subject evidence", "executable", "Existing service contracts bind changes and receipts; source review can still block approval."),

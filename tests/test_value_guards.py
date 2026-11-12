@@ -169,7 +169,7 @@ def test_the_oracle_value_cases_and_the_scxml_projection():
         "{}": "REFUSED", '{"amount": 499}': "COMMITTED", '{"amount": 500}': "COMMITTED", '{"amount": 501}': "REFUSED"}
     assert value_cases(DESK, DESK.model) == []
     assert "_event.data.has_amount and _event.data.value_amount <= 500" in guard_condition(model.transition_for("ApproveRefund"))
-    assert "has_amount" in to_scxml(DESK, model) and "has_" not in to_scxml(DESK, DESK.model)
+    assert "has_amount" in to_scxml(DESK, model) and "has_amount" not in to_scxml(DESK, DESK.model)
     differential = pytest.importorskip("verification.scxml.differential")
     if differential.load is None:
         pytest.skip("python-statemachine is not installed")
@@ -182,7 +182,8 @@ def test_the_state_diagram_writes_the_guard_and_the_formal_encodings_refuse_it()
     assert any(e.label.startswith("ApproveRefund [amount ≤ 500]") for e in state_graph(model).edges)
     with pytest.raises(OutsideFormalScope):
         require_formal_scope(model)
-    assert require_formal_scope(DESK.model) is DESK.model
+    plain = Workflow.model_validate(DESK.model.model_dump(mode="json", exclude={"transitions": {"__all__": {"after"}}}))
+    assert require_formal_scope(plain) is plain  # refund-desk's time event (ADR-0237) is outside the scope too
 
 
 def _guarded_pack(tmp_path: Path) -> Path:

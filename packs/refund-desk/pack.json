@@ -150,7 +150,11 @@
         "forbidden_effects": [
           "CardDataSentToModel",
           "RefundSentUnapproved"
-        ]
+        ],
+        "after": {
+          "amount": 2,
+          "unit": "days"
+        }
       },
       {
         "id": "TR-RESOLVE",

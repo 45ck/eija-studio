@@ -60,6 +60,8 @@ Every view has one of three standings. **Executable**: the kernel runs it. **Che
 | State machine | Guard `actor_assigned` | executable | The actor is assigned in the trusted directory, else `ASSIGNMENT_DENIED`. Optional per action. | `runtime.check_actor` |
 | State machine | Guard `state_equals` | executable | The record is in the source state, else `STATE_DENIED`. | `runtime.execute` |
 | State machine | Guard `expected_version` | executable | The caller saw the current version, else `STALE_VERSION` (optimistic concurrency). | `runtime.execute` |
+| State machine | Time event `after(2 days)` | executable | The record has been in the source state at least this long, read through the `UnitOfWork.elapsed` port, else `TIMER_NOT_DUE`. An unknown entry time is never due. Every committed step restarts the time (ADR-0237). | `runtime.check_due` |
+| State machine | Guard over a record value `[amount ≤ 500]` | executable | The record's value compared with a constant holds, else `VALUE_GUARD_DENIED`. A missing value never holds (ADR-0234). | `runtime.check_guards` |
 | State machine | Guard `operation_binding` | executable | A repeated operation id replays the first result, and a different request under the same id is `OPERATION_CONFLICT`. | `runtime.execute` |
 | State machine | Required effect | executable | Written exactly once per commit through its typed adapter: `audit` to the audit log, `notification` to the outbox. An undeclared effect is `EFFECT_DENIED`. | `runtime._perform` |
 | State machine | Forbidden effect | executable | A transition may never declare it; the policy refuses the model. | `domain/policy.py` |
@@ -69,7 +71,7 @@ Every view has one of three standings. **Executable**: the kernel runs it. **Che
 | Use cases | Actor, use case, association | checked design | Roles and actions read from the state machine, plus "Create" for the record. They are the same facts, drawn another way. | `domain/screens.py` `use_cases` |
 | Use cases | Actor «human» (stick figure, the default) | checked design | A role held by a person. The kernel authorises it like any role; kind laws count it for `role_kinds: ["human"]` (ADR-0210). | `domain/pack.py` `Role.kind` |
 | Use cases | Actor «agent» | checked design | A role held by an AI agent. Authorised like any role (an agent is refused `ROLE_DENIED` for a step it does not hold, `ACTOR_REVOKED` once paused); never counts as a person for a kind law. | `domain/pack.py` `Role.kind` |
-| Use cases | Actor «timer» | checked design | A role held by a scheduled job. It acts when it is run, like any actor; elapsed-time triggers are not modelled yet (issue #93). | `domain/pack.py` `Role.kind` |
+| Use cases | Actor «timer» | checked design | A role held by a scheduled job. It acts when it is run, like any actor. A time event on its transition (ADR-0237) makes the kernel refuse it until the record has waited long enough. | `domain/pack.py` `Role.kind` |
 | Use cases | Actor «system» | checked design | A role held by an external system calling in (a payment provider's callback). Authorised like any role. | `domain/pack.py` `Role.kind` |
 | Screens | Screen, field, button | checked design | Which attributes a use case shows, in what order. `check_screens` refuses a create screen missing a required attribute or a field the record lacks; no app is built from screens it refuses. | `domain/screens.py` |
 | Sequence | Commit sequence | derived | The order of calls in one `execute`, drawn from the algorithm. | `application/diagrams.py` |
@@ -122,6 +124,12 @@ A transition may carry guards over the record's values, UML's `ApproveRefund [am
 {"id": "TR-APPROVE", "action": "ApproveRefund", "...": "...", "conditions": [{"attribute": "amount", "op": "le", "value": 500}]}
 ```
 
+A transition may carry a time event, UML's `EscalateStale after(2 days)` ([ADR-0237](../adr/0237-time-events.md)). The step is allowed once the record has been in its source state that long, and the kernel refuses with `TIMER_NOT_DUE` before then. An actor still takes it, usually a «timer» role run by a scheduled job, so it passes every other check too. The kernel has no clock: it reads how long the record has been in its state through the `UnitOfWork.elapsed` port, and an unknown time is never due. Simulate has simulated time, the built app keeps an entry time per record, and the law proof lets time pass, which only ever adds steps. The TLA+, SMT and BMC encodings refuse a timed model.
+
+```json
+{"id": "TR-ESCALATE", "action": "EscalateStale", "...": "...", "after": {"amount": 2, "unit": "days"}}
+```
+
 `distinct_actors` is separation of duties: on one record, no single actor takes two of its actions, such as proposing a refund and approving it ([ADR-0233](../adr/0233-separation-of-duties.md)). It is about who acted, not which role, so an actor whose role changes mid-record is still caught. The kernel refuses the second step with `SEPARATION_DENIED` and names the law; repeating the same action is allowed. Simulate shows the refusals, the law proof asks the kernel directly, and a built app's conformance run checks the app refuses where the kernel does.
 
 ```json
@@ -136,7 +144,7 @@ In PlayIDE, **Edit the law file** opens the laws exactly as `pack.json` holds th
 
 ## Test cases: scenarios the kernel runs
 
-Laws say what must never happen. Test cases say what should happen, as stories. Each pack keeps them in `scenarios.json` beside `pack.json`. A scenario is a start state and steps, and each step is a fixture actor taking an action, with either the state the record must reach or the refusal code the kernel must give. The kernel runs every step, so a scenario can never disagree with the model it tests; when the model changes, a scenario that no longer holds fails at the step where behaviour changed ([ADR-0177](../adr/0177-law-files-and-test-cases-in-playide.md)).
+Laws say what must never happen. Test cases say what should happen, as stories. Each pack keeps them in `scenarios.json` beside `pack.json`. A scenario is a start state and steps, and each step is a fixture actor taking an action, after an optional `wait` on a simulated clock for models with time events, with either the state the record must reach or the refusal code the kernel must give. The kernel runs every step, so a scenario can never disagree with the model it tests; when the model changes, a scenario that no longer holds fails at the step where behaviour changed ([ADR-0177](../adr/0177-law-files-and-test-cases-in-playide.md)).
 
 The tests a pack has, from narrowest to widest:
 
@@ -161,8 +169,7 @@ The cost is expressiveness. A construct is executable only after it has been add
 
 | Not executable yet | Why it matters | Likely shape |
 |---|---|---|
-| Guards over record values (`[amount > 100]`) | Most real workflows branch on data | A typed comparison over a record attribute, checked by `check_values` types |
-| Timers and deadlines (`after(14 days)`) | Overdue loans, expiring approvals | A time event fed by a clock port; Simulate gets simulated time |
+| Deadlines and upper bounds (`within(3 days)`, `at(date)`) | Expiring offers, fixed cut-offs | `after` (ADR-0237) covers "at least this long"; an upper bound needs the law proof to stop assuming that waiting only adds steps |
 | Composite and orthogonal states | Large machines stay readable | Flattened by the kernel; SCXML has both natively |
 | Actions on associated objects | "Approving the trip books the bus" | Effects on another class's records, each with its own state machine (xtUML's one machine per class) |
 | Messages between workflows | Component diagrams that run | Typed signals between packs over a port |

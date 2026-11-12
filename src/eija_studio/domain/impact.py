@@ -30,7 +30,7 @@ def changed_fields(old: Transition, new: Transition) -> list[str]:
     fields += [name for name in ("guards", "required_effects", "forbidden_effects")
                if set(getattr(old, name)) != set(getattr(new, name))]
     fields += ["conditions"] if guard_keys(old.conditions) != guard_keys(new.conditions) else []
-    return fields
+    return fields + (["after"] if old.after != new.after else [])  # a time event (ADR-0237)
 
 
 def keyed(before: Workflow, after: Workflow) -> tuple[dict[str, Transition], dict[str, Transition]]:

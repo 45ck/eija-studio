@@ -78,6 +78,6 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [ADR-0237: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0237-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
+* [ADR-0238: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0238-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
 * [Mutation analysis](/lanes/0033-mutation-analysis.md) - Capability lane with ADR numbers 0033–0034 reserved.
 <!-- okf:generated:end links -->

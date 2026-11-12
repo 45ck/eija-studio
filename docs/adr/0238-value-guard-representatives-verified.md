@@ -1,4 +1,4 @@
-# ADR-0237: Verify value-guard representatives by property and mutation, and fix what that found
+# ADR-0238: Verify value-guard representatives by property and mutation, and fix what that found
 
 * Status: accepted
 * Date: 2026-11-12

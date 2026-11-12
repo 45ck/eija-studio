@@ -17,6 +17,10 @@ runs in production. What it keeps and what it leaves to the kernel:
   sends the event reads the record's values, as the kernel's `UnitOfWork.values` port does, and attaches each guarded
   attribute as `value_<name>` with `has_<name>` (False when the record has no value). The data model has already
   checked each value's type, so the chart compares without a type test.
+* A time event (`after(14 days)`, ADR-0237) becomes a `cond` term over the event data as well: whoever sends the event
+  reads how long the record has been in its state, as the kernel's `UnitOfWork.elapsed` port does, and attaches it as
+  `elapsed` in seconds, with `has_elapsed` False when it is unknown, which is never due. It is not a delayed `<send>`: in the kernel a time
+  event makes a step allowed, and an actor (usually a «timer» role) still takes it through the same checks.
 * `expected_version` is a `version` variable in the datamodel, compared in the `cond` and incremented when the
   transition fires.
 * Each required effect is appended, in declared order, to an `effects` list in the datamodel. Writing the audit log
@@ -73,17 +77,22 @@ def guard_condition(transition: Transition) -> str:
     terms = ["_event.data.known", "_event.data.active", f"_event.data.role == {_literal(transition.role)}"]
     if "actor_assigned" in transition.guards:
         terms.append("_event.data.assigned")
+    if transition.after is not None:
+        terms.append(f"_event.data.has_elapsed and _event.data.elapsed >= {transition.after.seconds}")
     terms += _value_terms(transition)
     terms.append("_event.data.expected_version == version")
     return " and ".join(terms)
 
 
 def event_data(actor: dict[str, Any] | None, expected_version: int, values: dict[str, Any] | None = None,
-               attributes: tuple[str, ...] = ()) -> dict[str, Any]:
-    """What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, and
-    the record's value of each guarded attribute in `attributes`."""
+               attributes: tuple[str, ...] = (), elapsed: float | None = None, timed: bool = False) -> dict[str, Any]:
+    """What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, the
+    record's value of each guarded attribute in `attributes`, and, for a `timed` model, how long it has been in its state
+    (`elapsed`, None when unknown)."""
     held = values or {}
     record = {f"has_{a}": held.get(a) is not None for a in attributes} | {f"value_{a}": held.get(a) for a in attributes}
+    if timed:  # sent for a model with time events only
+        record |= {"has_elapsed": elapsed is not None, "elapsed": 0 if elapsed is None else elapsed}
     if actor is None:
         return {"known": False, "active": False, "role": "", "assigned": False, "expected_version": expected_version} | record
     return {"known": True, "active": bool(actor["active"]), "role": str(actor["role"]),

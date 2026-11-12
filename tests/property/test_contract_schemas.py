@@ -49,6 +49,7 @@ CROSS_FIELD = (
     "Mandatory guards cannot be removed", "Duplicate guards", "Duplicate required effects", "Duplicate forbidden effects",
     "Required/forbidden effect conflict", "Duplicate states or missing initial state", "Dangling transition state",
     "Duplicate or ambiguous transition/action", "Duplicate interpretation", "Unknown description too long",
+    "Duplicate initiator role",  # who may start a record is a set (ADR-0231)
     # Value guards (ADR-0234): no duplicates; equality only for true/false; ordering only for numbers and dates.
     "Duplicate value guard", "A true/false value is only compared with = or ≠",
     "Only a date (YYYY-MM-DD) or a number is compared with <, ≤, > or ≥", "A guard's text is at most 200 characters",
@@ -104,7 +105,7 @@ def repaired(instance: Any) -> Any:
     out = {k: repaired(v) for k, v in instance.items()}
     if isinstance(out.get("guards"), list):
         out["guards"] = list(dict.fromkeys(list(BASE_GUARDS) + out["guards"]))
-    for key in ("states", "required_effects", "forbidden_effects"):
+    for key in ("states", "required_effects", "forbidden_effects", "initiators"):
         if isinstance(out.get(key), list):
             out[key] = list(dict.fromkeys(out[key]))
     if isinstance(out.get("forbidden_effects"), list) and isinstance(out.get("required_effects"), list):

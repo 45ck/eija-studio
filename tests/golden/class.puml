@@ -53,6 +53,7 @@ class Transition <<value-object>> {
   +tuple<U+003C>str> required_effects
   +tuple<U+003C>str> forbidden_effects
   +tuple<U+003C>ValueGuard> conditions
+  +Delay | None after
 }
 class Workflow <<value-object>> {
   +Literal<U+003C>eija.workflow.v1> schema_version

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 113b099c0b9252489ce1eba57b26bdc71d004efdc7b0e1be558881eebe552dad
-notes_baseline: 5fe2a8571b063dc7cb09a5d6e65f0d9ed9e067dc1ae790ae6ea116d516a7a993
+  sha256: d0868b0fca05e99c187c0fe180c3008957c4ad3c78ebd55bc0743fcf5f7870f6
+notes_baseline: a7314359651ce3982d8ab1697ee4b959088ce8315752ccb5d0156103abc51515
 ---
 
 # application.appgen
@@ -59,6 +59,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`separation_cases`](/symbols/application/appgen/separation_cases.md) (function) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record;…
 * [`start_cases`](/symbols/application/appgen/start_cases.md) (function) - Each active fixture actor starting a record, and the kernel's answer.
 * [`stock`](/symbols/application/appgen/stock.md) (function) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
+* [`timer_cases`](/symbols/application/appgen/timer_cases.md) (function) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state…
 * [`value_cases`](/symbols/application/appgen/value_cases.md) (function) - For each transition with guards over record values, an actor who may take it tries it on records holding every combinat…
 
 ## Internal imports
@@ -115,5 +116,6 @@ _No curated notes yet._
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
+* [application.appgen.timer_cases](/symbols/application/appgen/timer_cases.md) - For each transition with a time event, an actor who may take it tries it on a record that has been in the source state half the time and the whole time, and th…
 * [application.appgen.value_cases](/symbols/application/appgen/value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart…
 <!-- okf:generated:end links -->

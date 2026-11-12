@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scenario_run.py
   title: application/scenario_run.py
   hash_method: ast-api-v1
-  sha256: bc7419cba84680f8582bd6ffadd35ab335c7a4ef8141a60fdf287244dcc4866c
-notes_baseline: 4a91e5cf6df7efc4aeb7b5ce21a3f6faf4d963cb34efe25ca7be95e1f9bd8c7d
+  sha256: 8dcbd3690764724996d08bbe172f4bce4c621b51c9ed5d03bea9e691f3dccbd9
+notes_baseline: 354fe9f0929e6d6c4afb9c8ecc44106428e8c400f3c030de449e9b2437ae4c6c
 ---
 
 # application.scenario_run
@@ -35,7 +35,7 @@ Every step is decided by `runtime.execute` on an in-memory session holding the p
 built app's kernel would decide it; nothing here re-encodes a rule. A scenario stops at its first step whose outcome
 differs from what it expects, and that step names the diagram elements involved so PlayIDE can show it.
 
-Pure: no IO, no clock, no randomness.
+Pure: no IO, no real clock (a step's `wait` moves a simulated one), no randomness.
 ~~~
 
 ## Public symbols

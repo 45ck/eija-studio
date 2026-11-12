@@ -8,7 +8,7 @@
 .reach-answer .verdict strong{display:inline-block;padding:1px 9px;border-radius:999px;margin-right:4px}
 .verdict.ok strong{background:var(--ok-bg);color:var(--ok)}
 .verdict.bad strong{background:var(--bad-bg);color:var(--bad)}
-.verdict.warn strong{background:#fdf4e3;color:var(--warn)}
+.verdict.warn strong{background:var(--warn-bg);color:var(--warn)}
 .reach-path{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0;padding:0;list-style:none;counter-reset:step}
 .reach-path li{display:flex;align-items:center;gap:4px}
 .reach-path button{padding:3px 9px;font-size:.82rem}
@@ -33,5 +33,5 @@
 .who-can .no{color:var(--muted)}
 .access-grid th .actor-kind{display:block;width:max-content;margin-top:3px;padding:0 6px;border:1px solid;border-radius:4px;font-size:.7rem;font-weight:500}
 .access-grid th .actor-kind.agent{background:#f3edff;border-color:#6b46c1;color:#553c9a;border-radius:999px}  /* the use case diagram's actor colours (play.js) */
-.access-grid th .actor-kind.timer{background:#fff7e6;border-color:#b7791f;color:var(--warn)}
+.access-grid th .actor-kind.timer{background:#fff7e6;border-color:var(--warn-line);color:var(--warn)}
 .access-grid th .actor-kind.system{background:#eef2f6;border-color:#4a5568;color:#2d3748}

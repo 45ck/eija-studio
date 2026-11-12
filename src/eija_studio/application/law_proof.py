@@ -15,6 +15,8 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   where the model has guards over them: one search per combination its guards can tell apart (ADR-0234). Every other law kind is
   judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
   how each kind is judged and a test fails if a new kind is not classified.
+* Time events (`after(14 days)`, ADR-0237): time can always pass, so each step is tried once the longest of them is
+  due. Waiting only makes more steps possible, never fewer, so this is every run the kernel allows.
 * `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
   committed during the search, so a record is stuck only where the kernel itself leaves no way to an end (ADR-0221).
 * `distinct_actors` (separation of duties, ADR-0233) is about who acted, which the actor classes above do not track.
@@ -89,6 +91,7 @@ def _try(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str, 
     session = _session(pack, actors)
     session.create_instance({"id": "r", "case_id": "proof", "model_hash": model_hash(model), "state": state, "version": 0})
     session.record_values["r"] = dict(values)
+    session.wait(model.longest_wait)  # time may always pass, so every time event is due (ADR-0237)
     command = ExecuteCommand(operation_id="op", actor_id=actor["id"], instance_id="r", action=action, expected_version=0)
     try:
         result = runtime.execute(session, "proof", model, command, pack=pack)  # type: ignore[arg-type]
@@ -189,6 +192,7 @@ def _act(session: MemorySession, pack: Pack, model: Workflow, actor: dict[str, A
          n: int) -> tuple[Step | None, str]:
     """One step on the shared record `r` of `session`: the step, or None and the kernel's refusal code."""
     session.actors[actor["id"]] = dict(actor)
+    session.wait(model.longest_wait)
     item = session.instances["r"]
     command = ExecuteCommand(operation_id=f"op-{n}", actor_id=actor["id"], instance_id="r", action=action,
                              expected_version=item["version"])

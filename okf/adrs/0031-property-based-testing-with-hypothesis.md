@@ -67,6 +67,6 @@ _No curated notes yet._
 
 * [ADR-0028: Model-to-code conformance by exhaustive graph comparison and TLC trace validation](/adrs/0028-runtime-conformance-by-graph-comparison-and-trace-validation.md) - A TLA+ proof about `Excursion.tla` is a proof about the model.
 * [ADR-0030: Bounded model checking by explicit-state search over the real runtime](/adrs/0030-bounded-model-checking-of-the-real-runtime.md) - The runtime matrix in `application/verifier.py` is one-step: five actors times five states times five actions, each cell from a fresh instance.
-* [ADR-0237: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0237-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
+* [ADR-0238: Verify value-guard representatives by property and mutation, and fix what that found](/adrs/0238-value-guard-representatives-verified.md) - ADR-0231 to ADR-0235 added initiators, one action from several states, separation of duties, guards over record values and built associations.
 * [Testing: property-based and model-based tests](/lanes/0031-testing-property-based-and-model-based.md) - Capability lane with ADR numbers 0031–0032 reserved.
 <!-- okf:generated:end links -->

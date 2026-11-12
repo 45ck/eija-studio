@@ -26,6 +26,7 @@
 .seq-export{position:relative;flex:none}
 .seq-export summary{list-style:none;cursor:pointer;padding:4px 10px;font-size:.82rem;border:1px solid var(--line);border-radius:7px}
 .seq-export summary::-webkit-details-marker{display:none}
+.seq-export summary:hover{background:var(--busy-bg)}
 .seq-export-menu{position:absolute;right:0;top:calc(100% + 4px);z-index:30;display:flex;flex-direction:column;gap:2px;min-width:220px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 24px rgba(27,33,48,.16)}
 .seq-export-menu button,.seq-export-menu a{text-align:left;border-color:transparent;font-size:.84rem}
 .seq-add{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:6px 12px;background:var(--panel);font-size:.84rem;color:var(--muted)}

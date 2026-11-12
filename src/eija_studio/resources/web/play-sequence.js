@@ -139,7 +139,7 @@
   async function rerecord(i) {
     const scenario = doc.scenarios[i];
     try {
-      const steps = await tried(scenario.start, scenario.steps.map((x) => [x.actor, x.action]));
+      const steps = await tried(scenario.start, scenario.steps.map((x) => (x.wait ? [x.actor, x.action, x.wait] : [x.actor, x.action])));
       at = i;
       edit((a) => { a.steps = steps; });
     } catch (error) {

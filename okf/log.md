@@ -1,10 +1,11 @@
 # Update log
 
 ## 2026-11-12
+* **Time events (issue #93, item 2)**: synced ADR-0237, `Delay`, `Transition.after`, `Workflow.longest_wait`, the runtime's `TIMER_NOT_DUE` check, the `elapsed` port, Simulate's clock, the law proof's waiting, the oracle's timer cases, the generated app's entry time, the SCXML projection, scenario waits and the formal scope. Re-read the Notes of the runtime module, `execute`, `UnitOfWork`, `Transition` and `Workflow` as `process:claude-code` and updated the last four. No human source approval was recorded.
 
 * **Hostile input and plan cost**: synced ADR-0236 (and again after the Codex review: set-aside drafts never overwrite each other) and the pages for `adapters.system_library` (`set_aside_draft`), `interfaces.cli` (`failure_report`) and `application.plan.preview_plan` (each step applied once). None of these pages has curated Notes. Nothing was recorded as verified.
 
-* **Value-guard representatives verified (ADR-0237)**: synced ADR-0237 (renumbered from 0236, taken by hostile input), `guard_keys`, `Transition.guarded`, `Workflow.coherent`, `ValueGuard`, `ValueGuard.holds`, `points`, `check_values` and `changed_fields` after the property-suite fixes (large constants, overflow, non-finite values, `true` versus `1`, duplicate forbidden effects). No Notes were changed and no human source approval was recorded.
+* **Value-guard representatives verified (ADR-0238)**: synced ADR-0238 (renumbered twice: 0236 is hostile input, 0237 time events), `guard_keys`, `Transition.guarded`, `Workflow.coherent`, `ValueGuard`, `ValueGuard.holds`, `points`, `check_values` and `changed_fields` after the property-suite fixes (large constants, overflow, non-finite values, `true` versus `1`, duplicate forbidden effects). No Notes were changed and no human source approval was recorded.
 
 ## 2026-11-11
 

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: 6ab4c9eaf8ac077fd0fb52ae35439957097d48d0ce052ef6b2a9db5dbd6dda89
-notes_baseline: 7dffccd0901ab9b690e6dfa2622e4332f6c37c8e7afce79352cc082d6c482474
+  sha256: fdcea24e8599a68cc92f2696caddd2b752d7352c14cce231135cffe6e89f802a
+notes_baseline: 275ecbd2ad4a2cc5c678d40033edab5ba8559f3303ee464da59c99eeb8209493
 ---
 
 # domain.models
@@ -37,6 +37,7 @@ _The source carries no module docstring._
 * [`BASE_GUARDS`](/symbols/domain/models/BASE_GUARDS.md) (constant) - no docstring
 * [`Comparison`](/symbols/domain/models/Comparison.md) (type-alias) - no docstring
 * [`Contract`](/symbols/domain/models/Contract.md) (class) - no docstring
+* [`Delay`](/symbols/domain/models/Delay.md) (class) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been i…
 * [`DomainError`](/symbols/domain/models/DomainError.md) (class) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [`ExecuteCommand`](/symbols/domain/models/ExecuteCommand.md) (class) - no docstring
 * [`Guard`](/symbols/domain/models/Guard.md) (type-alias) - no docstring
@@ -45,8 +46,10 @@ _The source carries no module docstring._
 * [`OWNER`](/symbols/domain/models/OWNER.md) (constant) - no docstring
 * [`Principal`](/symbols/domain/models/Principal.md) (class) - no docstring
 * [`Proposal`](/symbols/domain/models/Proposal.md) (class) - no docstring
+* [`SECONDS`](/symbols/domain/models/SECONDS.md) (constant) - no docstring
 * [`SYMBOLS`](/symbols/domain/models/SYMBOLS.md) (constant) - no docstring
 * [`SemanticTransaction`](/symbols/domain/models/SemanticTransaction.md) (class) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
+* [`TimeUnit`](/symbols/domain/models/TimeUnit.md) (type-alias) - no docstring
 * [`Transition`](/symbols/domain/models/Transition.md) (class) - no docstring
 * [`ValueGuard`](/symbols/domain/models/ValueGuard.md) (class) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [`Workflow`](/symbols/domain/models/Workflow.md) (class) - no docstring
@@ -150,6 +153,10 @@ _No curated notes yet._
 * [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
 * [domain.models.Comparison](/symbols/domain/models/Comparison.md) - Type alias `Comparison` in `domain/models`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.Delay.due](/symbols/domain/models/Delay.due.md) - `def due(self, elapsed: float | None) -> bool` in `domain/models`.
+* [domain.models.Delay](/symbols/domain/models/Delay.md) - A UML time event, ``after(14 days)`` (issue #93, ADR-0237): the transition may be taken only once the record has been in its source state this long.
+* [domain.models.Delay.seconds](/symbols/domain/models/Delay.seconds.md) - `def seconds(self) -> int` in `domain/models`.
+* [domain.models.Delay.span](/symbols/domain/models/Delay.span.md) - The duration in words: ``2 days``, ``1 hour``.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.Guard](/symbols/domain/models/Guard.md) - Type alias `Guard` in `domain/models`.
@@ -160,8 +167,10 @@ _No curated notes yet._
 * [domain.models.Principal.require](/symbols/domain/models/Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.Proposal.unique](/symbols/domain/models/Proposal.unique.md) - `def unique(self) -> Proposal` in `domain/models`.
+* [domain.models.SECONDS](/symbols/domain/models/SECONDS.md) - Constant `SECONDS` in `domain/models`.
 * [domain.models.SYMBOLS](/symbols/domain/models/SYMBOLS.md) - Constant `SYMBOLS` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
+* [domain.models.TimeUnit](/symbols/domain/models/TimeUnit.md) - Type alias `TimeUnit` in `domain/models`.
 * [domain.models.Transition.admits](/symbols/domain/models/Transition.admits.md) - The first condition these record values fail, or None when the transition's conditions all hold.
 * [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
@@ -169,6 +178,7 @@ _No curated notes yet._
 * [domain.models.ValueGuard.holds](/symbols/domain/models/ValueGuard.holds.md) - `def holds(self, values: dict[str, Any]) -> bool` in `domain/models`.
 * [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
+* [domain.models.Workflow.longest_wait](/symbols/domain/models/Workflow.longest_wait.md) - The longest time event on any transition, in seconds; 0 when the model has none (ADR-0237).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.
