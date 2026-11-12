@@ -25,8 +25,10 @@ from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack
 
 FORMAT = "eija.landscape.v1"
-LIMITS = ("Workflows are linked by the classes their class diagrams name; the built apps do not call each other yet, "
-          "so a link is a design dependency the kernel does not run (cross-workflow messages are issue #93).")
+LIMITS = ("Workflows are linked by the classes their class diagrams name, and by the signals one sends and another "
+          "receives (issue #93, ADR-0242). A class link is a design dependency the kernel does not run. A signal is written to the "
+          "sender's outbox and starts a record when it is delivered to the receiver; nothing yet carries it between the "
+          "built apps.")
 
 
 def _shape(attribute: Attribute) -> str:
@@ -53,6 +55,12 @@ def _emitted(model: Workflow) -> set[str]:
     return {e for t in model.transitions for e in t.required_effects}
 
 
+def _sends(pack: Pack, model: Workflow) -> list[dict[str, str]]:
+    """The signals a transition requires, each with the workflow it goes to (ADR-0242)."""
+    return [{"signal": e.id, "to": e.recipient or ""} for e in pack.effects.catalog
+            if e.kind == "signal" and e.id in _emitted(model)]
+
+
 def _final(model: Workflow) -> list[str]:
     return sorted(s for s in model.states if not any(t.from_state == s for t in model.transitions))
 
@@ -69,16 +77,22 @@ def _workflow(pack: Pack, data: DataModel | None, model: Workflow) -> dict[str, 
         "kinds": {r.id: r.kind for r in sorted(pack.roles, key=lambda r: r.id)},
         "classes": sorted(e.name for e in data.entities) if data else [],
         "model": model.semantic_hash,
-    }
+    } | _messages(pack, model)
 
 
-def _connected(focus: str, classes: dict[str, set[str]]) -> list[str]:
-    """The workflows reachable from `focus` through classes they share, in id order."""
+def _messages(pack: Pack, model: Workflow) -> dict[str, Any]:
+    """What a workflow sends and receives; nothing for one that does neither, so its entry keeps its shape."""
+    sends, receives = _sends(pack, model), [{"signal": r.signal, "sender": r.sender} for r in model.receives]
+    return ({"sends": sends} if sends else {}) | ({"receives": receives} if receives else {})
+
+
+def _connected(focus: str, classes: dict[str, set[str]], talks: frozenset[tuple[str, str]] | set[tuple[str, str]] = frozenset()) -> list[str]:
+    """The workflows reachable from `focus` through classes they share or signals between them, in id order."""
     seen, todo = {focus}, [focus]
     while todo:
         here = todo.pop()
         for other, names in classes.items():
-            if other not in seen and names & classes[here]:
+            if other not in seen and (names & classes[here] or (here, other) in talks or (other, here) in talks):
                 seen.add(other)
                 todo.append(other)
     return sorted(seen)
@@ -179,6 +193,29 @@ def _links(shared: dict[str, dict[str, Entity]], owners: dict[str, list[str]]) -
             if (owner := _owner(owners, name)) for user in sorted(found) if user != owner]
 
 
+def _talks(by_id: dict[str, tuple[Pack, DataModel | None, Workflow]]) -> set[tuple[str, str]]:
+    """Each (sender, receiver) pair a signal declares, from either end."""
+    sent = {(pack.id, s["to"]) for pack, _, model in by_id.values() for s in _sends(pack, model)}
+    return sent | {(r.sender, model.id) for _, _, model in by_id.values() for r in model.receives}
+
+
+def _signals(workflows: list[dict[str, Any]]) -> tuple[list[dict[str, str]], list[dict[str, Any]]]:
+    """The signals between the system's workflows, and each one only one end declares (ADR-0242)."""
+    sent = {(w["id"], s["to"], s["signal"]) for w in workflows for s in w.get("sends", [])}
+    heard = {(r["sender"], w["id"], r["signal"]) for w in workflows for r in w.get("receives", [])}
+    found = [{"code": "SIGNAL_UNHEARD", "severity": "warning", "subject": [f"workflow:{a}", f"signal:{s}"], "workflows": [a, b],
+              "message": f"{a} sends {s} to {b}, which does not say it receives it from {a}: nothing would start."}
+             for a, b, s in sorted(sent - heard)]
+    found += [{"code": "SIGNAL_NEVER_SENT", "severity": "warning", "subject": [f"workflow:{b}", f"signal:{s}"], "workflows": [b, a],
+               "message": f"{b} starts a record on {s} from {a}, which never sends it."} for a, b, s in sorted(heard - sent)]
+    return [{"source": a, "target": b, "signal": s} for a, b, s in sorted(sent & heard)], found
+
+
+def _signalled(signals: list[dict[str, str]]) -> dict[str, Any]:
+    """The signals between workflows, only for a system that has any, so other landscapes keep their shape."""
+    return {"signals": signals} if signals else {}
+
+
 def _findings(shared: dict[str, dict[str, Entity]], owners: dict[str, list[str]], workflows: list[dict[str, Any]],
               actors: set[str]) -> list[dict[str, Any]]:
     found = [f for name, copies in shared.items() for f in _class_findings(name, copies, sorted(owners.get(name, [])))]
@@ -194,11 +231,12 @@ def landscape(focus: str, systems: Iterable[tuple[Pack, DataModel | None, Workfl
     refused. Pack ids must be unique; the caller reports a second folder with an id already read as unreadable."""
     by_id = {pack.id: (pack, data, model) for pack, data, model in systems}
     data = {wid: found[1] for wid, found in by_id.items()}
-    members = _connected(focus, {wid: _names(d) for wid, d in data.items()})
+    members = _connected(focus, {wid: _names(d) for wid, d in data.items()}, _talks(by_id))
     workflows = [_workflow(*by_id[wid]) for wid in members]
     owners, shared, actors = _owners(workflows), _copies(members, data), _actors(workflows)
-    findings = _findings(shared, owners, workflows, set(actors))
-    return {
+    signals, unmatched = _signals(workflows)
+    findings = _findings(shared, owners, workflows, set(actors)) + unmatched
+    return _signalled(signals) | {
         "format": FORMAT, "focus": focus, "workflows": workflows,
         "actors": [{"name": name, "workflows": held, "kinds": _kinds(name, workflows)} for name, held in actors.items()],
         "links": _links(shared, owners),

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py
   title: domain/pack.py
   hash_method: ast-api-v1
-  sha256: dfdeb14a30ce37885328b83215373f0756afefa6ce4d28dc5ca54862bc07cb3d
-notes_baseline: 8cd6c3afa7896c01178ce54b85a7ad77a648648d0114f7994bd5df1255be27b7
+  sha256: 488cd23625bd6a04a3ccaf55794f61c385ae7ba1f819aba2ff52b503635738a8
+notes_baseline: fb4f32ef552cd4f02cdd28b88d12acd6705e1f93b982f510009f20a07a990b3e
 ---
 
 # domain.pack
@@ -84,6 +84,7 @@ action or effect) becomes ``PackError`` (code ``PACK_INVALID``) with SORTED diag
 
 * [`domain/laws`](/modules/domain/laws.md)
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/signals`](/modules/domain/signals.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
 <!-- okf:generated:end facts -->
 
@@ -96,6 +97,7 @@ _No curated notes yet._
 
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+* [domain.signals](/modules/domain/signals.md) - Signals between workflows (issue #93 item 5, ADR-0242): what makes a signal effect well formed.
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 
 ## Referenced by

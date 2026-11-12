@@ -77,6 +77,7 @@ classDiagram
         +tuple~str~ initiators
         +tuple~Composite~ composites
         +tuple~LinkedObject~ objects
+        +tuple~Receive~ receives
     }
     class Guard {
         <<enumeration>>

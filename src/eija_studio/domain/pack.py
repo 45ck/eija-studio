@@ -22,6 +22,7 @@ from pydantic import Field, PrivateAttr, SerializerFunctionWrapHandler, Validati
 
 from .laws import KIND_LAWS, Law, RoleKind
 from .models import MEANING_ID, Alternative, Contract, DomainError, Guard, Workflow, fingerprint
+from .signals import signal_problems
 from .transactions import AddState, RemoveState, Transaction
 
 PACK_SCHEMA = "eija.pack.v1"
@@ -82,9 +83,10 @@ class ActionSpec(Contract):
 
 
 class Effect(Contract):
-    """A typed effect. ``audit`` is written to the audit log, ``notification`` to the outbox for ``recipient``."""
+    """A typed effect. ``audit`` is written to the audit log, ``notification`` to the outbox for ``recipient``, and
+    ``signal`` to the outbox for the workflow ``recipient`` names, another pack of the system (ADR-0242)."""
     id: str = Field(min_length=1, max_length=80)
-    kind: Literal["audit", "notification"]
+    kind: Literal["audit", "notification", "signal"]
     recipient: str | None = Field(default=None, max_length=60)
 
 
@@ -279,7 +281,11 @@ def _effect_problems(pack: Pack) -> list[str]:
 
 
 def _recipient_problems(pack: Pack) -> list[str]:
-    return [f"effects.catalog[{e.id}]: a notification needs a recipient" for e in pack.effects.catalog if e.kind == "notification" and not e.recipient]
+    """A notification needs a recipient; a signal names another workflow and reads `Signal:Name` (ADR-0242)."""
+    found = [f"effects.catalog[{e.id}]: a {e.kind} needs a recipient" for e in pack.effects.catalog
+             if e.kind in ("notification", "signal") and not e.recipient]
+    return found + signal_problems(pack.id, pack.effects.catalog)
+
 
 
 def _count(pack: Pack, action: ActionSpec, kind: str) -> int:

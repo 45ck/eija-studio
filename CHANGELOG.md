@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 12 November 2026: messages between workflows
+
+- A transition may send a signal to another workflow of the system, such as `Signal:LateReturn` to `library-fines` ([ADR-0242](docs/adr/0242-messages-between-workflows.md), issue #93 item 5). The kernel writes it to the sender's outbox in the same step. A workflow that says it receives that signal from that sender starts a record when it is delivered (`runtime.receive`). Any other signal or sender is refused with `SIGNAL_NOT_ACCEPTED`, and a redelivery starts nothing new.
+- Returning a loan late now sends `Signal:LateReturn`, and the fines workflow starts a fine on it.
+- The system landscape draws each signal on the System lens and flags one that only one end declares (`SIGNAL_UNHEARD`, `SIGNAL_NEVER_SENT`). A receiving app has `POST /api/signals`, and its conformance run gains a signal test (twelve tests now). Nothing carries a signal between two built apps yet.
+
 ### 12 November 2026: actions on linked objects
 
 - A workflow may give the object a built reference names a small lifecycle, and a transition may move it: `/ target.lock` ([ADR-0241](docs/adr/0241-actions-on-linked-objects.md), issue #93 item 4). The kernel moves the object in the same unit of work as the record, and refuses the step with `LINKED_OBJECT_REFUSED` when the object has no move from its state.

@@ -90,8 +90,8 @@ def test_a_notification_to_no_role_in_the_system_is_found():
     pack = load_pack(PACKS_ROOT / "library-loan")
     renamed = pack.model_copy(update={"roles": tuple(r.model_copy(update={"id": "Borrower"}) if r.id == "Member" else r for r in pack.roles)})
     result = landscape("library-loan", [(renamed, data_for(pack), pack.model)])
-    assert set(codes(result)) == {"RECIPIENT_IS_NOT_AN_ACTOR"}
-    assert landscape("library-loan", shipped("library-loan"))["findings"] == []  # recipient "member" is the Member role
+    assert set(codes(result)) - {"SIGNAL_UNHEARD"} == {"RECIPIENT_IS_NOT_AN_ACTOR"}  # library-fines is not given here
+    assert codes(landscape("library-loan", shipped("library-loan"))) == ["SIGNAL_UNHEARD"]  # recipient "member" is the Member role
 
 
 @pytest.fixture
@@ -124,7 +124,8 @@ def test_a_notification_no_transition_requires_is_not_published():
     unused = pack.effects.model_copy(update={"catalog": (*pack.effects.catalog, pack.effects.catalog[1].model_copy(update={"id": "Notification:Unused", "recipient": "nobody"}))})
     result = landscape("library-loan", [(pack.model_copy(update={"effects": unused}), data_for(pack), pack.model)])
     loan = result["workflows"][0]
-    assert "Notification:Unused" not in [p["effect"] for p in loan["publishes"]] and result["findings"] == []
+    alone = [f for f in result["findings"] if f["code"] != "SIGNAL_UNHEARD"]  # library-fines is not given here
+    assert "Notification:Unused" not in [p["effect"] for p in loan["publishes"]] and alone == []
 
 
 def test_a_second_folder_with_a_taken_id_is_reported_not_merged(tmp_path):

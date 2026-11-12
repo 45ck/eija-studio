@@ -67,7 +67,7 @@ class GeneratedAppActivation(Contract):
     subject_hash: Digest
 
 
-GENERATED_TESTS = 11  # the conformance template's test methods; the linked-object check joined them in ADR-0241
+GENERATED_TESTS = 12  # the conformance template's test methods; the signal check joined them in ADR-0242
 
 
 def generated_receipt_status(receipt: dict[str, Any], binding: GeneratedAppBinding,

@@ -31,7 +31,7 @@ def _expected(actor: Actor, state: str, t: Transition | None, pack: Pack) -> dic
     allowed = _allowed(actor, state, t)
     kinds = [] if t is None or not allowed else [e.kind for x in t.required_effects if (e := pack.effect(x)) is not None]
     return {"accepted": allowed, "state": t.to_state if allowed and t is not None else state,
-            "version": int(allowed), "audit": kinds.count("audit"), "outbox": kinds.count("notification"),
+            "version": int(allowed), "audit": kinds.count("audit"), "outbox": kinds.count("notification") + kinds.count("signal"),
             "operations": int(allowed)}
 
 

@@ -269,6 +269,15 @@ class LinkedObject(Contract):
         return next((m.to_state for m in self.moves if m.event == event and m.from_state == state), None)
 
 
+def _sort_sets(data: dict[str, Any]) -> None:
+    """Who may start a record (ADR-0231) and the signals that start one (ADR-0242) are sets; each is absent when
+    empty, so old hashes hold."""
+    if "initiators" in data:
+        data["initiators"] = sorted(data["initiators"])
+    if "receives" in data:
+        data["receives"] = sorted(data["receives"], key=canonical)
+
+
 def _linked(objects: tuple[LinkedObject, ...], transitions: tuple[Transition, ...]) -> bool:
     """Each linked object has its own link, and each step on one names a declared link and one of its events. One
     transition never moves two objects of the same class: two links could name one object, and its moves would clash."""
@@ -276,6 +285,16 @@ def _linked(objects: tuple[LinkedObject, ...], transitions: tuple[Transition, ..
     return len(lifecycles) == len(objects) and all(
         s.link in lifecycles and s.event in lifecycles[s.link].events() for t in transitions for s in t.then) and all(
         len({lifecycles[s.link].entity for s in t.then}) == len(t.then) for t in transitions)
+
+
+class Receive(Contract):
+    """A signal another workflow of the system sends that starts a record here (issue #93 item 5, ADR-0242): the
+    signal effect `signal` declared by the pack `sender`."""
+    signal: str = Field(pattern=r"^Signal:[A-Z][A-Za-z0-9]{0,59}$")
+    sender: str = Field(pattern=r"^[a-z][a-z0-9-]{0,39}$")
+
+    def __str__(self) -> str:
+        return f"{self.signal} from {self.sender}"
 
 
 class Workflow(Contract):
@@ -291,11 +310,13 @@ class Workflow(Contract):
     composites: tuple[Composite, ...] = Field(default=(), max_length=16)
     # Lifecycles of the objects the record links to (ADR-0241). Empty is left out of every dump.
     objects: tuple[LinkedObject, ...] = Field(default=(), max_length=8)
+    # Signals from other workflows that start a record (ADR-0242). Empty is left out of every dump.
+    receives: tuple[Receive, ...] = Field(default=(), max_length=16)
 
     @model_serializer(mode="wrap")
     def _omit_open_start(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
-        for key in ("initiators", "composites", "objects"):
+        for key in ("initiators", "composites", "objects", "receives"):
             if not getattr(self, key):
                 data.pop(key, None)
         return data
@@ -323,10 +344,16 @@ class Workflow(Contract):
             raise ValueError("Duplicate initiator role")
         if not _is_tree(self.states, self.composites):
             raise ValueError("Composite states must form a tree over the states")
+        if len({(r.signal, r.sender) for r in self.receives}) != len(self.receives):
+            raise ValueError("Duplicate received signal")
         if not _linked(self.objects, self.transitions):
             raise ValueError("Each step on a linked object needs a declared lifecycle with that event, and one transition moves at most one "
                              "object of each class")
         return self
+
+    def receiving(self, signal: str, sender: str) -> Receive | None:
+        """The declaration that `signal` from `sender` starts a record here, if there is one (ADR-0242)."""
+        return next((r for r in self.receives if r.signal == signal and r.sender == sender), None)
 
     def lifecycle(self, link: str) -> LinkedObject | None:
         return next((o for o in self.objects if o.link == link), None)
@@ -382,8 +409,7 @@ class Workflow(Contract):
         data = self.model_dump(mode="json")
         data["states"] = sorted(data["states"])
         data["transitions"] = sorted(data["transitions"], key=lambda x: x["id"])
-        if "initiators" in data:  # who may start a record is a set (ADR-0231); absent when empty, so old hashes hold
-            data["initiators"] = sorted(data["initiators"])
+        _sort_sets(data)
         if "composites" in data:  # a set of groups, each over a set of children (ADR-0240); absent when empty
             data["composites"] = sorted(({**c, "states": sorted(c["states"])} for c in data["composites"]),
                                         key=lambda c: c["name"])

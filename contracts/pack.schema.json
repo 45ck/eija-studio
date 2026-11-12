@@ -624,7 +624,7 @@
     },
     "Effect": {
       "additionalProperties": false,
-      "description": "A typed effect. ``audit`` is written to the audit log, ``notification`` to the outbox for ``recipient``.",
+      "description": "A typed effect. ``audit`` is written to the audit log, ``notification`` to the outbox for ``recipient``, and\n``signal`` to the outbox for the workflow ``recipient`` names, another pack of the system (ADR-0242).",
       "properties": {
         "id": {
           "maxLength": 80,
@@ -635,7 +635,8 @@
         "kind": {
           "enum": [
             "audit",
-            "notification"
+            "notification",
+            "signal"
           ],
           "title": "Kind",
           "type": "string"
@@ -1484,6 +1485,28 @@
         "question"
       ],
       "title": "Question",
+      "type": "object"
+    },
+    "Receive": {
+      "additionalProperties": false,
+      "description": "A signal another workflow of the system sends that starts a record here (issue #93 item 5, ADR-0242): the\nsignal effect `signal` declared by the pack `sender`.",
+      "properties": {
+        "signal": {
+          "pattern": "^Signal:[A-Z][A-Za-z0-9]{0,59}$",
+          "title": "Signal",
+          "type": "string"
+        },
+        "sender": {
+          "pattern": "^[a-z][a-z0-9-]{0,39}$",
+          "title": "Sender",
+          "type": "string"
+        }
+      },
+      "required": [
+        "signal",
+        "sender"
+      ],
+      "title": "Receive",
       "type": "object"
     },
     "RemoveState": {
@@ -2360,6 +2383,15 @@
           },
           "maxItems": 8,
           "title": "Objects",
+          "type": "array"
+        },
+        "receives": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Receive"
+          },
+          "maxItems": 16,
+          "title": "Receives",
           "type": "array"
         }
       },

@@ -120,6 +120,12 @@
           "FineWaivedSilently"
         ]
       }
+    ],
+    "receives": [
+      {
+        "signal": "Signal:LateReturn",
+        "sender": "library-loan"
+      }
     ]
   },
   "roles": [

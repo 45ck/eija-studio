@@ -28,7 +28,8 @@ from .model import Edge, Label, Parsed, kind_label, parse_label
 
 FORMAT = "eija.uml-start.v1"
 DEFAULT_ROLE = "User"
-_KINDS = {"audit": "audit", "notification": "notification"}
+_KINDS = {"audit": "audit", "notification": "notification", "signal": "signal"}
+UNADDRESSED = "unaddressed"  # the workflow a signal read from a file goes to: none yet (ADR-0242)
 
 
 def _repeat(edge: Edge, label: Label, first: tuple[Edge, Label]) -> str | None:
@@ -82,8 +83,12 @@ def _effect(text: str, role: str, edge: Edge, trigger: str, report: ImportReport
     kind = _KINDS.get(text.split(":", 1)[0].strip().lower()) if ":" in text else None
     if kind is None:
         report.add("unmapped", edge.where, f"{trigger}: effect {text!r}",
-                   "an effect is Audit:Name or Notification:Name in PlayIDE's effect vocabulary")
+                   "an effect is Audit:Name, Notification:Name or Signal:Name in PlayIDE's effect vocabulary")
         return None
+    if kind == "signal":
+        report.add("defaulted", edge.where, f"{trigger}: {text} receiver",
+                   "no UML file carries the workflow a signal goes to; it goes to none until you name one")
+        return {"id": text, "kind": kind, "recipient": UNADDRESSED}
     if kind == "notification":
         report.add("defaulted", edge.where, f"{trigger}: {text} recipient",
                    f"no UML file carries a notification's recipient; used {role.lower()}")
