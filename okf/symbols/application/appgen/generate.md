@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#generate
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: e3705a44718f3ee32b5441df1cef5f2183fa46d0096b94aa23b8d59c77795c37
-notes_baseline: 68291d47cf177a7c42e8ad8993f47ee8e418790e4409c9bfb15f7e78b46d6fb5
+  sha256: 68fc1a12ab70ce5c45aab7cdbee57dcd1536111dc0f7ec775f6182ee0b0212ea
+notes_baseline: 211554f2b00ce047c17c5f7075a0b4633336429ac596f420411e486d8433ceb6
 ---
 
 # application.appgen.generate
@@ -46,17 +46,18 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.app_runs.create_cases](/symbols/application/app_runs/create_cases.md) - Every fixture actor, and one unknown actor, starting a record with valid values: the state and version it starts in, or the refusal.
+* [application.app_runs.journeys](/symbols/application/app_runs/journeys.md) - For each transition, a record started through the app and walked to it: the shortest run from the initial state whose last step is that transition, each step t…
+* [application.app_runs.options_cases](/symbols/application/app_runs/options_cases.md) - What the app offers each fixture actor (and one unknown actor) on a record in each state that holds valid values: every action leaving that state, and whether…
+* [application.app_runs.rules](/symbols/application/app_runs/rules.md) - The rule table the app shows: each action once, every state it leaves, where it leads and who takes it.
 * [application.appgen.CASE_KINDS](/symbols/application/appgen/CASE_KINDS.md) - Constant `CASE_KINDS` in `application/appgen`.
 * [application.appgen.FORMAT](/symbols/application/appgen/FORMAT.md) - Constant `FORMAT` in `application/appgen`.
 * [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
-* [application.appgen.create_cases](/symbols/application/appgen/create_cases.md) - Every fixture actor, and one unknown actor, starting a record with valid values: the state and version it starts in, or the refusal.
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
-* [application.appgen.journeys](/symbols/application/appgen/journeys.md) - For each transition, a record started through the app and walked to it: the shortest run from the initial state whose last step is that transition, each step t…
-* [application.appgen.options_cases](/symbols/application/appgen/options_cases.md) - What the app offers each fixture actor (and one unknown actor) on a record in each state that holds valid values: every action leaving that state, and whether…
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
-* [application.appgen.rules](/symbols/application/appgen/rules.md) - The rule table the app shows: each action once, every state it leaves, where it leads and who takes it.
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
+* [application.appgen.valid_values](/symbols/application/appgen/valid_values.md) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.data.references](/symbols/domain/data/references.md) - The record's reference fields, one per built association, in declaration order.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.

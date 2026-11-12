@@ -4,6 +4,7 @@
 
 * [application.access](access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a record reach this state without that role ever acting?".
 * [application.api_contract](api_contract.md) - The API contract of an app built from a workflow (ADR-0207): an OpenAPI 3.1 document of what the generated server serves, written from the model, the pack and the data model rather than by hand.
+* [application.app_runs](app_runs.md) - The app oracle's runs that start from a record the app itself creates (ADR-0241): who may start one and where it starts, a run from a new record to each transition, the actions offered in each state, and the rule table…
 * [application.appgen](appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.build_subject](build_subject.md) - Exact generated-build identity.
 * [application.c4](c4.md) - Read-only C4 views of generated source and declared model contracts.
@@ -27,6 +28,7 @@
 * [application.law_proof](law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.memo](memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.new_system](new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
+* [application.oracle_session](oracle_session.md) - The in-memory session the app oracle asks the kernel through (ADR-0150): one record, nothing persists.
 * [application.owner_plan](owner_plan.md) - Exact owner-plan case construction; authority and atomic storage remain in Studio.
 * [application.plan](plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted ones would do.
 * [application.ports](ports.md) - Application-owned ports.

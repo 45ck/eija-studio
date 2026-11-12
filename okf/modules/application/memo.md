@@ -63,8 +63,8 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
+* [application.oracle_session](/modules/application/oracle_session.md) - The in-memory session the app oracle asks the kernel through (ADR-0150): one record, nothing persists.
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.memo.IdentityMemo.get](/symbols/application/memo/IdentityMemo.get.md) - `def get(self, args: tuple[Any, ...], compute: Callable[[], _T]) -> _T` in `application/memo`.
 * [application.memo.IdentityMemo](/symbols/application/memo/IdentityMemo.md) - A small, bounded memo for pure functions of frozen contracts, keyed by the identity of the arguments.

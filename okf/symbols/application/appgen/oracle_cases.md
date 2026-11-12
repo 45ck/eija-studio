@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#oracle_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: b1ea726ff2831f226d562e70f0d113a69243a11824ae2f45886ec77613b9bacb
-notes_baseline: efd94663f33ec9ebb049fbd1fb294f9b24ff69074066f7d7247d6c9e1ed4ebfe
+  sha256: 083453a6d3421f32ca70ac7478f29063bd3c5deb11c911fd20673b4d3e7c4301
+notes_baseline: 92ea01e85a35650ab0f6c749fe91c29a54e87be7579bb93a0cd28dacdfea13bc
 ---
 
 # application.appgen.oracle_cases
@@ -47,8 +47,10 @@ _No curated notes yet._
 ## Depends on
 
 * [application.appgen.UNDECLARED_ACTION](/symbols/application/appgen/UNDECLARED_ACTION.md) - Constant `UNDECLARED_ACTION` in `application/appgen`.
-* [application.appgen.UNKNOWN_ACTOR](/symbols/application/appgen/UNKNOWN_ACTOR.md) - Constant `UNKNOWN_ACTOR` in `application/appgen`.
-* [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
+* [application.oracle_session.OracleSession](/symbols/application/oracle_session/OracleSession.md) - In-memory answers to exactly the port calls `execute` makes for one instance.
+* [application.oracle_session.UNKNOWN_ACTOR](/symbols/application/oracle_session/UNKNOWN_ACTOR.md) - Constant `UNKNOWN_ACTOR` in `application/oracle_session`.
+* [application.oracle_session.absent](/symbols/application/oracle_session/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
+* [application.oracle_session.kernel_answer](/symbols/application/oracle_session/kernel_answer.md) - `def kernel_answer(pack: Pack, model: Workflow, session: OracleSession, actor: str, action: str, version: int,…` in `application/oracle_session`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 

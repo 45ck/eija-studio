@@ -97,5 +97,6 @@ Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/appli
 
 ## Referenced by
 
+* [application.oracle_session.kernel_answer](/symbols/application/oracle_session/kernel_answer.md) - `def kernel_answer(pack: Pack, model: Workflow, session: OracleSession, actor: str, action: str, version: int,…` in `application/oracle_session`.
 * [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 <!-- okf:generated:end links -->
