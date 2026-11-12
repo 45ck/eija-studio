@@ -4606,17 +4606,44 @@
           },
           "steps": {
             "items": {
-              "prefixItems": [
+              "anyOf": [
                 {
-                  "type": "string"
+                  "prefixItems": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "type": "array",
+                  "maxItems": 2,
+                  "minItems": 2
                 },
                 {
-                  "type": "string"
+                  "prefixItems": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/Delay"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  ],
+                  "type": "array",
+                  "maxItems": 3,
+                  "minItems": 3
                 }
-              ],
-              "type": "array",
-              "maxItems": 2,
-              "minItems": 2
+              ]
             },
             "type": "array",
             "maxItems": 40,

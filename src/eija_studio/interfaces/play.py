@@ -53,7 +53,7 @@ from eija_studio.application.sequence_draft import scenarios_or_draft
 from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
-from eija_studio.domain.models import Contract, DomainError, Workflow
+from eija_studio.domain.models import Contract, Delay, DomainError, Workflow
 from eija_studio.domain.pack import PACK_FILE, Pack, load_pack, pack_directory
 from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.policy import apply_transactions
@@ -111,7 +111,8 @@ class ScenariosRequest(BuildRequest):
 
 class TryRequest(BuildRequest):
     start: str | None = Field(default=None, min_length=1, max_length=60)
-    steps: list[tuple[str, str]] = Field(min_length=1, max_length=40)  # (fixture actor, action) in turn
+    # (fixture actor, action) in turn, or (actor, action, wait) for a step that waits first (ADR-0236)
+    steps: list[tuple[str, str] | tuple[str, str, Delay | None]] = Field(min_length=1, max_length=40)
 
 
 class RunRequest(SimulateRequest):

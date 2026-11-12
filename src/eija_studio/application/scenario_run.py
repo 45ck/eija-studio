@@ -8,6 +8,7 @@ Pure: no IO, no real clock (a step's `wait` moves a simulated one), no randomnes
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 from eija_studio.domain.models import Delay, DomainError, ExecuteCommand, Workflow
@@ -107,13 +108,18 @@ def run_scenarios(pack: Pack, model: Workflow, scenarios: Scenarios) -> dict[str
     return head | {"status": status, "passed": len(results) - failed, "failed": failed, "scenarios": results}
 
 
-def record_steps(pack: Pack, model: Workflow, start: str | None, steps: list[tuple[str, str]]) -> list[dict[str, Any]]:
+def record_steps(pack: Pack, model: Workflow, start: str | None,
+                 steps: Sequence[tuple[str, str] | tuple[str, str, Delay | None]]) -> list[dict[str, Any]]:
     """What the kernel does for each (actor, action) in turn, written as scenario steps that expect exactly that.
+    A step given as (actor, action, wait) lets that time pass first and keeps its wait (ADR-0236).
 
     This is how a person adds a test: try the steps, read what happened, and keep it if it is what should happen."""
     state = start or model.initial_state
     if state not in model.states:
         raise DomainError("STATE_UNKNOWN", f"{state} is not a state of this model")
-    record = _Record(pack, model, state)
-    return [ScenarioStep(actor=actor, action=action, then=record.take(actor, action)).model_dump(mode="json", exclude_none=True)
-            for actor, action in steps]
+    record, out = _Record(pack, model, state), []
+    for actor, action, *rest in steps:
+        wait = rest[0] if rest else None
+        step = ScenarioStep(actor=actor, action=action, wait=wait, then=record.take(actor, action, wait))
+        out.append(step.model_dump(mode="json", exclude_none=True))
+    return out

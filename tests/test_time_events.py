@@ -19,7 +19,8 @@ from eija_studio.application.appgen import generate, timer_cases
 from eija_studio.application.diagrams import state_graph
 from eija_studio.application.law_proof import prove_laws, with_laws
 from eija_studio.application.memo import model_hash
-from eija_studio.application.scenario_run import run_scenarios
+from eija_studio.application.ghost_diff import ghost_diff
+from eija_studio.application.scenario_run import record_steps, run_scenarios
 from eija_studio.application.scxml import guard_condition, to_scxml
 from eija_studio.application.simulation import MemorySession, simulate
 from eija_studio.domain.impact import changed_fields
@@ -191,3 +192,24 @@ def test_a_scenario_waits_and_the_time_event_falls_due():
         ("1 day", {"refused": "TIMER_NOT_DUE"}), ("1 day", {"state": "WithSupervisor"})]
     plain = ScenarioStep.model_validate({"actor": "a", "action": "Go", "then": {"state": "Done"}})
     assert "wait" not in plain.model_dump(mode="json")
+
+
+def test_the_ghost_diff_writes_a_changed_time_event():
+    """Review regression: a changed `after` reached the ghost diff with no text for it."""
+    three = timed(DESK.model, **{"TR-ESCALATE": {"amount": 3, "unit": "days"}})
+    texts = [c["text"] for c in ghost_diff(DESK.model, three)["changes"]]
+    assert any("time event after(2 days) → after(3 days)" in t for t in texts), texts
+    added = [c["text"] for c in ghost_diff(UNTIMED, DESK.model)["changes"]]
+    assert any("time event none → after(2 days)" in t for t in added), added
+    json.dumps(ghost_diff(DESK.model, three))
+
+
+def test_re_recording_a_scenario_keeps_its_waits():
+    """Review regression: re-recording a timed scenario dropped its waits, so the escalation never fell due."""
+    day = Delay(amount=1, unit="days")
+    steps = record_steps(DESK, DESK.model, "AwaitingApproval",
+                         [("sla-clock", "EscalateStale", day), ("sla-clock", "EscalateStale", day)])
+    assert [(s.get("wait"), s["then"]) for s in steps] == [
+        ({"amount": 1, "unit": "days"}, {"refused": "TIMER_NOT_DUE"}),
+        ({"amount": 1, "unit": "days"}, {"state": "WithSupervisor"})]
+    assert "wait" not in record_steps(DESK, DESK.model, None, [("customer-a", "Withdraw")])[0]
