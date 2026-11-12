@@ -4,6 +4,7 @@
 * **Time events (issue #93, item 2)**: synced ADR-0237, `Delay`, `Transition.after`, `Workflow.longest_wait`, the runtime's `TIMER_NOT_DUE` check, the `elapsed` port, Simulate's clock, the law proof's waiting, the oracle's timer cases, the generated app's entry time, the SCXML projection, scenario waits and the formal scope. Re-read the Notes of the runtime module, `execute`, `UnitOfWork`, `Transition` and `Workflow` as `process:claude-code` and updated the last four. No human source approval was recorded.
 
 * **Hostile input and plan cost**: synced ADR-0236 (and again after the Codex review: set-aside drafts never overwrite each other) and the pages for `adapters.system_library` (`set_aside_draft`), `interfaces.cli` (`failure_report`) and `application.plan.preview_plan` (each step applied once). None of these pages has curated Notes. Nothing was recorded as verified.
+* **PlayIDE browser QA of the new kernel features**: synced ADR-0232 and ADR-0234 (amendments: chat names the source of an action that leaves several states; tests and permissions give the record values), `Scenario.values`, `scenario_run`, `access.matrix`/`reach`, `plan_proposals` and `system_describer`. The modules' Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
 
 ## 2026-11-11
 

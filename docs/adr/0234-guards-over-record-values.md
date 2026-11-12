@@ -58,3 +58,22 @@ Issue #93, item 1. UML state machines write guards on transitions: `Approve [amo
 * Bad: values never change during a run, because there is no action that edits a record's values. When one is added, the law proof's "values never change" assumption must change with it.
 * Bad: the TLA+, SMT and BMC encodings do not model guards. The law proof, the oracle and the SCXML differential carry the evidence for guarded models.
 * Revisit when: a pack needs arithmetic or a comparison between attributes, actions edit values, or a formal encoding should cover guards.
+
+## Amendment, 12 November 2026: tests and permissions give the record values
+
+Walking PlayIDE in a browser with a guarded pack showed three places where "the Studio's records hold no values" made
+the IDE wrong rather than careful:
+
+* **Tests and sequences.** A scenario could not pass a guarded transition, so every test of a guarded happy path failed
+  with `VALUE_GUARD_DENIED` and the Sequences tab drew it red. A scenario may now give the record's values,
+  `"values": {"renewals": 1}`, which the kernel's guards read (`scenario_run`; the recorder takes them too). The field is
+  left out of the dump when empty, so every existing `scenarios.json` keeps its digest. The Tests tab reads "Given a new
+  record in Requested with renewals = 1", and a refusal by a guard names the guard and says to give the test values.
+* **Permissions.** The matrix said no one may take a guarded action. A cell is about who may act, so each guarded cell
+  is now tried on a record whose values meet its guards, picked from `value_guards.combinations`, and the cell shows
+  `when [renewals ≤ 3]`.
+* **Reachability.** A path is replayed on one record whose values meet every guard on it, and the answer says which
+  values. No values meeting them all is `NOT_SHOWN`, never `REACHABLE`. The replay also tries each fixture actor of a
+  role in turn, so a separation of duties law (ADR-0233) does not hide a path a second actor can finish.
+
+The kernel is unchanged: it still fails closed on a record without values.
