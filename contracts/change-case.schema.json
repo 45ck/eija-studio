@@ -372,6 +372,107 @@
       "title": "GeneratedChecker",
       "type": "object"
     },
+    "LinkedObject": {
+      "additionalProperties": false,
+      "description": "The lifecycle of the object a record links to through a reference field, such as a deploy request's `target`\nservice (issue #93 item 4, ADR-0241): a small state machine of its own, moved only by the record's steps\n(`Transition.then`). An object in a state with no move for the event refuses the record's step; so does an unknown\nobject or state.",
+      "properties": {
+        "link": {
+          "pattern": "^[a-z][a-zA-Z0-9_]{0,39}$",
+          "title": "Link",
+          "type": "string"
+        },
+        "entity": {
+          "pattern": "^[A-Z][A-Za-z0-9]{0,39}$",
+          "title": "Entity",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "States",
+          "type": "array"
+        },
+        "initial": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Initial",
+          "type": "string"
+        },
+        "moves": {
+          "items": {
+            "$ref": "#/$defs/Move"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Moves",
+          "type": "array"
+        }
+      },
+      "required": [
+        "link",
+        "entity",
+        "states",
+        "initial",
+        "moves"
+      ],
+      "title": "LinkedObject",
+      "type": "object"
+    },
+    "LinkedStep": {
+      "additionalProperties": false,
+      "description": "What a transition does to an object the record links to, written ``target.lock`` (issue #93 item 4, ADR-0241): the\nobject named by the record's `link` field takes `event` in its own lifecycle, in the same step.",
+      "properties": {
+        "link": {
+          "pattern": "^[a-z][a-zA-Z0-9_]{0,39}$",
+          "title": "Link",
+          "type": "string"
+        },
+        "event": {
+          "pattern": "^[a-z][a-zA-Z0-9]{0,39}$",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "link",
+        "event"
+      ],
+      "title": "LinkedStep",
+      "type": "object"
+    },
+    "Move": {
+      "additionalProperties": false,
+      "description": "One transition in a linked object's lifecycle: `event` moves it from `from_state` to `to_state` (ADR-0241).",
+      "properties": {
+        "event": {
+          "pattern": "^[a-z][a-zA-Z0-9]{0,39}$",
+          "title": "Event",
+          "type": "string"
+        },
+        "from_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "From State",
+          "type": "string"
+        },
+        "to_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "To State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event",
+        "from_state",
+        "to_state"
+      ],
+      "title": "Move",
+      "type": "object"
+    },
     "OwnerPlanSelection": {
       "additionalProperties": false,
       "properties": {
@@ -868,6 +969,15 @@
             }
           ],
           "default": null
+        },
+        "then": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/LinkedStep"
+          },
+          "maxItems": 2,
+          "title": "Then",
+          "type": "array"
         }
       },
       "required": [
@@ -982,6 +1092,15 @@
           },
           "maxItems": 16,
           "title": "Composites",
+          "type": "array"
+        },
+        "objects": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/LinkedObject"
+          },
+          "maxItems": 8,
+          "title": "Objects",
           "type": "array"
         }
       },

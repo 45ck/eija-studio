@@ -117,6 +117,19 @@ class Delay(Contract):
         return f"after({self.span})"
 
 
+LINK = r"^[a-z][a-zA-Z0-9_]{0,39}$"  # a reference field of the record (ADR-0235): an attribute name
+
+
+class LinkedStep(Contract):
+    """What a transition does to an object the record links to, written ``target.lock`` (issue #93 item 4, ADR-0241): the
+    object named by the record's `link` field takes `event` in its own lifecycle, in the same step."""
+    link: str = Field(pattern=LINK)
+    event: str = Field(pattern=r"^[a-z][a-zA-Z0-9]{0,39}$")
+
+    def __str__(self) -> str:
+        return f"{self.link}.{self.event}"
+
+
 class Transition(Contract):
     id: str = Field(pattern=r"^[A-Z][A-Z0-9_-]{0,63}$")
     action: str = Field(min_length=1, max_length=60)
@@ -132,14 +145,15 @@ class Transition(Contract):
     # A time event (ADR-0237): taken only once the record has been in the source state this long. None is left out of
     # every dump, so transitions without one keep their exact bytes and hashes.
     after: Delay | None = None
+    # Steps on linked objects (ADR-0241), at most one per link. Empty is left out of every dump.
+    then: tuple[LinkedStep, ...] = Field(default=(), max_length=2)
 
     @model_serializer(mode="wrap")
     def _omit_unconditional(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
-        if not self.conditions:
-            data.pop("conditions", None)
-        if self.after is None:
-            data.pop("after", None)
+        for key, empty in (("conditions", not self.conditions), ("after", self.after is None), ("then", not self.then)):
+            if empty:
+                data.pop(key, None)
         return data
 
     def admits(self, values: dict[str, Any]) -> ValueGuard | None:
@@ -160,6 +174,8 @@ class Transition(Contract):
             raise ValueError("Required/forbidden effect conflict")
         if len(guard_keys(self.conditions)) != len(self.conditions):
             raise ValueError("Duplicate value guard")
+        if len({s.link for s in self.then}) != len(self.then):
+            raise ValueError("A transition moves each linked object at most once")
         return self
 
 
@@ -203,7 +219,7 @@ def guard_keys(conditions: tuple[ValueGuard, ...]) -> frozenset[str]:
 def _shape(t: Transition) -> tuple[Any, ...]:
     """What every transition one action labels must share: all but its id and source state (ADR-0232)."""
     return (t.to_state, t.role, frozenset(t.guards), frozenset(t.required_effects), frozenset(t.forbidden_effects),
-            guard_keys(t.conditions), t.after)
+            guard_keys(t.conditions), t.after, frozenset(str(s) for s in t.then))
 
 
 class Composite(Contract):
@@ -214,6 +230,50 @@ class Composite(Contract):
     name: str = Field(min_length=1, max_length=60)
     states: tuple[str, ...] = Field(min_length=1, max_length=32)  # its children: states or other composites
     initial: str = Field(min_length=1, max_length=60)
+
+
+class Move(Contract):
+    """One transition in a linked object's lifecycle: `event` moves it from `from_state` to `to_state` (ADR-0241)."""
+    event: str = Field(pattern=r"^[a-z][a-zA-Z0-9]{0,39}$")
+    from_state: str = Field(min_length=1, max_length=60)
+    to_state: str = Field(min_length=1, max_length=60)
+
+
+class LinkedObject(Contract):
+    """The lifecycle of the object a record links to through a reference field, such as a deploy request's `target`
+    service (issue #93 item 4, ADR-0241): a small state machine of its own, moved only by the record's steps
+    (`Transition.then`). An object in a state with no move for the event refuses the record's step; so does an unknown
+    object or state."""
+    link: str = Field(pattern=LINK)  # the record's reference field (ADR-0235)
+    entity: str = Field(pattern=r"^[A-Z][A-Za-z0-9]{0,39}$")  # the class at the far end of the association
+    states: tuple[str, ...] = Field(min_length=1, max_length=8)
+    initial: str = Field(min_length=1, max_length=60)
+    moves: tuple[Move, ...] = Field(min_length=1, max_length=32)
+
+    @model_validator(mode="after")
+    def closed(self) -> LinkedObject:
+        if len(set(self.states)) != len(self.states) or self.initial not in self.states:
+            raise ValueError("A linked object's lifecycle needs distinct states including its initial one")
+        if any(m.from_state not in self.states or m.to_state not in self.states for m in self.moves):
+            raise ValueError("A linked object's move names a state its lifecycle does not have")
+        if len({(m.event, m.from_state) for m in self.moves}) != len(self.moves):
+            raise ValueError("A linked object has one move per event and state")
+        return self
+
+    def events(self) -> set[str]:
+        return {m.event for m in self.moves}
+
+    def move(self, event: str, state: str | None) -> str | None:
+        """The state `event` moves the object to from `state`, or None when it has no such move (or the state is
+        unknown)."""
+        return next((m.to_state for m in self.moves if m.event == event and m.from_state == state), None)
+
+
+def _linked(objects: tuple[LinkedObject, ...], transitions: tuple[Transition, ...]) -> bool:
+    """Each linked object has its own link, and each step on one names a declared link and one of its events."""
+    lifecycles = {o.link: o for o in objects}
+    return len(lifecycles) == len(objects) and all(
+        s.link in lifecycles and s.event in lifecycles[s.link].events() for t in transitions for s in t.then)
 
 
 class Workflow(Contract):
@@ -227,14 +287,15 @@ class Workflow(Contract):
     initiators: tuple[str, ...] = Field(default=(), max_length=16)
     # Composite states (ADR-0240). Empty is left out of every dump, so flat models keep their exact bytes and hashes.
     composites: tuple[Composite, ...] = Field(default=(), max_length=16)
+    # Lifecycles of the objects the record links to (ADR-0241). Empty is left out of every dump.
+    objects: tuple[LinkedObject, ...] = Field(default=(), max_length=8)
 
     @model_serializer(mode="wrap")
     def _omit_open_start(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
-        if not self.initiators:
-            data.pop("initiators", None)
-        if not self.composites:
-            data.pop("composites", None)
+        for key in ("initiators", "composites", "objects"):
+            if not getattr(self, key):
+                data.pop(key, None)
         return data
 
     @model_validator(mode="after")
@@ -260,7 +321,12 @@ class Workflow(Contract):
             raise ValueError("Duplicate initiator role")
         if not _is_tree(self.states, self.composites):
             raise ValueError("Composite states must form a tree over the states")
+        if not _linked(self.objects, self.transitions):
+            raise ValueError("Each step on a linked object needs a declared lifecycle with that event")
         return self
+
+    def lifecycle(self, link: str) -> LinkedObject | None:
+        return next((o for o in self.objects if o.link == link), None)
 
     def composite(self, name: str) -> Composite | None:
         return next((c for c in self.composites if c.name == name), None)
@@ -318,11 +384,16 @@ class Workflow(Contract):
         if "composites" in data:  # a set of groups, each over a set of children (ADR-0240); absent when empty
             data["composites"] = sorted(({**c, "states": sorted(c["states"])} for c in data["composites"]),
                                         key=lambda c: c["name"])
+        if "objects" in data:  # lifecycles by link, each move set by event and source (ADR-0241); absent when empty
+            data["objects"] = sorted(({**o, "states": sorted(o["states"]), "moves": sorted(o["moves"], key=canonical)}
+                                      for o in data["objects"]), key=lambda o: o["link"])
         for t in data["transitions"]:
             for key in ("guards", "required_effects", "forbidden_effects"):
                 t[key] = sorted(t[key])
             if "conditions" in t:  # a set of guards (ADR-0234); absent when empty, so old hashes hold
                 t["conditions"] = sorted(t["conditions"], key=canonical)
+            if "then" in t:  # steps on linked objects, one per link (ADR-0241); absent when empty
+                t["then"] = sorted(t["then"], key=lambda s: s["link"])
         return fingerprint(data)
 
 

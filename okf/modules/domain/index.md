@@ -14,6 +14,7 @@
 * [domain.generated_app](generated_app.md) - Versioned exact generated-app selection and evidence contracts; no authority is implied by a hash.
 * [domain.impact](impact.md) - Module `domain/impact` (no module docstring).
 * [domain.laws](laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
+* [domain.linked](linked.md) - Linked objects (issue #93 item 4, ADR-0241): the states a record's linked objects are in, as the checkers try them.
 * [domain.models](models.md) - Module `domain/models` (no module docstring).
 * [domain.navigation](navigation.md) - The generated app's bounded navigation, derived from its existing contracts.
 * [domain.pack](pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

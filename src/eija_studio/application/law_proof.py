@@ -37,6 +37,7 @@ from typing import Any
 from eija_studio.domain.laws import (LAW_KINDS, CanReachEnd, DistinctActors, PathRequires, PathRequiresKind, Step, applies,
                                      evaluate_run, evaluate_table, stuck_states)
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
+from eija_studio.domain.linked import admitting, combinations
 from eija_studio.domain.pack import Pack, PackError, parse_pack
 from eija_studio.domain.policy import check_policy
 from eija_studio.domain.value_guards import MAX_VALUATIONS, valuations
@@ -85,12 +86,14 @@ def _session(pack: Pack, actors: list[dict[str, Any]]) -> MemorySession:
 
 
 def _try(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str, actor: dict[str, Any],
-         action: str, values: dict[str, Any]) -> Step | None:
-    """What the kernel does when this actor takes this action on a record in this state holding these values: the
-    step, or None if refused."""
+         action: str, values: dict[str, Any], objects: dict[str, str] | None = None) -> Step | None:
+    """What the kernel does when this actor takes this action on a record in this state holding these values, with its
+    linked objects in these states: the step, or None if refused."""
     session = _session(pack, actors)
     session.create_instance({"id": "r", "case_id": "proof", "model_hash": model_hash(model), "state": state, "version": 0})
     session.record_values["r"] = dict(values)
+    for link, at in (objects or {}).items():
+        session.link("r", link, link, at)
     session.wait(model.longest_wait)  # time may always pass, so every time event is due (ADR-0237)
     command = ExecuteCommand(operation_id="op", actor_id=actor["id"], instance_id="r", action=action, expected_version=0)
     try:
@@ -129,10 +132,13 @@ class _Search:
 
 
 def _steps_from(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str, values: dict[str, Any]) -> list[Step]:
-    """Every step the kernel commits from this state, for a record holding these values, over every action and actor class."""
-    tried = (_try(pack, model, actors, state, actor, action, values)
-             for action in sorted({t.action for t in model.transitions}) for actor in actors)
-    return [step for step in tried if step is not None]
+    """Every step the kernel commits from this state, for a record holding these values, over every action and actor
+    class, and with the objects a step moves in each state of their lifecycles: other records may have moved them
+    (ADR-0241), so waiting for the right state only adds steps, as waiting for time does."""
+    tried = (_try(pack, model, actors, state, actor, action, values, objects)
+             for action in sorted({t.action for t in model.transitions}) for actor in actors
+             for objects in combinations(model, model.transition_for(action, state)))
+    return list(dict.fromkeys(step for step in tried if step is not None))
 
 
 def _passed(step: Step, waypoints: set[str], signers: list[PathRequiresKind]) -> set[Passed]:
@@ -194,6 +200,7 @@ def _act(session: MemorySession, pack: Pack, model: Workflow, actor: dict[str, A
     session.actors[actor["id"]] = dict(actor)
     session.wait(model.longest_wait)
     item = session.instances["r"]
+    _ready(session, model, action, item["state"])
     command = ExecuteCommand(operation_id=f"op-{n}", actor_id=actor["id"], instance_id="r", action=action,
                              expected_version=item["version"])
     try:
@@ -202,6 +209,12 @@ def _act(session: MemorySession, pack: Pack, model: Workflow, actor: dict[str, A
         return None, refused.code
     return Step(action=action, role=actor["role"], source=item["state"], target=result["instance"]["state"],
                 effects=tuple(result["effects"]), actor=actor["id"]), ""
+
+
+def _ready(session: MemorySession, model: Workflow, action: str, state: str) -> None:
+    """Put the objects `action` moves from `state` where it can move them, so a pair of steps is judged on its actors."""
+    for link, at in (admitting(model, model.transition_for(action, state)) or {}).items():
+        session.link("r", link, link, at)
 
 
 def _pair(pack: Pack, model: Workflow, first: Any, then: str, tried: list[dict[str, Any]]) -> tuple[list[Step], str, str]:

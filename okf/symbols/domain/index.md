@@ -14,6 +14,7 @@
 * [generated_app](generated_app/) - Symbols of domain.generated_app
 * [impact](impact/) - Symbols of domain.impact
 * [laws](laws/) - Symbols of domain.laws
+* [linked](linked/) - Symbols of domain.linked
 * [models](models/) - Symbols of domain.models
 * [navigation](navigation/) - Symbols of domain.navigation
 * [pack](pack/) - Symbols of domain.pack

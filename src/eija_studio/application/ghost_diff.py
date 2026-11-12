@@ -24,13 +24,13 @@ from eija_studio.domain.models import Delay, Transition, Workflow
 
 FORMAT = "eija.ghost-diff.v1"
 FIELD_TEXT = {"id": "id", "from_state": "from", "to_state": "to", "role": "role", "guards": "guards",
-              "required_effects": "effects", "forbidden_effects": "never", "after": "time event"}
+              "required_effects": "effects", "forbidden_effects": "never", "after": "time event", "then": "then"}
 
 
 def _shown(value: Any) -> Any:
     if isinstance(value, Delay):
         return str(value)
-    return sorted(value) if isinstance(value, tuple) else value
+    return sorted(str(x) for x in value) if isinstance(value, tuple) else value  # steps on linked objects read target.lock
 
 
 def _fields(old: Transition, new: Transition) -> list[dict[str, Any]]:

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/capabilities.py#capability_map
   title: application/capabilities.py
   hash_method: ast-v2
-  sha256: fc29eba42a5420556982d4b6ba03ded6a4ac94c8bb0890f8092eb577da927cf5
-notes_baseline: cdde26bce15fb49b3e61132053171b73cbd2c829f8a8987e88ff214d1820dc98
+  sha256: 1c8507b42a17a9212186d7fd5211631a0b2ff2e43e03c7c8d81239622acd4bb6
+notes_baseline: c515b4d908b2ea895dc5ebc4425c4ee882a1fe0b15ac04e960997b7144b8d06d
 ---
 
 # application.capabilities.capability_map

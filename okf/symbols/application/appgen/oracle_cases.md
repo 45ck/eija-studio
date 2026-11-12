@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#oracle_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: ab9c04a6165f367bd062a3e05c86399e1ee0e0da85f1363c1207e8f31002a72a
-notes_baseline: 3af503210a95baddba70c6e340ad38e58edd37f09b4559f05bdaa278295c500a
+  sha256: 3267b377032f0e447dd600e8007876541da4aa5c0207e4969d40815967a13975
+notes_baseline: 5408ec7425b837026efe80d01f5bbe05dd9d81bf5a2bad6191ae4c15eecd1b50
 ---
 
 # application.appgen.oracle_cases

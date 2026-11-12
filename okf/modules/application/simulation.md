@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py
   title: application/simulation.py
   hash_method: ast-api-v1
-  sha256: cfa5ef41be9a74428e06df1571669d48b5ff67d90c903e57f9cbbe446b954772
-notes_baseline: 83aa0b486d6046757d7c6d07611084ed63ef1e450dc847f1db4d88110ca2c87b
+  sha256: 11bb67389e0062fd90bdeabbe189b902f313b8f4fe9c47f4a400011c3fed4d4d
+notes_baseline: a5c714d0ffd37e748fa19986c324dadeee4837f108dd46e43df929729d646f24
 ---
 
 # application.simulation
@@ -47,6 +47,7 @@ step lets simulated time pass, so the longest one falls due within a few steps o
 * [`MAX_STEPS`](/symbols/application/simulation/MAX_STEPS.md) (constant) - no docstring
 * [`MemorySession`](/symbols/application/simulation/MemorySession.md) (class) - The kernel's unit-of-work port over plain dictionaries, keeping every record, operation and effect.
 * [`NEW_RECORD`](/symbols/application/simulation/NEW_RECORD.md) (constant) - no docstring
+* [`POOL`](/symbols/application/simulation/POOL.md) (constant) - no docstring
 * [`SLIP`](/symbols/application/simulation/SLIP.md) (constant) - no docstring
 * [`STALE`](/symbols/application/simulation/STALE.md) (constant) - no docstring
 * [`TICKS`](/symbols/application/simulation/TICKS.md) (constant) - no docstring
@@ -94,13 +95,17 @@ _No curated notes yet._
 * [application.simulation.MemorySession.event](/symbols/application/simulation/MemorySession.event.md) - `def event(self, kind: str, body: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.find_instance](/symbols/application/simulation/MemorySession.find_instance.md) - `def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None` in `application/simulation`.
 * [application.simulation.MemorySession.find_operation](/symbols/application/simulation/MemorySession.find_operation.md) - `def find_operation(self, operation_id: str) -> dict[str, Any] | None` in `application/simulation`.
+* [application.simulation.MemorySession.link](/symbols/application/simulation/MemorySession.link.md) - Link a record to an object, setting the object's state if given or the object is new (ADR-0241).
 * [application.simulation.MemorySession](/symbols/application/simulation/MemorySession.md) - The kernel's unit-of-work port over plain dictionaries, keeping every record, operation and effect.
+* [application.simulation.MemorySession.move_object](/symbols/application/simulation/MemorySession.move_object.md) - `def move_object(self, instance_id: str, link: str, state: str) -> None` in `application/simulation`.
+* [application.simulation.MemorySession.object_state](/symbols/application/simulation/MemorySession.object_state.md) - `def object_state(self, instance_id: str, link: str) -> str | None` in `application/simulation`.
 * [application.simulation.MemorySession.record_act](/symbols/application/simulation/MemorySession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.record_operation](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.update_instance](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.values](/symbols/application/simulation/MemorySession.values.md) - `def values(self, instance_id: str) -> dict[str, Any]` in `application/simulation`.
 * [application.simulation.MemorySession.wait](/symbols/application/simulation/MemorySession.wait.md) - Let simulated time pass.
 * [application.simulation.NEW_RECORD](/symbols/application/simulation/NEW_RECORD.md) - Constant `NEW_RECORD` in `application/simulation`.
+* [application.simulation.POOL](/symbols/application/simulation/POOL.md) - Constant `POOL` in `application/simulation`.
 * [application.simulation.SLIP](/symbols/application/simulation/SLIP.md) - Constant `SLIP` in `application/simulation`.
 * [application.simulation.STALE](/symbols/application/simulation/STALE.md) - Constant `STALE` in `application/simulation`.
 * [application.simulation.TICKS](/symbols/application/simulation/TICKS.md) - Constant `TICKS` in `application/simulation`.

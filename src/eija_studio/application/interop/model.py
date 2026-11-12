@@ -253,13 +253,14 @@ def export_report(fmt: str, pack: Pack, model: Workflow, data: DataModel | None,
 
 
 def _guards_not_carried(model: Workflow) -> list[str]:
-    """Guards over record values (ADR-0234), time events (ADR-0237) and composite states (ADR-0240), which the
-    exported files do not write yet."""
+    """Guards over record values (ADR-0234), time events (ADR-0237), composite states (ADR-0240) and linked objects
+    (ADR-0241), which the exported files do not write yet."""
     valued = sum(bool(t.conditions) for t in model.transitions)
     timed = sum(t.after is not None for t in model.transitions)
     return ([f"guards over record values on {valued} transition(s) (ADR-0234)"] if valued else []) + \
         ([f"time events on {timed} transition(s), such as after(2 days) (ADR-0237)"] if timed else []) + \
-        ([f"{len(model.composites)} composite state(s) grouping the states (ADR-0240)"] if model.composites else [])
+        ([f"{len(model.composites)} composite state(s) grouping the states (ADR-0240)"] if model.composites else []) + \
+        ([f"{len(model.objects)} linked object lifecycle(s) and the steps that move them (ADR-0241)"] if model.objects else [])
 
 
 MAX_XML_BYTES = 8_000_000  # XMI and draw.io files

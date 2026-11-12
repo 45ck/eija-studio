@@ -275,7 +275,8 @@
   function condition(c) { return `${c.attribute} ${SYMBOL[c.op] || c.op} ${typeof c.value === "string" ? JSON.stringify(c.value) : c.value}`; }
   function when(t) { return (t.conditions || []).map(condition).join(" and "); }
   function after(t) { return t.after ? ` after(${t.after.amount} ${t.after.amount === 1 ? t.after.unit.slice(0, -1) : t.after.unit})` : ""; }
-  function label(t) { return `${t.action}${after(t)}${when(t) ? ` [${when(t)}]` : ""} [${t.role}]`; }
+  function linked(t) { return (t.then || []).length ? ` / ${t.then.map((s) => `${s.link}.${s.event}`).join(", ")}` : ""; }
+  function label(t) { return `${t.action}${after(t)}${when(t) ? ` [${when(t)}]` : ""}${linked(t)} [${t.role}]`; }
 
   // Composite states (ADR-0240): one box around the states each holds, outermost first so it sits behind the inner ones.
   // The kernel runs the flat machine; the box only shows the grouping, and it follows the states on the next redraw.

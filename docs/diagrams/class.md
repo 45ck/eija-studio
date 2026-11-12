@@ -66,6 +66,7 @@ classDiagram
         +tuple~str~ forbidden_effects
         +tuple~ValueGuard~ conditions
         +Delay | None after
+        +tuple~LinkedStep~ then
     }
     class Workflow {
         <<value-object>>
@@ -75,6 +76,7 @@ classDiagram
         +tuple~str~ states
         +tuple~str~ initiators
         +tuple~Composite~ composites
+        +tuple~LinkedObject~ objects
     }
     class Guard {
         <<enumeration>>
