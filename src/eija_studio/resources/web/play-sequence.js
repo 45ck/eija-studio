@@ -469,6 +469,15 @@
     $("seq-copy-mermaid").addEventListener("click", () => copy("seq-copy-mermaid"));
     $("seq-copy-plantuml").addEventListener("click", () => copy("seq-copy-plantuml"));
     if (REVIEW) for (const node of document.querySelectorAll(".seq-edit")) node.hidden = true;
+    // The Export menu is a <details>: Escape, a click elsewhere or a chosen item closes it, as other menus do.
+    const exportMenu = document.querySelector(".seq-export");
+    if (exportMenu) {
+      exportMenu.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && exportMenu.open) { event.preventDefault(); exportMenu.open = false; exportMenu.querySelector("summary").focus(); }
+      });
+      document.addEventListener("click", (event) => { if (exportMenu.open && !exportMenu.contains(event.target)) exportMenu.open = false; });
+      exportMenu.querySelector(".seq-export-menu").addEventListener("click", (event) => { if (event.target.closest("button, a")) exportMenu.open = false; });
+    }
     window.PlaySequence = {
       cellsFor: (transitions) => (shown() ? shown().messages.filter((m) => transitions.includes(m.transition)).map((m) => `msg:${m.ref}`) : []),
       result: () => result,
