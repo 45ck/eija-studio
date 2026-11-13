@@ -305,6 +305,27 @@ def _serve(app, sock: socket.socket) -> None:
     uvicorn.Server(uvicorn.Config(app, access_log=False, log_level="warning")).run(sockets=[sock])
 
 
+def _serve_command(args, key) -> int:
+    """`eija serve`: a bad or busy port is refused before the workspace (and its receipt key) is created, and no link
+    is printed or browser opened until the port is ours and listening (ADR-0244)."""
+    import webbrowser
+    from .http import create_app
+    with _listen(args.port) as listener:
+        studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key, formal=not args.no_formal,
+                              pack=args.pack, repository_root=args.repo)
+        token = secrets.token_urlsafe(32)
+        url = f"http://127.0.0.1:{args.port}/#{token}"
+        print("EIJA Studio — local single-owner session. Do not share these private links.\n" + url, flush=True)
+        print(f"PlayIDE (visual model, Build & run): http://127.0.0.1:{args.port}/play#{token}", flush=True)
+        if args.provider != "offline":
+            print("External inference requires configured credentials and explicit per-request consent.", flush=True)
+        if args.open:
+            webbrowser.open(url)  # the port is already ours and listening
+        handle, systems = _systems(studio, args, key)
+        _serve(create_app(handle, token, args.port, systems=systems), listener)
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="eija", description="EIJA Studio — bounded local assurance POC")
     parser.add_argument("--version", action="version", version=__version__)
@@ -354,15 +375,10 @@ def main(argv=None) -> int:
             if args.provider not in KEYED_PROVIDERS:
                 raise DomainError("CONFIGURATION", "--ask-key is only for the OpenRouter and Anthropic API providers")
             key = getpass.getpass(f"{args.provider} API key (not stored): ")
-        # A bad or busy port is refused before the workspace (and its receipt key) is created.
-        listener = _listen(args.port) if args.command == "serve" else None
-        try:
-            studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key, formal=not args.no_formal,
-                                  pack=args.pack, repository_root=getattr(args, "repo", None))
-        except BaseException:
-            if listener is not None:
-                listener.close()
-            raise
+        if args.command == "serve":
+            return _serve_command(args, key)
+        studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key, formal=not args.no_formal,
+                              pack=args.pack, repository_root=getattr(args, "repo", None))
         if args.command == "init":
             output({"workspace": str(studio.store.directory), "provider": args.provider, "state": "READY", "data": "synthetic only"})
         elif args.command == "doctor":
@@ -372,20 +388,6 @@ def main(argv=None) -> int:
                       "live_inference": "NOT_RUN", "platform_validation": "See evidence/release-report.json"}
             output(result)
             return 0 if identity["trusted_fixture"] and result["provider"]["ready"] else 2
-        elif args.command == "serve":
-            import webbrowser
-            from .http import create_app
-            with listener:
-                token = secrets.token_urlsafe(32)
-                url = f"http://127.0.0.1:{args.port}/#{token}"
-                print("EIJA Studio — local single-owner session. Do not share these private links.\n" + url, flush=True)
-                print(f"PlayIDE (visual model, Build & run): http://127.0.0.1:{args.port}/play#{token}", flush=True)
-                if args.provider != "offline":
-                    print("External inference requires configured credentials and explicit per-request consent.", flush=True)
-                if args.open:
-                    webbrowser.open(url)  # the port is already ours and listening
-                handle, systems = _systems(studio, args, key)
-                _serve(create_app(handle, token, args.port, systems=systems), listener)
         elif args.command == "list":
             output([{k: c[k] for k in ("id", "stage", "version", "request")} for c in studio.store.list_cases()])
         elif args.command == "propose":
