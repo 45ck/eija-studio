@@ -124,6 +124,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0241](0241-actions-on-linked-objects.md) | Actions on linked objects | accepted |
 | [0242](0242-messages-between-workflows.md) | Messages between workflows | accepted |
 | [0243](0243-conformance-that-catches-divergence.md) | Conformance that catches a divergent app by behaviour | accepted |
+| [0244](0244-built-app-environment-and-bind-before-links.md) | The built app gets no secrets, and `eija serve` binds its port before it prints a link | accepted |
 | [0245](0245-partial-reads-keep-and-saves-name-their-system.md) | A partial UML read keeps what it could not read, and a save names its system | accepted |
 <!-- adr-index:end -->
 

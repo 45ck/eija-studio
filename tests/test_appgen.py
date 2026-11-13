@@ -183,6 +183,24 @@ def test_the_running_app_enforces_the_model_over_http(running_app):
     assert [(h["effect"], h["actor"], h["state"]) for h in view["history"]] == [("Audit:ExcursionSubmitted", "teacher-assigned", "Submitted")]
 
 
+def test_an_action_needs_its_own_operation_id(running_app):
+    """Inspection regression: a missing operation id became the shared id "missing" and a long one was cut to 100
+    characters, so a second record's action under no id, or under an id sharing its first 100 characters, was refused as
+    OPERATION_CONFLICT. The id is now required whole, as it already was for signals (ADR-0242)."""
+    records = [call(running_app, "/api/records", {"title": f"Trip {n}", "actor": "teacher-assigned", "fields": TRIP})[1]
+               for n in range(2)]
+    refusal = (400, {"code": "BAD_REQUEST", "message": "operation_id must be a string of 1 to 100 characters"})
+    for operation in (None, "", "x" * 101, 7):
+        body = {"action": "Submit", "actor": "teacher-assigned", "expected_version": 0}
+        status, refused, _ = call(running_app, f"/api/records/{records[0]['id']}/act",
+                                  body | ({"operation_id": operation} if operation is not None else {}))
+        assert (status, refused) == refusal
+    for n, record in enumerate(records):  # two full-length ids that differ only at the end are two requests
+        status, done, _ = call(running_app, f"/api/records/{record['id']}/act",
+                               {"action": "Submit", "actor": "teacher-assigned", "expected_version": 0, "operation_id": "x" * 99 + str(n)})
+        assert status == 200 and done["record"]["state"] == "Submitted"
+
+
 def test_the_running_app_checks_record_values_against_the_data_model(running_app):
     fields = TRIP
     status, record, _ = call(running_app, "/api/records", {"title": "Trip", "actor": "teacher-assigned", "fields": fields})

@@ -9,6 +9,19 @@
 - Fixed: an attribute or association the file has but PlayIDE cannot read is kept as the current class model has it, not deleted from the candidate `data.json`. The import dialog names association changes.
 - Fixed: a tab still showing another system can no longer save over, or clear, the open system's saved work (`SYSTEM_CHANGED`). A browser draft from an earlier model is kept until it is reopened, an edit made while undo reloads the screens is kept, recovered work no longer shows as unsaved when it matches the saved draft, and when browser storage is full an older draft is no longer recovered as the latest work.
 
+### 13 November 2026: the command line and server, inspected
+
+- A Fagan inspection of the `eija` command and PlayIDE's local server ([record](docs/engineering/CLI-SERVER-INSPECTION.md), [ADR-0244](docs/adr/0244-built-app-environment-and-bind-before-links.md)) found ten defects; nine are fixed, each with a regression test in `tests/test_cli_server_inspection.py`.
+- Fixed: Build & run no longer passes the IDE's environment, including provider API keys, to the app it starts. The app gets an allowlist (path, home, locale, temp folders) and its port.
+- Fixed: `eija serve` binds its port before it prints the private links or opens the browser. A busy port is `PORT_IN_USE` (exit 2) and an invalid one is refused before any workspace is created.
+- Fixed: an `Authorization` header with a non-ASCII byte got a 500; it is now 401.
+- Fixed: `eija uml export` of a model the protected policy refuses exits 2 with `POLICY_BLOCKED` on stderr, as `render` does. `EIJA_PROVIDER` set to an unknown provider, a systems home that is a file, and `eija new` with too long a name or `--from describe` each get a message that says what is wrong.
+
+### 13 November 2026: inspection of open pull requests
+
+- Fixed: a built app's `POST /api/records/{id}/act` turned a missing operation id into the shared id `missing` and cut a long one to 100 characters. A client that sent no id had every action after its first refused as `OPERATION_CONFLICT`. The route now refuses such a request with `BAD_REQUEST`, as `/api/signals` already did ([inspection record](docs/quality/inspection-2026-11-13-pull-requests.md)).
+- Fixed: when PlayIDE sets aside a second unreadable draft, its message now names the file the draft went to, such as `draft.unreadable-2.json`. Before, it always named `draft.unreadable.json`.
+
 ### 12 November 2026: conformance that catches a wrong app
 
 - New `python -m verification.conformance.divergence` ([ADR-0243](docs/adr/0243-conformance-that-catches-divergence.md)). For every pack, it builds apps that are wrong in one model element (a transition, role, guard, effect, recipient, initial state, initiator, actor, attribute or association) or one of 23 seeded code faults. It reseals each app so a hash cannot catch it, and requires the app's own generated tests to fail. Before this change the generated suite missed, among others, a wrong initial state, a wrong notification recipient, records the app itself created, the actions it offers, and its HTTP API.

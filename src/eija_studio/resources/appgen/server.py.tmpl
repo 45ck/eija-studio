@@ -88,6 +88,16 @@ def handler_for(service: Service):
                 raise Refused("BAD_REQUEST", "Send a JSON object")
             return value
 
+        @staticmethod
+        def _operation(body: dict) -> str:
+            """A request's operation id: its identity for a retry, so it is never defaulted or cut short. A shared
+            default or a cut-off id would make two different requests one, and the second a false duplicate or a
+            conflict."""
+            operation = body.get("operation_id")
+            if not isinstance(operation, str) or not 1 <= len(operation) <= 100:
+                raise Refused("BAD_REQUEST", "operation_id must be a string of 1 to 100 characters")
+            return operation
+
         def do_GET(self) -> None:
             url = urlparse(self.path)
             if url.path in STATIC:
@@ -124,10 +134,7 @@ def handler_for(service: Service):
                     fields = body.get("fields", {})
                     if not isinstance(fields, dict):
                         raise Refused("BAD_REQUEST", "fields must be a JSON object")
-                    operation = body.get("operation_id")  # a delivery's identity: never defaulted or cut short
-                    if not isinstance(operation, str) or not 1 <= len(operation) <= 100:
-                        raise Refused("BAD_REQUEST", "operation_id must be a string of 1 to 100 characters")
-                    started = service.receive(str(body.get("signal", "")), str(body.get("sender", "")), operation, fields)
+                    started = service.receive(str(body.get("signal", "")), str(body.get("sender", "")), self._operation(body), fields)
                     return self._json(201 if started["started"] else 200, started)
                 stored = OBJECTS.match(url.path)
                 if stored:
@@ -141,7 +148,7 @@ def handler_for(service: Service):
                     if not isinstance(version, int) or isinstance(version, bool):
                         raise Refused("BAD_REQUEST", "expected_version must be an integer")
                     return self._json(200, service.act(match.group(1), str(body.get("actor", "")), str(body.get("action", "")),
-                                                       version, str(body.get("operation_id", ""))[:100] or "missing"))
+                                                       version, self._operation(body)))
             except Refused as refused:
                 return self._refused(refused)
             except (ValueError, json.JSONDecodeError):

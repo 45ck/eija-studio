@@ -259,8 +259,8 @@ def register(app, systems: Systems) -> None:
         draft = systems.library.read_draft(workspace())
         if draft is not None and not _reopenable(draft):
             # A draft.json edited by hand or written by another version: the page would fail on it, so it is set aside.
-            systems.library.set_aside_draft(workspace())
-            return {"draft": None, "system": systems.current, "moved": False, "set_aside": True}
+            aside = systems.library.set_aside_draft(workspace())
+            return {"draft": None, "system": systems.current, "moved": False, "set_aside": True, "set_aside_as": aside}
         return {"draft": draft, "system": systems.current, "moved": draft is not None and draft.get("model") != in_force()}
 
     def same_system(pack: str | None) -> None:
@@ -308,8 +308,15 @@ def add_parser(subs) -> None:
 def start_system(library: Any, name: str, template: str = BLANK, record: str = "Record", sketch: str = "",
                  uml: Path | None = None) -> tuple[int, dict[str, Any]]:
     """`eija new`: create the system in `library` and say where it is (0), or the problems the kernel's pack check found (2)."""
-    body = NewSystem(name=name, template=UML if uml else template, record=record, sketch=sketch,
-                     uml=uml.read_text(encoding="utf-8") if uml else "", filename=uml.name if uml else "")
+    if template == DESCRIBE:  # "Describe your app" reads a description typed in PlayIDE; the command line has none to read
+        return 2, {"created": False, "problems": ["--from describe is only in PlayIDE (Start your own system); "
+                                                  "on the command line use a sketch, a template or --uml"]}
+    try:
+        body = NewSystem(name=name, template=UML if uml else template, record=record, sketch=sketch,
+                         uml=uml.read_text(encoding="utf-8") if uml else "", filename=uml.name if uml else "")
+    except ValidationError as error:  # the arguments, not a file: name each one that is wrong and how
+        return 2, {"created": False, "problems": [f"{'.'.join(str(p) for p in e['loc'])}: {e['msg']}"
+                                                  for e in error.errors(include_url=False, include_input=False)]}
     try:
         pack_id, documents, report = new_documents(library, body)
     except PackError as error:
