@@ -188,9 +188,24 @@ def _set_initial(model: Workflow, tx: SetInitial, _: Declare) -> dict[str, Any]:
 
 def _add_transition(model: Workflow, tx: AddTransition, declare: Declare) -> dict[str, Any]:
     new = declare(tx.id, tx.action, tx.from_state, tx.to_state, tx.role)
+    labelled = model.transition_for(tx.action)
+    if labelled is not None:  # another source for an action the model already has (ADR-0232)
+        new = _another_source(labelled, new)
     data = model.model_dump(mode="json")
     data["transitions"].append(new.model_dump(mode="json"))
     return data
+
+
+def _another_source(labelled: Transition, new: Transition) -> Transition:
+    """A new source for an existing action takes everything the action's transitions share from them: its guards,
+    effects, value guards, time event and steps on linked objects (ADR-0232). The pack's catalog knows none of the last
+    three, and a guard or effect edit has changed every transition of the action, so a transition declared from the
+    catalog alone was refused as incoherent. A different target or role is still refused, and named."""
+    if (new.to_state, new.role) != (labelled.to_state, labelled.role):
+        raise refused("EDIT_INVALID", f"{labelled.action} already goes to {labelled.to_state} by {labelled.role}; an action may "
+                      "leave several states, but always to the same state and by the same role",
+                      "transition:" + new.id, "transition:" + labelled.id)
+    return labelled.model_copy(update={"id": new.id, "from_state": new.from_state})
 
 
 def _retarget(model: Workflow, tx: RetargetTransition, _: Declare) -> dict[str, Any]:

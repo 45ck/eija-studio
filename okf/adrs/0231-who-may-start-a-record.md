@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0231-who-may-start-a-record.md
   title: 0231-who-may-start-a-record.md
   hash_method: lf-sha256-v1
-  sha256: 6b4af90ae8e820343c6e504d9649bc293559aa0a09c5db0c9e303d3295e3098c
-notes_baseline: f26f038957be1fccc6766234fd498e4966284cbe89ff4b7102ac5eab353c56ed
+  sha256: 452cae68f005cd74a962f174e530c8f596f4e189b9568bcfa9bffb74d8a7f7f7
+notes_baseline: c81ce5701318b737ee63e73e3663dafdfdad210ae8b3bad6d19372ce8509482b
 ---
 
 # ADR-0231: Who may start a record
@@ -44,6 +44,13 @@ notes_baseline: f26f038957be1fccc6766234fd498e4966284cbe89ff4b7102ac5eab353c56ed
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 13 November 2026: UML exports say initiators are not carried
+
+## Code and docs mentioned
+
+Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
+
+* `repo://docs/quality/inspection-2026-11-13-merged-prs.md`
 <!-- okf:generated:end facts -->
 
 ## Notes

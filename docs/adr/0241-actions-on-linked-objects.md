@@ -46,3 +46,11 @@ Issue #93, item 4. In xtUML each class has its own state machine, and a step on 
 * Good: messages between workflows (#93 item 5) can reuse the ports and the linked-case oracle.
 * Bad: to-one links only, one level deep. A move cannot trigger another move.
 * Bad: objects have no actors or laws of their own. That needs the multi-entity runtime (#65).
+
+## Amendment, 13 November 2026: links to one class share one lifecycle
+
+Re-inspection of the merged PRs (`docs/quality/inspection-2026-11-13-merged-prs.md`, M2) found that two links to one
+class could declare different lifecycles. An object has one state whichever link names it, and the built app stores one
+and starts it in one initial state, so such a model failed its own conformance run with no named cause. The policy now
+refuses it with `LINKED_LIFECYCLE_CONFLICT:<class>` (`policy.lifecycle_conflicts`); links to one class that declare the
+same states, initial state and moves, in any order, are still allowed.

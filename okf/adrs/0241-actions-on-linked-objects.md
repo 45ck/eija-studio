@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0241-actions-on-linked-objects.md
   title: 0241-actions-on-linked-objects.md
   hash_method: lf-sha256-v1
-  sha256: 83e8a055ac836d483f6b5d0d5d788365c715711b262a687be0568787926d98dc
-notes_baseline: 652a9816d461488ee88a2fd0d3ca87454b58d07f74796e6756df173032d0f8c8
+  sha256: 2b845fbba1843aa801e6b50154885f9379c526c0103c3912d9bf2314df5cc628
+notes_baseline: 50efc28bacf32e026797f3046d162cd8be5bc60d6c696c7ce9d6eb4996965c15
 ---
 
 # ADR-0241: Actions on linked objects
@@ -50,6 +50,13 @@ notes_baseline: 652a9816d461488ee88a2fd0d3ca87454b58d07f74796e6756df173032d0f8c8
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 13 November 2026: links to one class share one lifecycle
+
+## Code and docs mentioned
+
+Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
+
+* `repo://docs/quality/inspection-2026-11-13-merged-prs.md`
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -64,6 +71,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
 * [ADR-0242: Messages between workflows](/adrs/0242-messages-between-workflows.md) - Issue #93, item 5.
 * [ADR-0243: Conformance that catches a divergent app by behaviour](/adrs/0243-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
 <!-- okf:generated:end links -->
