@@ -248,8 +248,8 @@ def register(app, systems: Systems) -> None:
         draft = systems.library.read_draft(workspace())
         if draft is not None and not _reopenable(draft):
             # A draft.json edited by hand or written by another version: the page would fail on it, so it is set aside.
-            systems.library.set_aside_draft(workspace())
-            return {"draft": None, "system": systems.current, "moved": False, "set_aside": True}
+            aside = systems.library.set_aside_draft(workspace())
+            return {"draft": None, "system": systems.current, "moved": False, "set_aside": True, "set_aside_as": aside}
         return {"draft": draft, "system": systems.current, "moved": draft is not None and draft.get("model") != in_force()}
 
     @app.post("/api/play/draft")

@@ -5,6 +5,7 @@
 ### 13 November 2026: inspection of open pull requests
 
 - Fixed: a built app's `POST /api/records/{id}/act` turned a missing operation id into the shared id `missing` and cut a long one to 100 characters. A client that sent no id had every action after its first refused as `OPERATION_CONFLICT`. The route now refuses such a request with `BAD_REQUEST`, as `/api/signals` already did ([inspection record](docs/quality/inspection-2026-11-13-pull-requests.md)).
+- Fixed: when PlayIDE sets aside a second unreadable draft, its message now names the file the draft went to, such as `draft.unreadable-2.json`. Before, it always named `draft.unreadable.json`.
 
 ### 12 November 2026: conformance that catches a wrong app
 

@@ -41,10 +41,10 @@
   }
 
   async function reopen() {
-    const { draft, moved, set_aside: setAside } = await P.api("/api/play/draft");
+    const { draft, moved, set_aside: setAside, set_aside_as: asideAs } = await P.api("/api/play/draft");
     if (setAside) {
       const li = P.el("li", undefined, { class: "msg ai recovered" });
-      li.append(P.el("p", "The saved work on this system could not be read, so it was set aside beside it (draft.unreadable.json) and the model in force is open."));
+      li.append(P.el("p", `The saved work on this system could not be read, so it was set aside beside it (${asideAs || "draft.unreadable.json"}) and the model in force is open.`));
       $("chat-log").append(li);
     }
     if (!draft || ((!draft.steps || !draft.steps.length) && !draft.screens && !draft.scenarios)) { saved = JSON.stringify(P.draft()); return; }
