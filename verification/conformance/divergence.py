@@ -443,7 +443,7 @@ CODE: dict[str, tuple[str, str, str]] = {
         "app/server.py", 'str(body.get("action", "")),\n                                                       version,',
         'str(body.get("action", "")),\n                                                       0,'),
     "HTTP drops the operation id": (
-        "app/server.py", 'str(body.get("operation_id", ""))[:100] or "missing"', '"missing"'),
+        "app/server.py", 'version, self._operation(body)))', 'version, "missing"))'),
     "HTTP refusals answered as success": ("app/server.py", 'self._json(status, {"code": refused.code, "message": refused.message})',
                                           'self._json(200, {"code": refused.code, "message": refused.message})'),
     "HTTP drops record values": ("app/server.py", 'fields = body.get("fields", {})\n                    if not isinstance(fields, dict):\n                        raise Refused("BAD_REQUEST", "fields must be a JSON object")\n                    return self._json(201, service.create(',
