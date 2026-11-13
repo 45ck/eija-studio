@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/access.py
   title: application/access.py
   hash_method: ast-api-v1
-  sha256: b903a05dfdcc02736567de5cfb52c1778f7cd226d8cbb564ceac107d0e3e6bba
-notes_baseline: 7c9b229df4049dbee347e10e6781607c72161eac605e0f3ae4bcffdd5e397b4c
+  sha256: 76b2bd8720d5552ce008bb738a8e1d3cb244eefc51e6c4fe2adc4fb8e62d82db
+notes_baseline: b84daee7831537736f54edfd5860c4e72e57fb3fcd437352ab19d12fb1b971cc
 ---
 
 # application.access

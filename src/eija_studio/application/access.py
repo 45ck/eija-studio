@@ -195,25 +195,39 @@ def _usable(pack: Pack, model: Workflow, allowed: set[str]) -> set[str]:
 
 def _starter(pack: Pack, model: Workflow, without: str | None) -> tuple[str | None, str | None]:
     """Who starts the record (ADR-0231): (a role a fixture actor holds that may start one, None) or (None, why not).
-    A model that names no initiators lets anyone start a record, so there is nothing to choose."""
+    A model that names no initiators lets anyone start a record, so there is nothing to choose. A workflow that receives
+    a signal (ADR-0242) also starts a record when one is delivered, with no person's role, so it starts one that way
+    when no starting role is left or held; `runtime.receive` starts it exactly as a role-less `initialise` does."""
     if not model.initiators:
         return None, None
     roles = [r for r in model.initiators if r != without]
+    held = next((r for r in roles if any(a.role == r for a in pack.fixtures.actors)), None)
+    if held or model.receives:
+        return held, None
     if not roles:
         return None, "unreachable"
-    held = next((r for r in roles if any(a.role == r for a in pack.fixtures.actors)), None)
-    return (held, None) if held else (None, f"Only {', '.join(roles)} may start a record, and no fixture actor holds that role; other actors might.")
+    return None, f"Only {', '.join(roles)} may start a record, and no fixture actor holds that role; other actors might."
+
+
+def _started(model: Workflow, starter: str | None) -> str:
+    """How the replayed record was started, when the model limits that and no starting role was used: by a signal."""
+    if not model.initiators or starter is not None:
+        return ""
+    signals = ", ".join(f"{r.signal} from {r.sender}" for r in model.receives)
+    return f" The record was started by a signal from another workflow ({signals}), as the kernel starts one on delivery."
 
 
 def reach(pack: Pack, model: Workflow, target: str, without: str | None = None) -> dict[str, Any]:
     """Can a record reach `target` with no step taken by role `without` (or at all, when it is None)? Starting the record
-    is a step too: when the model names who may start one, a record without them does not exist (ADR-0231)."""
+    is a step too: when the model names who may start one, a record without them does not exist (ADR-0231), unless a
+    signal from another workflow starts it (ADR-0242)."""
     _check(pack, model, target, without)
     question = {"target": target, "without": without, "model": model.semantic_hash}
     starter, unstarted = _starter(pack, model, without)
     if unstarted == "unreachable":
-        return question | {"verdict": "UNREACHABLE", "path": [], "why": f"Only {', '.join(model.initiators)} may start a record, "
-                           f"so without {without} no record exists to reach {target}. The kernel refuses anyone else (ROLE_CANNOT_START)."}
+        return question | {"verdict": "UNREACHABLE", "path": [], "why": f"Only {', '.join(model.initiators)} may start a record "
+                           f"and no signal starts one, so without {without} no record exists to reach {target}. "
+                           "The kernel refuses anyone else (ROLE_CANNOT_START)."}
     allowed = {t.id for t in model.transitions if t.role != without}
     if _path(model, target, allowed) is None:
         return _unreachable(question, without)
@@ -229,4 +243,4 @@ def reach(pack: Pack, model: Workflow, target: str, without: str | None = None) 
     steps = _replay(pack, model, path, values, starter)
     if isinstance(steps, str):
         return _not_shown(question, f"The kernel refused {steps} on replay.")
-    return question | {"verdict": "REACHABLE", "path": steps, "why": _reached(target, steps)} | ({"values": values} if values else {})
+    return question | {"verdict": "REACHABLE", "path": steps, "why": _reached(target, steps) + _started(model, starter)} | ({"values": values} if values else {})

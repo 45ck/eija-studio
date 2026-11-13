@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 from pathlib import Path
 
 import pytest
@@ -157,3 +158,21 @@ def test_checking_in_place_agrees_with_the_kernel_in_a_real_browser(tmp_path):
         finally:
             chrome.close()
 
+
+
+def test_reach_counts_a_record_a_signal_starts(tmp_path):
+    """A workflow that receives a signal (ADR-0242) starts a record on delivery with no person's role, so leaving out
+    its only initiator does not make its states unreachable."""
+    folder = tmp_path / "library-fines"
+    shutil.copytree(ROOT / "packs/library-fines", folder)
+    doc = json.loads((folder / "pack.json").read_text(encoding="utf-8"))
+    doc["model"]["initiators"] = ["Member"]
+    (folder / "pack.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\n")
+    pack = load_pack(folder)
+    answer = reach(pack, pack.model, "Issued", "Member")
+    assert answer["verdict"] == "REACHABLE" and "Signal:LateReturn from library-loan" in answer["why"]
+    # Negative control: the same workflow without the signal has no other way to start a record.
+    del doc["model"]["receives"]
+    (folder / "pack.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\n")
+    pack = load_pack(folder)
+    assert reach(pack, pack.model, "Issued", "Member")["verdict"] == "UNREACHABLE"

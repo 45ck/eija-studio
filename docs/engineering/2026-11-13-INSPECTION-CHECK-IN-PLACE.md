@@ -57,9 +57,10 @@ server.
   painting it, and it treats a late refusal the same way.
 - D-03 and D-04: the Laws tab links a transition to the laws about its action. It paints a counterexample step on
   the transition that leaves that step's state, and it lights every transition of an action a law governs.
-- D-05: `reach` answers UNREACHABLE when the role left out is the only one that may start a record. It answers
-  NOT_SHOWN when no fixture actor holds a starting role. Otherwise it replays the path on a record started by a
-  starting role.
+- D-05: `reach` answers UNREACHABLE when the role left out is the only one that may start a record and no signal
+  from another workflow starts one (ADR-0242). It answers NOT_SHOWN when no fixture actor holds a starting role.
+  Otherwise it replays the path on a record started by a starting role, or, for a workflow that receives a signal, on a
+  record started the way delivering the signal starts one, and says so (found in review by Codex).
 - D-06: Stop, Restart and a redraw cancel a Run or Step whose log is still loading. A second Run cancels the first.
 
 Regression tests are in `tests/test_play_check_in_place.py`. One browser test, opt-in with `EIJA_BROWSER_TESTS=1`,
