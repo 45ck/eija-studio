@@ -10,7 +10,7 @@ Five packs model real systems from different sectors. Each is a template in Play
 eija serve --pack packs/card-payment --open
 ```
 
-Every pack has a state machine, roles with fixture users (an assigned one, an unassigned one and a revoked one), a data model (`data.json`), one designed screen per use case (`screens.json`), seven or eight scenarios (`scenarios.json`) and 11 to 14 laws. On each one the scenarios pass, the laws hold over every run the kernel allows, `eija build` passes conformance (1,135 to 2,216 cases), and Simulate runs. `tests/test_sector_packs.py` pins this.
+Every pack has a state machine, roles with fixture users (an assigned one, an unassigned one and a revoked one), a data model (`data.json`), one designed screen per use case (`screens.json`), 7 or 8 scenarios (`scenarios.json`) and 12 to 15 laws. On each one the scenarios pass, the laws hold over every run the kernel allows, Simulate runs and commits, the chat's change is allowed and the unsafe change is refused: `tests/test_sector_packs.py` pins these, and the counts in the table below. `eija build` also passes conformance on each pack (1,217 to 2,344 cases, measured on 13 November 2026; the count grows with the generated suite, so it is not pinned).
 
 | Pack | Sector | States / transitions / roles | The change the chat plans | The unsafe change the laws refuse |
 |---|---|---|---|---|
@@ -48,16 +48,18 @@ The building permit's law that every application can still be finished, refusing
 
 Writing these packs as a real team would turned up the following gaps. Each pack also lists its own in `fixtures.proposals.unknowns`.
 
-| Gap | Where it bites | Issue |
-|---|---|---|
-| An action labels only one transition | Withdraw, cancel or "lost" from several states | [#148](https://github.com/45ck/eija-studio/issues/148) |
-| No separation of duties between actors | Maker-checker refunds, reviewer vs decision maker | [#149](https://github.com/45ck/eija-studio/issues/149) |
-| One notification per action | A decision goes to the applicant and the objectors. The runtime and `eija build` already cope; the Verify receipt check (a trusted kernel file) admits one outbox row per step, so it waits on the source review in #80 | [#150](https://github.com/45ck/eija-studio/issues/150) |
-| Law kinds: bounded repetition, conditional paths | Three delivery attempts; customs only for international parcels | [#151](https://github.com/45ck/eija-studio/issues/151) |
-| Value guards, timers, composite states | Refund ≤ captured; trial and statutory deadlines; billing and abuse as independent regions | [#93](https://github.com/45ck/eija-studio/issues/93) |
-| Who may start a record | Only a GP creates a referral | [#142](https://github.com/45ck/eija-studio/issues/142) |
+| Gap | Where it bites | Issue | Status (13 November 2026) |
+|---|---|---|---|
+| An action labels only one transition | Withdraw, cancel or "lost" from several states | [#148](https://github.com/45ck/eija-studio/issues/148) | Kernel supports it ([ADR-0232](adr/0232-one-action-from-several-states.md)) |
+| No separation of duties between actors | Maker-checker refunds, reviewer vs decision maker | [#149](https://github.com/45ck/eija-studio/issues/149) | Kernel supports it ([ADR-0233](adr/0233-separation-of-duties.md)) |
+| One notification per action | A decision goes to the applicant and the objectors. The runtime and `eija build` already cope; the Verify receipt check (a trusted kernel file) admits one outbox row per step, so it waits on the source review in #80 | [#150](https://github.com/45ck/eija-studio/issues/150) | Open |
+| Law kinds: bounded repetition, conditional paths | Three delivery attempts; customs only for international parcels | [#151](https://github.com/45ck/eija-studio/issues/151) | Open |
+| Value guards, timers, composite states | Refund ≤ captured; trial and statutory deadlines; billing and abuse as independent regions | [#93](https://github.com/45ck/eija-studio/issues/93) | Kernel supports all three ([ADR-0234](adr/0234-guards-over-record-values.md), [ADR-0237](adr/0237-time-events.md), [ADR-0240](adr/0240-composite-states.md)). A guard compares a record value with a constant; "refund ≤ captured" compares two values and is still out of reach |
+| Who may start a record | Only a GP creates a referral | [#142](https://github.com/45ck/eija-studio/issues/142) | Kernel supports it ([ADR-0231](adr/0231-who-may-start-a-record.md)) |
 
-Time-driven steps (a trial ending, a dispute arriving) are given to a system role (`BillingSystem`, `Gateway`) until the kernel has timers. That is the closest honest approximation, and it is why those roles appear on the use case diagrams. Both are declared as external systems (role kind `system`, ADR-0210). The card payment pack's `people-approve-refunds` law says only a person (kind `human`) approves a refund, so a future agent or system role can't take that step.
+"Kernel supports it" means the model can now say it; the five sector packs were written before, so they still use the approximations below and their `fixtures.proposals.unknowns` still list these gaps.
+
+Time-driven steps (a trial ending, a dispute arriving) are given to a system role (`BillingSystem`, `Gateway`). The kernel now has time events such as `after(2 days)` (ADR-0237), but these packs have not been moved onto them, and it is why those roles appear on the use case diagrams. Both are declared as external systems (role kind `system`, ADR-0210). The card payment pack's `people-approve-refunds` law says only a person (kind `human`) approves a refund, so a future agent or system role can't take that step.
 
 Some state and role names were made more specific (`FundsCaptured`, `PermitRefused`, `WorkspaceOwner`, `Vetted`) while the vocabulary gate treated every pack word as a whole-word search in generic code. The gate now reads a plain English word (`Active`, `Owner`) only where it names something in Python code (an identifier or a string literal). Compound names such as `FundsCaptured` are still checked everywhere ([#154](https://github.com/45ck/eija-studio/issues/154)).
 

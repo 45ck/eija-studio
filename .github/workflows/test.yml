@@ -1,6 +1,6 @@
 name: local-poc-checks
-# Hosted CI is currently unavailable for this repository: manual dispatch only (ADR-0017).
-# Local equivalent: `nox -t full`.
+# Release verification and HTTP smoke: manual dispatch only. It is release evidence, not a per-change gate (ADR-0228);
+# the per-change gates are in quality.yml. Local equivalent: `python scripts/verify_release.py && python scripts/http_smoke.py`.
 on: [workflow_dispatch]
 permissions:
   contents: read

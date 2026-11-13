@@ -35,8 +35,11 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: pyproject.toml
-      - run: python -m pip install -e '.[dev,lint,testing,agents,providers,source-analysis,demos,xuml]'
-      - run: python -m nox -t fast
+      - run: python -m pip install -e '.[dev,lint,testing,agents,providers,source-analysis,demos,xuml,graph,graph-formal,okf,interop-api,smt,mutation]'
+      # nox exits 0 for a skipped session, so the report decides: every fast gate must actually run (NOT_RUN fails).
+      - run: mkdir -p reports && python -m nox -t fast --report reports/nox-fast.json
+      - if: always()
+        run: python -m quality.tools.nox_report reports/nox-fast.json --fail-on-skip
 
   full:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -65,11 +68,15 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: pyproject.toml
-      # The full tier needs these extras for imports, type checks and package discovery.
+      # The same extras a local full run uses (docs/quality/gates.md). Without them the graph, okf, SMT and mutation gates
+      # skip, and a skipped nox session still exits 0.
       - if: steps.changed.outputs.run == 'true'
-        run: python -m pip install -e '.[dev,lint,testing,agents,providers,source-analysis,demos,xuml]'
+        run: python -m pip install -e '.[dev,lint,testing,agents,providers,source-analysis,demos,xuml,graph,graph-formal,okf,interop-api,smt,mutation]'
       - if: steps.changed.outputs.run == 'true'
-        run: python -m nox -t full
+        run: mkdir -p reports && python -m nox -t full --report reports/nox-full.json
+      # Some full gates need Docker, Java or a Chrome this runner may lack: list every NOT_RUN in the job summary.
+      - if: always() && steps.changed.outputs.run == 'true'
+        run: python -m quality.tools.nox_report reports/nox-full.json
       - name: Open or update the nightly failure issue
         if: failure() && github.event_name == 'schedule'
         env:

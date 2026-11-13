@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+import importlib.util
 import json
 import re
 import shutil
@@ -120,11 +121,14 @@ def test_po_x3_the_binding_file_names_a_suite_and_obligations_for_every_entry() 
 def test_po_x3_production_binding_runs_the_same_law_suite_or_reports_not_run(name) -> None:
     entry = json.loads((FORMAL / "binding.json").read_text(encoding="utf-8"))["bindings"][name]
     module_name, func = entry["target"].split(":")
-    try:
-        module = importlib.import_module(module_name)
-        fn = getattr(module, func)
-    except (ImportError, AttributeError):
-        pytest.skip(f"NOT_RUN: {entry['target']} does not exist yet")
+    package = module_name.split(".", 1)[0]
+    if importlib.util.find_spec(package) is None:
+        pytest.skip(f"NOT_RUN: the {package} package is not built yet, so {entry['target']} has nothing to check")
+    # Once the package exists, a bound target that is missing or renamed is a broken binding, not a skip: a skip here
+    # would let the law suite go quiet the day the production code lands.
+    module = importlib.import_module(module_name)
+    assert hasattr(module, func), f"{entry['target']}: binding.json names a function that {module_name} does not define"
+    fn = getattr(module, func)
     if entry["suite"] == "suite_closure":
         assert suites.suite_closure(fn) == []
     elif entry["suite"] == "suite_canon":

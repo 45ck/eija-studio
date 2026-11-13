@@ -82,7 +82,7 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
 addopts = "-ra -m 'not formal and not slow and not timing'"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
-markers = ["formal: re-runs a whole proof or model-checking search; deselected by default, selected by the formal_smt and bmc nox sessions", "slow: starts a real server or a nested pytest; excluded from the default run, run by `nox -s metrics` (`-m slow`)", "timing: asserts on wall-clock measurements and can flake on a busy machine; excluded from the default run", "browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
+markers = ["formal: re-runs a whole proof or model-checking search; deselected by default, selected by the formal_smt and bmc nox sessions", "slow: starts a real server, a browser or a nested pytest; excluded from the default run; tests/metrics run in `nox -s metrics`, every other slow test in `nox -s browser_suite` (release)", "timing: asserts on wall-clock measurements and can flake on a busy machine; excluded from the default run", "browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1; run by the release sessions diagrams_syntax (tests/test_syntax_validator.py) and browser_suite (the rest)"]
 
 [tool.ruff]
 target-version = "py311"
@@ -262,7 +262,7 @@ data_file = "reports/coverage/.coverage"
 
 [tool.coverage.report]
 # Ratchet: fail_under is the measured value floor (integer, rounded down). Raise it whenever coverage rises.
-fail_under = 78  # measured 78.72 on 2026-09-28 (win32, py3.12); floor it, then only raise
+fail_under = 93  # measured 93.78 on 2026-11-13 (linux, py3.13; 78.72 on 2026-09-28, win32); floor it, then only raise
 show_missing = true
 skip_empty = true
 # Protocol/abstract stubs only: a `def ...: ...` line or a bare `...` line, never a real statement ending in `...`.

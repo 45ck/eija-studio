@@ -718,8 +718,10 @@ def lens_negative_controls() -> dict:
 # C. Complement preservation of the okf lane's generated-block rewriter (read-only, via ast).
 # --------------------------------------------------------------------------------------------------
 def okf_complement_preservation() -> dict:
-    src_path = ROOT.parent / "okf" / "quality" / "okf" / "pages.py"
-    if not src_path.exists():
+    # The okf lane merged into this repository; a sibling `okf` worktree (the lane era) is the fallback.
+    src_path = next((p for p in (ROOT / "quality" / "okf" / "pages.py", ROOT.parent / "okf" / "quality" / "okf" / "pages.py")
+                     if p.exists()), None)
+    if src_path is None:
         return not_run("okf lane worktree not found next to this worktree")
     src = src_path.read_bytes().decode("utf-8")
     tree = ast.parse(src)
