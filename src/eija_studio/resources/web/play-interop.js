@@ -166,10 +166,13 @@
     box.append(el("h3", "Class model"));
     if (!cm.found) { box.append(el("p", "Not in this file.", { class: "muted" })); return box; }
     if (!cm.candidate) { box.append(el("p", "Not imported: see the reasons below.", { class: "muted" })); return box; }
-    const c = cm.changes || { added: [], removed: [], changed: [] };
-    const parts = [["added", c.added], ["removed", c.removed], ["changed", c.changed]].filter(([, list]) => list.length)
-      .map(([what, list]) => `${what} ${list.join(", ")}`);
-    box.append(el("p", cm.changed ? `Classes ${parts.join("; ") || "reordered"}.` : "The same as the pack's class model."));
+    const c = cm.changes || { added: [], removed: [], changed: [] }, links = c.associations || { added: [], removed: [], changed: [] };
+    const listed = (group) => [["added", group.added], ["removed", group.removed], ["changed", group.changed]]
+      .filter(([, list]) => list.length).map(([what, list]) => `${what} ${list.join(", ")}`);
+    // Associations and the record class change the class model too, so the summary names them (not "reordered").
+    const parts = [listed(c).length ? `Classes ${listed(c).join("; ")}.` : "", listed(links).length ? `Associations ${listed(links).join("; ")}.` : "",
+      c.record ? `The record class is ${c.record}.` : ""].filter(Boolean);
+    box.append(el("p", cm.changed ? parts.join(" ") || "Classes reordered." : "The same as the pack's class model.", { id: "uml-class-changes" }));
     if (cm.changed) {
       box.append(el("p", "Class model changes are shown, not applied: keeping one is part of saving a system.", { class: "muted small" }));
       const save = el("button", "Download data.json", { type: "button", id: "uml-data" });

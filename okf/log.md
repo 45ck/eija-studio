@@ -2,6 +2,7 @@
 
 ## 2026-11-13
 * **Inspection of checking in place**: synced `application.access` and `access.reach` (a record must be started by a role that may start one, ADR-0231, or by a signal, ADR-0242), `access.access` (`changes.changed`) and `simulation` (a slip names no transition; `states[s].slips`). Their Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
+* **Inspection of saving, undo and UML import (ADR-0245)**: synced ADR-0245 and the page for `interfaces.play_systems` (`SaveWork`, `ClearWork`, `SYSTEM_CHANGED`). The interop modules have no pages of their own. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of open PRs (D2)**: synced `adapters.system_library`. `set_aside_draft` now returns the name of the file it used, so PlayIDE's message names it. The page has no curated Notes, and nothing was recorded as verified.
 * **Command line and server inspection (ADR-0244)**: synced ADR-0244 and the pages for `interfaces.play` (`APP_ENVIRONMENT`, `app_environment`) and `interfaces.uml_interop` (the export's policy check). No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 

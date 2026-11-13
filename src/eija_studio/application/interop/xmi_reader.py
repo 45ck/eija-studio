@@ -52,7 +52,7 @@ def _label(doc: XmiDocument, transition: ET.Element) -> str:
 def _subvertex(vertex: ET.Element, parsed: Parsed) -> None:
     kind = uml_type(vertex)
     if kind == "State" and children(vertex, "region"):
-        parsed.skip(located(vertex), f"composite state {vertex.get('name')}", "composite states are planned (issue #93); its contents are not imported")
+        parsed.skip(located(vertex), f"composite state {vertex.get('name')}", "composite states (ADR-0240) are grouped in the pack, not read from a UML file; its contents are not imported")
     elif kind == "State":
         parsed.state(vertex.get("name") or "")
     elif kind == "Pseudostate" and vertex.get("kind", "initial") != "initial":
@@ -76,7 +76,7 @@ def _transition(doc: XmiDocument, transition: ET.Element, parsed: Parsed) -> Non
     elif a_kind == "state" and b_kind == "state":
         parsed.edges.append(Edge(a, b, _label(doc, transition), where))
     else:
-        parsed.skip(where, f"transition {a or a_kind} -> {b or b_kind}", "it joins something that is not a PlayIDE state")
+        parsed.unread_part(where, f"transition {a or a_kind} -> {b or b_kind}", "it joins something that is not a PlayIDE state")
 
 
 def _state_machines(doc: XmiDocument, root: ET.Element, parsed: Parsed) -> None:
@@ -88,7 +88,7 @@ def _state_machines(doc: XmiDocument, root: ET.Element, parsed: Parsed) -> None:
     parsed.states = []
     regions = [c for c in machines[0] if local(c.tag) == "region"]
     for extra in regions[1:]:
-        parsed.skip(located(extra), f"region {extra.get('name')}", "orthogonal regions are not in PlayIDE's state vocabulary")
+        parsed.unread_part(located(extra), f"region {extra.get('name')}", "orthogonal regions are not in PlayIDE's state vocabulary")
     if regions:
         _region(doc, regions[0], parsed)
 

@@ -9,6 +9,13 @@
 - Fixed: the Laws tab paints a counterexample on the transition that leaves the step's state, for an action that leaves several. Fixed: reachability takes into account who may start a record (ROLE_CANNOT_START), and that a signal from another workflow can start one. Fixed: Stop or Restart while the run log loads no longer lets the run start afterwards.
 - Fixed: Simulate counts a slip (an action that does not leave the record's state) against that state, as `states[s].slips`, not against another state's transition. Fixed: the checks ring marks a part with nothing to check as not applicable instead of green, and leaves it out of the count. Fixed: only the newest test run fills the Tests panel. Fixed: the permissions diff lists a permission kept on other conditions (a guard dropped or added) under `changes.changed`.
 
+### 13 November 2026: inspection of saving and UML import
+
+- An inspection of undo, autosave, Save and UML import/export found ten defects, all fixed ([ADR-0245](docs/adr/0245-partial-reads-keep-and-saves-name-their-system.md), log in [INSPECTION-SAVE-IMPORT](docs/engineering/INSPECTION-SAVE-IMPORT.md)).
+- Fixed: an arrow the UML reader skipped, an arrow through a `<<choice>>` pseudostate, or a labelled draw.io connector to another shape no longer makes the import plan remove that transition. A pseudostate is never read as a state. PlantUML arrows with the style after the direction (`-left[#red]->`) and backward arrows (`B <-- A`) are read.
+- Fixed: an attribute or association the file has but PlayIDE cannot read is kept as the current class model has it, not deleted from the candidate `data.json`. The import dialog names association changes.
+- Fixed: a tab still showing another system can no longer save over, or clear, the open system's saved work (`SYSTEM_CHANGED`). A browser draft from an earlier model is kept until it is reopened, an edit made while undo reloads the screens is kept, recovered work no longer shows as unsaved when it matches the saved draft, and when browser storage is full an older draft is no longer recovered as the latest work.
+
 ### 13 November 2026: the command line and server, inspected
 
 - A Fagan inspection of the `eija` command and PlayIDE's local server ([record](docs/engineering/CLI-SERVER-INSPECTION.md), [ADR-0244](docs/adr/0244-built-app-environment-and-bind-before-links.md)) found ten defects; nine are fixed, each with a regression test in `tests/test_cli_server_inspection.py`.

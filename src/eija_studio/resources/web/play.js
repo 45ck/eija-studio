@@ -2610,7 +2610,7 @@
     persist();
     renderHistory();
     restoring = true;
-    let pending = null;
+    let pending = null, reset = false;
     try {
       const doc = entry.doc, old = plan;
       if (old && old.previewing) leavePreview();
@@ -2631,11 +2631,14 @@
       renderHealth();
       document.dispatchEvent(new CustomEvent("playide:plan"));
       if (doc.screens) { screens = clone(doc.screens); changed(); }
-      else if (screensEdited) await resetScreens();
+      else if (screensEdited) reset = true;
       if (window.PlayTests && JSON.stringify(doc.tests || null) !== JSON.stringify(window.PlayTests.draft())) window.PlayTests.edit(clone(doc.tests || null));
     } finally {
       restoring = false;
     }
+    // Reloading the model's own screens waits on the server, so it runs after `restoring` ends: an edit made in that
+    // wait is a new edit, kept in the history and in this browser, not dropped as part of the restore.
+    if (reset) await resetScreens();
     if (pending && pending === plan) {
       const result = await refreshPlan();
       if (result && result.legal && result.accepted && pending === plan && !plan.previewing) enterPreview();
@@ -2669,9 +2672,27 @@
       }
       browserNote = { bad: false, text: "Edits kept in this browser", title: `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.` };
     } catch {
+      setAsideOutdated();
       browserNote = { bad: true, text: "Not kept: browser storage is unavailable", title: "Undo still works, but a reload or crash would lose these edits." };
     }
     renderSaveStatus();
+  }
+
+  // Storage too full even for the current snapshot: the draft under the key is older than the work on screen. Left
+  // there, a reload would bring it back as "your unsaved work". It moves aside as an earlier draft (removed first, so
+  // its own space is reused), offered with a Reopen button, and put back only if even that fails.
+  function setAsideOutdated() {
+    let raw = null;
+    try {
+      raw = localStorage.getItem(draftKey());
+      if (raw === null) return;
+      localStorage.removeItem(draftKey());
+      let key = earlierKey(), n = 1;
+      while (localStorage.getItem(key) !== null && localStorage.getItem(key) !== raw) key = `${earlierKey()}:${++n}`; // never over another
+      localStorage.setItem(key, raw);
+    } catch {
+      try { if (raw !== null && localStorage.getItem(draftKey()) === null) localStorage.setItem(draftKey(), raw); } catch { /* storage gone */ }
+    }
   }
 
   // Browser storage is untrusted: a draft written by an older page, cut short by a full disk, or edited by hand. The
@@ -2700,6 +2721,56 @@
       + "The draft was set aside, not deleted.")).classList.add("recovered");
   }
 
+  // A browser draft written on an earlier model in force: kept under its own key until it is reopened.
+  const earlierKey = () => draftKey() + ":earlier";
+  function retainEarlier(raw) {
+    try {
+      let key = earlierKey(), n = 1;
+      while (localStorage.getItem(key) !== null && localStorage.getItem(key) !== raw) key = `${earlierKey()}:${++n}`; // never over another
+      localStorage.setItem(key, raw);
+      localStorage.removeItem(draftKey());
+      return key;
+    } catch { return null; } // left where it was
+  }
+  // Every retained draft (`:earlier`, `:earlier:2`, ...), oldest first, as [key, draft]; unreadable ones are skipped.
+  function retainedDrafts() {
+    const found = [];
+    try {
+      const pattern = new RegExp(`^${earlierKey().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(:\\d+)?$`);
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (!key || !pattern.test(key)) continue;
+        try { const draft = JSON.parse(localStorage.getItem(key)); if (readableDraft(draft)) found.push([key, draft]); } catch { /* skipped */ }
+      }
+    } catch { /* storage blocked */ }
+    return found.sort((a, b) => (a[1].saved || 0) - (b[1].saved || 0));
+  }
+  // Each retained draft is offered on every load until it is reopened, whether or not newer work came back too.
+  function offerRetained() {
+    for (const [key, draft] of retainedDrafts()) {
+      offerEarlier(draft, key, draft.model !== modelPrint()
+        ? "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams."
+        : `An earlier browser draft from ${new Date(draft.saved).toLocaleString()} is retained. Later edits were not kept in this browser, so it was set aside.`);
+    }
+  }
+  function offerEarlier(draft, key, text) {
+    const note = el("p", text);
+    const reopen = el("button", "Reopen earlier draft", { type: "button", class: "quiet" });
+    reopen.addEventListener("click", async () => {
+      reopen.disabled = true;
+      planUid = Math.max(planUid, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
+      recoveredWork = true;
+      await restore({ ...draft.stack[draft.at], card: null });
+      commit("reopen an earlier browser draft");
+      // Reopened: it is this browser's draft now, but only once that draft was written; with storage still full the
+      // retained copy stays, as the only one that survives a reload.
+      try { if (key && !browserNote.bad && localStorage.getItem(draftKey()) !== null) localStorage.removeItem(key); } catch { /* kept */ }
+      note.firstChild.textContent = "Earlier draft reopened and checked against the active revision. Nothing was activated.";
+    });
+    note.append(" ", reopen);
+    say("ai", note).classList.add("recovered");
+  }
+
   // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
   // restored plan again; a step that no longer applies (the model in force changed) is shown as such.
   async function recover() {
@@ -2709,25 +2780,18 @@
     if (REVIEW_VIEW) return;
     let draft = null, raw = null;
     try { raw = localStorage.getItem(draftKey()); } catch { return; } // storage blocked: nothing to recover
-    if (raw === null) return;
+    if (raw === null) { offerRetained(); return; }
     recoveringRaw = raw;
     try { draft = JSON.parse(raw); } catch { draft = null; }
     if (!readableDraft(draft)) { setAsideDraft(raw); return; }
     if (draft.model !== modelPrint()) {
-      const note = el("p", "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams.");
-      const reopen = el("button", "Reopen earlier draft", { type: "button", class: "quiet" });
-      reopen.addEventListener("click", async () => {
-        reopen.disabled = true;
-        planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
-        recoveredWork = true;
-        await restore({ ...draft.stack[draft.at], card: null });
-        commit("reopen an earlier browser draft");
-        note.firstChild.textContent = "Earlier draft reopened and checked against the active revision. Nothing was activated.";
-      });
-      note.append(" ", reopen);
-      say("ai", note).classList.add("recovered");
+      // Retained means kept: the first edit on the new model writes this browser's draft under the same key, so the
+      // earlier draft moves to a key of its own first (never over another), and comes back on later loads too.
+      retainEarlier(raw);
+      offerRetained();
       return;
     }
+    offerRetained(); // drafts retained on earlier loads stay offered beside the newer work
     planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
     edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens || draft.stack[0].doc.tests ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
     edits.at = edits.stack.length - draft.stack.length + draft.at;
