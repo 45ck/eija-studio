@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/plan_proposals.py
   title: adapters/plan_proposals.py
   hash_method: ast-api-v1
-  sha256: 1081960f8a2b4d08f15b5241eca4d814be4ef65843ffe0fb01d10300395b87f9
-notes_baseline: 6d1db192ccc33c4ce5ccc0708d873293697faf6064d3f7c2e4c98ba3f955aea3
+  sha256: 76850eb1d9ec98a132d283e40ec5b7f48f4ebefc09fcf00014314f8f91cfebff
+notes_baseline: 836aeafec65fd46bb20bfde77fc5271349e081c97d08354064f1ad3aead71303
 ---
 
 # adapters.plan_proposals
@@ -70,5 +70,6 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [adapters.live_plan_proposals](/modules/adapters/live_plan_proposals.md) - Live plan proposer for the PlayIDE chat (ADR-0230): a model reads the request, the pack decides the steps.
 * [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 <!-- okf:generated:end links -->

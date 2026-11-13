@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0230-opt-in-live-plan-mode-and-agent-plan-check.md
   title: 0230-opt-in-live-plan-mode-and-agent-plan-check.md
   hash_method: lf-sha256-v1
-  sha256: 23d4e30b4f191e87d484c7b3dd404d5b077778a9b340a7fb9a13f55a898297e8
-notes_baseline: b4c3d823ee8478f64af581ed2108ea274f3a2c5a762e97dcfa2cbcf37cdde3dc
+  sha256: 0de84bcc4d45099142b6a93a6c10d85387173d479083cf9785cf884621254305
+notes_baseline: 1892d589021fb2e4b35b1d6d398410dfbc23e1280820b66716a9eb2f42d99844
 ---
 
 # ADR-0230: Opt-in live plan mode, and a plan check for coding agents
@@ -41,6 +41,12 @@ notes_baseline: b4c3d823ee8478f64af581ed2108ea274f3a2c5a762e97dcfa2cbcf37cdde3dc
 * Decision drivers
 * Considered options
 * Decision outcome
+
+## Code and docs mentioned
+
+Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
+
+* `repo://docs/quality/inspections/2026-11-13-ai-chat-plan-mode.md`
 <!-- okf:generated:end facts -->
 
 ## Notes

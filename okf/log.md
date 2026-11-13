@@ -1,5 +1,8 @@
 # Update log
 
+## 2026-11-13
+* **Fagan inspection of the AI chat and plan mode**: synced the ADR-0230 amendment (mixed requests refused with `PLAN_REQUEST_MIXED`, one live call at a time with `PROVIDER_BUSY`), `adapters.live_plan_proposals` and `adapters.plan_proposals` (`clauses_read`). No Notes were changed, nothing was recorded as verified, and no human source approval was recorded.
+
 ## 2026-11-12
 * **Conformance that catches a divergent app (ADR-0243)**: synced ADR-0243 (renumbered: 0242 is messages between workflows), the new oracle lists in `application/appgen.py` and its helper modules `application/oracle_session.py` and `application/app_runs.py` (`create_cases`, `journeys`, `options_cases`, `rules`, `valid_values`, and `written` on committed cases), and the `conformance_divergence` gates. After the Codex review, journeys start on a record created just now. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 * **Messages between workflows (issue #93, item 5)**: synced ADR-0242, `Receive`, `Workflow.receives` and `receiving`, the `signal` effect kind and its checks, `runtime.receive`, the landscape's `sends`, `receives`, `signals` and its two findings, the oracle's `signal_cases`, the verifier's outbox count and the UML reader's unaddressed signal; after the Codex review, the delivery binding includes the record values. Re-read the Notes of the runtime module, `verify_runtime`, `Workflow`, `Workflow.semantic_hash` and the integration-test evidence kind as `process:claude-code`; updated the first four. No human source approval was recorded.
