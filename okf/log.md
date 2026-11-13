@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-13
+* **Inspection of open PRs (D2)**: synced `adapters.system_library`. `set_aside_draft` now returns the name of the file it used, so PlayIDE's message names it. The page has no curated Notes, and nothing was recorded as verified.
 * **Command line and server inspection (ADR-0244)**: synced ADR-0244 and the pages for `interfaces.play` (`APP_ENVIRONMENT`, `app_environment`) and `interfaces.uml_interop` (the export's policy check). No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 
 ## 2026-11-12
