@@ -2721,13 +2721,28 @@
       return key;
     } catch { return null; } // left where it was
   }
-  function earlierDraft() {
+  // Every retained draft (`:earlier`, `:earlier:2`, ...), oldest first, as [key, draft]; unreadable ones are skipped.
+  function retainedDrafts() {
+    const found = [];
     try {
-      const raw = localStorage.getItem(earlierKey()), draft = raw === null ? null : JSON.parse(raw);
-      return readableDraft(draft) ? draft : null;
-    } catch { return null; }
+      const pattern = new RegExp(`^${earlierKey().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(:\\d+)?$`);
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (!key || !pattern.test(key)) continue;
+        try { const draft = JSON.parse(localStorage.getItem(key)); if (readableDraft(draft)) found.push([key, draft]); } catch { /* skipped */ }
+      }
+    } catch { /* storage blocked */ }
+    return found.sort((a, b) => (a[1].saved || 0) - (b[1].saved || 0));
   }
-  function offerEarlier(draft, key, text = "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams.") {
+  // Each retained draft is offered on every load until it is reopened, whether or not newer work came back too.
+  function offerRetained() {
+    for (const [key, draft] of retainedDrafts()) {
+      offerEarlier(draft, key, draft.model !== modelPrint()
+        ? "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams."
+        : `An earlier browser draft from ${new Date(draft.saved).toLocaleString()} is retained. Later edits were not kept in this browser, so it was set aside.`);
+    }
+  }
+  function offerEarlier(draft, key, text) {
     const note = el("p", text);
     const reopen = el("button", "Reopen earlier draft", { type: "button", class: "quiet" });
     reopen.addEventListener("click", async () => {
@@ -2736,7 +2751,9 @@
       recoveredWork = true;
       await restore({ ...draft.stack[draft.at], card: null });
       commit("reopen an earlier browser draft");
-      try { if (key) localStorage.removeItem(key); } catch { /* kept */ } // reopened: it is this browser's draft now
+      // Reopened: it is this browser's draft now, but only once that draft was written; with storage still full the
+      // retained copy stays, as the only one that survives a reload.
+      try { if (key && !browserNote.bad && localStorage.getItem(draftKey()) !== null) localStorage.removeItem(key); } catch { /* kept */ }
       note.firstChild.textContent = "Earlier draft reopened and checked against the active revision. Nothing was activated.";
     });
     note.append(" ", reopen);
@@ -2752,23 +2769,18 @@
     if (REVIEW_VIEW) return;
     let draft = null, raw = null;
     try { raw = localStorage.getItem(draftKey()); } catch { return; } // storage blocked: nothing to recover
-    if (raw === null) {
-      const earlier = earlierDraft();
-      if (earlier) { // retained on an earlier load (another model, or storage filled up after it) and not reopened yet
-        offerEarlier(earlier, earlierKey(), `An earlier browser draft from ${new Date(earlier.saved).toLocaleString()} is retained. `
-          + "Later edits were not kept in this browser, or the active model changed, so the model in force stays on the diagrams.");
-      }
-      return;
-    }
+    if (raw === null) { offerRetained(); return; }
     recoveringRaw = raw;
     try { draft = JSON.parse(raw); } catch { draft = null; }
     if (!readableDraft(draft)) { setAsideDraft(raw); return; }
     if (draft.model !== modelPrint()) {
       // Retained means kept: the first edit on the new model writes this browser's draft under the same key, so the
       // earlier draft moves to a key of its own first (never over another), and comes back on later loads too.
-      offerEarlier(draft, retainEarlier(raw));
+      retainEarlier(raw);
+      offerRetained();
       return;
     }
+    offerRetained(); // drafts retained on earlier loads stay offered beside the newer work
     planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
     edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens || draft.stack[0].doc.tests ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
     edits.at = edits.stack.length - draft.stack.length + draft.at;

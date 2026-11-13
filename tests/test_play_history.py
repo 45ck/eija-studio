@@ -374,11 +374,17 @@ def test_a_draft_kept_on_an_earlier_model_is_not_overwritten_by_the_next_edit():
             assert page.evaluate("k => localStorage.getItem(k + ':earlier')", key) == raw
             place(page, "Shelved")  # an edit on the new model: kept under the draft key, the earlier one beside it
             assert page.evaluate("k => localStorage.getItem(k + ':earlier')", key) == raw
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=20_000)
+            log = page.text_content("#chat-log")  # the newer work comes back, and the earlier draft is still offered
+            assert "Recovered your unsaved work" in log and "An earlier browser draft is retained" in log
+            # A second retained draft (numbered key) is offered too.
+            page.evaluate("([k, v]) => localStorage.setItem(k + ':earlier:2', v)", [key, json.dumps({**earlier, "saved": earlier["saved"] + 1})])
             page.evaluate("k => localStorage.removeItem(k)", key)
             page.reload()
             page.wait_for_selector("body[data-ready=true]", timeout=20_000)
-            assert "An earlier browser draft from" in page.text_content("#chat-log")  # offered again
-            page.click("text=Reopen earlier draft")
+            assert page.locator("#chat-log .recovered button:text-is('Reopen earlier draft')").count() == 2
+            page.locator("text=Reopen earlier draft").first.click()
             page.wait_for_selector("#plan-banner:not([hidden])")
             assert "Archived" in page.evaluate("() => JSON.stringify(PlayIDE.document().plan.steps)")
             assert page.evaluate("k => localStorage.getItem(k + ':earlier')", key) is None  # reopened: now the draft
@@ -450,6 +456,12 @@ def test_an_outdated_browser_draft_is_not_recovered_as_the_latest_work_when_stor
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
             log = page.text_content("#chat-log")
             assert "Recovered your unsaved work" not in log and "An earlier browser draft from" in log
+            # Reopening it while storage is still full keeps the retained copy: it is the only one a reload would find.
+            page.evaluate("""k => { const set = Storage.prototype.setItem;
+                Storage.prototype.setItem = function (name, value) { if (name === k) throw new DOMException("full", "QuotaExceededError"); return set.call(this, name, value); }; }""", key)
+            page.click("text=Reopen earlier draft")
+            page.wait_for_selector("#chat-log .plan .plan-verdict")
+            assert page.evaluate("k => localStorage.getItem(k + ':earlier')", key) == older
             assert errors == []
         finally:
             chrome.close()
