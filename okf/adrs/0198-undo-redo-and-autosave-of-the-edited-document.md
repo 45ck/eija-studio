@@ -63,4 +63,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0201: Build a new system in chat, round after round](/adrs/0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).
+* [ADR-0245: A partial UML read keeps what it could not read, and a save names its system](/adrs/0245-partial-reads-keep-and-saves-name-their-system.md) - A Fagan-style inspection of everything that keeps or moves a model (undo and redo, browser autosave, Save and the systems home, UML import and export) found te…
 <!-- okf:generated:end links -->

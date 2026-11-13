@@ -57,13 +57,14 @@ These are reported, never guessed:
 | an action the pack does not declare | not imported: declare its guards and effects in the pack first |
 | a role the pack does not declare, or no role | not imported (an action already in the model keeps its role) |
 | guards or effects that differ from the pack's declaration | the pack's are kept, and the report says so |
-| a guard term other than the role and `assigned` (such as `fine > 0`) | not imported; value guards are planned (issue #93) |
-| composite states, choice, fork, join or history pseudostates, orthogonal regions | not imported; composite states are planned (issue #93) |
+| a guard term other than the role and `assigned` (such as `fine > 0`) | not imported; guards over record values (ADR-0234) are declared in the pack, not read from a UML file |
+| composite states, choice, fork, join or history pseudostates, orthogonal regions | not imported; composite states (ADR-0240) are grouped in the pack. A pseudostate is never read as a state, even when arrows use it, and an arrow through one is a transition that was not read (ADR-0245) |
 | operations, inheritance, interfaces, collection-valued or class-typed attributes | not imported: they are not in the data vocabulary |
 | `Integer`, `DateTime` | read as `Real` and `Date`, and listed |
 | a text attribute without a maximum length | 200, and listed |
 | use case diagrams and final states | derived, so redrawn from the imported model |
-| a transition or composite state that could not be read (a renamed action, say) | nothing in the model is removed by that import: each removal the file implies is listed as kept, so a partly read file never offers a plan that drops what it failed to read (issue #165) |
+| a transition or composite state that could not be read (a renamed action, an arrow style PlayIDE does not read, an arrow through a pseudostate or a draw.io connector to another shape, say) | nothing in the model is removed by that import: each removal the file implies is listed as kept, so a partly read file never offers a plan that drops what it failed to read (issue #165, ADR-0245) |
+| an attribute or association the file has but PlayIDE cannot read (a class-typed attribute, a `2..5` end) | not imported, and the current model's own attribute or association of that name is kept as it is, so the candidate `data.json` does not lose it (ADR-0245) |
 | an actor's kind (`«agent»`, `«timer»`, `«system»`, else a person) | read and compared with its role's; a different kind is not imported, because kind laws read it: change it in the pack's roles |
 | any other stereotype on an actor (`«robot»`) | not imported; the actor is read as a person |
 
