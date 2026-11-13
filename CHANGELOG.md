@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 13 November 2026: inspection of open pull requests
+
+- Fixed: a built app's `POST /api/records/{id}/act` turned a missing operation id into the shared id `missing` and cut a long one to 100 characters. A client that sent no id had every action after its first refused as `OPERATION_CONFLICT`. The route now refuses such a request with `BAD_REQUEST`, as `/api/signals` already did ([inspection record](docs/quality/inspection-2026-11-13-pull-requests.md)).
+
 ### 12 November 2026: conformance that catches a wrong app
 
 - New `python -m verification.conformance.divergence` ([ADR-0243](docs/adr/0243-conformance-that-catches-divergence.md)). For every pack, it builds apps that are wrong in one model element (a transition, role, guard, effect, recipient, initial state, initiator, actor, attribute or association) or one of 23 seeded code faults. It reseals each app so a hash cannot catch it, and requires the app's own generated tests to fail. Before this change the generated suite missed, among others, a wrong initial state, a wrong notification recipient, records the app itself created, the actions it offers, and its HTTP API.
