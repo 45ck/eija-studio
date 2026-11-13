@@ -9,6 +9,7 @@
     "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6.5' fill='#e51400' stroke='#fff' stroke-width='1.5'/></svg>");
   const NOW = "#d99a00", REFUSED = "#a12f2f"; // the current step, as a debugger marks the current line
   let P = null, log = null, logKey = null, pos = 0, timer = 0, mode = "idle", stopNote = "", fetching = null;
+  let generation = 0; // bumped by Stop, Restart and a redraw, so a Run or Step still loading its log does not start after them
   const marks = new Set(), overlays = new Map();
   let shownPos = 0; // the step last drawn
 
@@ -37,7 +38,10 @@
     if (!log || logKey !== P.viewKey()) await load();
   }
 
-  const stopAt = (n) => log && log.stops.find((s) => s.step === n);
+  // `pos` counts entries of the trace; a stop names the run's step number. They differ when a turn logs nothing (a
+  // user who may not start a record, with none to work on, ADR-0231), so a stop is found by the entry's own step.
+  const stepOf = (n) => (log && n > 0 && n <= log.trace.length ? log.trace[n - 1].step : 0);
+  const stopAt = (n) => log && log.stops.find((s) => s.step === stepOf(n));
 
   function stopText(stop) {
     if (stop.reason === "exception") return `the kernel refused ${name(stop.elements[0])} (${stop.code})`;
@@ -48,10 +52,12 @@
   // fastest speed, go straight there.
   async function run() {
     if (mode === "running") return;
+    const mine = ++generation;
     try {
       if (mode === "ended") { pos = 0; P.clearSim(); }
       await ready();
-    } catch (error) { return failed(error); }
+    } catch (error) { return mine === generation ? failed(error) : undefined; }
+    if (mine !== generation || !log) return; // stopped, restarted, pressed again or redrawn while the log loaded
     mode = "running";
     stopNote = "";
     const delay = Number($("run-speed").value);
@@ -88,7 +94,9 @@
 
   async function step() {
     if (mode === "running" || mode === "ended") return;
-    try { await ready(); } catch (error) { return failed(error); }
+    const mine = ++generation;
+    try { await ready(); } catch (error) { return mine === generation ? failed(error) : undefined; }
+    if (mine !== generation || !log) return;
     mode = "paused";
     stopNote = "";
     advance();
@@ -96,6 +104,7 @@
   }
 
   async function stop() {
+    generation += 1;
     clearTimeout(timer);
     const was = mode;
     mode = "idle";
@@ -114,6 +123,7 @@
   }
 
   async function restart() {
+    generation += 1;
     clearTimeout(timer);
     mode = "idle";
     pos = 0;
@@ -170,7 +180,7 @@
     });
     const here = now.outcome === "REFUSED" ? now.from : now.to; // keep the current step on screen with the panel open
     if (P.follow) P.follow(["state:" + here, now.transition ? "transition:" + now.transition : "initial"]);
-    $("debug-pos").textContent = `Step ${pos} of ${log.trace.length}`;
+    $("debug-pos").textContent = `Step ${now.step} of ${log.steps}`;
     $("debug-now").replaceChildren(current(now));
     $("debug-records").replaceChildren(...Object.entries(records).map(([r, s]) => {
       const tr = P.el("tr", undefined, r === now.record ? { class: "now" } : {});
@@ -181,11 +191,13 @@
       tr.append(P.el("th", r, { scope: "row" }), cell);
       return tr;
     }));
-    $("debug-log").replaceChildren(...log.trace.slice(Math.max(0, pos - 40), pos).map((e) => {
-      const li = P.el("li", undefined, { class: e.outcome.toLowerCase() + (e.step === pos ? " current" : "") });
+    const first = Math.max(0, pos - 40);
+    $("debug-log").replaceChildren(...log.trace.slice(first, pos).map((e, k) => {
+      const at = first + k + 1; // this entry's place in the trace, which is what `pos` counts
+      const li = P.el("li", undefined, { class: e.outcome.toLowerCase() + (at === pos ? " current" : "") });
       const pick = P.el("button", describe(e), { type: "button", class: "link trace-step", "aria-label": `Inspect recorded step ${e.step}: ${describe(e)}` });
       pick.addEventListener("click", () => {
-        clearTimeout(timer); mode = "paused"; pos = e.step; stopNote = "inspecting recorded step"; render();
+        clearTimeout(timer); mode = "paused"; pos = at; stopNote = "inspecting recorded step"; render();
       });
       li.append(P.el("span", String(e.step), { class: "n" }), pick);
       return li;
@@ -213,9 +225,9 @@
 
   function status() {
     if (!log || logKey !== P.viewKey() || mode === "idle") return "Ready";
-    if (mode === "running") return `Running · step ${pos} of ${log.trace.length}`;
-    if (mode === "ended") return `Finished · ${log.trace.length} steps`;
-    return `Paused at step ${pos}` + (stopNote && stopNote !== "paused" ? `: ${stopNote}` : "");
+    if (mode === "running") return `Running · step ${stepOf(pos)} of ${log.steps}`;
+    if (mode === "ended") return `Finished · ${log.steps} steps`;
+    return `Paused at step ${stepOf(pos)}` + (stopNote && stopNote !== "paused" ? `: ${stopNote}` : "");
   }
 
   function describe(e) {
@@ -311,6 +323,7 @@
 
   // A redraw means another model is on screen (a plan previewed or left): start again, keeping breakpoints that exist.
   function redrawn() {
+    generation += 1;
     clearTimeout(timer);
     mode = "idle";
     pos = 0;

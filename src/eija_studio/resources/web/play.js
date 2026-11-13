@@ -2456,13 +2456,17 @@
   async function simulate() {
     const button = $("simulate");
     button.disabled = true;
+    const key = viewKey();
     try {
-      const key = viewKey();
-      showSim(await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 }));
+      const result = await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 });
+      // A run of a model no longer on screen is not painted on this one: its counts are of other states and transitions.
+      if (key !== viewKey()) { notify("The model changed while simulating. Press Simulate to run the model shown."); return; }
+      showSim(result);
       simKey = key;
       rewardTrying("simulate", 2, "Simulated users on the AI's change", key);
       renderHealth();
     } catch (error) {
+      if (key !== viewKey()) { notify(`A simulation of an earlier model was refused (${error.code || "ERROR"}). Press Simulate to run the model shown.`); return; }
       $("sim").hidden = false;
       $("sim-summary").textContent = error.code === "MODEL_CHANGED"
         ? "The model changed since this page loaded. Reload to see it, then simulate again."

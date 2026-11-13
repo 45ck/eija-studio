@@ -150,10 +150,12 @@ def _taker(pack: Pack, model: Workflow, t: Transition) -> str | None:
     return next((a.id for a in pack.fixtures.actors if a.role == t.role and _try(pack, model, t, a.id) is None), None)
 
 
-def _replay(pack: Pack, model: Workflow, path: list[Transition], values: dict[str, Any]) -> list[dict[str, Any]] | str:
-    """Take `path` on one record in the kernel: the steps it committed, or the refusal code that stopped it."""
+def _replay(pack: Pack, model: Workflow, path: list[Transition], values: dict[str, Any],
+            starter: str | None = None) -> list[dict[str, Any]] | str:
+    """Take `path` on one record in the kernel, started by a holder of role `starter` when the model names who may
+    start one (ADR-0231): the steps it committed, or the refusal code that stopped it."""
     session = MemorySession(pack)
-    record = initialise(session, CASE, model, pack=pack)["id"]  # type: ignore[arg-type]
+    record = initialise(session, CASE, model, pack=pack, role=starter)["id"]  # type: ignore[arg-type]
     session.record_values[record] = values
     steps: list[dict[str, Any]] = []
     for t in path:
@@ -191,21 +193,40 @@ def _usable(pack: Pack, model: Workflow, allowed: set[str]) -> set[str]:
     return {t.id for t in model.transitions if t.id in allowed and _taker(pack, model, t)}
 
 
+def _starter(pack: Pack, model: Workflow, without: str | None) -> tuple[str | None, str | None]:
+    """Who starts the record (ADR-0231): (a role a fixture actor holds that may start one, None) or (None, why not).
+    A model that names no initiators lets anyone start a record, so there is nothing to choose."""
+    if not model.initiators:
+        return None, None
+    roles = [r for r in model.initiators if r != without]
+    if not roles:
+        return None, "unreachable"
+    held = next((r for r in roles if any(a.role == r for a in pack.fixtures.actors)), None)
+    return (held, None) if held else (None, f"Only {', '.join(roles)} may start a record, and no fixture actor holds that role; other actors might.")
+
+
 def reach(pack: Pack, model: Workflow, target: str, without: str | None = None) -> dict[str, Any]:
-    """Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?"""
+    """Can a record reach `target` with no step taken by role `without` (or at all, when it is None)? Starting the record
+    is a step too: when the model names who may start one, a record without them does not exist (ADR-0231)."""
     _check(pack, model, target, without)
     question = {"target": target, "without": without, "model": model.semantic_hash}
+    starter, unstarted = _starter(pack, model, without)
+    if unstarted == "unreachable":
+        return question | {"verdict": "UNREACHABLE", "path": [], "why": f"Only {', '.join(model.initiators)} may start a record, "
+                           f"so without {without} no record exists to reach {target}. The kernel refuses anyone else (ROLE_CANNOT_START)."}
     allowed = {t.id for t in model.transitions if t.role != without}
     if _path(model, target, allowed) is None:
         return _unreachable(question, without)
     # Search only transitions some fixture actor can take in the kernel, then replay the path on one record.
+    if unstarted:
+        return _not_shown(question, unstarted)
     path = _path(model, target, _usable(pack, model, allowed))
     if path is None:
         return _not_shown(question, "The model has a path, but no fixture actor could take every step in the kernel; other actors might.")
     values = _meeting(pack, path)  # one record takes the whole path, so its values must meet every guard on it (ADR-0234)
     if values is None:
         return _not_shown(question, "The model has a path, but no one record's values meet every guard over values on it.")
-    steps = _replay(pack, model, path, values)
+    steps = _replay(pack, model, path, values, starter)
     if isinstance(steps, str):
         return _not_shown(question, f"The kernel refused {steps} on replay.")
     return question | {"verdict": "REACHABLE", "path": steps, "why": _reached(target, steps)} | ({"values": values} if values else {})
