@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### 13 November 2026: the kernel, inspected
+
+- A Fagan inspection of the kernel ([record](docs/quality/inspection-2026-11-13-kernel.md), [ADR-0246](docs/adr/0246-kernel-inspection-fixes.md)) found eight defects; all are fixed, each with a regression test in `tests/test_kernel_inspection.py` that fails on the old code.
+- Fixed: the policy accepted a transition held by a role the pack does not declare (it already refused an undeclared initiator). It now reports `UNDECLARED_ROLE:<transition id>`.
+- Fixed: a `path_requires` law on the initial state was always reported broken by the table check, so the policy refused models that no run breaks. The table and run judges now agree that a new record has entered no state.
+- Fixed: a value guard against a date compared any text as a string (`"1999"` was before `2026-12-01`), and a list or object as a record value crashed `execute` with a `TypeError`. Both now fail closed with `VALUE_GUARD_DENIED`.
+- Fixed: `add_transition` could not give a second source to an action with a value guard, a time event or a step on a linked object (ADR-0232); the new transition now takes what the action shares.
+- Fixed: the law proof and Simulate never tried `1` or `0` for an attribute also guarded as true/false.
+- Fixed: the impact ripple was empty for a change to who may start a record, the initial state, the signals that start one, or a linked object's lifecycle. It now names it in `model_changes` and marks the review packet affected.
+- Each initiator and each state of a linked object's lifecycle is now a 1 to 60 character name (contracts regenerated).
 ### 13 November 2026: inspection of saving and UML import
 
 - An inspection of undo, autosave, Save and UML import/export found ten defects, all fixed ([ADR-0245](docs/adr/0245-partial-reads-keep-and-saves-name-their-system.md), log in [INSPECTION-SAVE-IMPORT](docs/engineering/INSPECTION-SAVE-IMPORT.md)).

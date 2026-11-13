@@ -76,4 +76,5 @@ _No curated notes yet._
 * [ADR-0240: Composite states](/adrs/0240-composite-states.md) - Issue #93, item 3.
 * [ADR-0241: Actions on linked objects](/adrs/0241-actions-on-linked-objects.md) - Issue #93, item 4.
 * [ADR-0243: Conformance that catches a divergent app by behaviour](/adrs/0243-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
+* [ADR-0246: The kernel refuses undeclared roles, judges path laws alike, and fails value guards closed](/adrs/0246-kernel-inspection-fixes.md) - A Fagan inspection of the kernel (inspection record) read the policy, the model contracts, the law judges, the value guards, the edit vocabulary, the impact ri…
 <!-- okf:generated:end links -->

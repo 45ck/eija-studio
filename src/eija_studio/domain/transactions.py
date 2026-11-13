@@ -187,7 +187,13 @@ def _set_initial(model: Workflow, tx: SetInitial, _: Declare) -> dict[str, Any]:
 
 
 def _add_transition(model: Workflow, tx: AddTransition, declare: Declare) -> dict[str, Any]:
+    """The pack's declaration gives the guards and effects. A new source of an action that already labels a transition
+    also takes what the model gave that action: its value guards, time event and steps on linked objects, so the two
+    stay alike (ADR-0232; ADR-0246, K5)."""
     new = declare(tx.id, tx.action, tx.from_state, tx.to_state, tx.role)
+    alike = next((t for t in model.transitions if t.action == tx.action), None)
+    if alike is not None:
+        new = new.model_copy(update={"conditions": alike.conditions, "after": alike.after, "then": alike.then})
     data = model.model_dump(mode="json")
     data["transitions"].append(new.model_dump(mode="json"))
     return data

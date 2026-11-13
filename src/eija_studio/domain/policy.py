@@ -55,8 +55,8 @@ def transition(action: str, source: str, target: str, role: str, pack: Pack | No
 
 
 def declared_codes(model: Workflow, pack: Pack) -> list[str]:
-    """Every transition must perform a declared action, with exactly its declared guards and required effects,
-    and must declare every pack-forbidden effect forbidden."""
+    """Every transition must perform a declared action, held by a declared role, with exactly its declared guards and
+    required effects, and must declare every pack-forbidden effect forbidden."""
     codes: list[str] = []
     for t in model.transitions:
         spec = pack.action(t.action)
@@ -67,9 +67,16 @@ def declared_codes(model: Workflow, pack: Pack) -> list[str]:
             codes.append("GUARD_POLICY:" + t.action)
         if set(t.required_effects) != set(spec.required_effects) or not set(pack.effects.forbidden) <= set(t.forbidden_effects):
             codes.append("EFFECT_POLICY:" + t.action)
-    declared_roles = {r.id for r in pack.roles}
-    codes += ["UNDECLARED_INITIATOR:" + r for r in model.initiators if r not in declared_roles]  # ADR-0231
-    return codes
+    return codes + _role_codes(model, pack)
+
+
+def _role_codes(model: Workflow, pack: Pack) -> list[str]:
+    """Initiators (ADR-0231) and the roles holding transitions must be roles the pack declares; the pack loader refuses
+    an undeclared transition role in the pack's own model, and no actor can hold one (ADR-0246, K1). The code names
+    the transition, whose id is pattern-checked, not the free-text role, so it is safe in every diagram that shows it."""
+    declared = {r.id for r in pack.roles}
+    codes = ["UNDECLARED_INITIATOR:" + r for r in model.initiators if r not in declared]
+    return codes + ["UNDECLARED_ROLE:" + t.id for t in model.transitions if t.role not in declared]
 
 
 def law_violations(model: Workflow, pack: Pack | None = None) -> list[Violation]:

@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-13
+* **Kernel inspection (ADR-0246)**: synced ADR-0246, the new `domain.state_tree` module (the composite-tree check moved out of `models.py`), the policy's `UNDECLARED_ROLE` code, the `path_requires` table judge, `ValueGuard.holds`, `add_transition`, `value_guards.points` and `model_impact`'s `model_changes`. Re-read the Notes of the policy module, `model_impact` and `Workflow` as `process:kernel-inspection` and updated all three. No human source approval was recorded.
 * **Inspection of saving, undo and UML import (ADR-0245)**: synced ADR-0245 and the page for `interfaces.play_systems` (`SaveWork`, `ClearWork`, `SYSTEM_CHANGED`). The interop modules have no pages of their own. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of open PRs (D2)**: synced `adapters.system_library`. `set_aside_draft` now returns the name of the file it used, so PlayIDE's message names it. The page has no curated Notes, and nothing was recorded as verified.
 * **Command line and server inspection (ADR-0244)**: synced ADR-0244 and the pages for `interfaces.play` (`APP_ENVIRONMENT`, `app_environment`) and `interfaces.uml_interop` (the export's policy check). No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.

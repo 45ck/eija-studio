@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/transactions.py#apply_structural
   title: domain/transactions.py
   hash_method: ast-v2
-  sha256: bc78d17398ef8464446f1eaed36efc228d79fb02702513b2308c27fdb54259ca
-notes_baseline: 0c5fe3b89b261ee68889a99b8a9f97f045b049eec74671adf248f64c8cda27bb
+  sha256: 7509015c36535b8454e3dbddccdaa73432a82f56a20049b1a436434511423a36
+notes_baseline: 17aa927770df2b5575571ab5f3ed394802ce586099d410f9ab9f015b98edf39d
 ---
 
 # domain.transactions.apply_structural

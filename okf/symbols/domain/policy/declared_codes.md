@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.policy.declared_codes
-description: Every transition must perform a declared action, with exactly its declared guards and required effects, and must declare every pack-forbidden effect forbidden.
+description: Every transition must perform a declared action, held by a declared role, with exactly its declared guards and required effects, and must declare every pack-forbidden effect forbidden.
 resource: repo://src/eija_studio/domain/policy.py#declared_codes
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#declared_codes
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: d722b5175dfa73e2ab3d5c603b1ebc025cfe58f7ad4fea46e9262a614c37fd8e
-notes_baseline: 6e95f4237e941b98176b4b8fc66ad6e367b01dd8dbcf8e7877055aab3e1a556e
+  sha256: 3841ffd1834df18ddffa9c1bbd60056e41a677eb6ea515383b2fab9ffce6c103
+notes_baseline: c02b217f86e6780db6a0fb5066a6eb2643bef55b636d3ba7b2d098745b01c66a
 ---
 
 # domain.policy.declared_codes
@@ -32,8 +32,8 @@ notes_baseline: 6e95f4237e941b98176b4b8fc66ad6e367b01dd8dbcf8e7877055aab3e1a556e
 ## Docstring
 
 ~~~text
-Every transition must perform a declared action, with exactly its declared guards and required effects,
-and must declare every pack-forbidden effect forbidden.
+Every transition must perform a declared action, held by a declared role, with exactly its declared guards and
+required effects, and must declare every pack-forbidden effect forbidden.
 ~~~
 <!-- okf:generated:end facts -->
 

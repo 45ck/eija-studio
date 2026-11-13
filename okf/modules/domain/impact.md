@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/impact.py
   title: domain/impact.py
   hash_method: ast-api-v1
-  sha256: b4a07eee63b011d61f2ff829bf1960b91a5d06ff12bfebc250a80482eb03a10f
-notes_baseline: 973a463d3091d015b140ddaa18790e5b0cfaccd55df6cb3d8f8ee94fe886233a
+  sha256: bc1b3e3a87434f3d9110eab59cbfcd63c8abe01329eb86246bc5a6acadc19cc3
+notes_baseline: e826354ad6feee92770b4f1d1282b3043595ca455b4e5763aabc2e5e5f1a6445
 ---
 
 # domain.impact
@@ -32,10 +32,12 @@ _The source carries no module docstring._
 
 ## Public symbols
 
+* [`START`](/symbols/domain/impact/START.md) (constant) - no docstring
 * [`changed_fields`](/symbols/domain/impact/changed_fields.md) (function) - Semantic differences of one action's transition.
 * [`closure`](/symbols/domain/impact/closure.md) (function) - Edges mean source affects target.
 * [`keyed`](/symbols/domain/impact/keyed.md) (function) - Both models' transitions keyed for comparison.
-* [`model_impact`](/symbols/domain/impact/model_impact.md) (function) - no docstring
+* [`model_changes`](/symbols/domain/impact/model_changes.md) (function) - What changed outside the transitions that changes what the kernel does: how a record starts, and the lifecycles of link…
+* [`model_impact`](/symbols/domain/impact/model_impact.md) (function) - The ripple of a change.
 
 ## Internal imports
 
@@ -59,8 +61,10 @@ _No curated notes yet._
 * [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
+* [domain.impact.START](/symbols/domain/impact/START.md) - Constant `START` in `domain/impact`.
 * [domain.impact.changed_fields](/symbols/domain/impact/changed_fields.md) - Semantic differences of one action's transition.
 * [domain.impact.closure](/symbols/domain/impact/closure.md) - Edges mean source affects target.
 * [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
-* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
+* [domain.impact.model_changes](/symbols/domain/impact/model_changes.md) - What changed outside the transitions that changes what the kernel does: how a record starts, and the lifecycles of linked objects.
+* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - The ripple of a change.
 <!-- okf:generated:end links -->
