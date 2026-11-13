@@ -103,7 +103,9 @@ Loan "0..*" --> "1" Member : borrower
     kept = {d["element"]: d["reason"] for d in report["defaulted"]}
     assert "kept the pack's guards" in kept["CheckOut: guard"] and "kept the pack's" in kept["MarkOverdue: effects"]
     assert kept["Loan.renewals"] == "Integer is read as number"
-    assert report["class_model"]["changes"] == {"added": ["Person"], "removed": ["Copy", "Item"], "changed": ["Loan", "Member"]}
+    changes = report["class_model"]["changes"]
+    assert {k: changes[k] for k in ("added", "removed", "changed")} == {"added": ["Person"], "removed": ["Copy", "Item"], "changed": ["Loan", "Member"]}
+    assert changes["associations"]["removed"] == ["Item -> Copy (copies)", "Loan -> Copy (copy)"]  # named, not "reordered"
 
 
 def test_the_kernel_refuses_an_import_that_breaks_a_law_and_says_which():
