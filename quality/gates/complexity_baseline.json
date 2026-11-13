@@ -3,6 +3,6 @@
     "src/eija_studio/application/compiler.py::compile_case": 15,
     "src/eija_studio/application/runtime.py::execute": 13,
     "src/eija_studio/domain/evidence.py::assess_receipt": 44,
-    "src/eija_studio/interfaces/cli.py::main": 31
+    "src/eija_studio/interfaces/cli.py::main": 28
   }
 }

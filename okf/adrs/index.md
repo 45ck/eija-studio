@@ -127,3 +127,4 @@
 * [ADR-0241: Actions on linked objects](0241-actions-on-linked-objects.md) - Issue #93, item 4.
 * [ADR-0242: Messages between workflows](0242-messages-between-workflows.md) - Issue #93, item 5.
 * [ADR-0243: Conformance that catches a divergent app by behaviour](0243-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
+* [ADR-0244: The built app gets no secrets, and `eija serve` binds its port before it prints a link](0244-built-app-environment-and-bind-before-links.md) - A Fagan inspection of the `eija` command and the local server (CLI-SERVER-INSPECTION) found two boundary defects.
