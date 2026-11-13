@@ -136,3 +136,18 @@ def test_no_follow_on_is_proposed_when_every_action_is_in_use():
     ripple = {"problems": [{"code": "STATE_UNREACHABLE", "ref": "state:Paid"}]}
     model = pack.model.model_copy(update={"states": (*pack.model.states, "Paid")})
     assert OfflinePlanProposer().follow_on(ripple, model, pack) == {"steps": []}
+
+
+def test_a_round_that_would_take_the_plan_past_one_preview_is_refused(served):
+    """Fagan inspection 2026-11-13: rounds stacked past MAX_DRAFT_STEPS were planned, and every preview after that failed."""
+    client, _ = served
+    new_system(client)
+    earlier = []
+    for i in range(20):  # 60 legal steps: a state and two ways into it
+        earlier += [{"kind": "add_state", "state": f"S{i}", "after": None},
+                    {"kind": "add_transition", "id": f"TR-A{i}", "action": f"A{i}", "from_state": "Placed", "to_state": f"S{i}", "role": "Barista"},
+                    {"kind": "add_transition", "id": f"TR-B{i}", "action": f"B{i}", "from_state": "Brewing", "to_state": f"S{i}", "role": "Barista"}]
+    fits = post(client, "/api/play/plan", {"request": "add state X1 then add state X2", "plan": earlier})
+    assert fits["on_top"] and len(fits["steps"]) == 2
+    refused = client.post("/api/play/plan", json={"request": "; ".join(f"add state X{n}" for n in range(1, 6)), "plan": earlier}, headers=HEADERS)
+    assert refused.status_code >= 400 and refused.json()["code"] == "PLAN_TOO_LONG"

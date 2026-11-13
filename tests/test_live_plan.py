@@ -80,6 +80,36 @@ def test_exact_phrases_stay_offline_and_never_reach_the_provider():
     assert stub.calls == 1 and asked["live"] is True and asked["provider"] == proposer.name
 
 
+def test_a_request_that_is_partly_exact_phrases_is_refused_before_anything_is_sent():
+    """Fagan inspection 2026-11-13: the model plans one meaning, so the exact clause was dropped from the plan unseen."""
+    pack = load_pack(ROOT / "packs" / "refund-desk")
+    proposer, stub = live("agent_hands_off")
+    state = pack.model.states[-1]
+    with pytest.raises(DomainError) as e:
+        propose_plan(f"add state Archived after {state} then let a supervisor take over when the bot is unsure", pack.model, pack, proposer)
+    assert e.value.code == "PLAN_REQUEST_MIXED" and stub.calls == 0
+
+
+def test_a_second_live_request_while_one_runs_is_refused_and_never_sent():
+    """Fagan inspection 2026-11-13: the chat's live path had no single-flight guard, unlike every other provider call."""
+    pack = load_pack(ROOT / "packs" / "refund-desk")
+    proposer, stub = live("agent_hands_off")
+    inner: list[str] = []
+    first = stub.propose
+
+    def reentrant(request, model):
+        if stub.calls == 0:
+            with pytest.raises(DomainError) as e:
+                propose_plan("Please let an agent hand this off to a human.", pack.model, pack, proposer)
+            inner.append(e.value.code)
+        return first(request, model)
+
+    stub.propose = reentrant
+    result = propose_plan("Please let an agent hand this off to a human.", pack.model, pack, proposer)
+    assert inner == ["PROVIDER_BUSY"] and stub.calls == 1 and result["live"] is True
+    assert propose_plan("Please let an agent hand this off to a human.", pack.model, pack, proposer)["live"] is True  # released
+
+
 @pytest.fixture
 def client_for(tmp_path):
     def make(*, live_proposer, allow_network):

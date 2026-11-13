@@ -296,7 +296,11 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         # planned on top of them (ADR-0201); on a shipped pack a new plan replaces the last, as before.
         grows = own()
         on_top = body if grows else body.model_copy(update={"plan": None})
-        return propose_plan(body.request, resolve(on_top), pack_of(on_top.plan), proposer(body.consent), grows=grows) | {"on_top": bool(grows and body.plan)}
+        result = propose_plan(body.request, resolve(on_top), pack_of(on_top.plan), proposer(body.consent), grows=grows)
+        if len(on_top.plan or []) + len(result["steps"]) > MAX_DRAFT_STEPS:  # every round must still fit one preview
+            raise DomainError("PLAN_TOO_LONG", f"A plan holds at most {MAX_DRAFT_STEPS} steps and this round "
+                              "would take the work in progress past that, so it was not added.")
+        return result | {"on_top": bool(grows and body.plan)}
 
     @app.post("/api/play/plan/preview")
     def play_plan_preview(body: PlanPreviewRequest):

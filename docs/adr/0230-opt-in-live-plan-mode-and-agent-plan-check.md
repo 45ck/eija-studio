@@ -36,3 +36,9 @@ It is wired only when the Studio's provider is networked. `/api/status` reports 
 * Bad: the live path can plan only what the pack already models. A request for a genuinely new change still needs exact phrases.
 * Bad: no live provider has been run through this path yet; its quality is measured by the intent eval, not assumed.
 * Revisit when: the intent eval shows a provider reliably above the offline baseline on paraphrases, or model-written steps are wanted.
+
+### Amendment, 2026-11-13 (Fagan inspection)
+
+* A request that is partly exact phrases and partly prose is refused with `PLAN_REQUEST_MIXED` before anything is sent: the model plans one meaning, so the clauses the phrase reader read would otherwise be dropped from the plan.
+* One live plan call runs at a time; a second while one is in flight is refused with `PROVIDER_BUSY` and never sent.
+* See `docs/quality/inspections/2026-11-13-ai-chat-plan-mode.md` for the defects logged and not yet fixed.
