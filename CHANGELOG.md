@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### 13 November 2026: the command line and server, inspected
+
+- A Fagan inspection of the `eija` command and PlayIDE's local server ([record](docs/engineering/CLI-SERVER-INSPECTION.md), [ADR-0244](docs/adr/0244-built-app-environment-and-bind-before-links.md)) found ten defects; nine are fixed, each with a regression test in `tests/test_cli_server_inspection.py`.
+- Fixed: Build & run no longer passes the IDE's environment, including provider API keys, to the app it starts. The app gets an allowlist (path, home, locale, temp folders) and its port.
+- Fixed: `eija serve` binds its port before it prints the private links or opens the browser. A busy port is `PORT_IN_USE` (exit 2) and an invalid one is refused before any workspace is created.
+- Fixed: an `Authorization` header with a non-ASCII byte got a 500; it is now 401.
+- Fixed: `eija uml export` of a model the protected policy refuses exits 2 with `POLICY_BLOCKED` on stderr, as `render` does. `EIJA_PROVIDER` set to an unknown provider, a systems home that is a file, and `eija new` with too long a name or `--from describe` each get a message that says what is wrong.
+
 ### 13 November 2026: inspection of open pull requests
 
 - Fixed: a built app's `POST /api/records/{id}/act` turned a missing operation id into the shared id `missing` and cut a long one to 100 characters. A client that sent no id had every action after its first refused as `OPERATION_CONFLICT`. The route now refuses such a request with `BAD_REQUEST`, as `/api/signals` already did ([inspection record](docs/quality/inspection-2026-11-13-pull-requests.md)).

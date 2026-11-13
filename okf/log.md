@@ -2,6 +2,7 @@
 
 ## 2026-11-13
 * **Inspection of open PRs (D2)**: synced `adapters.system_library`. `set_aside_draft` now returns the name of the file it used, so PlayIDE's message names it. The page has no curated Notes, and nothing was recorded as verified.
+* **Command line and server inspection (ADR-0244)**: synced ADR-0244 and the pages for `interfaces.play` (`APP_ENVIRONMENT`, `app_environment`) and `interfaces.uml_interop` (the export's policy check). No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 
 ## 2026-11-12
 * **Conformance that catches a divergent app (ADR-0243)**: synced ADR-0243 (renumbered: 0242 is messages between workflows), the new oracle lists in `application/appgen.py` and its helper modules `application/oracle_session.py` and `application/app_runs.py` (`create_cases`, `journeys`, `options_cases`, `rules`, `valid_values`, and `written` on committed cases), and the `conformance_divergence` gates. After the Codex review, journeys start on a record created just now. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
