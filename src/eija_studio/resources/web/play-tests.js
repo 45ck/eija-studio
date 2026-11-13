@@ -10,7 +10,7 @@
   // The record's values a test gives, which guards over values read (ADR-0234): "with renewals = 2, format = "Book"".
   const withValues = (values) => (values && Object.keys(values).length
     ? " with " + Object.entries(values).map(([k, v]) => `${k} = ${typeof v === "string" ? JSON.stringify(v) : v}`).join(", ") : "");
-  let P = null, report = null, key = null, draft = null, download = null, steps = [];
+  let P = null, report = null, key = null, draft = null, download = null, steps = [], runs = 0; // runs: the newest run owns the panel
 
   const now = () => P.viewKey() + JSON.stringify(P.model()) + JSON.stringify(draft);
   const document_ = () => draft || (report && report.file.document);
@@ -93,23 +93,30 @@
   }
 
   async function run() {
-    const asked = now();
+    const asked = now(), mine = ++runs;
     $("tests-run").disabled = true;
     $("tests-summary").className = "laws-summary";
     $("tests-summary").textContent = "Running every test through the kernel…";
     try {
       const result = await P.api("/api/play/tests", draft ? { ...P.about(), scenarios: draft } : P.about());
-      if (asked !== now()) return;
+      if (mine !== runs) return; // a newer run is on its way and will fill the panel
+      if (asked !== now()) { // the model or the draft changed while it ran: run what is shown now, or say it is not run
+        if (!$("tests").hidden) { run(); return; }
+        $("tests-summary").className = "laws-summary";
+        $("tests-summary").textContent = "The model changed since the tests ran. They run again when you open Tests.";
+        return;
+      }
       report = result;
       key = asked;
       $("tests-problems").textContent = "";
       render();
     } catch (error) {
+      if (mine !== runs) return;
       const target = error.code === "SCENARIOS_INVALID" || error.code === "SCENARIOS_PACK_MISMATCH" ? "tests-problems" : "tests-summary";
       $(target).textContent = `Could not run the tests (${error.code || "ERROR"}): ${error.message}`;
       $("tests-summary").className = "laws-summary bad";
     } finally {
-      $("tests-run").disabled = false;
+      if (mine === runs) $("tests-run").disabled = false; // only once the newest run is back
     }
   }
 

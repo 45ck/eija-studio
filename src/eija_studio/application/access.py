@@ -97,21 +97,38 @@ def matrix(pack: Pack, model: Workflow) -> dict[str, Any]:
     return {"roles": roles, "states": list(model.states), "initial": model.initial_state, "cells": cells}
 
 
-def _keys(grid: dict[str, Any]) -> set[tuple[str, str, str, str]]:
-    return {(state, role, c["action"], c["to"]) for state, row in grid["cells"].items() for role, cs in row.items() for c in cs}
+Key = tuple[str, str, str, str]
 
 
-def _named(key: tuple[str, str, str, str]) -> dict[str, str]:
+def _conditions(cell: dict[str, Any]) -> list[str]:
+    """What, beyond the role, a cell's permission depends on: being assigned, and guards over the record's values."""
+    return (["assigned only"] if cell["assigned_only"] else []) + [f"when [{w}]" for w in cell.get("when", [])]
+
+
+def _keys(grid: dict[str, Any]) -> dict[Key, list[str]]:
+    return {(state, role, c["action"], c["to"]): _conditions(c)
+            for state, row in grid["cells"].items() for role, cs in row.items() for c in cs}
+
+
+def _named(key: Key) -> dict[str, str]:
     return dict(zip(("state", "role", "action", "to"), key, strict=True))
 
 
+def _changes(now: dict[Key, list[str]], before: dict[Key, list[str]]) -> dict[str, list[dict[str, Any]]]:
+    """Permissions added and removed, and those kept whose conditions changed (being assigned, a guard over values):
+    a plan that only tightens or loosens who may take an action changes who can do what too."""
+    changed = [_named(k) | {"before": before[k], "after": now[k]} for k in sorted(set(now) & set(before)) if now[k] != before[k]]
+    return {"added": [_named(k) for k in sorted(set(now) - set(before))],
+            "removed": [_named(k) for k in sorted(set(before) - set(now))], "changed": changed}
+
+
 def access(pack: Pack, model: Workflow, base: Workflow | None = None) -> dict[str, Any]:
-    """The matrix for `model`, and, when `base` differs, the permissions it adds and removes compared with `base`."""
+    """The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with
+    `base`."""
     grid = matrix(pack, model)
-    changes: dict[str, list[dict[str, str]]] = {"added": [], "removed": []}
+    changes: dict[str, list[dict[str, Any]]] = {"added": [], "removed": [], "changed": []}
     if base is not None and base.semantic_hash != model.semantic_hash:
-        now, before = _keys(grid), _keys(matrix(pack, base))
-        changes = {"added": [_named(k) for k in sorted(now - before)], "removed": [_named(k) for k in sorted(before - now)]}
+        changes = _changes(_keys(grid), _keys(matrix(pack, base)))
     return {"format": "eija.access.v1", "pack": pack.id, "model": model.semantic_hash, **grid, "changes": changes,
             "limits": ["Each cell is tried in the kernel with the pack's fixture actors on a fresh record; other actors "
                        "are refused or let through by the same guards."]}

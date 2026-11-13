@@ -79,14 +79,17 @@
 
   // ---- What a previewed plan changes --------------------------------------------------------------------------------
   function changes(result) {
-    const { added, removed } = result.changes;
+    const { added, removed } = result.changes, changed = result.changes.changed || [];
     const box = P.el("div", undefined, { class: "access-changes" });
-    if (!added.length && !removed.length) return box;
+    if (!added.length && !removed.length && !changed.length) return box;
     box.append(P.el("h3", "This plan changes who can do what"));
     const list = P.el("ul");
     for (const [rows, sign, tone] of [[added, "+", "added"], [removed, "−", "removed"]]) {
       for (const c of rows) list.append(P.el("li", `${sign} ${c.role} may ${c.action} from ${c.state} (to ${c.to})`, { class: tone }));
     }
+    // Kept, but on other conditions: being assigned, or a guard over the record's values.
+    const said = (conditions) => (conditions.length ? conditions.join(", ") : "no other condition");
+    for (const c of changed) list.append(P.el("li", `~ ${c.role} may ${c.action} from ${c.state} (to ${c.to}): ${said(c.before)} → ${said(c.after)}`, { class: "changed" }));
     box.append(list);
     return box;
   }
@@ -94,6 +97,7 @@
   // ---- The matrix ---------------------------------------------------------------------------------------------------
   function table(result) {
     const removed = result.changes.removed, added = new Set(result.changes.added.map((c) => `${c.state}|${c.role}|${c.action}|${c.to}`));
+    const changed = new Set((result.changes.changed || []).map((c) => `${c.state}|${c.role}|${c.action}|${c.to}`));
     const grid = P.el("table", undefined, { class: "access-grid" });
     grid.append(P.el("caption", "Rows are states, columns are roles. Each entry is an action that role may take from that state."));
     const head = P.el("tr");
@@ -114,7 +118,10 @@
       tr.append(th);
       for (const role of result.roles) {
         const td = P.el("td");
-        for (const c of result.cells[state][role] || []) td.append(entry(c, added.has(`${state}|${role}|${c.action}|${c.to}`)));
+        for (const c of result.cells[state][role] || []) {
+          const at = `${state}|${role}|${c.action}|${c.to}`;
+          td.append(entry(c, added.has(at), changed.has(at)));
+        }
         for (const c of removed.filter((x) => x.state === state && x.role === role)) {
           td.append(P.el("div", `${c.action} → ${c.to}`, { class: "perm removed", title: "Removed by this plan" }));
         }
@@ -126,8 +133,8 @@
     return grid;
   }
 
-  function entry(c, isNew) {
-    const box = P.el("div", undefined, { class: "perm" + (isNew ? " added" : "") });
+  function entry(c, isNew, isChanged = false) {
+    const box = P.el("div", undefined, { class: "perm" + (isNew ? " added" : isChanged ? " changed" : "") });
     const name = P.el("button", `${c.action} → ${c.to}`, { type: "button", class: "perm-name", title: "Show it on the state machine" });
     name.addEventListener("click", () => P.select("transition:" + c.transition, true));
     box.append(name);
@@ -135,6 +142,7 @@
     // A guard over the record's values (ADR-0234): the actors were tried on a record whose values meet it.
     if (c.when) box.append(P.el("span", `when [${c.when.join(" and ")}]`, { class: "tag when", title: "Tried on a record whose values meet this guard; on other values the kernel refuses (VALUE_GUARD_DENIED)" }));
     if (isNew) box.append(P.el("span", "new", { class: "tag new" }));
+    if (isChanged) box.append(P.el("span", "changed", { class: "tag changed", title: "This plan changes what this permission depends on" }));
     const who = P.el("ul", undefined, { class: "who-can", "aria-label": "Fixture actors the kernel tried" });
     for (const a of c.actors) {
       who.append(P.el("li", a.refused ? `✗ ${a.actor} (${a.refused})` : `✓ ${a.actor}`, { class: a.refused ? "no" : "yes" }));

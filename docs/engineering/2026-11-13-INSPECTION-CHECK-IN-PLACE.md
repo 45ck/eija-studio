@@ -36,11 +36,12 @@ duties law, a guard over values and a built reference).
 | D-03 | Major | `play-laws.js` `showFor` | "Inspect its laws", on a step the kernel refused, looked for laws whose subject is `transition:<id>`. The law proof names subjects `action:<name>` and `state:<name>`, so nothing ever matched. It always said "No law subject explicitly links to this transition", even for Return, which `four-eyes` and `clerk-never-takes-returns` govern. | Browser | Fixed |
 | D-04 | Minor | `play-laws.js` `transitionFor`, `cellsOf` | When one action leaves several states (ADR-0232), "Show this run" painted each counterexample step on the first transition with that action, not on the one that leaves the step's state. "Show what it governs" also lit only one of them. | Code | Fixed |
 | D-05 | Minor | `application/access.py` `reach` | Reachability ignored who may start a record. "Can a record reach Requested without a Member?" answered Yes for a model where only Members may start one. The kernel refuses anyone else with ROLE_CANNOT_START. The path replay also started its record with no role. | Test | Fixed |
-| D-06 | Minor | `play-run.js` `run`, `step` | Run and Step load the run log before starting. If Stop or Restart was pressed, or the model was redrawn, while it loaded, the run started anyway. Pressing Run twice started two timers, so the run moved at twice the speed. | Browser | Fixed |
-| D-07 | Minor | `application/simulation.py` `_attempt` | A slip, where a user tries an action that does not leave the record's state, is counted against the first transition that action labels. Simulate then shows "✗ n" refusals, and the finding "refused n times, mostly INVALID_TRANSITION", on a transition from another state. A breakpoint on that transition also stops on slips made from other states. The game layer already draws these slips on the state, not the transition. | Code | Logged |
-| D-08 | Observation | `play.js` `checksNow` | "AI steps checked" and "Diagrams agree" show green when there is no AI plan or no change, so nothing was checked. Together with the screens check, which runs by itself, three of the five parts are green before anyone checks anything. | Code | Logged |
-| D-09 | Minor | `play-tests.js` `run` | When a test run's result is dropped because the model changed, the summary keeps saying "Running every test through the kernel…" until the tab is shown again. With two runs in flight, the first one to finish enables the Run button while the other is still running. | Code | Logged |
-| D-10 | Minor | `application/access.py` `access` | The permissions a plan adds or removes are compared by state, role, action and target. A plan that only adds or drops an `actor_assigned` guard, or a guard over values, shows no change. | Code | Logged |
+| D-06 | Minor | `play-run.js` `run`, `step`, `buttons` | Run and Step load the run log before starting. If Stop (Shift+F5), Restart or a redraw happened while it loaded, the run started anyway. The Stop button was disabled while the log loaded. Pressing Run twice started two timers, so the run moved at twice the speed. | Browser | Fixed |
+| D-07 | Minor | `application/simulation.py` `_attempt`, `_stop` | A slip, where a user tries an action that does not leave the record's state, was counted against the first transition that action labels. Simulate then showed "✗ n" refusals on a transition from another state; MarkOverdue showed ✗ 60 on library loan, all of them slips from other states. A breakpoint on that transition also stopped on these slips. | Browser | Fixed |
+| D-08 | Minor | `play.js` `checksNow`, `renderHealth` | "AI steps checked" and "Diagrams agree" showed green when there was no AI plan or no change, so nothing had been checked. A fresh page read "2/5 checks" before anyone had checked anything. | Browser | Fixed |
+| D-09 | Minor | `play-tests.js` `run` | When two test runs were in flight, the first to return re-enabled Run while the summary still said "Running every test through the kernel…". A result dropped because the model changed left that summary in place. | Browser | Fixed |
+| D-10 | Minor | `application/access.py` `access` | The permissions a plan adds or removes were compared by state, role, action and target only. A plan that redraws CheckOut keeps that key, but it drops the guard `[renewals ≤ 3]`, and the matrix showed no change at all. | Browser | Fixed |
+| D-11 | Minor | `play-laws.js` `prove` | Found while testing the D-03 fix under load. Opening the Laws tab and "Inspect its laws" each started a proof. If the tab's proof finished second, it repainted the panel and wiped out what the inspection had just said. | Browser (flaky) | Fixed |
 
 What was clean: scenario runs (`scenario_run.py`) and the Tests tab ignore a result for a model that is no longer on
 screen. The laws report does the same. Points come only from looking at AI steps, from catching a refused step, and
@@ -62,10 +63,25 @@ server.
   Otherwise it replays the path on a record started by a starting role, or, for a workflow that receives a signal, on a
   record started the way delivering the signal starts one, and says so (found in review by Codex).
 - D-06: Stop, Restart and a redraw cancel a Run or Step whose log is still loading. A second Run cancels the first.
+  Stop is enabled while the log loads.
+- D-07: a slip names no transition (`"transition": null` in the run log and Simulate's trace). Its refusals count
+  against its state, as `states[s].slips`, and Simulate shows them on the state ("✗ n"). A stop on it names the
+  state. The totals still add up: transition refusals plus slips equal the kernel's refusals.
+- D-08: a part with nothing to check is marked not applicable. It shows "–" and grey on the ring, it is left out of
+  the "n/m checks" count, and it neither passes nor blocks.
+- D-09: only the newest test run fills the Tests panel and re-enables Run. A run whose model changed runs again on
+  the model shown, or says that it will run when Tests opens.
+- D-10: the permissions diff also compares what each permission depends on (assigned only, guards over values). A
+  permission kept on other conditions is listed under `changes.changed`, with its conditions before and after, and is
+  tagged "changed" in the matrix.
+- D-11: the Laws tab runs one proof per model and draft at a time, and every caller waits for that one.
 
 Regression tests are in `tests/test_play_check_in_place.py`. One browser test, opt-in with `EIJA_BROWSER_TESTS=1`,
-walks D-01, D-02, D-03 and D-06 in Chromium, and it fails on `main` before the fix. The Python tests pin D-05, with a
-negative control.
+walks D-01, D-02, D-03, D-06 and D-08 in Chromium, and it fails on `main` before the fix. The Python tests pin D-05, D-07 and D-10, with
+negative controls.
 
-D-07 to D-10 are left for follow-up. D-07 and D-10 change report formats (`eija.simulation.v1`, `eija.access.v1`)
-that other views read. D-08 is a product choice about what counts as checked.
+## Before and after
+
+Screenshots of each fix in the running app, taken from `main` before it and from this branch after it, on the
+library-loan pack with the newer kernel features. They are in `docs/assets/inspection-2026-11-13/`
+(`d01-before.png`, `d01-after.png`, and so on).

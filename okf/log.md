@@ -1,7 +1,7 @@
 # Update log
 
 ## 2026-11-13
-* **Inspection of checking in place**: synced `application.access` and `access.reach` (a record must be started by a role that may start one, ADR-0231). Their Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
+* **Inspection of checking in place**: synced `application.access` and `access.reach` (a record must be started by a role that may start one, ADR-0231, or by a signal, ADR-0242), `access.access` (`changes.changed`) and `simulation` (a slip names no transition; `states[s].slips`). Their Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
 
 ## 2026-11-12
 * **Conformance that catches a divergent app (ADR-0243)**: synced ADR-0243 (renumbered: 0242 is messages between workflows), the new oracle lists in `application/appgen.py` and its helper modules `application/oracle_session.py` and `application/app_runs.py` (`create_cases`, `journeys`, `options_cases`, `rules`, `valid_values`, and `written` on committed cases), and the `conformance_divergence` gates. After the Codex review, journeys start on a record created just now. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.

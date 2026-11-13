@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/access.py
   title: application/access.py
   hash_method: ast-api-v1
-  sha256: 76b2bd8720d5552ce008bb738a8e1d3cb244eefc51e6c4fe2adc4fb8e62d82db
-notes_baseline: b84daee7831537736f54edfd5860c4e72e57fb3fcd437352ab19d12fb1b971cc
+  sha256: 2372d0c016f5ffe49cb2619d0d3c273e94fa57ec8267bac689200c6813141863
+notes_baseline: 0ec5e726af16ea5c6403c53687e3a0404086a9255c9d88bce1406de8708ff675
 ---
 
 # application.access
@@ -44,7 +44,8 @@ actor could take it in the kernel; other actors might. Nothing persists and no e
 
 ## Public symbols
 
-* [`access`](/symbols/application/access/access.md) (function) - The matrix for `model`, and, when `base` differs, the permissions it adds and removes compared with `base`.
+* [`Key`](/symbols/application/access/Key.md) (type-alias) - no docstring
+* [`access`](/symbols/application/access/access.md) (function) - The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with `base`.
 * [`matrix`](/symbols/application/access/matrix.md) (function) - Every role's actions from every state, each tried in the kernel with the fixture actors in that role.
 * [`reach`](/symbols/application/access/reach.md) (function) - Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?
 
@@ -75,7 +76,8 @@ _No curated notes yet._
 ## Referenced by
 
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
-* [application.access.access](/symbols/application/access/access.md) - The matrix for `model`, and, when `base` differs, the permissions it adds and removes compared with `base`.
+* [application.access.Key](/symbols/application/access/Key.md) - Type alias `Key` in `application/access`.
+* [application.access.access](/symbols/application/access/access.md) - The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with `base`.
 * [application.access.matrix](/symbols/application/access/matrix.md) - Every role's actions from every state, each tried in the kernel with the fixture actors in that role.
 * [application.access.reach](/symbols/application/access/reach.md) - Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?
 <!-- okf:generated:end links -->

@@ -147,7 +147,19 @@
     if (retainFocus) focusLaw(selectedLaw);
   }
 
-  async function prove() {
+  // One proof per model and draft at a time: opening the tab and "Inspect its laws" both ask for one, and a second
+  // proof finishing late would repaint the panel over what the inspection just said.
+  let proving = null, provingKey = null;
+  function prove() {
+    const asked = now();
+    if (proving && provingKey === asked) return proving;
+    provingKey = asked;
+    const mine = proveNow().finally(() => { if (proving === mine) proving = null; });
+    proving = mine;
+    return mine;
+  }
+
+  async function proveNow() {
     const asked = now();
     $("laws-prove").disabled = true;
     $("laws-summary").className = "laws-summary";

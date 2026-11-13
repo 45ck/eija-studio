@@ -9,6 +9,7 @@
     "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6.5' fill='#e51400' stroke='#fff' stroke-width='1.5'/></svg>");
   const NOW = "#d99a00", REFUSED = "#a12f2f"; // the current step, as a debugger marks the current line
   let P = null, log = null, logKey = null, pos = 0, timer = 0, mode = "idle", stopNote = "", fetching = null;
+  let loading = false; // a Run or Step is waiting for its log: Stop can cancel it, so it is enabled
   let generation = 0; // bumped by Stop, Restart and a redraw, so a Run or Step still loading its log does not start after them
   const marks = new Set(), overlays = new Map();
   let shownPos = 0; // the step last drawn
@@ -40,11 +41,20 @@
 
   // `pos` counts entries of the trace; a stop names the run's step number. They differ when a turn logs nothing (a
   // user who may not start a record, with none to work on, ADR-0231), so a stop is found by the entry's own step.
+  // `ready()`, with Stop enabled while the log loads (it cancels the run), for the newest Run or Step only.
+  async function waiting(mine) {
+    if (log && logKey === P.viewKey()) return;
+    loading = true;
+    buttons();
+    try { await ready(); } finally { if (mine === generation) { loading = false; buttons(); } }
+  }
+
   const stepOf = (n) => (log && n > 0 && n <= log.trace.length ? log.trace[n - 1].step : 0);
   const stopAt = (n) => log && log.stops.find((s) => s.step === stepOf(n));
 
   function stopText(stop) {
-    if (stop.reason === "exception") return `the kernel refused ${name(stop.elements[0])} (${stop.code})`;
+    if (stop.reason === "exception") return stop.elements[0].startsWith("state:")
+      ? `the kernel refused an action from ${name(stop.elements[0])} (${stop.code})` : `the kernel refused ${name(stop.elements[0])} (${stop.code})`;
     return "breakpoint on " + stop.elements.map(name).join(", ");
   }
 
@@ -55,7 +65,7 @@
     const mine = ++generation;
     try {
       if (mode === "ended") { pos = 0; P.clearSim(); }
-      await ready();
+      await waiting(mine);
     } catch (error) { return mine === generation ? failed(error) : undefined; }
     if (mine !== generation || !log) return; // stopped, restarted, pressed again or redrawn while the log loaded
     mode = "running";
@@ -95,7 +105,7 @@
   async function step() {
     if (mode === "running" || mode === "ended") return;
     const mine = ++generation;
-    try { await ready(); } catch (error) { return mine === generation ? failed(error) : undefined; }
+    try { await waiting(mine); } catch (error) { return mine === generation ? failed(error) : undefined; }
     if (mine !== generation || !log) return;
     mode = "paused";
     stopNote = "";
@@ -105,6 +115,7 @@
 
   async function stop() {
     generation += 1;
+    loading = false;
     clearTimeout(timer);
     const was = mode;
     mode = "idle";
@@ -124,6 +135,7 @@
 
   async function restart() {
     generation += 1;
+    loading = false;
     clearTimeout(timer);
     mode = "idle";
     pos = 0;
@@ -143,7 +155,10 @@
     for (const t of model.transitions) transitions[t.id] = { committed: 0, refused: {} };
     for (const s of model.states) states[s] = { entered: 0, now: 0 };
     for (const e of log.trace.slice(0, pos)) {
-      if (e.outcome === "REFUSED") { const r = transitions[e.transition].refused; r[e.code] = (r[e.code] || 0) + 1; continue; }
+      if (e.outcome === "REFUSED") { // a slip (an action that does not leave the record's state) names no transition
+        if (e.transition) { const r = transitions[e.transition].refused; r[e.code] = (r[e.code] || 0) + 1; }
+        continue;
+      }
       if (e.outcome === "COMMITTED") transitions[e.transition].committed += 1;
       states[e.to].entered += 1;
       records[e.record] = e.to;
@@ -175,7 +190,7 @@
       paint(counts);
       const t = now.transition, at = now.outcome === "REFUSED" ? now.from : now.to, colour = now.outcome === "REFUSED" ? REFUSED : NOW;
       if (t) P.restyle("transition:" + t, { strokeColor: colour, strokeWidth: 6 }, graph.getDataModel().getCell("transition:" + t).value);
-      else P.restyle("initial-edge", { strokeColor: NOW, strokeWidth: 4 });
+      else if (now.outcome === "CREATED") P.restyle("initial-edge", { strokeColor: NOW, strokeWidth: 4 });
       P.restyle("state:" + at, { strokeColor: colour, strokeWidth: 4, fillColor: "#fff6d6" }, graph.getDataModel().getCell("state:" + at).value);
     });
     const here = now.outcome === "REFUSED" ? now.from : now.to; // keep the current step on screen with the panel open
@@ -266,7 +281,7 @@
     play.title = mode === "paused" ? "Continue (F5) to the next breakpoint" : "Run (F5): simulated users act, the kernel decides every step, and it stops at breakpoints";
     $("run-pause").disabled = !running;
     $("run-step").disabled = running || ended;
-    $("run-stop").disabled = idle && !appRunning();
+    $("run-stop").disabled = idle && !loading && !appRunning();
     $("run-restart").disabled = idle;
     document.body.dataset.run = mode;
   }
@@ -324,6 +339,7 @@
   // A redraw means another model is on screen (a plan previewed or left): start again, keeping breakpoints that exist.
   function redrawn() {
     generation += 1;
+    loading = false;
     clearTimeout(timer);
     mode = "idle";
     pos = 0;

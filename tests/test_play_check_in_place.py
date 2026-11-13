@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from eija_studio.application.access import reach
-from eija_studio.application.simulation import run_log
+from eija_studio.application.simulation import run_log, simulate
 from eija_studio.domain.pack import load_pack
 from test_play_kernel_features import kernel_loan
 
@@ -73,6 +73,13 @@ def test_laws_link_a_transition_through_its_action_and_paint_the_run_on_its_sour
     assert "transitionFor(step.action, step.from)" in source
 
 
+def test_the_tests_tab_lets_only_its_newest_run_fill_the_panel():
+    """D-09: a run whose result is dropped re-runs on what is shown, and only the newest run re-enables Run."""
+    source = (WEB / "play-tests.js").read_text(encoding="utf-8")
+    body = source[source.index("async function run()"):source.index("function setDraft")]
+    assert "mine !== runs" in body and "if (mine === runs) $(\"tests-run\").disabled = false" in body
+
+
 def test_simulate_drops_a_result_of_a_model_no_longer_on_screen():
     source = (WEB / "play.js").read_text(encoding="utf-8")
     body = source[source.index("async function simulate()"):source.index("// Undo, redo and autosave")]
@@ -112,6 +119,10 @@ def test_checking_in_place_agrees_with_the_kernel_in_a_real_browser(tmp_path):
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.goto(f"{server.base_url}/play#{server.token}")
             page.wait_for_selector("body[data-assist=ready]", timeout=60_000)
+
+            # D-08: with no AI plan and no change, those two parts are not applicable: grey, and not counted as passed.
+            assert page.inner_text("#health-text").startswith("0/3 checks")
+            assert page.locator("#check-list li.na").count() == 2 and page.locator("#check-list li.ok").count() == 0
 
             # The run bar pauses on the step that entered the breakpoint's state, and shows that step.
             page.evaluate("() => window.PlayIDE.select('state:Returned', false)")
@@ -176,3 +187,38 @@ def test_reach_counts_a_record_a_signal_starts(tmp_path):
     (folder / "pack.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\n")
     pack = load_pack(folder)
     assert reach(pack, pack.model, "Issued", "Member")["verdict"] == "UNREACHABLE"
+
+
+def test_a_slip_is_its_states_not_another_states_transition(tmp_path):
+    """D-07: an action that does not leave the record's state names no transition, in Simulate and in the run log; its
+    refusals are the state's, and a stop on it names the state."""
+    pack = load_pack(kernel_loan(tmp_path))
+    run = simulate(pack, pack.model, seed=1, steps=500)
+    leaves = {t.id: t.from_state for t in pack.model.transitions}
+    tries = [e for e in run["trace"] if e["outcome"] != "CREATED"]
+    assert all(e["transition"] is None or leaves[e["transition"]] == e["from"] for e in tries)
+    slips = [e for e in tries if e["transition"] is None]
+    assert slips and all(e["outcome"] == "REFUSED" for e in slips)
+    assert sum(sum(s.get("slips", {}).values()) for s in run["states"].values()) > 0
+    log = run_log(pack, pack.model, seed=1, steps=500, break_on_refusal=True)
+    slip = next(e for e in log["trace"] if e["outcome"] == "REFUSED" and e["transition"] is None)
+    stop = next(s for s in log["stops"] if s["step"] == slip["step"])
+    assert stop["elements"] == ["state:" + slip["from"]]
+
+
+def test_permissions_flag_a_plan_that_only_changes_a_guard(tmp_path):
+    """D-10: a plan that keeps a permission but changes what it depends on (here, CheckOut taken out and drawn again,
+    which drops its guard over values) is listed as changed, before and after. It used to show no change at all."""
+    from eija_studio.application.access import access  # noqa: PLC0415
+    pack = load_pack(kernel_loan(tmp_path))
+    base = pack.model
+    data = base.model_dump(mode="json")
+    for t in data["transitions"]:
+        if t["action"] == "CheckOut":
+            t["conditions"] = []
+    loosened = type(base).model_validate(data)
+    changes = access(pack, loosened, base)["changes"]
+    assert changes["added"] == [] and changes["removed"] == []
+    assert changes["changed"] == [{"state": "Requested", "role": "Librarian", "action": "CheckOut", "to": "OnLoan",
+                                   "before": ["assigned only", "when [renewals ≤ 3]"], "after": ["assigned only"]}]
+    assert access(pack, base, base)["changes"]["changed"] == []  # negative control: no change, nothing listed

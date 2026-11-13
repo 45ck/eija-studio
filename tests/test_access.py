@@ -38,10 +38,11 @@ def test_every_cell_names_who_the_kernel_lets_through_and_why_the_others_are_ref
 
 
 def test_a_plan_flags_the_permissions_it_adds_and_removes():
-    assert access(LOAN, LOAN.model, LOAN.model)["changes"] == {"added": [], "removed": []}
+    assert access(LOAN, LOAN.model, LOAN.model)["changes"] == {"added": [], "removed": [], "changed": []}
     changes = access(LOAN, librarian_marks_overdue(), LOAN.model)["changes"]
     assert changes == {"added": [{"state": "OnLoan", "role": "Librarian", "action": "MarkOverdue", "to": "Overdue"}],
-                       "removed": [{"state": "OnLoan", "role": "Clerk", "action": "MarkOverdue", "to": "Overdue"}]}
+                       "removed": [{"state": "OnLoan", "role": "Clerk", "action": "MarkOverdue", "to": "Overdue"}],
+                       "changed": []}
 
 
 def test_unreachable_is_a_proof_over_the_model():
@@ -84,7 +85,7 @@ def test_the_routes_answer_for_the_previewed_plan_and_need_the_session(client):
     t = next(t for t in LOAN.model.transitions if t.action == "MarkOverdue")
     plan = [{"kind": "set_role", "transition": t.id, "role": "Librarian"}]
     assert client.post("/api/play/access", json={}, headers={"Origin": HEADERS["Origin"]}).status_code == 401
-    assert client.post("/api/play/access", json={}, headers=HEADERS).json()["changes"] == {"added": [], "removed": []}
+    assert client.post("/api/play/access", json={}, headers=HEADERS).json()["changes"] == {"added": [], "removed": [], "changed": []}
     flagged = client.post("/api/play/access", json={"plan": plan}, headers=HEADERS).json()["changes"]
     assert [c["role"] for c in flagged["added"]] == ["Librarian"]
     body = {"plan": plan, "target": "Overdue", "without": "Clerk"}

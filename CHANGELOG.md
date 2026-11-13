@@ -4,9 +4,10 @@
 
 ### 13 November 2026: running and checking a design in place, inspected
 
-- A Fagan inspection of Simulate, the run bar, the Tests, Laws and permissions tabs, the ripple check and the game layer logged ten defects ([inspection record](docs/engineering/2026-11-13-INSPECTION-CHECK-IN-PLACE.md)). Six are fixed here.
+- A Fagan inspection of Simulate, the run bar, the Tests, Laws and permissions tabs, the ripple check and the game layer logged eleven defects, all fixed here, each with a before and after screenshot ([inspection record](docs/engineering/2026-11-13-INSPECTION-CHECK-IN-PLACE.md)).
 - Fixed: the run bar paused on, and showed, the wrong step in any model that names who may start a record. Fixed: Simulate showed a run of a model that had changed while it ran, and could report a false "Simulation refused". Fixed: "Inspect its laws" never found the laws about a refused transition.
 - Fixed: the Laws tab paints a counterexample on the transition that leaves the step's state, for an action that leaves several. Fixed: reachability takes into account who may start a record (ROLE_CANNOT_START), and that a signal from another workflow can start one. Fixed: Stop or Restart while the run log loads no longer lets the run start afterwards.
+- Fixed: Simulate counts a slip (an action that does not leave the record's state) against that state, as `states[s].slips`, not against another state's transition. Fixed: the checks ring marks a part with nothing to check as not applicable instead of green, and leaves it out of the count. Fixed: only the newest test run fills the Tests panel. Fixed: the permissions diff lists a permission kept on other conditions (a guard dropped or added) under `changes.changed`.
 
 ### 13 November 2026: inspection of open pull requests
 
