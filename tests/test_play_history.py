@@ -334,3 +334,165 @@ def test_a_kept_draft_the_page_cannot_read_is_set_aside_and_the_page_still_opens
             assert errors == []
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_a_draft_kept_on_an_earlier_model_is_not_overwritten_by_the_next_edit():
+    """Inspection 2026-11-13 (ADR-0245): the note said an earlier browser draft "is retained", but the first edit on the
+    new model wrote this browser's draft under the same key, so after a reload the earlier draft was gone."""
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    def place(page, name):
+        page.click('#draw-palette [data-kind="state"]')
+        box = page.locator("#canvas").bounding_box()
+        page.mouse.click(box["x"] + 12, box["y"] + 12)
+        page.wait_for_selector(".inline-edit input:focus")
+        page.keyboard.type(name)
+        page.keyboard.press("Enter")
+        page.wait_for_selector("#plan-banner:not([hidden])")
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            key = page.evaluate("() => `playide.draft.v1:${PlayIDE.pack().id}:`")
+            place(page, "Archived")
+            earlier = page.evaluate("k => JSON.parse(localStorage.getItem(k))", key)
+            earlier["model"] = "0"  # written on another model in force
+            raw = json.dumps(earlier)
+            page.evaluate("([k, v]) => localStorage.setItem(k, v)", [key, raw])
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=20_000)
+            assert "An earlier browser draft is retained" in page.text_content("#chat-log")
+            assert page.evaluate("k => localStorage.getItem(k + ':earlier')", key) == raw
+            place(page, "Shelved")  # an edit on the new model: kept under the draft key, the earlier one beside it
+            assert page.evaluate("k => localStorage.getItem(k + ':earlier')", key) == raw
+            page.evaluate("k => localStorage.removeItem(k)", key)
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=20_000)
+            assert "An earlier browser draft from" in page.text_content("#chat-log")  # offered again
+            page.click("text=Reopen earlier draft")
+            page.wait_for_selector("#plan-banner:not([hidden])")
+            assert "Archived" in page.evaluate("() => JSON.stringify(PlayIDE.document().plan.steps)")
+            assert page.evaluate("k => localStorage.getItem(k + ':earlier')", key) is None  # reopened: now the draft
+            assert errors == []
+        finally:
+            chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_recovered_work_that_matches_the_saved_draft_is_not_unsaved():
+    """Inspection 2026-11-13 (ADR-0245, D6): the saved draft was compared without each step's round and request, so the
+    same work, recovered from this browser after a reload, showed "Unsaved changes" and asked before leaving."""
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.fill("#chat-input", "add state Archived after Returned")
+            page.click("#chat-send")
+            page.wait_for_selector("#chat-log .msg.ai .plan .plan-verdict")
+            page.click("#system-save")
+            page.wait_for_selector("#system-saved[data-dirty=false]", state="attached")
+            page.reload()  # this browser's copy comes back: the same work as the save
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.wait_for_selector("#chat-log .recovered")
+            page.wait_for_timeout(1000)  # the Save mark refreshes on a timer
+            assert page.get_attribute("#system-saved", "data-dirty") == "false"
+            assert page.is_disabled("#system-save")
+        finally:
+            chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_an_outdated_browser_draft_is_not_recovered_as_the_latest_work_when_storage_is_full():
+    """Inspection 2026-11-13 (ADR-0245, D10): when storage could not hold even the current snapshot, the previous draft
+    stayed under the key, and a reload brought that older work back as "your unsaved work"."""
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            key = page.evaluate("() => `playide.draft.v1:${PlayIDE.pack().id}:`")
+            page.fill("#chat-input", "add state Archived after Returned")
+            page.click("#chat-send")
+            page.wait_for_selector("#chat-log .msg.ai .plan .plan-verdict")
+            older = page.evaluate("k => localStorage.getItem(k)", key)
+            # Storage is now full for the draft key: the next edit cannot be kept.
+            page.evaluate("""k => { const set = Storage.prototype.setItem;
+                Storage.prototype.setItem = function (name, value) { if (name === k) throw new DOMException("full", "QuotaExceededError"); return set.call(this, name, value); }; }""", key)
+            page.uncheck("#chat-log .plan .plan-steps > li:nth-child(1) input")
+            page.wait_for_selector("#chat-log .plan .plan-steps > li:nth-child(1).rejected")
+            assert "Not kept" in page.text_content("#status-saved")
+            assert page.evaluate("k => [localStorage.getItem(k), localStorage.getItem(k + ':earlier')]", key) == [None, older]
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            log = page.text_content("#chat-log")
+            assert "Recovered your unsaved work" not in log and "An earlier browser draft from" in log
+            assert errors == []
+        finally:
+            chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_an_edit_made_while_undo_reloads_the_screens_is_kept():
+    """Inspection 2026-11-13 (ADR-0245, D7): undoing a screen edit waited for the server's screens with the restore
+    still in progress, so an edit made in that wait was applied but left out of the history and the browser draft."""
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.fill("#chat-input", "add state Archived after Returned")
+            page.click("#chat-send")
+            page.wait_for_selector("#chat-log .msg.ai .plan .plan-verdict")
+            page.click("#tab-screens")
+            page.wait_for_selector("#screen-card .screen-title")
+            page.fill("#screen-card .screen-title", "Borrow a book")
+            page.press("#screen-card .screen-title", "Enter")
+            page.click("#tab-states")
+            assert page.get_attribute("#undo", "title") == "Undo retitle a screen (Ctrl+Z)"
+            # The server is slow to send the model's own screens back.
+            page.evaluate("""() => { const real = window.fetch; window.fetch = (url, ...rest) => String(url).includes('/api/play/screens')
+                ? new Promise((done) => setTimeout(() => done(real(url, ...rest)), 1500)) : real(url, ...rest); }""")
+            page.click("#undo")  # the screen edit: its screens reload while the person keeps working
+            page.uncheck("#chat-log .plan .plan-steps > li:nth-child(1) input")
+            page.wait_for_selector("#chat-log .plan .plan-steps > li:nth-child(1).rejected")
+            page.wait_for_timeout(2000)
+            assert page.get_attribute("#undo", "title") == "Undo reject step 1 (Ctrl+Z)"
+            assert page.evaluate("() => PlayIDE.document().plan.accepted") == [False]
+            key = page.evaluate("() => `playide.draft.v1:${PlayIDE.pack().id}:`")
+            kept = page.evaluate("k => JSON.parse(localStorage.getItem(k))", key)
+            assert kept["stack"][kept["at"]]["label"] == "reject step 1"
+            assert errors == []
+        finally:
+            chrome.close()

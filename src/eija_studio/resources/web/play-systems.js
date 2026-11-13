@@ -8,6 +8,8 @@
   const EXAMPLE = "Open -> Triaged : Triage [Agent]\nTriaged -> Resolved : Resolve [Agent]\nTriaged -> Escalated : Escalate [Agent]\nEscalated -> Resolved : Fix [Engineer]";
   let P = null, listing = null, leaving = false, notice = "", saved = "", savedAt = 0, checkTimer = 0, checkSeq = 0, choice = "describe";
   let sketch; // the sketch box, found once
+  let failed = null; // the last save that was refused, and the work it was about: shown until that work changes
+  let opened = ""; // the system this page opened on: Save and Clear name it, so a tab left on another system cannot save over this one
   let umlFile = { name: "", text: "" }; // "From a UML file" (ADR-0190): the file chosen, read in the page and checked by the server
   const canSave = () => { const current = new URLSearchParams(location.search); return !current.get("case") && current.get("view") !== "review"; };
 
@@ -20,7 +22,8 @@
     const now = JSON.stringify(P.draft()), dirty = now !== saved;
     button.disabled = !dirty;
     if (dirty) notice = ""; // a reopening note lasts until the next change
-    state.textContent = dirty ? "Unsaved changes" : notice || (savedAt ? `Saved ${when(savedAt)}` : "");
+    const refused = dirty && failed && failed.work === now ? failed.text : "";
+    state.textContent = refused || (dirty ? "Unsaved changes" : notice || (savedAt ? `Saved ${when(savedAt)}` : ""));
     state.dataset.dirty = String(dirty);
     document.dispatchEvent(new CustomEvent("playide:savestate"));
   }
@@ -29,11 +32,14 @@
     if (!canSave() || !P) return;
     const draft = P.draft();
     try {
-      const result = await P.api("/api/play/draft", draft);
+      const result = await P.api("/api/play/draft", { ...draft, ...(opened ? { pack: opened } : {}) });
       saved = JSON.stringify(draft);
       savedAt = result.saved;
+      failed = null;
     } catch (error) {
-      $("system-saved").textContent = `Not saved (${error.code || "ERROR"}): ${error.message}`;
+      // Kept until the work changes, so the reason is not replaced by "Unsaved changes" a moment later.
+      failed = { work: JSON.stringify(draft), text: `Not saved (${error.code || "ERROR"}): ${error.message}` };
+      $("system-saved").textContent = failed.text;
       document.dispatchEvent(new CustomEvent("playide:savestate"));
       return;
     }
@@ -51,7 +57,9 @@
     savedAt = draft.saved;
     if (P.recovered && P.recovered()) {
       // Newer work this browser kept came back instead (ADR-0198); compare it with the saved draft, not with itself.
-      saved = JSON.stringify({ steps: draft.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you" })),
+      // In draft()'s own shape, round and request included, or identical work would show as unsaved.
+      saved = JSON.stringify({ steps: draft.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you",
+        ...(s.round ? { round: s.round } : {}), ...(s.request ? { request: s.request } : {}) })),
         accepted: draft.accepted || draft.steps.map(() => true), screens: draft.screens || null, scenarios: draft.scenarios || null });
       return;
     }
@@ -107,7 +115,7 @@
     }
     if (canSave()) {
       const clear = P.el("button", "Clear saved work on this system", { type: "button", class: "quiet small", id: "systems-clear" });
-      clear.addEventListener("click", async () => { await P.api("/api/play/draft/clear", {}); saved = ""; savedAt = 0; setSaveState(); clear.textContent = "Saved work cleared"; clear.disabled = true; });
+      clear.addEventListener("click", async () => { await P.api("/api/play/draft/clear", opened ? { pack: opened } : {}); saved = ""; savedAt = 0; setSaveState(); clear.textContent = "Saved work cleared"; clear.disabled = true; });
       box.append(clear);
     }
   }
@@ -298,6 +306,7 @@
     } catch {
       return; // this server does not offer systems (for example a test app): the controls stay hidden
     }
+    opened = listing.current.pack;
     $("system-controls").hidden = false;
     $("system-menu").addEventListener("click", () => showDialog("open"));
     $("system-new").addEventListener("click", () => showDialog("new", "describe"));
