@@ -6,7 +6,11 @@
 
 - A Fagan inspection of Simulate, the run bar, the Tests, Laws and permissions tabs, the ripple check and the game layer logged ten defects ([inspection record](docs/engineering/2026-11-13-INSPECTION-CHECK-IN-PLACE.md)). Six are fixed here.
 - Fixed: the run bar paused on, and showed, the wrong step in any model that names who may start a record. Fixed: Simulate showed a run of a model that had changed while it ran, and could report a false "Simulation refused". Fixed: "Inspect its laws" never found the laws about a refused transition.
-- Fixed: the Laws tab paints a counterexample on the transition that leaves the step's state, for an action that leaves several. Fixed: reachability takes into account who may start a record (ROLE_CANNOT_START). Fixed: Stop or Restart while the run log loads no longer lets the run start afterwards.
+- Fixed: the Laws tab paints a counterexample on the transition that leaves the step's state, for an action that leaves several. Fixed: reachability takes into account who may start a record (ROLE_CANNOT_START), and that a signal from another workflow can start one. Fixed: Stop or Restart while the run log loads no longer lets the run start afterwards.
+
+### 13 November 2026: inspection of open pull requests
+
+- Fixed: a built app's `POST /api/records/{id}/act` turned a missing operation id into the shared id `missing` and cut a long one to 100 characters. A client that sent no id had every action after its first refused as `OPERATION_CONFLICT`. The route now refuses such a request with `BAD_REQUEST`, as `/api/signals` already did ([inspection record](docs/quality/inspection-2026-11-13-pull-requests.md)).
 
 ### 12 November 2026: conformance that catches a wrong app
 
