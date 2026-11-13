@@ -71,7 +71,7 @@ def _kept_edges(parsed: Parsed, report: ImportReport) -> list[tuple[Edge, Label,
             continue
         for term in label.unread:
             report.add("unmapped", edge.where, f"{label.trigger}: guard {term!r}",
-                       "not in PlayIDE's guard vocabulary (role, assigned); value guards are planned (issue #93)")
+                       "not in PlayIDE's guard vocabulary (role, assigned); guards over record values (ADR-0234) are declared in the pack, not read from a UML file")
         if label.role is None:
             report.add("defaulted", edge.where, f"{label.trigger}: role", f"the file names no role; used {DEFAULT_ROLE}")
         seen.setdefault(label.trigger, (edge, label))

@@ -257,7 +257,10 @@ def _state_edge(cell: _Cell, a: tuple[str, str], b: tuple[str, str], label: str,
     elif ends == ("state", "state"):
         parsed.edges.append(Edge(a[1], b[1], label, f"cell {cell.id}"))
     elif ends != ("state", "final"):  # a final state is derived from the model
-        parsed.skip(f"cell {cell.id}", label or "connector", "it does not join two states")
+        # A labelled connector, or one between state shapes, is a transition that was not read (through a choice
+        # rhombus, say); an unlabelled line to a note or other shape is not.
+        unread = parsed.unread_part if label or "other" not in ends else parsed.skip
+        unread(f"cell {cell.id}", label or "connector", "it does not join two states")
 
 
 def _read_states(cells: list[_Cell], parsed: Parsed) -> None:
