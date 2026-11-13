@@ -1,6 +1,7 @@
 """`eija uml export` and `eija uml import`: UML interchange from the command line (ADR-0190).
 
-Export prints the file (or writes `--out`) and lists on stderr what no UML file carries. Import prints the JSON report
+Export prints the file (or writes `--out`) and lists on stderr what no UML file carries. Like `eija render`, a model
+the protected policy refuses is still written, but it is named on stderr and the command exits 2. Import prints the JSON report
 and, with `--out-dir`, writes the candidate `workflow.json` and `data.json` so they can go through `eija laws`,
 `eija render` and `eija build`. Neither command changes a pack: keeping an import is an owner's decision.
 """
@@ -14,6 +15,7 @@ from eija_studio.application.interop import EXTENSIONS, FORMATS, detect_format, 
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
+from eija_studio.domain.policy import check_policy
 
 PACK_HELP = "Domain pack directory or JSON file (defaults to EIJA_PACK or packs/default.json)"
 
@@ -45,7 +47,8 @@ def _write(path: Path, text: str) -> None:
 
 
 def export_command(args, pack: Pack) -> int:
-    text, report = export_model(args.fmt, pack, _model(args, pack), data_for(pack))
+    model = _model(args, pack)
+    text, report = export_model(args.fmt, pack, model, data_for(pack))
     if args.out is None:
         sys.stdout.buffer.write(text.encode("utf-8"))
         sys.stdout.buffer.flush()
@@ -53,6 +56,10 @@ def export_command(args, pack: Pack) -> int:
         _write(args.out, text)
         sys.stdout.write(f"{args.out}\n")
     sys.stderr.write("not carried by any UML file: " + "; ".join(report["not_carried"]) + "\n")
+    blocked = check_policy(model, pack)
+    if blocked:  # a script must not mistake a refused model for a routine export (as `eija render` exits 2)
+        sys.stderr.write("POLICY_BLOCKED: " + "; ".join(blocked) + " (exported as drawn; the runtime would refuse this workflow)\n")
+        return 2
     return 0
 
 

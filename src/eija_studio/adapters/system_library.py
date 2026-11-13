@@ -77,6 +77,9 @@ class SystemLibrary:
         if not re.fullmatch(PACK_ID, pack_id):
             raise DomainError("SYSTEM_ID_INVALID", "A system id is lower-case letters, digits and hyphens")
         folder = self.home / pack_id
+        if self.home.exists() and not self.home.is_dir():
+            raise DomainError("SYSTEMS_HOME_INVALID", f"The systems home {self.home} is a file, not a folder; "
+                                                       "choose another with --systems or EIJA_SYSTEMS")
         if folder.exists():
             raise DomainError("SYSTEM_EXISTS", f"A system called {pack_id} already exists in {self.home}")
         self.home.mkdir(parents=True, exist_ok=True)

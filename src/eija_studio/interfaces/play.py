@@ -132,6 +132,18 @@ def _listening(port: int) -> bool:
         return probe.connect_ex(("127.0.0.1", port)) == 0
 
 
+# What the built app's process may see of the IDE's environment: enough for Python to start and find its locale and
+# temp folder, nothing else. Provider API keys (OPENAI_API_KEY and the like) and other secrets stay with the IDE.
+APP_ENVIRONMENT = frozenset({"PATH", "SYSTEMROOT", "WINDIR", "COMSPEC", "PATHEXT", "HOME", "USERPROFILE", "LANG", "LC_ALL",
+                             "LC_CTYPE", "TZ", "TMPDIR", "TEMP", "TMP", "VIRTUAL_ENV"})
+
+
+def app_environment(port: int) -> dict[str, str]:
+    """The environment of the built app: the allowlisted variables and its port."""
+    env = {k: v for k, v in os.environ.items() if k.upper() in APP_ENVIRONMENT}
+    return env | {"PORT": str(port)}
+
+
 class AppRunner:
     """Builds apps under `root()` and keeps at most one of them running."""
 
@@ -167,8 +179,7 @@ class AppRunner:
             return self.running["url"]
         self._stop()
         port = _free_port()
-        env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "PYTHONHOME", "PYTHONSTARTUP")}
-        env["PORT"] = str(port)
+        env = app_environment(port)
         self.process = subprocess.Popen([sys.executable, "run.py"], cwd=out, env=env,
                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         deadline = time.monotonic() + START_TIMEOUT_S
