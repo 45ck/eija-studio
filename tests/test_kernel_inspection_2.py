@@ -67,7 +67,7 @@ def test_d1_a_refused_start_is_counted_and_stops_a_run_that_breaks_on_refusal():
     stops = run_log(LOAN, LOAN.model, seed=1, steps=300, break_on_refusal=True)["stops"]
     first = next(s for s in stops if s["step"] == starts[0]["step"])
     assert first == {"step": starts[0]["step"], "reason": "exception", "elements": ["state:" + LOAN.model.initial_state],
-                     "code": "ACTOR_REVOKED"}
+                     "code": "ACTOR_REVOKED", "action": starts[0]["action"]}  # an exception stop names its action (#265)
 
 
 @pytest.mark.parametrize("pack", PACKS, ids=lambda p: p.id)
