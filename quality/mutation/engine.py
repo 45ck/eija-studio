@@ -77,7 +77,7 @@ def environment(scratch: Path) -> dict[str, str]:
 
 
 def pytest_command(target: Target) -> list[str]:
-    return [sys.executable, "-m", "pytest", "-x", "-q", "-p", "no:cacheprovider", "-o", "addopts=", *target.tests]
+    return [sys.executable, "-m", "pytest", "-x", "-q", "-p", "no:cacheprovider", "-o", "addopts=", *target.pytest_args]
 
 
 def render_config(target: Target, timeout: float) -> str:

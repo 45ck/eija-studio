@@ -39,10 +39,21 @@ def test_k1_a_transition_held_by_an_undeclared_role_is_refused_by_name():
     undeclared initiator (ADR-0231), but a candidate could give any action to a role nobody can hold."""
     cancel = LOAN.model.transition_for("Cancel")
     candidate = edit(LOAN, {"kind": "set_role", "transition": cancel.id, "role": "Ghost"})
-    assert check_policy(candidate, LOAN) == ["UNDECLARED_ROLE:" + cancel.id]
+    assert check_policy(candidate, LOAN) == ["UNDECLARED_ROLE:Cancel"]  # named by the action (ADR-0246, amended)
     with pytest.raises(DomainError) as refused:
         apply_transactions(LOAN.model, [parse_transaction({"kind": "set_role", "transition": cancel.id, "role": "Ghost"})], LOAN)
-    assert refused.value.code == "POLICY_BLOCKED" and refused.value.details["codes"] == ["UNDECLARED_ROLE:" + cancel.id]
+    assert refused.value.code == "POLICY_BLOCKED" and refused.value.details["codes"] == ["UNDECLARED_ROLE:Cancel"]
+
+
+def test_k1_an_action_from_several_states_held_by_an_undeclared_role_is_refused_once_by_its_action():
+    """Integration review I3: a role belongs to the action, which every transition it labels shares (ADR-0232), so the
+    code names the action, as GUARD_POLICY and EFFECT_POLICY do. Named by transition id it was reported once per
+    source, and the SMT gate needed a map from a pack's transition ids to the grammar's per-action slots."""
+    candidate = edit(LOAN, {"kind": "add_transition", "id": "TR-CANCEL-ONLOAN", "action": "Cancel", "from_state": "OnLoan",
+                            "to_state": "Cancelled", "role": "Member"},
+                     {"kind": "set_role", "transition": "TR-CANCEL", "role": "Ghost"})
+    assert sorted(t.role for t in candidate.transitions if t.action == "Cancel") == ["Ghost", "Ghost"]
+    assert [c for c in check_policy(candidate, LOAN) if c.startswith("UNDECLARED_ROLE")] == ["UNDECLARED_ROLE:Cancel"]
 
 
 def test_k1_every_declared_role_still_passes():

@@ -55,6 +55,12 @@ CROSS_FIELD = (
     "Only a date (YYYY-MM-DD) or a number is compared with <, ≤, > or ≥", "A guard's text is at most 200 characters",
     # Composite states (ADR-0240): a tree over the states.
     "Composite states must form a tree over the states",
+    # Actions on linked objects (ADR-0241) and signals between workflows (ADR-0242); missing until the integration
+    # review of 14 November 2026 (I8), which also made test_every_cross_field_rule_is_listed check this list.
+    "A transition moves each linked object at most once",
+    "A linked object's lifecycle needs distinct states including its initial one",
+    "A linked object's move names a state its lifecycle does not have", "A linked object has one move per event and state",
+    "Each step on a linked object needs a declared lifecycle with that event", "Duplicate received signal",
     # JSON Schema cannot calculate a cross-field SHA-256. Concrete valid and
     # invalid bindings are checked separately by the generated-app approval suite.
     "Generated subject digest does not match its contents", "Generated review digest does not match its contents",
@@ -121,6 +127,14 @@ def repaired(instance: Any) -> Any:
                 t["action"] = f"{str(t.get('action', 'a'))[:40]}#{i}"
                 for key in ("from_state", "to_state"):
                     t[key] = states[sum(map(ord, str(t.get(key)))) % len(states)]
+                t.pop("then", None)  # steps on linked objects need a declared lifecycle; objects are cleared below
+        # Composite trees (ADR-0240) and linked-object lifecycles (ADR-0241) are cross-field structures a generated
+        # instance almost never satisfies; with them the workflow seeds stopped reaching an accepted instance at all
+        # (integration review I8). Their rules are covered by their own tests; received signals stay, deduplicated.
+        out.pop("composites", None)
+        out.pop("objects", None)
+        if isinstance(out.get("receives"), list):
+            out["receives"] = list({canonical(r): r for r in out["receives"]}.values())
     if isinstance(out.get("conditions"), list):  # value guards the contract refuses only on a cross-field rule
         kept: dict[str, Any] = {}
         for guard in out["conditions"]:
@@ -416,3 +430,20 @@ def test_cross_field_rules_are_all_still_in_the_models():
     missing = [rule for rule in CROSS_FIELD if not re.search(re.escape(rule), source)]
     assert not missing, f"no domain validator raises: {missing}"
 
+
+
+# Rules a schema-valid instance cannot reach, so they need no place in CROSS_FIELD: JSON has no infinity or NaN, and the
+# integer coercions are compared on their own (test_integer_coercions_are_treated_alike_by_schema_and_model).
+NOT_CROSS_FIELD = ("A guard compares with a finite number", "must be a JSON integer", "must be a whole number")
+
+
+def test_every_cross_field_rule_is_listed():
+    """The other direction (integration review I8): a validator added to a contract model without its message here
+    turned the property tier red on main for two days (linked objects, ADR-0241; signals, ADR-0242), because
+    tests/property runs only in the full tier. Every ValueError a contract model raises is listed or excused."""
+    domain = ROOT / "src" / "eija_studio" / "domain"
+    source = "\n".join((domain / name).read_text(encoding="utf-8") for name in ("models.py", "change_case.py", "generated_app.py"))
+    raised = re.findall(r'raise ValueError\(\s*"([^"]+)"', source)
+    assert raised, "no validator message found: the pattern no longer matches the source"
+    unlisted = [m for m in raised if not any(m.startswith(rule) or rule.startswith(m) for rule in CROSS_FIELD + NOT_CROSS_FIELD)]
+    assert unlisted == []

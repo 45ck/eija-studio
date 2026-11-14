@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0246-kernel-inspection-fixes.md
   title: 0246-kernel-inspection-fixes.md
   hash_method: lf-sha256-v1
-  sha256: 0f807d52dc19cb8b0085fe19387490cc219ead992b478f2ec0f0e8e2bc742f0d
-notes_baseline: 1899155485c8ea6a0161ad8060607c414d63adc6e4e1b51595f29f53132792a2
+  sha256: aa1ab9f854b7eba6f5dd86f833080ec2d20fb5864416960d61d8991feee3ca4c
+notes_baseline: c537650b70b846752ad93cd30c9674c7e50f8809481291f61267019875102420
 ---
 
 # ADR-0246: The kernel refuses undeclared roles, judges path laws alike, and fails value guards closed
@@ -29,7 +29,8 @@ notes_baseline: 1899155485c8ea6a0161ad8060607c414d63adc6e4e1b51595f29f53132792a2
 
 ## Decision outcome (verbatim)
 
-> * **K1**: `policy.declared_codes` adds `UNDECLARED_ROLE:<transition id>` for each transition held by an undeclared role.
+> * **K1**: `policy.declared_codes` adds `UNDECLARED_ROLE:<transition id>` for each transition held by an undeclared role
+>   (`UNDECLARED_ROLE:<action>` since the amendment below).
 >   The transition id is pattern-checked; a role is free text, and the policy codes are drawn into diagram notes, where a
 >   hostile role name could inject markup (`tests/test_diagrams.py` caught that with the role in the code).
 > * **K2**: the table judge of `path_requires` asks whether some step enters the state from a state a record reaches
@@ -55,6 +56,7 @@ notes_baseline: 1899155485c8ea6a0161ad8060607c414d63adc6e4e1b51595f29f53132792a2
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 14 November 2026: `UNDECLARED_ROLE` names the action
 * OSS check (required for any custom module)
 
 ## Code and docs mentioned

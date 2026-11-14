@@ -45,7 +45,7 @@ assert the "after" column and fail on `main`: 27 failing cases).
 
 | ID | On `main` | With the fix |
 |---|---|---|
-| K1 | policy codes after giving `Cancel` to `Ghost`: `[]` | `['UNDECLARED_ROLE:TR-CANCEL']` |
+| K1 | policy codes after giving `Cancel` to `Ghost`: `[]` | `['UNDECLARED_ROLE:TR-CANCEL']`; `['UNDECLARED_ROLE:Cancel']` since 14 November |
 | K2 | `path_requires(state=A, via=B)` on `A -> B -> A`: `['BACK_VIA_B']` | `[]` |
 | K3 | `[due < 2026-12-01]` for `"1999"`, `""`, `"2026-11-30"`: `[True, True, True]` | `[False, False, True]` |
 | K4 | `execute` Cancel with `due = ["2026-01-01"]`: `TypeError: '<' not supported` | `DomainError VALUE_GUARD_DENIED` |
@@ -91,6 +91,6 @@ the rule, written independently; `accepted_set.json` was regenerated and only it
 the excursion pack an undeclared role already breaks `PROTECTED_AUTHORITY`. `UNDECLARED_ROLE` is not reported for a
 transition of an undeclared action, which is `UNSUPPORTED_ACTION` already. The generated encoding names the action's one
 transition slot (`TR-<ACTION>`), while a pack may name that transition otherwise (ai-ops `StartBuild` is `TR-BUILD`), so
-`laws_gate.differential` compares `UNDECLARED_ROLE` codes by slot (`_by_slot`); found by Codex review of #261. Run the SMT tests after any policy change:
+`laws_gate.differential` compared `UNDECLARED_ROLE` codes by slot (`_by_slot`); found by Codex review of #261. On 14 November the code was changed to name the action and `_by_slot` removed (ADR-0246 amendment). Run the SMT tests after any policy change:
 `pip install -e '.[smt]'`.
 

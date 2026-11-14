@@ -25,7 +25,7 @@ _TOOLING = ("targets.py", "model.py", "eija_operators.py", "equivalents.py")  # 
 def fingerprint(root: Path, target: Target, sample: int | None, shard: tuple[int, int]) -> str:
     """Hash of every input a job's result depends on: the code under test, all tests (nested ones such as
     tests/property and their helpers included), the operators, the engine."""
-    digest = hashlib.sha256(json.dumps([engine_version(), sample, shard, target.module, target.tests]).encode())
+    digest = hashlib.sha256(json.dumps([engine_version(), sample, shard, target.module, target.pytest_args]).encode())
     files = [*sorted((root / "src" / "eija_studio").rglob("*")), *sorted((root / "tests").rglob("*.py")),
              *(root / "quality" / "mutation" / name for name in _TOOLING)]
     for path in files:

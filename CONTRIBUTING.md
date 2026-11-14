@@ -40,7 +40,7 @@ Hosted CI runs `nox -t fast` on pull requests and `nox -t full` nightly ([ADR-02
 
 The gates are ruff, mypy, import-linter layering contracts, complexity and coverage ratchets, deptry and the test suite from the quality lane, plus documentation, link, README-drift and community-file checks from the oss lane; [docs/quality/gates.md](docs/quality/gates.md) lists each with its threshold. Ratchets tighten and never loosen. The lane map, ownership and merge order are in [docs/engineering/LANE-MAP.md](docs/engineering/LANE-MAP.md). To run the gates automatically, enable the noslop hooks as described in [ADR-0036](docs/adr/0036-noslop-hooks-adapted-to-nox.md); enabling them is an explicit step.
 
-A gate whose prerequisite is missing must report `NOT_RUN`, never `PASS`. Add a gate as a session in your own `quality/sessions/<lane>.py` with `python=False`, calling `sys.executable`. Heavy commands run one at a time; never start more than one Docker container or one browser from your lane.
+A gate whose prerequisite is missing must report `NOT_RUN`, never `PASS`. A test that needs an extra skips without it; when your run is merge evidence, install the extras listed in [docs/quality/gates.md](docs/quality/gates.md) and run `EIJA_REQUIRE_EXTRAS=1 nox -t fast`, which fails on any test skipped for a missing extra. Add a gate as a session in your own `quality/sessions/<lane>.py` with `python=False`, calling `sys.executable`. Heavy commands run one at a time; never start more than one Docker container or one browser from your lane.
 
 ## OSS first (ADR-0016)
 

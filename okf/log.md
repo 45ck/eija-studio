@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-14
+* **Integration review of the 13 November fixes**: synced the ADR-0246 amendment and `declared_codes` after `UNDECLARED_ROLE` changed to name the action (`UNDECLARED_ROLE:<action>`). No Notes were hand-edited.
 * **Inspection of the app generator (ADR-0249)**: synced ADR-0249, `CASE_KINDS` (`object_cases`), `object_cases` and its answer helper, `signal_cases` (stored values and a second delivery), `generate` (README counts every case), `GENERATED_TESTS` (20) and `check_accessibility` (the label contract follows the page's `Control` and reference chooser). Re-read the Notes of `check_accessibility` as `process:claude-code-app-generator-inspection`; they still hold. No human source approval was recorded.
 
 ## 2026-11-13

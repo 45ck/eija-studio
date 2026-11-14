@@ -19,6 +19,11 @@ class Target:
 
     module: str  # POSIX path relative to the repository root
     tests: tuple[str, ...]
+    keyword: str = ""  # a pytest -k expression that leaves out slow tests of a selected file (a built app, a chart)
+
+    @property
+    def pytest_args(self) -> tuple[str, ...]:
+        return (*self.tests, *(("-k", self.keyword) if self.keyword else ()))
 
     @property
     def slug(self) -> str:
@@ -26,12 +31,18 @@ class Target:
 
 
 TARGETS: tuple[Target, ...] = (
-    Target(f"{SRC}/domain/policy.py", ("tests/test_policy_authority.py", "tests/test_domain.py", "tests/test_kernel_inspection.py")),
+    Target(f"{SRC}/domain/policy.py", ("tests/test_policy_authority.py", "tests/test_domain.py", "tests/test_kernel_inspection.py",
+                                       "tests/test_merged_pr_inspection.py")),
     Target(f"{SRC}/domain/models.py", ("tests/test_contract_limits.py", "tests/test_domain.py", "tests/test_policy_authority.py", "tests/test_runtime_oracle.py",
-                                       "tests/test_kernel_inspection.py")),
+                                       "tests/test_kernel_inspection.py", "tests/test_merged_pr_inspection.py")),
     Target(f"{SRC}/domain/impact.py", ("tests/test_impact_oracle.py", "tests/test_domain.py")),
     Target(f"{SRC}/domain/evidence.py", ("tests/test_evidence_oracle.py",)),
-    Target(f"{SRC}/application/runtime.py", ("tests/test_runtime_oracle.py", "tests/test_runtime.py")),
+    # The refusals of the kernel features of 11-12 November (ADR-0231 to ADR-0242) are asserted in their own files; their
+    # built-app, chart and differential tests take seconds each and are left out (integration review I2).
+    Target(f"{SRC}/application/runtime.py", ("tests/test_runtime_oracle.py", "tests/test_runtime.py", "tests/test_initiators.py",
+                                             "tests/test_separation_of_duties.py", "tests/test_signals.py", "tests/test_time_events.py",
+                                             "tests/test_value_guards.py", "tests/test_linked_objects.py"),
+           keyword="not built_app and not scxml and not differential and not running_app"),
     Target(f"{SRC}/application/verifier.py", ("tests/test_verifier_oracle.py",)),
     # ADR-0239: the representatives the law proof, Simulate and the generated app's oracle try for value guards.
     Target(f"{SRC}/domain/value_guards.py", ("tests/test_value_guard_edges.py", "tests/test_value_guards.py",

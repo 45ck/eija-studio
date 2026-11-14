@@ -50,7 +50,7 @@ wrong message, a side effect before a refusal, or an inconsistency a person woul
 | D7 | Minor | `interfaces/cli.py` `_FILE_ERRORS`; `adapters/system_library.py` `create` | `--systems` naming a file gave the generic message on the command line and a 500 from PlayIDE's New system. | Fixed: `SYSTEMS_HOME_INVALID`; `PATH_EXISTS` and `NOT_A_DIRECTORY` codes |
 | D8 | Minor | `interfaces/play_systems.py` `start_system` | `eija new` with a name over 80 characters said "The file does not match the expected schema", though no file was given. | Fixed: the argument and the problem |
 | D9 | Minor | `interfaces/play_systems.py` `start_system` | `eija new --from describe` answered "No describer is configured"; describing an app is a PlayIDE form with no command-line input. | Fixed: says where it lives |
-| D10 | Minor | `resources/appgen/server.py.tmpl` | The generated app's server checks no `Host` header, so a page using DNS rebinding could drive a running generated app on loopback. Its data is synthetic and it holds no secrets (after D2). | Left: generator lane; [#249](https://github.com/45ck/eija-studio/issues/249) |
+| D10 | Minor | `resources/appgen/server.py.tmpl` | The generated app's server checks no `Host` header, so a page using DNS rebinding could drive a running generated app on loopback. Its data is synthetic and it holds no secrets (after D2). | Left here for the generator lane as [#249](https://github.com/45ck/eija-studio/issues/249); fixed there in #260 (`HOST_DENIED`, [ADR-0249](../adr/0249-app-generator-inspection-fixes.md), G7) |
 
 ## Checked and clean
 

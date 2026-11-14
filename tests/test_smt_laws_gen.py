@@ -133,16 +133,16 @@ def test_packs_declare_verifiers_by_evidence_kind():
 
 
 def test_undeclared_role_agrees_when_a_pack_names_its_transition_unlike_the_action():
-    """ADR-0246 follow-up: ai-ops' StartBuild is TR-BUILD. The kernel names that id; the generated clause names the
-    action's slot (TR-STARTBUILD). The differential compares them by slot, so a foreign role agrees, not 540 rows red."""
+    """ADR-0246 follow-up: ai-ops' StartBuild is TR-BUILD. The kernel and the generated clause both name the action
+    (amended 2026-11-14), so they agree with no mapping between transition ids and the grammar's slots."""
     pack = load_pack(PACKS_ROOT / "ai-ops")
     spec = LG.to_spec(pack.model)
     spec["transitions"]["StartBuild"]["role"] = LG.FOREIGN["role"]
     wf, _ = LG.from_spec(spec, pack.model.id)
     real = LG.check_policy(wf, LG._encoded_only(pack))
-    assert "UNDECLARED_ROLE:TR-BUILD" in real
+    assert "UNDECLARED_ROLE:StartBuild" in real
     ev = LG.Evaluator(pack)
     hits = ev(wf)
     z3_codes = sorted({c.code for c in ev.clauses if hits[c.id]})
-    assert "UNDECLARED_ROLE:TR-STARTBUILD" in z3_codes
-    assert LG._agree(z3_codes, LG._by_slot(real, wf), undeclared=False)
+    assert "UNDECLARED_ROLE:StartBuild" in z3_codes
+    assert LG._agree(z3_codes, real, undeclared=False)

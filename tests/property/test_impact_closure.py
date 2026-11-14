@@ -127,7 +127,10 @@ def test_model_impact_covers_exactly_the_changed_actions(data):
     expected = sorted(a for a in old.keys() | new.keys() if old.get(a) != new.get(a))
     assert report["changed_actions"] == expected
     assert report["complete"] is True and report["frontier"] == []
-    if expected:
+    # A change to how a record starts roots the ripple too, with no changed action (ADR-0246, K7).
+    starts = set(report.get("model_changes", ())) & {"initial_state", "initiators", "receives"}
+    assert ("record-start" in report["affected"]) == bool(starts)
+    if expected or starts:
         assert {"review-packet", "local-decision"} <= set(report["affected"])
         assert all(f"rule:{a}" in report["affected"] and f"receipt:{a}" in report["affected"] for a in expected)
     else:

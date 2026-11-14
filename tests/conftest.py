@@ -11,6 +11,7 @@ except ImportError:
     settings = None
 
 ROOT = Path(__file__).resolve().parents[1]
+pytest_plugins = ["extras_guard"]  # names tests skipped for a missing extra; EIJA_REQUIRE_EXTRAS=1 fails them
 
 
 def pytest_configure(config):

@@ -34,7 +34,8 @@ their ADRs. It found eight defects (K1 to K8). The ones that change kernel seman
 
 ## Decision outcome
 
-* **K1**: `policy.declared_codes` adds `UNDECLARED_ROLE:<transition id>` for each transition held by an undeclared role.
+* **K1**: `policy.declared_codes` adds `UNDECLARED_ROLE:<transition id>` for each transition held by an undeclared role
+  (`UNDECLARED_ROLE:<action>` since the amendment below).
   The transition id is pattern-checked; a role is free text, and the policy codes are drawn into diagram notes, where a
   hostile role name could inject markup (`tests/test_diagrams.py` caught that with the role in the code).
 * **K2**: the table judge of `path_requires` asks whether some step enters the state from a state a record reaches
@@ -64,6 +65,22 @@ maintainability floor (MI-01) after the additions.
   so nothing that worked stops working.
 * Bad: kernel change, so it needs owner source review (#80).
 * Revisit when: the pack gains a way to declare a role from PlayIDE; `UNDECLARED_ROLE` then points at that edit.
+
+## Amendment, 14 November 2026: `UNDECLARED_ROLE` names the action
+
+The integration review of the day's fixes ([record](../quality/inspections/2026-11-14-integration-review.md), I3)
+changed K1's code from `UNDECLARED_ROLE:<transition id>` to `UNDECLARED_ROLE:<action>`.
+
+* A role belongs to the action: every transition an action labels shares it (ADR-0232), so a transition-id code
+  repeated one refusal once per source state.
+* The code is only reported for an action the pack declares, so the name is the pack's, like `GUARD_POLICY:<action>`
+  and `EFFECT_POLICY:<action>`. The reason for avoiding the free-text role in a code, markup in diagram notes, still
+  holds.
+* The SMT grammar has one slot per action. With transition ids, the generated clause had to name a slot `TR-<ACTION>`,
+  and `laws_gate` mapped each pack's own transition ids to those slots (`_by_slot`, from #261). Both encodings, the
+  legacy oracle and the policy now name the action, and the mapping is gone.
+
+Nothing stored used the old form: the code shipped on 13 November and no model that has it can run.
 
 ## OSS check (required for any custom module)
 

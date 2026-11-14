@@ -10,6 +10,8 @@ Status as of 2026-09-29. Hosted CI is unavailable, so every gate runs locally th
 | full | `nox -t full` | The PR gate |
 | release | `nox -t release` | Maintainer evidence; may need Docker, Java or Chromium; a missing prerequisite reports `NOT_RUN` |
 
+Inspection records, newest first, with what each one left open: [docs/quality/inspections](../quality/inspections/README.md).
+
 ## On `main`
 
 * `tests`: the kernel regression suite (unit, integration, crash recovery, concurrency).
