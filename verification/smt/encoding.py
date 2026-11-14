@@ -151,6 +151,8 @@ def policy_clauses(w: SymWorkflow) -> list[Clause]:
         t = w.transitions[a]
         role, source, target = expected[a]
         add(f"PROTECTED_AUTHORITY:{a}", "role", z3.And(t.present, t.role != ROLE[role]))
+        # ADR-0246: a role the pack does not declare (abstracted to OTHER). Candidates name a transition TR-<ACTION>.
+        add(f"UNDECLARED_ROLE:TR-{a.upper()}", "role", z3.And(t.present, t.role == ROLE[V.OTHER]))
         add(f"PROTECTED_STATE:{a}", "to", z3.And(t.present, t.target != STATE[target]))
         if source is not None:
             add(f"PROTECTED_STATE:{a}", "from", z3.And(t.present, t.source != source))

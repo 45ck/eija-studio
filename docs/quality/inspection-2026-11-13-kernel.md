@@ -79,3 +79,18 @@ value, a mixed true/false and number guard), so the evidence is the kernel's own
   kernel.
 - `[x = 1]` and `[x = 1.0]` hash differently (`guard_keys` compares JSON). They mean the same; the only effect is that
   two transitions of one action written that way are refused as unalike.
+
+## Follow-up: the SMT-gated tests
+
+K1 turned two tests red that run only with the `smt` extra (z3) installed, so the fast tier without z3 skipped them:
+`tests/test_pack.py::test_pack_policy_equals_legacy_policy_on_every_smt_differential_candidate` (540 disagreements:
+the frozen legacy oracle did not know `UNDECLARED_ROLE`) and `tests/test_formal_smt.py::test_committed_snapshot_matches_regeneration`
+(the hand SMT encoding, which the snapshot check runs against `check_policy`, did not either). Fixed: the legacy oracle,
+the hand encoding (`verification/smt/encoding.py`) and the generated one (`verification/smt/laws_gen.py`) each gained
+the rule, written independently; `accepted_set.json` was regenerated and only its source hashes changed, because on
+the excursion pack an undeclared role already breaks `PROTECTED_AUTHORITY`. `UNDECLARED_ROLE` is not reported for a
+transition of an undeclared action, which is `UNSUPPORTED_ACTION` already. The generated encoding names the action's one
+transition slot (`TR-<ACTION>`), while a pack may name that transition otherwise (ai-ops `StartBuild` is `TR-BUILD`), so
+`laws_gate.differential` compares `UNDECLARED_ROLE` codes by slot (`_by_slot`); found by Codex review of #261. Run the SMT tests after any policy change:
+`pip install -e '.[smt]'`.
+

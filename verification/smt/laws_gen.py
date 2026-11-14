@@ -146,6 +146,10 @@ def catalog_clauses(g: Grammar, pack: Pack) -> list[Clause]:
         out.append(Clause("GUARD_POLICY:" + spec.id, "catalog:guards", z3.And(t.present, _differs(t.guards, spec.guards))))
         out.append(Clause("EFFECT_POLICY:" + spec.id, "catalog:effects", z3.And(t.present, z3.Or(
             _differs(t.required, spec.required_effects), t.required_other, missing_forbidden))))
+        # ADR-0246: held by a role the pack does not declare. Named by the action's slot, TR-<ACTION>; laws_gate._by_slot
+        # maps a candidate's own transition id to it before comparing.
+        out.append(Clause("UNDECLARED_ROLE:TR-" + spec.id.upper(), "catalog:role",
+                          z3.And(t.present, *(t.role != g.role[r.id] for r in pack.roles))))
     return out
 
 

@@ -185,6 +185,14 @@ def _agree(z3_codes: list[str], real: list[str], undeclared: bool) -> bool:
     return "UNSUPPORTED_ACTION" in z3_codes and "UNSUPPORTED_ACTION" in real
 
 
+def _by_slot(codes: list[str], wf: Workflow) -> list[str]:
+    """The grammar has one transition slot per action, and the generated clause names it TR-<ACTION>. A candidate keeps its
+    pack's own transition ids, which need not be TR-<ACTION>, so UNDECLARED_ROLE:<id> is compared by its slot."""
+    slot = {t.id: "TR-" + t.action.upper() for t in wf.transitions}
+    head = "UNDECLARED_ROLE:"
+    return sorted(head + slot.get(c[len(head):], c[len(head):]) if c.startswith(head) else c for c in codes)
+
+
 def differential(pack: Pack, seed: int = 20260929, random_mutants: int = 300, drop: frozenset[str] = frozenset(),
                  keep: int = 3) -> Differential:
     ev, target, res = Evaluator(pack, drop), _encoded_only(pack), Differential()
@@ -192,7 +200,7 @@ def differential(pack: Pack, seed: int = 20260929, random_mutants: int = 300, dr
     declared = {a.id for a in pack.actions}
     for wf, validated in candidates(pack, seed, random_mutants):
         hits = ev(wf)
-        z3_codes, real = sorted({c.code for c in ev.clauses if hits[c.id]}), check_policy(wf, target)
+        z3_codes, real = sorted({c.code for c in ev.clauses if hits[c.id]}), _by_slot(check_policy(wf, target), wf)
         undeclared = any(t.action not in declared for t in wf.transitions)
         res.candidates, res.unvalidated, res.admitted = res.candidates + 1, res.unvalidated + (not validated), res.admitted + (not real)
         res.admission_only += undeclared

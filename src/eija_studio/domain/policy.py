@@ -76,7 +76,9 @@ def _role_codes(model: Workflow, pack: Pack) -> list[str]:
     the transition, whose id is pattern-checked, not the free-text role, so it is safe in every diagram that shows it."""
     declared = {r.id for r in pack.roles}
     codes = ["UNDECLARED_INITIATOR:" + r for r in model.initiators if r not in declared]
-    return codes + ["UNDECLARED_ROLE:" + t.id for t in model.transitions if t.role not in declared]
+    # A transition of an undeclared action is already UNSUPPORTED_ACTION; its role is not judged on top of that.
+    return codes + ["UNDECLARED_ROLE:" + t.id for t in model.transitions
+                    if t.role not in declared and pack.action(t.action) is not None]
 
 
 def lifecycle_conflicts(model: Workflow) -> list[str]:
