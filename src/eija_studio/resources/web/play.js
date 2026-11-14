@@ -352,6 +352,7 @@
       const t = transition(cell.id.slice(11));
       return `${t.action}: ${t.from_state} → ${t.to_state}, by ${t.role}`;
     }
+    if (cell.id.startsWith("composite:")) return `Composite state ${cell.id.slice(10)}`;
     return cell.id.startsWith("state:") ? `State ${cell.id.slice(6)}` : "Initial state";
   }
 
@@ -491,8 +492,8 @@
     // Choosing in the outline moves the selection: the other diagram lets go of what it had, so going back to it shows
     // nothing selected rather than a stale handle beside an inspector that says something else.
     if (fromOutline) {
-      const other = id.startsWith("class:") ? graph : classGraph;
-      if (other && !other.isSelectionEmpty()) other.clearSelection();
+      const keep = id.startsWith("class:") ? classGraph : graph;
+      for (const other of [graph, classGraph, useCaseGraph, componentGraph]) if (other && other !== keep && !other.isSelectionEmpty()) other.clearSelection();
     }
     selected = id;
     for (const b of document.querySelectorAll(".outline button")) b.setAttribute("aria-current", String(b.dataset.id === id));
@@ -630,12 +631,15 @@
         style: { ...font, fontSize: 12, strokeColor: "#7a5bd6", endArrow: "open", labelBackgroundColor: "#fbfcfe" } });
       data.associations.forEach((a, i) => {
         const diamond = a.kind === "association" ? {} : { startArrow: "diamond", startSize: 14, startFill: a.kind === "composition" };
-        const edge = classGraph.insertEdge({ parent, id: "assoc:" + i, value: a.role, source: cells[a.source], target: cells[a.target],
+        const edge = classGraph.insertEdge({ parent, id: "assoc:" + i, value: "", source: cells[a.source], target: cells[a.target],
           style: { ...font, fontSize: 12, strokeColor: "#4a5568", endArrow: "none", labelBackgroundColor: "#fbfcfe", ...diamond } });
-        for (const [where, text] of [[-0.8, a.source_multiplicity], [0.8, a.target_multiplicity]]) {
-          const end = classGraph.insertVertex({ parent: edge, value: text, position: [where, 0], size: [0, 0], relative: true,
+        // Each end's multiplicity above the line; the target end's role name (data.py: "the target end's role name")
+        // below it, at that end. A label in the middle of the line would read as the association's own name.
+        for (const [where, text, below] of [[-0.8, a.source_multiplicity, false], [0.8, a.target_multiplicity, false], [0.8, a.role, true]]) {
+          if (!text) continue;
+          const end = classGraph.insertVertex({ parent: edge, ...(below ? { id: `role-end:${i}` } : {}), value: text, position: [where, 0], size: [0, 0], relative: true,
             style: { ...font, fontSize: 11, labelBackgroundColor: "#fbfcfe", selectable: false, movable: false } });
-          end.geometry.offset = new Point(0, -12);
+          end.geometry.offset = new Point(0, below ? 12 : -12);
         }
       });
     });
@@ -715,7 +719,10 @@
     // A use case whose association moves sits with its new actor; a removed one with the actor it had.
     const cases = roles.flatMap((role) => shape.cases.filter((t) => t.role === role));
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
-    const GAP = 76, TOP = 70, boundary = { x: 260, w: 360 }, height = TOP + (cases.length + 1) * GAP;
+    // Actors sit close enough to the boundary that the whole width fits the canvas of a 1280-pixel screen at the readable
+    // scale (READABLE), with the side bar and the chat open: an actor on the right was cut off there.
+    const GAP = 76, TOP = 70, boundary = { x: 200, w: 320 }, height = TOP + (cases.length + 1) * GAP;
+    const ACTOR_GAP = { human: 100, other: 56 }, BOX = 136; // from the boundary to a stick figure, or to a keyword box
     const rowY = (i) => TOP + (i + 1) * GAP - 4;
     useCaseGraph.batchUpdate(() => {
       useCaseGraph.insertVertex({ parent, id: "system", value: document.getElementById("model-name").textContent.split(" · ")[0],
@@ -737,11 +744,11 @@
         const y = near.length ? near.reduce((sum, [, j]) => sum + rowY(j), 0) / near.length - 8 : TOP - 12; // a creator sits by "Create"
         const left = i % 2 === 0, kind = roleKind(role), look = ACTOR_LOOK[kind];
         const actor = kind === "human"
-          ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
+          ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? boundary.x - ACTOR_GAP.human - 36 : boundary.x + boundary.w + ACTOR_GAP.human, y],
             size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
               verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } })
-          : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? 40 : boundary.x + boundary.w + 70, y + 8],
-            size: [136, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
+          : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? boundary.x - ACTOR_GAP.other - BOX : boundary.x + boundary.w + ACTOR_GAP.other, y + 8],
+            size: [BOX, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
               strokeColor: look.stroke, fontSize: 12, ...changeLook(actorStatus[role], "actor") } });
         if (starters.has(role)) useCaseGraph.insertEdge({ parent, source: actor, target: create, style: { strokeColor: "#4a5568", endArrow: "none" } });
         for (const link of shape.links.filter((l) => l.role === role)) {
@@ -1023,6 +1030,9 @@
   function redrawAll(workflow) {
     model = workflow;
     lastView = graph && graph.view ? { scale: graph.view.scale, x: graph.view.translate.x, y: graph.view.translate.y } : null;
+    // Emptying the canvas lets the panel around it scroll back to the top, which moves the whole drawing on screen:
+    // keep the panel where it was (#225).
+    const panel = $("canvas").closest(".workbench"), scrolled = panel ? panel.scrollTop : 0;
     for (const g of [graph, classGraph, useCaseGraph, componentGraph]) if (g) g.destroy();
     for (const box of ["canvas", "class-canvas", "usecase-canvas", "component-canvas"]) $(box).replaceChildren();
     classGraph = useCaseGraph = componentGraph = components = null;
@@ -1030,9 +1040,24 @@
     clearSimPanel();
     outline();
     draw(model);
-    inspect("");
+    if (panel && panel.scrollTop !== scrolled) {
+      panel.scrollTop = scrolled;
+      if (canvasTop !== null) canvasTop = $("canvas").getBoundingClientRect().top; // the drawing was placed for this spot
+    }
     refreshScreensForView(screensEdited ? screens : null); // screen edits survive a preview and are checked against the shown model
     if (tab !== "states") showTab(tab);
+    // The selection lives through the redraw only if what it names is still drawn: Delete, F9 and the status bar act on
+    // `selected`, so an element nothing shows as selected must never stay in it (a hidden state was removed).
+    reselect(validSelection(selected) ? selected : "");
+  }
+
+  // Select `id` again on the diagram shown, as well as in the inspector, outline and status bar.
+  function reselect(id) {
+    select(id, false);
+    if (!id || (hooks.diffGraph && hooks.diffGraph())) return;
+    const target = current(), cellId = tab === "usecases" ? id.replace(/^transition:/, "uc:").replace("usecase:create", "uc:create") : id;
+    const cell = target && target.getDataModel().getCell(cellId);
+    if (cell) target.setSelectionCell(cell);
   }
 
   async function refreshScreensForView(kept) {
@@ -1565,11 +1590,15 @@
     box.append(form);
     editor = form;
     const w = form.offsetWidth, h = form.offsetHeight;
+    // Within the part of the canvas on screen: the canvas can be taller than the panel around it, and focusing an editor
+    // below the panel's foot would scroll the panel, moving the whole diagram under the pointer (#225).
+    const r = box.getBoundingClientRect(), panel = box.closest(".workbench"), p = panel ? panel.getBoundingClientRect() : r;
+    const top = Math.max(0, p.top - r.top), foot = Math.min(box.clientHeight, p.bottom - r.top);
     form.style.left = Math.max(6, Math.min(x, box.clientWidth - w - 6)) + "px";
-    form.style.top = Math.max(6, Math.min(y, box.clientHeight - h - 6)) + "px";
+    form.style.top = Math.max(top + 6, Math.min(y, foot - h - 6)) + "px";
     $("canvas-help").textContent = "Enter adds it to the plan; Escape cancels. Draft only; not active until Review & activate.";
     const first = form.querySelector("input, select");
-    first.focus();
+    first.focus({ preventScroll: true });
     if (first.select) first.select();
   }
 
@@ -1648,7 +1677,7 @@
 
   function onCanvasDoubleClick(cell, event) {
     if (tool || !event || reviewing() || (event.target && event.target.closest && event.target.closest(".inline-edit"))) return;
-    if (!cell) {
+    if (!cell || (cell.id && cell.id.startsWith("composite:"))) { // a composite's box is drawn around empty space (ADR-0240)
       const [x, y] = pointIn(event);
       newState(x, y, null);
     } else if (stateAt(cell)) renameState(cell);
@@ -1699,6 +1728,9 @@
   function startDrawing() {
     const box = $("canvas");
     new ResizeObserver(holdStill).observe(box);
+    // The plan banner moves the canvas down without always resizing it (the canvas can be taller than its panel), and
+    // a ResizeObserver sees only sizes: hold still when the banner shows or hides too (#225).
+    new MutationObserver(holdStill).observe($("plan-banner"), { attributes: true, attributeFilter: ["hidden"] });
     for (const b of $("draw-palette").querySelectorAll("button")) {
       b.setAttribute("aria-pressed", "false");
       b.addEventListener("dragstart", (event) => { arm(null); dragKind = b.dataset.kind; event.dataTransfer.setData("text/x-eija-kind", b.dataset.kind); event.dataTransfer.effectAllowed = "copy"; });
@@ -2525,11 +2557,7 @@
     try { kept = JSON.parse(localStorage.getItem(navigationKey()) || "null"); } catch { /* malformed or unavailable storage: use the default view */ }
     if (kept && kept.v === 1) {
       showTab(Object.hasOwn(PANELS, kept.tab) ? kept.tab : "states");
-      const id = validSelection(kept.selected) ? kept.selected : "";
-      select(id, false);
-      const target = current(), cellId = tab === "usecases" ? id.replace(/^transition:/, "uc:").replace("usecase:create", "uc:create") : id;
-      const cell = target && target.getDataModel().getCell(cellId);
-      if (cell) target.setSelectionCell(cell);
+      reselect(validSelection(kept.selected) ? kept.selected : "");
     }
     navigationReady = true;
     keepNavigation();

@@ -145,6 +145,8 @@ def handler_for(service: Service):
                 match = RECORD.match(url.path)
                 if match and match.group(2):
                     version = body.get("expected_version")
+                    if isinstance(version, float) and version.is_integer():  # a JSON integer may be written 1.0 (ADR-0238)
+                        version = int(version)
                     if not isinstance(version, int) or isinstance(version, bool):
                         raise Refused("BAD_REQUEST", "expected_version must be an integer")
                     return self._json(200, service.act(match.group(1), str(body.get("actor", "")), str(body.get("action", "")),
