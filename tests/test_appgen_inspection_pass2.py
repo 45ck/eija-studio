@@ -151,3 +151,5 @@ def test_the_page_sends_one_operation_id_per_draft():
     assert "const operation_id = state.form.operation ||= crypto.randomUUID();" in source
     assert "const operation_id = state.objectOps[cls] ||= crypto.randomUUID();" in source
     assert "delete state.form.operation;  // a changed request is a new operation" in source
+    # Choosing an object just added changes the record draft, so it takes a new id too (Codex review of #264).
+    assert "updateRecordField(reference.field, made.id);" in source

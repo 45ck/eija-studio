@@ -161,7 +161,7 @@ def test_the_page_lets_a_person_choose_or_add_the_object_a_record_refers_to():
     page = (source / "main.jsx").read_text(encoding="utf-8")
     controller = (source / "controller.js").read_text(encoding="utf-8")
     assert "function ReferenceField" in page and "Add a {cls}" in page
-    assert "/api/objects/${cls}" in controller and "state.form.fields[reference.field] = made.id" in controller
+    assert "/api/objects/${cls}" in controller and "updateRecordField(reference.field, made.id)" in controller
 
 
 @pytest.mark.browser

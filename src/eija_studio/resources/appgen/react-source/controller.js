@@ -182,7 +182,7 @@ async function addObject(reference) {
   try { made = await api(`/api/objects/${cls}`, {actor: state.actor, fields: cleanValues(entity.attributes, state.newObjects[cls] || {}), operation_id}); }
   catch (error) { say(error.code ? refusal(error) : `Adding was not confirmed: ${error.message}.`, "bad", `object-feedback-${cls}`); }
   if (made) {
-    state.newObjects[cls] = {}; delete state.objectOps[cls]; state.form.fields[reference.field] = made.id;
+    state.newObjects[cls] = {}; delete state.objectOps[cls]; updateRecordField(reference.field, made.id);  // a changed draft: new operation id
     await refreshSafely(); say(`Added ${objectLabel(made)} and chose it.`, "ok", `object-feedback-${cls}`);
   }
   setWriting(false);
