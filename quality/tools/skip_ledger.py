@@ -10,7 +10,10 @@ without z3 skipped them, and four build-hook tests needed setuptools that no gat
 fetched jar or opt-in variable. The check fails when a (file, reason) pair skips more often than its ledger count,
 which is how a missing extra, a new `importorskip` or a test that started skipping shows up. Fewer skips than the
 ledger is fine (a fetched jar, an opt-in run); `--update` then lowers the counts, as with any ratchet. Accepting a
-new skip is a reviewed diff of the ledger. EIJA_ALLOW_NOT_RUN=1 turns a failure into a NOT_RUN warning.
+new skip is a reviewed diff of the ledger. EIJA_ALLOW_NOT_RUN=1 turns a failure into a NOT_RUN warning. Reasons listed
+under `routed` (the property suite, the opt-in HCI browser tests) only say which session runs the test; they are not
+counted, so adding a property test needs no ledger change. Measure the ledger with nothing fetched: no `.cache/tla`, no
+`.tmp/tools/*.jar`, as on a fresh hosted runner.
 """
 from __future__ import annotations
 
@@ -50,11 +53,25 @@ def skips(junit: Path) -> Counter[str]:
     return counts
 
 
-def load(path: Path = LEDGER) -> Counter[str]:
+def _read(path: Path) -> dict:
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("schema") != SCHEMA:
         raise SystemExit(f"{path}: not a {SCHEMA} file")
-    return Counter(data["skips"])
+    return data
+
+
+def load(path: Path = LEDGER) -> Counter[str]:
+    return Counter(_read(path)["skips"])
+
+
+def routed(path: Path = LEDGER) -> dict[str, str]:
+    """Skip reasons (by prefix) that only say another named session runs the test, such as the property suite. They
+    are a tier's selection, not a gap, so a new test of that kind does not need a ledger change."""
+    return dict(_read(path).get("routed", {}))
+
+
+def _unrouted(counts: Counter[str], prefixes: dict[str, str]) -> Counter[str]:
+    return Counter({key: n for key, n in counts.items() if not key.split(": ", 1)[1].startswith(tuple(prefixes))})
 
 
 def compare(current: Counter[str], ledger: Counter[str]) -> tuple[list[str], list[str]]:
@@ -64,8 +81,9 @@ def compare(current: Counter[str], ledger: Counter[str]) -> tuple[list[str], lis
     return grown, shrunk
 
 
-def write(current: Counter[str], path: Path = LEDGER) -> None:
-    body = {"schema": SCHEMA, "skips": dict(sorted(current.items()))}
+def write(current: Counter[str], path: Path = LEDGER, routes: dict[str, str] | None = None) -> None:
+    routes = routes if routes is not None else (routed(path) if path.is_file() else {})
+    body = {"schema": SCHEMA, "routed": dict(sorted(routes.items())), "skips": dict(sorted(_unrouted(current, routes).items()))}
     path.write_text(json.dumps(body, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
 
@@ -75,14 +93,17 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--update", action="store_true", help="rewrite the ledger with this run's skips")
     parser.add_argument("--ledger", type=Path, default=LEDGER)
     args = parser.parse_args(argv)
-    current = skips(args.junit)
+    everything = skips(args.junit)
+    current = _unrouted(everything, routed(args.ledger) if args.ledger.is_file() else {})
     if args.update:
-        write(current, args.ledger)
-        sys.stdout.write(f"skip ledger written: {sum(current.values())} skips in {len(current)} groups\n")
+        write(everything, args.ledger)
+        sys.stdout.write(f"skip ledger written: {sum(current.values())} skips in {len(current)} groups, "
+                         f"{sum(everything.values()) - sum(current.values())} routed to their own sessions\n")
         return 0
     grown, shrunk = compare(current, load(args.ledger))
-    out = [f"skip ledger: {sum(current.values())} skips"]
-    out += [f"  fewer skips than recorded (lower the ledger with --update): {line}" for line in shrunk]
+    out = [f"skip ledger: {sum(current.values())} skips, {sum(everything.values()) - sum(current.values())} routed to their own sessions"]
+    out += [f"  fewer skips than recorded (a fetched jar or an opt-in run; if the skip is gone for good, lower it with --update): {line}"
+            for line in shrunk]
     out += [f"  NEW SKIP: {line}" for line in grown]
     if grown:
         out.append("A test that skips where it used to run is NOT_RUN, never a pass. Install the missing extra, fix the test, "

@@ -50,7 +50,7 @@ need `.[dev,lint]`.
 | `dependencies` | fast, full | deptry 0.25.1 | `[tool.deptry]` | 0 issues: every import declared, every runtime dependency used, no transitive imports | Adding a rule ignore needs a written reason in `pyproject.toml` |
 | `coverage` | full | pytest-cov 7.1.0 (coverage.py 7.16.2), branch coverage | `[tool.coverage.*]` | `fail_under = 93` (measured 93.78 % on 2026-11-13, Linux, Python 3.13; the floor stayed at 78 from 2026-09-28 until then, 15 points under the measured value, so a large drop could not fail it) | Raise `fail_under` to the new floor whenever coverage rises; reports go to `reports/coverage/` (gitignored) |
 | `audit` | release | pip-audit 2.10.1 against the PyPI advisory database | `requirements-tested.txt` | 0 known vulnerabilities in the measured runtime pins. **Currently FAILS**: see "Known audit findings" | Fixes are pin bumps in the tested set (an owner decision). Offline it fails with NOT_RUN (see above) |
-| `tests` (foundation lane) | fast | pytest, then `quality/tools/skip_ledger.py` | `[tool.pytest.ini_options]`, `quality/tools/skip_ledger.json` | all pass, and no test skips more often than the ledger records (177 skips in 25 groups on 2026-11-14: the property suite, the opt-in HCI and browser tests, the unbuilt `eijagraph` bindings, the TLA and Alloy jars, Docker and the offline SARIF schema); the full tier runs the same suite inside `coverage` | Lower the ledger with `--update` when skips go away; a new skip needs a reviewed ledger diff |
+| `tests` (foundation lane) | fast | pytest, then `quality/tools/skip_ledger.py` | `[tool.pytest.ini_options]`, `quality/tools/skip_ledger.json` | all pass, and no test skips more often than the ledger records (2026-11-14: 17 skips in 13 groups, the unbuilt `eijagraph` bindings, the TLA and Alloy jars before they are fetched, Docker, real-browser checks and the offline SARIF schema; 158 more are routed, not counted: the property suite and the opt-in HCI tests, which name the session that runs them); the full tier runs the same suite inside `coverage` | Lower the ledger with `--update` when skips go away; a new skip needs a reviewed ledger diff |
 | `browser_suite` | release | pytest `-m "slow or browser"` with `EIJA_BROWSER_TESTS=1` (Playwright, Chromium via `EIJA_CHROMIUM`) | `quality/sessions/browser.py` | all pass. Fails with NOT_RUN when Playwright is missing, unless `EIJA_ALLOW_NOT_RUN=1`. Before 2026-11-13 no tier selected these (116 tests in 31 files: the PlayIDE browser walks, the exact-app journey and 26 seeded conformance divergences). 122 pass on 2026-11-14 | Never deselect a test to make it green; fix the test or the product |
 
 ### Architecture contracts
@@ -151,14 +151,16 @@ nox -l                                   # lists every session
 nox -t fast
 ```
 
-`dev` and `lint` are enough for the fast tier. The other extras are the capability lanes' tools (`smt` Z3, `graph-formal`
+`dev` and `lint` run the fast tier, but its `tests` session then fails on the skip ledger (below) for every test that needs a missing extra; set `EIJA_ALLOW_NOT_RUN=1` to accept that gap knowingly, or install the extras. The other extras are the capability lanes' tools (`smt` Z3, `graph-formal`
 clingo, `okf` PyYAML, `hci`/`visual`/`demos` Playwright driving the installed Chrome, and so on); a session whose optional
 tool is absent reports `NOT_RUN`, never PASS. `.githooks/run-nox` finds `.venv` on its own, so the hooks need no activation.
 
 A test that needs an extra skips without it, and pytest exits 0, so every pytest run ends with a **NOT_RUN for a missing
 extra** list (`tests/extras_guard.py`). With `EIJA_REQUIRE_EXTRAS=1` such a skip fails the run. Use it for a run that is
-merge evidence: `pip install -e '.[dev,lint,testing,agents,providers,source-analysis,demos,xuml,graph,graph-formal,okf,interop-api,smt,mutation]'`,
-then `EIJA_REQUIRE_EXTRAS=1 nox -t fast`. Two z3-only tests were red on `main` for a day because local runs skipped them
+merge evidence: `pip install -e '.[dev,lint,testing,metrics,hci,visual,agents,providers,source-analysis,demos,xuml,graph,graph-formal,okf,interop-api,smt,mutation]'`
+(the hosted jobs' list), then `EIJA_REQUIRE_EXTRAS=1 nox -t fast`. The guard knows a missing extra by its reason text; the
+skip ledger the `tests` session checks (`quality/tools/skip_ledger.json`) catches every other new skip as well, such as
+the setuptools build-hook tests and the pydot check that no gate environment ran before 2026-11-14. Two z3-only tests were red on `main` for a day because local runs skipped them
 ([integration review](inspections/2026-11-14-integration-review.md), I1). Opt-in tests (`EIJA_BROWSER_TESTS`, Docker,
 Node) are not counted.
 

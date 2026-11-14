@@ -1,5 +1,9 @@
 {
   "schema": "eija.skip-ledger.v1",
+  "routed": {
+    "NOT_RUN: opt-in browser tests": "nox -s hci (full, release)",
+    "property suite not requested": "nox -s property (full), nox -s property_deep (release)"
+  },
   "skips": {
     "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: java or the pinned Alloy jar is absent": 4,
     "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.canon:dumps has nothing to check": 1,
@@ -11,17 +15,6 @@
     "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.status:meet has nothing to check": 1,
     "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.store:closure has nothing to check": 1,
     "tests/graph/test_rules_reference.py: NOT_RUN: the OASIS SARIF 2.1.0 schema is not available offline (set EIJA_SARIF_SCHEMA)": 1,
-    "tests/hci/test_browser_budgets.py: NOT_RUN: opt-in browser tests; run `pytest -m hci` or `nox -s hci`": 23,
-    "tests/hci/test_probe_visibility.py: NOT_RUN: opt-in browser tests; run `pytest -m hci` or `nox -s hci`": 16,
-    "tests/hci/test_rendered_endpoints.py: NOT_RUN: opt-in browser tests; run `pytest -m hci` or `nox -s hci`": 2,
-    "tests/property/test_contract_schemas.py: property suite not requested (minutes): run `nox -s property` or `pytest tests/property`": 49,
-    "tests/property/test_impact_closure.py: property suite not requested (minutes): run `nox -s property` or `pytest tests/property`": 9,
-    "tests/property/test_properties_detect_mutants.py: property suite not requested (minutes): run `nox -s property` or `pytest tests/property`": 17,
-    "tests/property/test_receipts.py: property suite not requested (minutes): run `nox -s property` or `pytest tests/property`": 9,
-    "tests/property/test_reference_detects_mutants.py: property suite not requested (minutes): run `nox -s property` or `pytest tests/property`": 10,
-    "tests/property/test_runtime_differential.py: property suite not requested (minutes): run `nox -s property` or `pytest tests/property`": 2,
-    "tests/property/test_semantic_hash.py: property suite not requested (minutes): run `nox -s property` or `pytest tests/property`": 8,
-    "tests/property/test_value_guards.py: property suite not requested (minutes): run `nox -s property` or `pytest tests/property`": 12,
     "tests/test_appgen_inspection.py: NOT_RUN: set EIJA_BROWSER_TESTS=1 for actual browser": 1,
     "tests/test_formal_bend.py: opt-in (EIJA_BEND_DOCKER_TESTS=1): nox formal_bend_quick / formal_bend run this proof (NOT_RUN here)": 1,
     "tests/test_syntax_validator.py: NOT_RUN: real-browser check; run by the release session diagrams_syntax (EIJA_BROWSER_TESTS=1)": 2,
