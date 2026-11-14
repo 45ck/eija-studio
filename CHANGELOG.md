@@ -4,7 +4,7 @@
 
 ### 14 November 2026: the app generator, second pass
 
-- Fixed: the API contract and the generated server read one status table (`eija_studio.domain.app_http`); the contract had left out 13 refusal codes and the signals route. `ROLE_CANNOT_START` and `SEPARATION_DENIED` are now 403. [Inspection record](docs/quality/inspection-2026-11-14-app-generator-pass-2.md), [ADR-0251](docs/adr/0251-app-generator-second-pass.md).
+- Fixed: the API contract and the generated server read one status table (`eija_studio.domain.app_http`); the contract had left out 13 refusal codes and the signals route. `ROLE_CANNOT_START` and `SEPARATION_DENIED` are now 403. [Inspection record](docs/quality/inspection-2026-11-14-app-generator-pass-2.md), [ADR-0254](docs/adr/0254-app-generator-second-pass.md).
 - Fixed: a create (record or stored object) can be retried after a lost answer: an optional `operation_id` returns the first result instead of making a second. The page sends one per draft.
 - Fixed: values and references are checked inside the write; a request that never sends its body is answered `408` after 30 s instead of holding a thread; the record list is one query and a view no longer scans every audit entry (5,000 records: 0.395 s to 0.03 s); a number the browser cannot hold is refused, not dropped; `/favicon.ico` is answered 204.
 ### 14 November 2026: saving and UML import, inspected again

@@ -1,4 +1,4 @@
-"""The HTTP status a generated app answers each refusal code with (ADR-0251).
+"""The HTTP status a generated app answers each refusal code with (ADR-0254).
 
 One table, read by the generated server (app/server.py) when it answers a refusal and by the API contract
 (application/api_contract.py) when it documents one, so the two cannot drift apart. Every code the kernel, the data

@@ -56,7 +56,7 @@ def served(server: str) -> set[tuple[str, str]]:
 
 @pytest.mark.parametrize(("pack_id", "routes"), [("library-loan", 8), ("library-fines", 9)])
 def test_every_route_the_server_serves_is_in_the_contract_and_no_other(pack_id, routes):
-    """The signals route is served, and documented, only for a model that receives a signal (ADR-0251: it was missing,
+    """The signals route is served, and documented, only for a model that receives a signal (ADR-0254: it was missing,
     and the route parser could not see it, so this test could not fail for it)."""
     pack, document = contract(pack_id)
     server = app_files(pack, pack.model, identity_provider=source_identity)[0]["app/server.py"]

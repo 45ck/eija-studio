@@ -55,7 +55,7 @@ def describe() -> dict:
 def handler_for(service: Service):
     class Handler(BaseHTTPRequestHandler):
         server_version = "EIJA-generated-app"
-        timeout = 30  # a request that promises a body and never sends it gives its thread back (ADR-0251)
+        timeout = 30  # a request that promises a body and never sends it gives its thread back (ADR-0254)
 
         def log_message(self, *args):
             return None
@@ -95,7 +95,7 @@ def handler_for(service: Service):
             self._send(status, json.dumps(value).encode(), "application/json")
 
         def _refused(self, refused: Refused) -> None:
-            self._json(status_of(refused.code), {"code": refused.code, "message": refused.message})  # one table (ADR-0251)
+            self._json(status_of(refused.code), {"code": refused.code, "message": refused.message})  # one table (ADR-0254)
 
         def _body(self) -> dict:
             if self.headers.get("Content-Type", "").split(";")[0] != "application/json":

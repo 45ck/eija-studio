@@ -5,7 +5,7 @@ The paths and status codes are those of the generated server (ADR-0150). Request
 server checks against: the record fields from the record class (the schema says what `check_values` accepts), the
 actions from the model's transitions and the actors from the pack's fixture directory. The kernel's refusal codes are
 the documented error responses, grouped by the status the server sends them with: both read one table,
-`eija_studio.domain.app_http` (ADR-0251). The drift check is in the tests: every route the generated server serves is in
+`eija_studio.domain.app_http` (ADR-0254). The drift check is in the tests: every route the generated server serves is in
 the document, and every path in the document is served.
 
 Pure: reads the pack, its model and its data model only.

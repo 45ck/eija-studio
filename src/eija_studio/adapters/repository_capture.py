@@ -99,10 +99,24 @@ def _worktrees(data: bytes) -> list[dict[str, Any]]:
     return sorted(records, key=lambda row: row["path"])[:MAX_WORKTREES]
 
 
+def _without_filters(root: Path) -> list[str]:
+    """`-c` options that switch off every content filter the repository's configuration names. `git status` runs a
+    file's clean filter (`filter.<driver>.clean` or `.process`, chosen by .gitattributes) to compare a stat-dirty file
+    with the index, so a checkout whose own .git/config names a filter command would otherwise run that command
+    here. An empty command is no filter; `required=false` keeps git from refusing the file instead. Git LFS files
+    then compare as their raw bytes, which can only make the read-only `dirty` flag say true."""
+    names = _git(root, "config", "--name-only", "--get-regexp", r"^filter\.", allow_empty=True).decode("utf-8")
+    drivers = sorted({key[len("filter."):].rpartition(".")[0] for key in names.split() if key.startswith("filter.")} - {""})
+    return [option for driver in drivers for key, value in (("clean", ""), ("smudge", ""), ("process", ""),
+                                                             ("required", "false"))
+            for option in ("-c", f"filter.{driver}.{key}={value}")]
+
+
 def _metadata(root: Path) -> dict[str, Any]:
     head = _git(root, "rev-parse", "--verify", "--quiet", "HEAD", allow_empty=True).decode().strip()
     branch = _git(root, "symbolic-ref", "--short", "-q", "HEAD", allow_empty=True).decode().strip()
-    changes = _git(root, "status", "--porcelain=v1", "-z", "--untracked-files=no", "--ignore-submodules=all")
+    changes = _git(root, *_without_filters(root), "status", "--porcelain=v1", "-z", "--untracked-files=no",
+                   "--ignore-submodules=all")
     trees = _git(root, "worktree", "list", "--porcelain", "-z")
     return {"head": head or None, "branch": branch or None, "dirty": bool(changes),
             "untracked": "not inspected", "worktrees": _worktrees(trees), "worktree_limit": MAX_WORKTREES}

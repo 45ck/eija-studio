@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/api_contract.py
   title: application/api_contract.py
   hash_method: ast-api-v1
-  sha256: 2b64027cc1e607de366867004d0027b18a6802bab83cd9b4e49dfb6df39a668a
-notes_baseline: 6f14f94f9e43911f252b575e30b9909d4c30cbfbbf7bb3e07257d3d32b552051
+  sha256: 231027563d2e3c4a8c900bceca8aea2abe3cab50cd62a6688f4e2c0118019343
+notes_baseline: 368bfccd0458aaf18cf9c794b8d64528fdd20425254822ce1d6ac8aa869cfd88
 ---
 
 # application.api_contract
@@ -36,7 +36,7 @@ The paths and status codes are those of the generated server (ADR-0150). Request
 server checks against: the record fields from the record class (the schema says what `check_values` accepts), the
 actions from the model's transitions and the actors from the pack's fixture directory. The kernel's refusal codes are
 the documented error responses, grouped by the status the server sends them with: both read one table,
-`eija_studio.domain.app_http` (ADR-0251). The drift check is in the tests: every route the generated server serves is in
+`eija_studio.domain.app_http` (ADR-0254). The drift check is in the tests: every route the generated server serves is in
 the document, and every path in the document is served.
 
 Pure: reads the pack, its model and its data model only.
@@ -63,7 +63,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
-* [domain.app_http](/modules/domain/app_http.md) - The HTTP status a generated app answers each refusal code with (ADR-0251).
+* [domain.app_http](/modules/domain/app_http.md) - The HTTP status a generated app answers each refusal code with (ADR-0254).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

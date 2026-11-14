@@ -388,7 +388,7 @@ class Conformance(unittest.TestCase):
             return response.status, json.loads(response.read())
 
         def refused(status: int, body: dict) -> dict:
-            """A refusal, sent with the status the shared table gives its code (ADR-0251)."""
+            """A refusal, sent with the status the shared table gives its code (ADR-0254)."""
             self.assertEqual(status, status_of(body.get("code")), body)
             return {"outcome": "REFUSED", "code": body.get("code")}
 
@@ -422,7 +422,7 @@ class Conformance(unittest.TestCase):
                     got = ({"outcome": "CREATED", "state": body["state"], "version": body["version"]} if status == 201
                            else refused(status, body))
                     self.assertEqual(got, case["expect"])
-                    if status == 201:  # sent again after a lost answer: the same record, not a second one (ADR-0251)
+                    if status == 201:  # sent again after a lost answer: the same record, not a second one (ADR-0254)
                         again, replay = post("/api/records", request)
                         self.assertEqual((again, replay["id"], replay["duplicate"], len(svc.records())), (200, body["id"], True, 1))
                         self.assertEqual(refused(*post("/api/records", request | {"title": "Another"})),

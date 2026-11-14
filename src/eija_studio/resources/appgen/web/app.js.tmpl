@@ -146,7 +146,7 @@ function screenFields(screen) {
   return screen.fields.map(field => ({...state.app.record.attributes.find(a => a.name === field.attribute), label: field.label || field.attribute}));
 }
 // A number the browser cannot hold (1e999, or text) is sent as typed, so the server refuses it (FIELD_TYPE) instead of
-// JSON turning it into null and a missing value (ADR-0251).
+// JSON turning it into null and a missing value (ADR-0254).
 function number(value) { const parsed = Number(value); return Number.isFinite(parsed) ? parsed : String(value); }
 function cleanValues(fields, raw) {
   const values = {};
@@ -177,7 +177,7 @@ async function addObject(reference) {
   if (!entity || state.writing || !state.fresh) return;
   delete state.notices[`object-feedback-${cls}`]; setWriting(true);
   let made;
-  // One operation id per draft: sent again after a lost answer, it returns the object already made (ADR-0251).
+  // One operation id per draft: sent again after a lost answer, it returns the object already made (ADR-0254).
   const operation_id = state.objectOps[cls] ||= crypto.randomUUID();
   try { made = await api(`/api/objects/${cls}`, {actor: state.actor, fields: cleanValues(entity.attributes, state.newObjects[cls] || {}), operation_id}); }
   catch (error) { say(error.code ? refusal(error) : `Adding was not confirmed: ${error.message}.`, "bad", `object-feedback-${cls}`); }
@@ -242,7 +242,7 @@ async function submitCreate(event) {
   if (!state.app || state.writing || !state.fresh) return;
   delete state.notices["create-feedback"]; setWriting(true);
   let record;
-  // One operation id per draft: sent again after a lost answer, it returns the record already made, not a second (ADR-0251).
+  // One operation id per draft: sent again after a lost answer, it returns the record already made, not a second (ADR-0254).
   const operation_id = state.form.operation ||= crypto.randomUUID();
   try { record = await api("/api/records", {title: state.form.title, actor: state.actor, fields: fieldValues(), operation_id}); }
   catch (error) {

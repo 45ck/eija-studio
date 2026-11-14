@@ -8,7 +8,7 @@
 
 | Threat | Implemented control | Residual limitation |
 |---|---|---|
-| Remote page attempts a local mutation | Loopback bind, exact Host allowlist, ephemeral bearer capability, exact Origin on writes, JSON requirement, body cap, no CORS | Not protection from local malware, malicious browser extensions or stolen capability |
+| Remote page attempts a local mutation | Loopback bind, exact Host allowlist, ephemeral bearer capability, exact Origin on writes, JSON requirement, body cap per route (ADR-0251), no CORS | Not protection from local malware, malicious browser extensions or stolen capability |
 | Provider output contains HTML/scripts or claims approval | DOM textContent, restrictive contracts, server-owned interpretation labels, no provider authority port | Prompt can still cause a misleading but typed explanation; owner must choose meaning |
 | Provider emits malformed/truncated/tool output | Bounded response bytes, strict local validation, no tools, no silent fallback | Model/provider compatibility and real failure rates need live tests |
 | Credential disclosure | Key stays in process or caller-managed environment; non-echoing prompt; no key browser field; no raw provider errors exported | Environment/process memory remains accessible to trusted OS user; terminal/OS hygiene is external |
