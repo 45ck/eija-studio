@@ -38,7 +38,7 @@
     $("canvas-help").textContent = HELP[lens];
     if (lens === "system") draw();
     else if (lens === "deployment" && window.PlayDeployment) window.PlayDeployment.draw();
-    else P.fit();
+    else P.refit();
   }
 
   function onTab(which) {
@@ -64,7 +64,7 @@
     }
     summary();
     if (!graph) render();
-    P.fit();
+    P.refit();
     if (pending) { const id = pending; pending = ""; select(id); }
   }
 
@@ -99,7 +99,8 @@
     actors.forEach((a, i) => { at["actor:" + a.name] = kindOf(a) === "human" ? [40, 30 + i * actorStep + (result.actors.length === 1 ? height / 2 - 40 : 0), 36, 64]
       : [-10, 38 + i * actorStep + (result.actors.length === 1 ? height / 2 - 40 : 0), 136, 48]; });
     const loose = result.classes.filter((c) => !c.owner), classStep = step(loose.length, height - 60);
-    loose.forEach((c, i) => { at["class:" + c.name] = [WF_X + WF_W + 150, 30 + i * classStep + (loose.length === 1 ? height / 2 - 30 : 0), 150, 56]; });
+    const lanes = result.links.length + (result.signals || []).length, classX = WF_X + WF_W + 150 + Math.max(0, lanes - 3) * 26; // right of the lanes
+    loose.forEach((c, i) => { at["class:" + c.name] = [classX, 30 + i * classStep + (loose.length === 1 ? height / 2 - 30 : 0), 150, 56]; });
     return at;
   }
 
@@ -113,8 +114,25 @@
     graph.setPanning(true);
     const root = graph.getDefaultParent(), at = layout(), cells = {};
     const mark = (subject) => ({ warning: { strokeColor: WARN, strokeWidth: 2.5 }, consider: { strokeColor: CONSIDER, strokeWidth: 2, dashed: true } })[worst(subject)] || {};
-    const edge = (source, target, value, extra = {}) => graph.insertEdge({ parent: root, source, target, value,
-      style: { ...FONT, fontSize: 10, strokeColor: LINE, dashed: true, endArrow: "open", labelBackgroundColor: "#fbfcfe", ...extra } });
+    const { Point } = maxgraph;
+    const edge = (source, target, value, extra = {}, points = null, shift = 0) => {
+      const e = graph.insertEdge({ parent: root, source, target, value,
+        style: { ...FONT, fontSize: 10, strokeColor: LINE, dashed: true, endArrow: "open", labelBackgroundColor: "#fbfcfe", ...extra } });
+      if (points) e.geometry.points = points.map(([x, y]) => new Point(x, y));
+      if (shift) e.geometry.offset = new Point(0, shift);
+      return e;
+    };
+    // Lines never run through another shape (inspection 2026-11-14): an actor's line leaves it level, to a channel
+    // right of the widest actor, and only then turns to the interface, so it crosses no other actor in the column; a
+    // dependency between two workflows runs in a lane of its own to their right, so it neither crosses a workflow
+    // between them nor hides one going the other way.
+    const CHANNEL = 200, mid = (id) => at[id][1] + at[id][3] / 2;
+    let lane = 0;
+    const between = (from, to, value, extra) => {
+      const x = at["workflow:" + from][0] + at["workflow:" + from][2] + 34 + lane * 26, dy = (lane % 3 - 1) * 12;
+      edge(cells["workflow:" + from], cells["workflow:" + to], value, extra, [[x, mid("workflow:" + from) + dy], [x, mid("workflow:" + to) + dy]], (lane % 2 ? 1 : -1) * 9 * (1 + (lane >> 1)));
+      lane += 1;
+    };
     graph.batchUpdate(() => {
       for (const w of result.workflows) {
         const id = "workflow:" + w.id, [x, y, wd, h] = at[id];
@@ -135,20 +153,30 @@
             style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top" } })
           : graph.insertVertex({ parent: root, id: "system:" + id, value: `«${kind === "mixed" ? a.kinds.join(" | ") : kind}»\n${a.name}`, position: [x, y], size: [wd, h],
             style: { ...FONT, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill, strokeColor: look.stroke } });
-        for (const [wid, actions] of Object.entries(a.workflows)) if (actions.length) edge(cells[id], cells["iface:" + wid], "«use»");
+        // The «use» sits on the level stretch by the actor, where it is the actor's alone: by the interface, where
+        // several actors' lines meet, it lay on the interface's own list of actions. An actor's lines share that stretch,
+        // so it is labelled once.
+        let first = true;
+        for (const [wid, actions] of Object.entries(a.workflows)) if (actions.length) {
+          const e = edge(cells[id], cells["iface:" + wid], first ? "«use»" : "", {}, [[CHANNEL, y + h / 2]]);
+          first = false;
+          e.geometry.x = -1;
+          e.geometry.offset = new Point((CHANNEL - x - wd) / 2, -8);
+        }
       }
       for (const c of result.classes.filter((x) => !x.owner)) {
         const id = "class:" + c.name, [x, y, wd, h] = at[id];
         cells[id] = graph.insertVertex({ parent: root, id: "system:" + id, value: `«class»\n${c.name}\nshared, no owner`, position: [x, y], size: [wd, h],
           style: { ...FONT, shape: "rectangle", fillColor: "#ffffff", strokeColor: INK, whiteSpace: "wrap", ...mark(id) } });
-        for (const wid of c.in) edge(cells["workflow:" + wid], cells[id], "«use»");
+        // Level out of the workflow's right side, past the lanes, then to the class: it crosses no other workflow.
+        for (const wid of c.in) edge(cells["workflow:" + wid], cells[id], "«use»", {}, [[x - 40, mid("workflow:" + wid)]]);
       }
       for (const l of result.links) {
         const owned = "class:" + l.class, look = mark(owned);
-        edge(cells["workflow:" + l.source], cells["workflow:" + l.target], `«use» ${l.class}`, look.strokeColor ? { strokeColor: look.strokeColor } : {});
+        between(l.source, l.target, `«use» ${l.class}`, look.strokeColor ? { strokeColor: look.strokeColor } : {});
       }
       for (const s of result.signals || []) {  // a signal one workflow sends and another receives (ADR-0242)
-        edge(cells["workflow:" + s.source], cells["workflow:" + s.target], `«signal» ${s.signal.replace(/^Signal:/, "")}`, { dashed: false, endArrow: "block" });
+        between(s.source, s.target, `«signal» ${s.signal.replace(/^Signal:/, "")}`, { dashed: false, endArrow: "block" });
       }
     });
     graph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {

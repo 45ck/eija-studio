@@ -203,15 +203,18 @@
     // panel made it shorter), so neither the top nor the foot of the diagram is cut off.
     const untouched = graph && graph.view && tab === "states" && !Object.keys(placed).length && fitted.view === viewOf(graph);
     if (untouched && canvasSize !== null && size !== canvasSize && top === canvasTop) fit(); // grew where it stands, as on first load
-    else if (graph && graph.view && canvasTop !== null && top !== canvasTop) {
+    else if (graph && graph.view && canvasTop !== null && (top !== canvasTop || size !== canvasSize)) {
       const v = graph.view, was = graph.getGraphBounds(), before = was.y, high = +canvasSize.split(" ")[1];
-      v.setTranslate(v.translate.x, v.translate.y - (top - canvasTop) / v.scale);
-      // ... and holding still never slides the top of the diagram (the initial state) under the banner that moved it.
-      const after = graph.getGraphBounds().y, floor = Math.min(before, MARGIN);
-      if (before >= 0 && after < floor) v.setTranslate(v.translate.x, v.translate.y + (floor - after) / v.scale);
-      // A diagram that was all on screen stays all on screen: when the banner leaves too little room, it is fitted again.
+      if (top !== canvasTop) {
+        v.setTranslate(v.translate.x, v.translate.y - (top - canvasTop) / v.scale);
+        // ... and holding still never slides the top of the diagram (the initial state) under the banner that moved it.
+        const after = graph.getGraphBounds().y, floor = Math.min(before, MARGIN);
+        if (before >= 0 && after < floor) v.setTranslate(v.translate.x, v.translate.y + (floor - after) / v.scale);
+      }
+      // A diagram that was all on screen stays all on screen: when the banner leaves too little room, it is fitted again,
+      // as a whole, since the banner takes its height from the canvas (it no longer pushes the canvas off the window).
       const now = graph.getGraphBounds(), tall = $("canvas").clientHeight;
-      if (was.y >= 0 && was.y + was.height <= high && (now.y < 0 || now.y + now.height > tall)) fit();
+      if (was.y >= 0 && was.y + was.height <= high && (now.y < 0 || now.y + now.height > tall)) fit(true);
     }
     canvasTop = top;
     canvasSize = size;
@@ -400,9 +403,22 @@
       const along = (space, size, start) => (size * k <= space - 2 * margin ? (space / k - size) / 2 - start : margin / k - start);
       v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
     }
+    // A state machine too large for the canvas at the readable scale starts where records start: the top left of the
+    // drawing is not where the initial state is once the layout spreads out (32 states put it 1,100 pixels to the right).
+    if (g === graph && floor > 0 && model) follow(["initial", "state:" + model.initial_state]);
     fitted.view = g === graph ? viewOf(g) : null;
+    fittedViews.set(g, viewOf(g));
   }
   const fitted = { view: null }; // the state machine's view as fit() left it, so holdStill can tell a view nobody moved
+  // Every diagram's view as fit() last left it. Coming back to a tab, resizing the window or opening a side region fits
+  // the diagram again only when nobody zoomed or panned it since: a view the person chose is theirs to keep, as in
+  // any drawing tool, and the Fit button is there to ask for the whole diagram again.
+  const fittedViews = new WeakMap();
+  function refit() {
+    const g = current();
+    if (g && fittedViews.has(g) && fittedViews.get(g) !== viewOf(g)) return;
+    fit();
+  }
   const viewOf = (g) => `${g.view.scale.toFixed(4)} ${g.view.translate.x.toFixed(2)} ${g.view.translate.y.toFixed(2)}`;
 
   // Bring cells into view, as a debugger follows the current line: the view pans (never zooms) only when one is outside
@@ -633,13 +649,27 @@
         const diamond = a.kind === "association" ? {} : { startArrow: "diamond", startSize: 14, startFill: a.kind === "composition" };
         const edge = classGraph.insertEdge({ parent, id: "assoc:" + i, value: "", source: cells[a.source], target: cells[a.target],
           style: { ...font, fontSize: 12, strokeColor: "#4a5568", endArrow: "none", labelBackgroundColor: "#fbfcfe", ...diamond } });
-        // Each end's multiplicity above the line; the target end's role name (data.py: "the target end's role name")
-        // below it, at that end. A label in the middle of the line would read as the association's own name.
-        for (const [where, text, below] of [[-0.8, a.source_multiplicity, false], [0.8, a.target_multiplicity, false], [0.8, a.role, true]]) {
+        // Each end's multiplicity sits beside the line at its end, on one side; the target end's role name (data.py:
+        // "the target end's role name") sits at that end on the other side. A label in the middle of the line would read
+        // as the association's own name, and a label placed at a fixed fraction of the line lands on the class box when
+        // the line is short or steep, so each label moves back along the line until it is clear of its class.
+        const [sx, sy, sw, sh] = at(a.source), [tx, ty, tw, th] = at(a.target);
+        let ux = tx + tw / 2 - (sx + sw / 2), uy = ty + th / 2 - (sy + sh / 2);
+        const length = Math.hypot(ux, uy) || 1;
+        [ux, uy] = a.source === a.target ? [1, 0] : [ux / length, uy / length];
+        for (const [where, text, side] of [[-1, a.source_multiplicity, -1], [1, a.target_multiplicity, -1], [1, a.role, 1]]) {
           if (!text) continue;
-          const end = classGraph.insertVertex({ parent: edge, ...(below ? { id: `role-end:${i}` } : {}), value: text, position: [where, 0], size: [0, 0], relative: true,
+          const [bx, by, bw, bh] = where < 0 ? [sx, sy, sw, sh] : [tx, ty, tw, th], vx = -where * ux, vy = -where * uy;
+          const reach = Math.min(Math.abs(vx) > 1e-6 ? bw / 2 / Math.abs(vx) : Infinity, Math.abs(vy) > 1e-6 ? bh / 2 / Math.abs(vy) : Infinity);
+          const endX = bx + bw / 2 + vx * reach, endY = by + bh / 2 + vy * reach, halfW = textWidth(text) * 11 / 24 + 3, halfH = 9;
+          const nx = -uy * 12 * side, ny = ux * 12 * side;
+          let back = 6;
+          const clear = () => { const cx = endX + vx * back + nx, cy = endY + vy * back + ny;
+            return cx + halfW < bx - 3 || cx - halfW > bx + bw + 3 || cy + halfH < by - 3 || cy - halfH > by + bh + 3; };
+          while (!clear() && back < 200) back += 2;
+          const end = classGraph.insertVertex({ parent: edge, ...(side > 0 ? { id: `role-end:${i}` } : {}), value: text, position: [where, 0], size: [0, 0], relative: true,
             style: { ...font, fontSize: 11, labelBackgroundColor: "#fbfcfe", selectable: false, movable: false } });
-          end.geometry.offset = new Point(0, below ? 12 : -12);
+          end.geometry.offset = new Point(vx * back + nx, vy * back + ny);
         }
       });
     });
@@ -750,9 +780,13 @@
           : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? boundary.x - ACTOR_GAP.other - BOX : boundary.x + boundary.w + ACTOR_GAP.other, y + 8],
             size: [BOX, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
               strokeColor: look.stroke, fontSize: 12, ...changeLook(actorStatus[role], "actor") } });
-        if (starters.has(role)) useCaseGraph.insertEdge({ parent, source: actor, target: create, style: { strokeColor: "#4a5568", endArrow: "none" } });
+        // Every line ends at the tip of its use case on the actor's side. The use cases share one column, so their tips
+        // line up and a line to one passes outside all the others; a line to the centre crossed the ellipses between
+        // whenever an actor had more than a few use cases.
+        const end = { entryX: left ? 0 : 1, entryY: 0.5, entryPerimeter: true };
+        if (starters.has(role)) useCaseGraph.insertEdge({ parent, source: actor, target: create, style: { strokeColor: "#4a5568", endArrow: "none", ...end } });
         for (const link of shape.links.filter((l) => l.role === role)) {
-          useCaseGraph.insertEdge({ parent, source: actor, target: cells[link.case], style: { strokeColor: "#4a5568", endArrow: "none", ...changeLook(link.status, "line") } });
+          useCaseGraph.insertEdge({ parent, source: actor, target: cells[link.case], style: { strokeColor: "#4a5568", endArrow: "none", ...end, ...changeLook(link.status, "line") } });
         }
       });
     });
@@ -800,7 +834,7 @@
       drawClasses();
     }
     markRipple(which);
-    fit();
+    refit();
   }
 
   // Chat in plan mode (ADR-0156). The AI only proposes: a plan of typed steps the person accepts or rejects one by
@@ -1985,6 +2019,55 @@
     };
   }
 
+  // A straight line between two shapes can run through a third one, which then reads as part of the dependency.
+  // Route each such edge around what it would cross: past the near corners of each shape in its way, above or below
+  // it (or beside it, for a steep line), checked again for every new leg. Presentation only; nothing reaches the model.
+  function absoluteBox(cell) {
+    let x = cell.geometry.x, y = cell.geometry.y;
+    for (let c = cell.parent; c && c.geometry; c = c.parent) { x += c.geometry.x; y += c.geometry.y; }
+    return [x, y, cell.geometry.width, cell.geometry.height];
+  }
+  function detour(g, edges, obstacles) {
+    const GAP = 12, boxes = obstacles.filter((c) => c && c.geometry && !c.geometry.relative).map((c) => [c, absoluteBox(c)]);
+    const centre = (b) => ({ x: b[0] + b[2] / 2, y: b[1] + b[3] / 2 });
+    const crosses = (p, q, b) => {
+      for (let k = 1; k < 60; k++) {
+        const x = p.x + (q.x - p.x) * k / 60, y = p.y + (q.y - p.y) * k / 60;
+        if (x > b[0] + 2 && x < b[0] + b[2] - 2 && y > b[1] + 2 && y < b[1] + b[3] - 2) return k;
+      }
+      return 0;
+    };
+    const route = (p, q, skip, depth) => {
+      if (depth > 6) return [];
+      let first = null, at = Infinity;
+      for (const [cell, b] of boxes) { if (skip.has(cell)) continue; const k = crosses(p, q, b); if (k && k < at) { at = k; first = b; } }
+      if (!first) return [];
+      const steep = Math.abs(q.y - p.y) > Math.abs(q.x - p.x), c = centre(first);
+      let a, b;
+      if (steep) {
+        const x = (p.x + q.x) / 2 < c.x ? first[0] - GAP : first[0] + first[2] + GAP, down = q.y > p.y;
+        a = { x, y: down ? first[1] - GAP : first[1] + first[3] + GAP }; b = { x, y: down ? first[1] + first[3] + GAP : first[1] - GAP };
+      } else {
+        const y = (p.y + q.y) / 2 < c.y ? first[1] - GAP : first[1] + first[3] + GAP, right = q.x > p.x;
+        a = { x: right ? first[0] - GAP : first[0] + first[2] + GAP, y }; b = { x: right ? first[0] + first[2] + GAP : first[0] - GAP, y };
+      }
+      return [...route(p, a, skip, depth + 1), a, ...route(a, b, skip, depth + 1), b, ...route(b, q, skip, depth + 1)];
+    };
+    const { Point } = maxgraph, m = g.getDataModel();
+    g.batchUpdate(() => {
+      for (const e of edges) {
+        if (!e || !e.source || !e.target || (e.geometry.points || []).length) continue;
+        const skip = new Set();
+        for (const end of [e.source, e.target]) for (let c = end; c; c = c.parent) skip.add(c);
+        const points = route(centre(absoluteBox(e.source)), centre(absoluteBox(e.target)), skip, 0);
+        if (!points.length) continue;
+        const geo = e.geometry.clone();
+        geo.points = points.map((pt) => new Point(pt.x, pt.y));
+        m.setGeometry(e, geo);
+      }
+    });
+  }
+
   // Moves a box (and its interface ball and label, to its left) down until no other line crosses it or another box.
   function clearOfLines(id, boxes, edges) {
     const centre = (key) => { const [x, y, w, h] = boxes[key]; return [x + w / 2, y + h / 2]; };
@@ -2020,14 +2103,14 @@
         return;
       }
     }
-    if (componentGraph) { restyleComponents(); fit(); return; }
+    if (componentGraph) { restyleComponents(); refit(); return; }
     const { Graph, InternalEvent } = maxgraph;
     InternalEvent.disableContextMenu(box);
     componentGraph = new Graph(box);
     componentGraph.options.foldingEnabled = false; // packages are not collapsible, and the fold icon is not shipped
     for (const setting of ["setConnectable", "setCellsEditable", "setCellsDisconnectable", "setCellsResizable", "setDropEnabled"]) componentGraph[setting](false);
     componentGraph.setPanning(true);
-    const root = componentGraph.getDefaultParent(), at = componentLayout(), cells = {}, groups = {};
+    const root = componentGraph.getDefaultParent(), at = componentLayout(), cells = {}, groups = {}, dependencies = [];
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130", fontSize: 12 };
     componentGraph.batchUpdate(() => {
       for (const [stereotype, [id, name]] of Object.entries(GROUPS)) {
@@ -2054,10 +2137,11 @@
       }
       for (const d of components.dependencies) {
         const lollipop = isLollipop(d), target = cells[lollipop ? "iface:" + d.target : d.target];
-        componentGraph.insertEdge({ parent: root, source: cells[d.source], target, value: lollipop ? "" : `«${d.names[0] === "reads" ? "read" : d.names[0] === "serves" ? "serve" : "use"}»`,
-          style: { ...font, fontSize: 10, strokeColor: "#4a5568", dashed: true, endArrow: "open", labelBackgroundColor: "#fbfcfe" } });
+        dependencies.push(componentGraph.insertEdge({ parent: root, source: cells[d.source], target, value: lollipop ? "" : `«${d.names[0] === "reads" ? "read" : d.names[0] === "serves" ? "serve" : "use"}»`,
+          style: { ...font, fontSize: 10, strokeColor: "#4a5568", dashed: true, endArrow: "open", labelBackgroundColor: "#fbfcfe" } }));
       }
     });
+    detour(componentGraph, dependencies, Object.values(cells));
     componentGraph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = componentGraph.getSelectionCell();
       const id = cell && cell.id ? (cell.id.startsWith("iface:") ? "component:" + cell.id.slice(6) : cell.id) : "";
@@ -3169,8 +3253,16 @@
     $("undo").addEventListener("click", undo);
     $("redo").addEventListener("click", redo);
     document.addEventListener("keydown", historyKeys);
+    // Escape lets go of the selection on whichever diagram has the focus, as in any drawing tool, once nothing nearer
+    // (an armed palette tool, an inline editor) has taken the key for itself.
+    document.addEventListener("keydown", (event) => {
+      const g = current();
+      if (event.key !== "Escape" || event.defaultPrevented || !g || !g.container.contains(document.activeElement) || g.isSelectionEmpty()) return;
+      g.clearSelection();
+      event.preventDefault();
+    });
     $("canvas-help").textContent = HINTS.states;
-    window.addEventListener("resize", fit);
+    window.addEventListener("resize", () => refit());
     try { await recover(); } catch {
       // A kept draft the shape check let through still failed to reopen: open the model in force, and keep the draft.
       if (recoveringRaw !== null) setAsideDraft(recoveringRaw);
@@ -3197,13 +3289,13 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    api, el, hooks, about, textWidth, liftLabels, follow, detour, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
     activationDraft, activated, showEffects, status: () => activeStatus,
     buildForReview: () => { if (plan && !plan.previewing) enterPreview(); return build(); },
     inspectChange: () => { if (plan && !plan.previewing) enterPreview(); showTab("review"); },
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; those pack changes remain drafts (#156). The review view changes nothing.
-    setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, refit, importPlan, runAs, openScreen,
     components: loadComponents, buildEvidence: () => evidence(), // the deployment lens (ADR-0206) reads both
     runningBuild: () => lastBuild && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS" ? { url: lastBuild.url, model: lastBuild.model, key: lastBuild.key, vocabulary: lastBuild.trace_vocabulary, subject: lastBuild.subject, approval: lastBuild.approval } : null,
     screens: () => screens, data: () => data, editedScreens: () => (screensEdited ? screens : null), // the screen designer's screens and the class diagram (play-roles.js reads them)
