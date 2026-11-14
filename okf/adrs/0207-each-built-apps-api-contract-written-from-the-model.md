@@ -70,4 +70,8 @@ _No curated notes yet._
 * [ADR-0150: Build runnable apps from the model, checked against the kernel as oracle](/adrs/0150-build-apps-from-the-model-with-a-kernel-oracle.md) - The owner's goal, stated on 8 October 2026, is "UML you can trust to build apps".
 * [ADR-0203: A system landscape of the workflows that share classes](/adrs/0203-system-landscape-of-workflows-that-share-classes.md) - PlayIDE edits one workflow at a time: one state machine moving one record class, with its class diagram, use cases, screens and laws.
 * [ADR-0206: A deployment view read from the built app's files](/adrs/0206-a-deployment-view-read-from-the-built-apps-files.md) - PlayIDE had no deployment view.
+
+## Referenced by
+
+* [ADR-0254: One status table, retryable creates and bounded requests in the generated app](/adrs/0254-app-generator-second-pass.md) - The second inspection of the app generator (record) found that the API contract and the server kept the status of each refusal in two copies that had drifted,…
 <!-- okf:generated:end links -->

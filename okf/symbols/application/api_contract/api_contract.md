@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/api_contract.py#api_contract
   title: application/api_contract.py
   hash_method: ast-v2
-  sha256: fe44b00dd7a6a6b6276582ec598c8522f9f15aca20802752e2eec8abd5d954df
-notes_baseline: 09581333f1d13fa92744f8994728a73a84854865be5faee9030cc4ed9b19947a
+  sha256: 3e40bc452cbac1bf68a8a2c55d94e211d003ba574b249e844f790fcaa1f83565
+notes_baseline: 5a1ad1947ac7e2a742b083e6bef4fd3cf51a2f6a44d2a8c96cc9a3f120d1d049
 ---
 
 # application.api_contract.api_contract
@@ -44,6 +44,7 @@ _No curated notes yet._
 ## Depends on
 
 * [application.api_contract.FORMAT](/symbols/application/api_contract/FORMAT.md) - Constant `FORMAT` in `application/api_contract`.
+* [application.api_contract.ONCE](/symbols/application/api_contract/ONCE.md) - Constant `ONCE` in `application/api_contract`.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
