@@ -479,14 +479,14 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
             if sibling == folder or not (sibling / PACK_FILE).is_file():
                 continue
             try:
-                other = load_pack(sibling)
+                other = load_pack(sibling, claim=False)  # beside the open system: it keeps reading its own files
             except (DomainError, OSError):
                 unreadable.append(sibling.name)
                 continue
             if other.id == focus or any(other.id == known.id for known, _, _ in found):  # two folders, one id: ambiguous
                 unreadable.append(f"{sibling.name} (its id {other.id} is taken)")
             else:
-                found.append((other, data_for(other), other.model))
+                found.append((other, data_for(load_pack(sibling)), other.model))  # another id: read its own files
         return found, unreadable
 
     @app.post("/api/play/landscape")
