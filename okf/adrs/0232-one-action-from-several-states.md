@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0232-one-action-from-several-states.md
   title: 0232-one-action-from-several-states.md
   hash_method: lf-sha256-v1
-  sha256: fb2e94d7e4d8cdd7b8eafe0926f7b9a2532d5791b0f6571bac7e3e596419ba99
-notes_baseline: f78a24662ce943c2fa8018cff1b81db2cebf14b68de4b1d512afe6d3f4d7fbdc
+  sha256: 5a1a4d0d7528a5880264bfb9dd59c1e3edd3d3152f81a98cc3041367f5014048
+notes_baseline: 1fd319f627a552480104edabc1de87e7d501594cc7e5f5707e4fa35de3bfcfd3
 ---
 
 # ADR-0232: One action from several states
@@ -55,11 +55,13 @@ notes_baseline: f78a24662ce943c2fa8018cff1b81db2cebf14b68de4b1d512afe6d3f4d7fbdc
 * Considered options
 * Decision outcome
 * Amendment, 12 November 2026: chat and the outline name the source
+* Amendment, 13 November 2026: another source keeps what the action shares
 
 ## Code and docs mentioned
 
 Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
 
+* `repo://docs/quality/inspection-2026-11-13-merged-prs.md`
 * `repo://verification/scope.py`
 <!-- okf:generated:end facts -->
 
@@ -68,6 +70,12 @@ Existence-checked by the gate; not hashed (an ADR is a decision record, not a de
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
+## Related decisions
+
+* [ADR-0234: Guards over record values](/adrs/0234-guards-over-record-values.md) - Issue #93, item 1.
+* [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
+* [ADR-0241: Actions on linked objects](/adrs/0241-actions-on-linked-objects.md) - Issue #93, item 4.
+
 ## Referenced by
 
 * [ADR-0234: Guards over record values](/adrs/0234-guards-over-record-values.md) - Issue #93, item 1.

@@ -67,7 +67,7 @@ def declared_codes(model: Workflow, pack: Pack) -> list[str]:
             codes.append("GUARD_POLICY:" + t.action)
         if set(t.required_effects) != set(spec.required_effects) or not set(pack.effects.forbidden) <= set(t.forbidden_effects):
             codes.append("EFFECT_POLICY:" + t.action)
-    return codes + _role_codes(model, pack)
+    return codes + _role_codes(model, pack) + lifecycle_conflicts(model)
 
 
 def _role_codes(model: Workflow, pack: Pack) -> list[str]:
@@ -77,6 +77,14 @@ def _role_codes(model: Workflow, pack: Pack) -> list[str]:
     declared = {r.id for r in pack.roles}
     codes = ["UNDECLARED_INITIATOR:" + r for r in model.initiators if r not in declared]
     return codes + ["UNDECLARED_ROLE:" + t.id for t in model.transitions if t.role not in declared]
+
+
+def lifecycle_conflicts(model: Workflow) -> list[str]:
+    """Links to one class must declare the same lifecycle, its states, initial state and moves in any order (ADR-0241,
+    amended 2026-11-13): an object has one state whichever link names it, and the built app stores one."""
+    first = {o.entity: o for o in reversed(model.objects)}
+    return sorted({"LINKED_LIFECYCLE_CONFLICT:" + o.entity for o in model.objects if (set(o.states), o.initial, set(o.moves))
+                   != (set(first[o.entity].states), first[o.entity].initial, set(first[o.entity].moves))})
 
 
 def law_violations(model: Workflow, pack: Pack | None = None) -> list[Violation]:

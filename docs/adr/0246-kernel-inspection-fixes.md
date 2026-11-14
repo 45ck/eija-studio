@@ -43,7 +43,8 @@ their ADRs. It found eight defects (K1 to K8). The ones that change kernel seman
 * **K3, K4**: `ValueGuard.holds` orders text against a date only when the text is a real date, and a value that is not a
   bool, a number or a string is no kind a guard compares. Both fail closed (`VALUE_GUARD_DENIED` at runtime).
 * **K5**: `add_transition` gives a new source of an existing action that action's value guards, time event and linked
-  steps, so its transitions stay alike.
+  steps, so its transitions stay alike. #257 landed the same fix (`transactions._another_source`) while this was open;
+  its code is kept and the K5 tests here cover it.
 * **K6**: `value_guards.points` keeps `1` apart from `True` and `0` apart from `False`.
 * **K7**: `model_impact` adds `model_changes` (only when non-empty) naming `initial_state`, `initiators`, `receives` or
   `objects`. A start change roots a `record-start` node rippling to the review packet; a lifecycle change marks the

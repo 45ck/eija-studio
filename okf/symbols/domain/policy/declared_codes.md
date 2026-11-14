@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#declared_codes
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: 3841ffd1834df18ddffa9c1bbd60056e41a677eb6ea515383b2fab9ffce6c103
-notes_baseline: c02b217f86e6780db6a0fb5066a6eb2643bef55b636d3ba7b2d098745b01c66a
+  sha256: 01b13ad7b2a6302a1352da3746bf4418424671707f778a99b10cb758483967f0
+notes_baseline: 418870604f468f2818dafa181fa7a6bfbee5c561fa3ed6168e1c98ed85b4215c
 ---
 
 # domain.policy.declared_codes
@@ -46,6 +46,7 @@ _No curated notes yet._
 
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.policy.lifecycle_conflicts](/symbols/domain/policy/lifecycle_conflicts.md) - Links to one class must declare the same lifecycle, its states, initial state and moves in any order (ADR-0241, amended 2026-11-13): an object has one state wh…
 
 ## Referenced by
 
