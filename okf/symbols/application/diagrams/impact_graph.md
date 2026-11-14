@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#impact_graph
   title: application/diagrams.py
   hash_method: ast-v2
-  sha256: c7d53b551b5ce60efcca3924000406945d08acb65df18459bc99f0cd2d8a0330
-notes_baseline: 2f1885ef1459e0da318005a19b42a3bf67330d93d1abd0ac4207c8fb3e7cbf94
+  sha256: f6712d5b9348b77449f424ced4cd58abca5401b1f09908dcc62a2d1266c4459d
+notes_baseline: 5ce3b487c6251a9fbbbee3fbb4b1fd8e62eeefa096d52acbe61f218568fd9349
 ---
 
 # application.diagrams.impact_graph
@@ -47,6 +47,6 @@ _No curated notes yet._
 
 * [application.diagrams.Cluster](/symbols/application/diagrams/Cluster.md) - `class Cluster` in `application/diagrams`.
 * [application.diagrams.Graph](/symbols/application/diagrams/Graph.md) - A state machine (`kind="state"`) or a flow (`kind="flow"`) of labelled nodes and edges.
-* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
+* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - The ripple of a change.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 <!-- okf:generated:end links -->

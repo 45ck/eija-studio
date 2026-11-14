@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#ValueGuard
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: c9ceac65a2d39cb2621c54c380d069186426d95899da6bf2a11e87109e1c61a1
-notes_baseline: a797b6f2e2103f9eac0c847ace9c43557adbe278dedd45248e7e9ccad49a5a0c
+  sha256: 98cf0807e6775aaf96d2c3e677baa88a108ad95c076e28da8f59b9dd7d66639d
+notes_baseline: 935629cdf30234a7004ab0caa97deb3e3ca1098241fea105293b49032b01362f
 ---
 
 # domain.models.ValueGuard
@@ -33,7 +33,8 @@ notes_baseline: a797b6f2e2103f9eac0c847ace9c43557adbe278dedd45248e7e9ccad49a5a0c
 
 ~~~text
 A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234). The transition
-fires only when it holds. A value that is missing, or of another kind, never satisfies it (fail closed).
+fires only when it holds. A value that is missing, or of another kind, never satisfies it (fail closed); nor does
+text that is not a date under an ordering against a date.
 ~~~
 
 ## Fields

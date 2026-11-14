@@ -103,7 +103,10 @@ def _text_points(guards: list[ValueGuard]) -> list[Any]:
 def points(guards: list[ValueGuard]) -> list[Any]:
     """Values of one attribute that stand for every value its guards can tell apart; None means no value."""
     truths = [True, False] if any(isinstance(g.value, bool) for g in guards) else []
-    return list(dict.fromkeys([None, *truths, *_number_points(guards), *_text_points(guards)]))
+    kept: dict[tuple[bool, Any], Any] = {}  # keyed apart from truth values: True == 1 and False == 0 (ADR-0246, K6)
+    for value in [None, *truths, *_number_points(guards), *_text_points(guards)]:
+        kept.setdefault((isinstance(value, bool), value), value)
+    return list(kept.values())
 
 
 def valuations(model: Workflow) -> list[dict[str, Any]] | None:

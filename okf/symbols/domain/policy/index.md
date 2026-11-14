@@ -14,7 +14,7 @@
 * [domain.policy.apply_transactions](apply_transactions.md) - Apply an edit sequence as one change: the start must conform, the result must conform (intermediate steps need only be coherent workflows).
 * [domain.policy.baseline](baseline.md) - The trusted four-state excursion workflow (Draft, Submitted, Approved, Rejected) that every Change Case starts from.
 * [domain.policy.check_policy](check_policy.md) - Returns the sorted policy error codes of a workflow; an empty list means the model stays inside the protected excursion policy.
-* [domain.policy.declared_codes](declared_codes.md) - Every transition must perform a declared action, with exactly its declared guards and required effects, and must declare every pack-forbidden effect forbidden.
+* [domain.policy.declared_codes](declared_codes.md) - Every transition must perform a declared action, held by a declared role, with exactly its declared guards and required effects, and must declare every pack-forbidden effect forbidden.
 * [domain.policy.demo_candidate](demo_candidate.md) - The pack's baseline with its first supported meaning applied.
 * [domain.policy.effects_table](effects_table.md) - Declared required effects per action.
 * [domain.policy.ensure_policy](ensure_policy.md) - Raises DomainError POLICY_BLOCKED when check_policy reports any finding; called before every model is executed or transformed.
