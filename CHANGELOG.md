@@ -33,6 +33,16 @@
 - Fixed: the SCXML export ordered any text against a date, so its chart took `[due > "2026-01-15"]` for `due = "other"` where the kernel refuses (ADR-0246 K3 had reached the kernel only).
 - Fixed: the SCXML export compared a record value with a guard of another kind, taking `True` for `1` and `6` for `!= "a"`, and failing with a `TypeError` on `"6" > 5`. Each guard now needs its own kind, as in the kernel.
 - Fixed: two inspection test modules named log files that do not exist.
+### 14 November 2026: the day's fixes reviewed together
+
+- An integration review of `main` after #250-#261 ran every tier with every extra installed ([record](docs/quality/inspections/2026-11-14-integration-review.md)). Every inspection record is now listed in one place: [docs/quality/inspections](docs/quality/inspections/README.md).
+
+### 13 November 2026: chat plan mode, diagram editing, merged pull requests, and tests and gates, inspected
+
+- Chat plan mode ([record](docs/quality/inspections/2026-11-13-ai-chat-plan-mode.md), #253): a live request mixing exact phrases with prose keeps the exact steps (`PLAN_REQUEST_MIXED`); one live call at a time (`PROVIDER_BUSY`); a plan past 64 steps is refused (`PLAN_TOO_LONG`); each step shows its own provenance; live calls are audited; `plan_check` previews a system you started as the chat does.
+- Diagram editing ([record](docs/hci/inspection-2026-11-13/README.md), #256, closes #225): a redraw keeps the selection it shows and the canvas does not move; a placed state lands under the pointer; an association's role name sits at its end; the use case diagram fits at 1280 px; a composite state's inside opens a new state on double-click.
+- Merged pull requests #217-#252 re-inspected ([record](docs/quality/inspection-2026-11-13-merged-prs.md), #257): another source for an action keeps its time event, value guards and linked steps; two links to one class with different lifecycles are refused (`LINKED_LIFECYCLE_CONFLICT`); the built app reads `expected_version: 1.0`; UML exports list who may start a record as not carried.
+- Tests, gates and docs ([record](docs/quality/inspections/2026-11-13-tests-gates-docs.md), #259): 116 slow and browser tests that ran in no tier now run in the release session `browser_suite`; hosted jobs install the extras and fail on a skipped gate; the coverage floor is 93.
 
 ### 13 November 2026: inspection of the app generator
 
@@ -44,7 +54,7 @@
 ### 13 November 2026: the kernel, inspected
 
 - A Fagan inspection of the kernel ([record](docs/quality/inspection-2026-11-13-kernel.md), [ADR-0246](docs/adr/0246-kernel-inspection-fixes.md)) found eight defects; all are fixed, each with a regression test in `tests/test_kernel_inspection.py` that fails on the old code.
-- Fixed: the policy accepted a transition held by a role the pack does not declare (it already refused an undeclared initiator). It now reports `UNDECLARED_ROLE:<transition id>`.
+- Fixed: the policy accepted a transition held by a role the pack does not declare (it already refused an undeclared initiator). It now reports `UNDECLARED_ROLE:<action>` (named by the transition id until the 14 November amendment to ADR-0246).
 - Fixed: a `path_requires` law on the initial state was always reported broken by the table check, so the policy refused models that no run breaks. The table and run judges now agree that a new record has entered no state.
 - Fixed: a value guard against a date compared any text as a string (`"1999"` was before `2026-12-01`), and a list or object as a record value crashed `execute` with a `TypeError`. Both now fail closed with `VALUE_GUARD_DENIED`.
 - Fixed: `add_transition` could not give a second source to an action with a value guard, a time event or a step on a linked object (ADR-0232); the new transition now takes what the action shares.

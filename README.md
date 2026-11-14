@@ -223,11 +223,13 @@ General live AI creation, actions that change record values, migrations, deliver
 
 As of 11 November 2026, in order:
 
-1. **Checks on every pull request.** The fast tier runs on each PR and the full tier nightly, once hosted Actions are unlocked. Until then, local `nox -t fast` is the merge evidence.
+1. **Checks on every pull request.** The fast tier runs on each PR and the full tier nightly, once hosted Actions are unlocked. Until then, local `EIJA_REQUIRE_EXTRAS=1 nox -t fast` with the extras installed is the merge evidence.
 2. **A backlog that matches the product.** Stale issues closed, one list of current work, tech debt removed.
 3. **Measure how well AI reads a request.** A kernel-graded intent eval across providers.
 4. **Opt-in live AI, offline by default.** Live chat only with consent, plus a `plan_check` tool for coding agents.
 5. **Kernel gaps from real systems.** Done: built to-one associations, who may start a record, separation of duties, one action on several transitions, guards over record values, time events such as `after(2 days)`, composite states, actions on linked objects (`/ target.lock`) and signals between workflows (a late return starts a fine). Next: a relay that carries signals between built apps.
+
+On 13 and 14 November, ten inspections and an integration review found and fixed about 90 defects; the [inspection records](docs/quality/inspections/README.md) list them and what is still open.
 
 The checklist is [issue #221](https://github.com/45ck/eija-studio/issues/221). Issues labelled [`owner-only`](https://github.com/45ck/eija-studio/labels/owner-only) wait on the owner; [`later`](https://github.com/45ck/eija-studio/labels/later) is parked. The [roadmap](docs/ROADMAP.md#what-we-are-doing-now) gives the reasons and the longer milestones; the [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) and [acceptance criteria](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) say how work ships.
 

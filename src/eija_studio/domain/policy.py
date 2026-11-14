@@ -73,11 +73,13 @@ def declared_codes(model: Workflow, pack: Pack) -> list[str]:
 def _role_codes(model: Workflow, pack: Pack) -> list[str]:
     """Initiators (ADR-0231) and the roles holding transitions must be roles the pack declares; the pack loader refuses
     an undeclared transition role in the pack's own model, and no actor can hold one (ADR-0246, K1). The code names
-    the transition, whose id is pattern-checked, not the free-text role, so it is safe in every diagram that shows it."""
+    the action, as GUARD_POLICY and EFFECT_POLICY do: a role belongs to the action, which every transition it labels
+    shares (ADR-0232), and only a declared action is judged, so the name is the pack's and never the free-text role
+    (ADR-0246, amended 2026-11-14)."""
     declared = {r.id for r in pack.roles}
     codes = ["UNDECLARED_INITIATOR:" + r for r in model.initiators if r not in declared]
     # A transition of an undeclared action is already UNSUPPORTED_ACTION; its role is not judged on top of that.
-    return codes + ["UNDECLARED_ROLE:" + t.id for t in model.transitions
+    return codes + ["UNDECLARED_ROLE:" + t.action for t in model.transitions
                     if t.role not in declared and pack.action(t.action) is not None]
 
 

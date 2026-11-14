@@ -4,7 +4,7 @@ A test ORACLE only: the pack-driven policy (``domain.policy.check_policy`` with 
 exactly these codes on every model (tests/test_pack.py). Never imported by the kernel.
 
 One rule was added after the freeze, by ADR-0246 (13 November 2026): a transition held by a role the excursion pack
-does not declare is ``UNDECLARED_ROLE:<transition id>``. It is written here from the pack's three role names as
+does not declare is ``UNDECLARED_ROLE:<action>`` (named by the transition id until 14 November 2026). It is written here from the pack's three role names as
 literals, not read from the pack, so the oracle stays independent of the code it checks."""
 from __future__ import annotations
 
@@ -63,6 +63,6 @@ def check_policy(model: Workflow) -> list[str]:
             errors.append("GUARD_POLICY:" + action)
         if set(t.required_effects) != set(EFFECTS[action]) or not set(FORBIDDEN).issubset(t.forbidden_effects):
             errors.append("EFFECT_POLICY:" + action)
-    errors += ["UNDECLARED_ROLE:" + t.id for t in model.transitions  # ADR-0246; an unknown action is UNSUPPORTED_ACTION
+    errors += ["UNDECLARED_ROLE:" + t.action for t in model.transitions  # ADR-0246; an unknown action is UNSUPPORTED_ACTION
                if t.role not in DECLARED_ROLES and t.action in expected]
     return sorted(set(errors))

@@ -199,6 +199,8 @@ def test_your_own_change_and_the_ais_read_the_same_way_with_what_to_consider():
             page.wait_for_selector("#diff-consider li.ok, #diff-consider li.bad", timeout=30_000)
             tags = page.eval_on_selector_all("#inspector .diff-item", "items => items.map((b) => [b.querySelector('.who') && b.querySelector('.who').textContent, b.textContent])")
             assert [t[0] for t in tags] == ["You", "AI", "AI"] and "Adds state Lost" in tags[0][1]
+            # The law proof answers after the first line appears; under load the read could beat it (integration review).
+            page.locator("#diff-consider", has_text="No law is broken").wait_for(timeout=60_000)
             consider = page.inner_text("#diff-consider")
             assert "problem" in consider and "No law is broken" in consider and "Also changes: " in consider
             assert page.get_attribute("#diff-flags", "open") is None  # the details wait behind one line of counts

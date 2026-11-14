@@ -155,6 +155,13 @@ nox -t fast
 clingo, `okf` PyYAML, `hci`/`visual`/`demos` Playwright driving the installed Chrome, and so on); a session whose optional
 tool is absent reports `NOT_RUN`, never PASS. `.githooks/run-nox` finds `.venv` on its own, so the hooks need no activation.
 
+A test that needs an extra skips without it, and pytest exits 0, so every pytest run ends with a **NOT_RUN for a missing
+extra** list (`tests/extras_guard.py`). With `EIJA_REQUIRE_EXTRAS=1` such a skip fails the run. Use it for a run that is
+merge evidence: `pip install -e '.[dev,lint,testing,agents,providers,source-analysis,demos,xuml,graph,graph-formal,okf,interop-api,smt,mutation]'`,
+then `EIJA_REQUIRE_EXTRAS=1 nox -t fast`. Two z3-only tests were red on `main` for a day because local runs skipped them
+([integration review](inspections/2026-11-14-integration-review.md), I1). Opt-in tests (`EIJA_BROWSER_TESTS`, Docker,
+Node) are not counted.
+
 **Two different activation models.** The git hooks in `.githooks/` do nothing until `core.hooksPath` is set (below). The Claude
 Code files in `.claude/` are different: Claude Code loads `.claude/settings.json` automatically, so the deny rules and the
 PreToolUse hook are **live in every clone and worktree as soon as this branch merges**, with no enable step. They are a

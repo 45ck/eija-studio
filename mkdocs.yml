@@ -90,7 +90,9 @@ nav:
       - Runtime verification report: verification/VERIFICATION.md
   - Visual: lanes/visual.md
   - Agents: lanes/agents.md
-  - Quality: lanes/quality.md
+  - Quality:
+      - Quality lane: lanes/quality.md
+      - Inspections: quality/inspections/README.md
   - Metrics: lanes/metrics.md
   - HCI: lanes/hci.md
   - Knowledge base: lanes/knowledge-base.md

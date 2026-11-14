@@ -62,7 +62,7 @@ claim. Product code belongs to the other inspections; product defects found here
   `tests/test_pack.py::test_pack_policy_equals_legacy_policy_on_every_smt_differential_candidate` (540 disagreements: the
   test's legacy policy does not know `UNDECLARED_ROLE`) and `tests/test_formal_smt.py::test_committed_snapshot_matches_regeneration`
   (`accepted_set.json` differs) fail on `main`. Without z3 both skip, which is why every local fast run stayed green: TG-02
-  in action. Fixing them means reviewing a policy change and regenerating the SMT snapshot, so they go to the kernel inspection.
+  in action. Fixing them means reviewing a policy change and regenerating the SMT snapshot, so they go to the kernel inspection. Fixed there in #261 (legacy oracle and both SMT encodings taught `UNDECLARED_ROLE`); a skip like this now fails a run with `EIJA_REQUIRE_EXTRAS=1` ([integration review](2026-11-14-integration-review.md), I1).
 * **Parallel browsers:** under `-n 4`, `test_play_place::test_pick_then_click_double_click_and_edit_inline_in_a_real_browser`
   timed out (it passes alone). `browser_suite` therefore runs serially, one browser at a time, as CONTRIBUTING.md asks.
 

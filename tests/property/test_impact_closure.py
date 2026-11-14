@@ -18,6 +18,7 @@ import pytest
 from hypothesis import given, settings, strategies as st
 
 from eija_studio.domain.impact import closure, model_impact
+from eija_studio.domain.models import canonical
 from .property_strategies import semantic_edits, workflows
 from .property_support import examples
 
@@ -123,11 +124,21 @@ def test_model_impact_covers_exactly_the_changed_actions(data):
     before = data.draw(workflows())
     _, after = data.draw(semantic_edits(before))
     report = model_impact(before, after)
-    old, new = {t.action: t for t in before.transitions}, {t.action: t for t in after.transitions}
+    # An action may label several transitions (ADR-0232), so each side is the set of an action's transitions; keyed by
+    # action alone, an edit to any but the last of them went unseen (integration review I8).
+    def labelled(model):
+        found: dict[str, set[str]] = {}
+        for t in model.transitions:
+            found.setdefault(t.action, set()).add(canonical(t.model_dump(mode="json")))
+        return found
+    old, new = labelled(before), labelled(after)
     expected = sorted(a for a in old.keys() | new.keys() if old.get(a) != new.get(a))
     assert report["changed_actions"] == expected
     assert report["complete"] is True and report["frontier"] == []
-    if expected:
+    # A change to how a record starts roots the ripple too, with no changed action (ADR-0246, K7).
+    starts = set(report.get("model_changes", ())) & {"initial_state", "initiators", "receives"}
+    assert ("record-start" in report["affected"]) == bool(starts)
+    if expected or starts:
         assert {"review-packet", "local-decision"} <= set(report["affected"])
         assert all(f"rule:{a}" in report["affected"] and f"receipt:{a}" in report["affected"] for a in expected)
     else:

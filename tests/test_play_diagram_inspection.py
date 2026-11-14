@@ -15,6 +15,7 @@ Chromium at EIJA_CHROMIUM, and never downloads a browser.
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 import pytest
@@ -85,6 +86,8 @@ def test_delete_acts_only_on_a_selection_the_diagram_shows():
             page.keyboard.press("Enter")
             _wait(page, STEPS, 1)
             _wait(page, SELECTED, ["state:OnLoan"], "states")
+            # The inspector is painted after the selection is restored; under load the read could beat it.
+            page.locator("#inspector h3", has_text=re.compile(r"^\s*state onloan\s*$", re.IGNORECASE)).wait_for(timeout=10_000)
             assert page.inner_text("#inspector h3").lower() == "state onloan"
             assert page.text_content("#status-selection").startswith("state OnLoan")
 
