@@ -1,6 +1,6 @@
 name: local-poc-checks
-# Release verification and HTTP smoke: manual dispatch only. It is release evidence, not a per-change gate (ADR-0228);
-# the per-change gates are in quality.yml. Local equivalent: `python scripts/verify_release.py && python scripts/http_smoke.py`.
+# Manual dispatch only: release verification and the HTTP smoke test on Python 3.11 and 3.13.
+# The fast tier runs on every pull request and push to main, and the full tier nightly, in quality.yml (ADR-0228).
 on: [workflow_dispatch]
 permissions:
   contents: read

@@ -3576,7 +3576,9 @@
           },
           "states": {
             "items": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 60,
+              "minLength": 1
             },
             "type": "array",
             "maxItems": 8,
@@ -4963,7 +4965,7 @@
           "value"
         ],
         "title": "ValueGuard",
-        "description": "A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234). The transition\nfires only when it holds. A value that is missing, or of another kind, never satisfies it (fail closed)."
+        "description": "A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234). The transition\nfires only when it holds. A value that is missing, or of another kind, never satisfies it (fail closed); nor does\ntext that is not a date under an ordering against a date."
       },
       "Version": {
         "properties": {
@@ -5017,7 +5019,9 @@
           },
           "initiators": {
             "items": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 60,
+              "minLength": 1
             },
             "type": "array",
             "maxItems": 16,

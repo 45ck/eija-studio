@@ -46,11 +46,15 @@ def build_studio(workspace: Path, provider="offline", model="", allow_network=Fa
     domain = resolve_pack(pack)
     proposal_provider = create_provider(provider, model, key, domain)  # raises ValueError for an unknown name
     store = SQLiteStore(workspace, pack=domain)
-    return Studio(store, proposal_provider, ReceiptSigner(store.directory), partial(identity, domain), sandbox_factory(store.directory, domain),
+    live = LivePlanProposer(proposal_provider, OfflinePlanProposer()) if proposal_provider.networked else None
+    studio = Studio(store, proposal_provider, ReceiptSigner(store.directory), partial(identity, domain), sandbox_factory(store.directory, domain),
                   allow_network=allow_network, formal=FormalReports() if formal else None, pack=domain,
                   edit_proposer=OfflineEditProposer(), plan_proposer=OfflinePlanProposer(),
-                  live_plan_proposer=LivePlanProposer(proposal_provider, OfflinePlanProposer()) if proposal_provider.networked else None,
+                  live_plan_proposer=live,
                   generated_apps=GeneratedApps(store.directory, templates=TEMPLATES, subject_file=SUBJECT_FILE,
                                                assemble=review_snapshot, validate=validate_review_payload),
                   repository=RepositoryConnection(repository_root, domain, source_facts=source_profile(domain)) if repository_root is not None else None,
                   repository_changes=RepositoryChanges(repository_root, domain, syntax_reader=syntax_reader) if repository_root is not None else None)
+    if live is not None:
+        live.audit = studio.record  # live chat calls are audited like every provider call (ADR-0230)
+    return studio

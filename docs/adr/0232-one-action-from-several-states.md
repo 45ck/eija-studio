@@ -70,3 +70,12 @@ Return"), and the outline listed `Return [Librarian]` twice. Now:
   Overdue. "move Return from Overdue source to ‹state›" moves one source; without "from" it names the sources to choose
   from. The phrases offered for a selected transition say "from ‹state›" when its action leaves several states.
 * The outline (and so the status bar) reads `Return [Librarian] from OnLoan` and `Return [Librarian] from Overdue`.
+
+## Amendment, 13 November 2026: another source keeps what the action shares
+
+Re-inspection of the merged PRs (`docs/quality/inspection-2026-11-13-merged-prs.md`, M1) found that time events
+(ADR-0237), value guards (ADR-0234) and steps on linked objects (ADR-0241) broke this decision for the actions that
+carry them: an added source was declared from the pack's catalog, which has none of them, so the edit was refused as
+incoherent. `add_transition` for an action the model already has now copies everything its transitions share (guards,
+effects, value guards, time event, linked steps) and takes only its id and source from the request. A different target
+or role is refused with `EDIT_INVALID`, naming the action's target and role.

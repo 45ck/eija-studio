@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service_views.py#StudioViews.plan_check
   title: application/service_views.py
   hash_method: ast-v2
-  sha256: b2204964b03e1ecc39779b1fa3dc8d5ef7ce7c01dafe9218828da527d3e4ef47
-notes_baseline: 5c7d9cf878d3389ca87f71a7e900fa5bd10d815478e708c53d41bedab8847b30
+  sha256: b412385f39a002c3c234cdb336fb16683a38cdc568daf780b315a792e0159db9
+notes_baseline: fc523e68c97ff418df18fcb121d27826dbd44a3d33d9d6e89d0d4b9182e74e0e
 ---
 
 # application.service_views.StudioViews.plan_check

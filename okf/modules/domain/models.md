@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: d6b26cb55bd2ddc71998fb3d68f9239f0e6774c8fb1d7b6ac9963d9c26a45862
-notes_baseline: 6a448370c0f177b150dbc371912efd7defaf17c381c84c1b0d265a6db1cb18d3
+  sha256: 2d50c62847d1a59cf4cfbb81933e984678a0696d357c5ba00d12390b40696435
+notes_baseline: d03045ebaaf67edecbc2cd26fbd5a45c171a0b3fb5bce7cf587eb08cb406ee7a
 ---
 
 # domain.models
@@ -64,6 +64,10 @@ _The source carries no module docstring._
 * [`fingerprint`](/symbols/domain/models/fingerprint.md) (function) - no docstring
 * [`guard_keys`](/symbols/domain/models/guard_keys.md) (function) - Value guards as a set compared by their JSON, as the semantic hash compares them.
 * [`iso_date`](/symbols/domain/models/iso_date.md) (function) - The date a YYYY-MM-DD string names, or None.
+
+## Internal imports
+
+* [`domain/state_tree`](/modules/domain/state_tree.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -71,6 +75,10 @@ _The source carries no module docstring._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
+## Imports
+
+* [domain.state_tree](/modules/domain/state_tree.md) - Composite states form a tree over a workflow's states (issue #93 item 3, ADR-0240).
+
 ## Referenced by
 
 * [Governance](/contexts/governance.md) - Owns Local capabilities, exact-revision acknowledgement, active baseline version

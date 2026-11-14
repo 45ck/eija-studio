@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#SHARED_NODE
   title: application/diagrams.py
   hash_method: ast-v2
-  sha256: 4e0866e2a27bfc6b7fd410840309f38f3f8b0a11a8ad630c88ef0359b2dae328
-notes_baseline: 98d81b9ff9ca230288a562dbf64b19d34fa7540ee6dbb8ed3402442081d9bb83
+  sha256: c567bc790fa1398a0aee61d6a20d0ec52fbd0bcf692a666cc2903dda113b976e
+notes_baseline: 02a83c20ea0774fa8381cbacff2313c51cd544af9e7f4b8b9dc12f17284dc85f
 ---
 
 # application.diagrams.SHARED_NODE
@@ -25,7 +25,7 @@ notes_baseline: 98d81b9ff9ca230288a562dbf64b19d34fa7540ee6dbb8ed3402442081d9bb83
 |---|---|
 | Kind | constant |
 | Module | [`application/diagrams`](/modules/application/diagrams.md) |
-| Signature | `SHARED_NODE = {'review-packet': 'Review packet', 'local-decision': 'Local decision'}` |
+| Signature | `SHARED_NODE = {'review-packet': 'Review packet', 'local-decision': 'Local decision', 'record-start': 'Record start (initial state, initiators, signals)'}` |
 | Code | `repo://src/eija_studio/application/diagrams.py#SHARED_NODE` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

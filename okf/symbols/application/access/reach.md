@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/access.py#reach
   title: application/access.py
   hash_method: ast-v2
-  sha256: c8ab577e86d9e70f8f0821480e7889e5150abb669d54e81715ace7024685ccba
-notes_baseline: 5b201b1971c95627e5768e17ee9fe4275dcf1d69ac3a2a5cf507cbf03fab0db9
+  sha256: 54897298c14ceb86f449ab0130028d6638846055bea1d59206a971d729224466
+notes_baseline: a0390043583aac24a09ded3bf5ba562075006d20b67efe2902e05a6c33b8e41a
 ---
 
 # application.access.reach
@@ -32,7 +32,9 @@ notes_baseline: 5b201b1971c95627e5768e17ee9fe4275dcf1d69ac3a2a5cf507cbf03fab0db9
 ## Docstring
 
 ~~~text
-Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?
+Can a record reach `target` with no step taken by role `without` (or at all, when it is None)? Starting the record
+is a step too: when the model names who may start one, a record without them does not exist (ADR-0231), unless a
+signal from another workflow starts it (ADR-0242).
 ~~~
 <!-- okf:generated:end facts -->
 

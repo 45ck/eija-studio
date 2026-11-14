@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#ValueGuard.holds
   title: domain/models.py
   hash_method: ast-v2
-  sha256: 0abf4edce7fd81ee947d5e3a56cd01ddb74b756fef8aa3bd4d259791cd9c1747
-notes_baseline: 542d59b8f4aba727ed97bce77eb2066055f9aaa262d15e6bd768a7e9e8497ab0
+  sha256: 0d3b73d857a7502ca8c94b145e68f6f82aeb64ae26e5e6da181d37e18e94ba9c
+notes_baseline: eaa45fee0908f1505fbade8a3aca1ddc6bb571da61e39df2f5e5044bbc0070f3
 ---
 
 # domain.models.ValueGuard.holds
@@ -40,5 +40,7 @@ _The source carries no docstring._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Depends on
+
+* [domain.models.iso_date](/symbols/domain/models/iso_date.md) - The date a YYYY-MM-DD string names, or None.
 <!-- okf:generated:end links -->

@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/impact.py#model_impact
   title: domain/impact.py
   hash_method: ast-v2
-  sha256: 0c69672c296fd876755149e8d7acd11981cb1be6c63bca9b9cb976f1d123efa8
+  sha256: fa8f04caa6b426d3c8b48431ae30e64627699749f7cefc25d01a31cbd31747a0
 description_override: Maps the changed actions between two workflows onto the rule, runtime, state-view, journey, obligation, receipt, review-packet and decision chain and closes over it.
-notes_baseline: 903f19f9643615e15a09284a86aa6ca1f0fea1053a69bfb9e7e2e6df10e7db42
+notes_baseline: 34c855018bf0c06b608044ea7fb8ce6f336ce1f864768075326b079c7a27fd4e
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -30,6 +30,10 @@ verified:
   at: '2026-11-11T13:00:00Z'
   notes_sha256: e3bf02b93698b6ff483b51c2fe8acf9cf2e26db135566d5329fb04f79052b6f0
   sources_sha256: 903f19f9643615e15a09284a86aa6ca1f0fea1053a69bfb9e7e2e6df10e7db42
+- by: process:kernel-inspection
+  at: '2026-11-14T00:30:00Z'
+  notes_sha256: 893ddf4aa25268ed91ffe48c5cb4921b7908ba25194d5562ee39355bced87f95
+  sources_sha256: 34c855018bf0c06b608044ea7fb8ce6f336ce1f864768075326b079c7a27fd4e
 ---
 
 # domain.impact.model_impact
@@ -45,19 +49,22 @@ verified:
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+The ripple of a change. Changed transitions root it; so does a change to how a record starts or to a linked
+object's lifecycle (`model_changes`, present only when there is one, so other reports keep their bytes; ADR-0246).
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-The envelope is explicit in the result: it covers dependencies encoded by this projection mapping, not every real-world consequence. Transitions are compared through `keyed`: by action, or by action and source once an action leaves several states (ADR-0232); the changed list is still by action. Built on [closure](/symbols/domain/impact/closure.md); it is why a rule edit invalidates the receipt and the local decision.
+The envelope is explicit in the result: it covers dependencies encoded by this projection mapping, not every real-world consequence. Transitions are compared through `keyed`: by action, or by action and source once an action leaves several states (ADR-0232); the changed list is still by action. A change outside the transitions that changes what the kernel does (initial state, initiators, received signals, a linked object's lifecycle) is named in `model_changes`, present only when non-empty: a start change roots a `record-start` node rippling to the review packet, and a lifecycle change marks the actions that move that object (ADR-0246). Built on [closure](/symbols/domain/impact/closure.md); it is why a rule edit invalidates the receipt and the local decision.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.impact.changed_fields](/symbols/domain/impact/changed_fields.md) - Semantic differences of one action's transition.
+* [domain.impact.START](/symbols/domain/impact/START.md) - Constant `START` in `domain/impact`.
 * [domain.impact.closure](/symbols/domain/impact/closure.md) - Edges mean source affects target.
-* [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
+* [domain.impact.model_changes](/symbols/domain/impact/model_changes.md) - What changed outside the transitions that changes what the kernel does: how a record starts, and the lifecycles of linked objects.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Referenced by

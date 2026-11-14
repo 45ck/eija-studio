@@ -204,6 +204,20 @@ def _meaning_plan(request: str, pack: Pack) -> dict[str, Any] | None:
     return None
 
 
+def clauses_read(request: str, model: Workflow, pack: Pack, *, grows: bool = False) -> tuple[int, int]:
+    """How many of the request's clauses the phrase grammar reads, in order as `propose` reads them, and how many there
+    are. A live proposer uses it to tell a request that is partly exact changes from one that needs a model (ADR-0230):
+    the model plans a meaning, so a clause the grammar read would be dropped without a word."""
+    clauses = [_normalise(c) for c in SPLIT.split(request) if _normalise(c)]
+    resolver, read = _Clause(model, pack, grows), 0
+    for clause in clauses:
+        try:
+            read += resolver.resolve(clause) is not None
+        except DomainError:
+            continue
+    return read, len(clauses)
+
+
 def _first_unread(clauses: list[str], steps: list[Step | None]) -> str:
     return next(c for c, step in zip(clauses, steps, strict=True) if step is None)
 

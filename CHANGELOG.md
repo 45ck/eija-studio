@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### 13 November 2026: the kernel, inspected
+
+- A Fagan inspection of the kernel ([record](docs/quality/inspection-2026-11-13-kernel.md), [ADR-0246](docs/adr/0246-kernel-inspection-fixes.md)) found eight defects; all are fixed, each with a regression test in `tests/test_kernel_inspection.py` that fails on the old code.
+- Fixed: the policy accepted a transition held by a role the pack does not declare (it already refused an undeclared initiator). It now reports `UNDECLARED_ROLE:<transition id>`.
+- Fixed: a `path_requires` law on the initial state was always reported broken by the table check, so the policy refused models that no run breaks. The table and run judges now agree that a new record has entered no state.
+- Fixed: a value guard against a date compared any text as a string (`"1999"` was before `2026-12-01`), and a list or object as a record value crashed `execute` with a `TypeError`. Both now fail closed with `VALUE_GUARD_DENIED`.
+- Fixed: `add_transition` could not give a second source to an action with a value guard, a time event or a step on a linked object (ADR-0232); the new transition now takes what the action shares.
+- Fixed: the law proof and Simulate never tried `1` or `0` for an attribute also guarded as true/false.
+- Fixed: the impact ripple was empty for a change to who may start a record, the initial state, the signals that start one, or a linked object's lifecycle. It now names it in `model_changes` and marks the review packet affected.
+- Each initiator and each state of a linked object's lifecycle is now a 1 to 60 character name (contracts regenerated).
+### 13 November 2026: running and checking a design in place, inspected
+
+- A Fagan inspection of Simulate, the run bar, the Tests, Laws and permissions tabs, the ripple check and the game layer logged eleven defects, all fixed here, each with a before and after screenshot ([inspection record](docs/engineering/2026-11-13-INSPECTION-CHECK-IN-PLACE.md)).
+- Fixed: the run bar paused on, and showed, the wrong step in any model that names who may start a record. Fixed: Simulate showed a run of a model that had changed while it ran, and could report a false "Simulation refused". Fixed: "Inspect its laws" never found the laws about a refused transition.
+- Fixed: the Laws tab paints a counterexample on the transition that leaves the step's state, for an action that leaves several. Fixed: reachability takes into account who may start a record (ROLE_CANNOT_START), and that a signal from another workflow can start one. Fixed: Stop or Restart while the run log loads no longer lets the run start afterwards.
+- Fixed: Simulate counts a slip (an action that does not leave the record's state) against that state, as `states[s].slips`, not against another state's transition. Fixed: the checks ring marks a part with nothing to check as not applicable instead of green, and leaves it out of the count. Fixed: only the newest test run fills the Tests panel. Fixed: the permissions diff lists a permission kept on other conditions (a guard dropped or added) under `changes.changed`.
+
 ### 13 November 2026: inspection of saving and UML import
 
 - An inspection of undo, autosave, Save and UML import/export found ten defects, all fixed ([ADR-0245](docs/adr/0245-partial-reads-keep-and-saves-name-their-system.md), log in [INSPECTION-SAVE-IMPORT](docs/engineering/INSPECTION-SAVE-IMPORT.md)).

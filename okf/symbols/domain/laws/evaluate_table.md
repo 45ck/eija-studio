@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py#evaluate_table
   title: domain/laws.py
   hash_method: ast-v2
-  sha256: 07d35c418bf95c438a7a54fc5c90d5cb5686470b364f2079a48f8b35e297c237
-notes_baseline: 00b0c95b3470be69ccc602f0f09c4d1fdb99cf3273781d942a145b6b3944f09d
+  sha256: fc87a9035c3ea52fcd924602461f21aa3a33ea7c8c7c5d2d2bc80942c7118bf5
+notes_baseline: 88c8752b2e99d5cdca61f0887f132d93e6e6564d0c0a119d954e00b6100ac9e5
 ---
 
 # domain.laws.evaluate_table

@@ -231,6 +231,12 @@ def _report_failure(command: str, exc: BaseException) -> None:
         output(failure)
 
 
+def _started_in_playide(args) -> bool:
+    """Whether `--pack` is a system started in PlayIDE (in the systems home): there plan_check declares new names as the
+    chat does (ADR-0201)."""
+    return args.pack is not None and SystemLibrary(args.systems or default_home()).contains(Path(args.pack))
+
+
 def _run_mcp(args) -> int:
     """`eija mcp`: print client config, or serve the agent-facing MCP server on stdio. Errors here go to stderr."""
     if args.print_config:
@@ -251,6 +257,7 @@ def _run_mcp(args) -> int:
                                                    'mcp==2.2.0: pip install -e ".[agents]"') from error
     studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None, formal=not args.no_formal,
                           pack=args.pack, repository_root=args.repo)
+    studio.grows = _started_in_playide(args)
     serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls,
                 diagram_renderer=_agent_diagram)
     return 0
@@ -362,6 +369,7 @@ def main(argv=None) -> int:
     mcp.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")
     mcp.add_argument("--print-config", choices=["claude", "codex", "opencode", "gemini"], help="Print copy-paste client config for this MCP server and exit")
     mcp.add_argument("--egress-consent", action="store_true", help="Owner's STANDING consent: every propose call in this session may send the request to a networked provider; agents cannot grant it")
+    mcp.add_argument("--systems", type=Path, default=None, help="Where systems started in PlayIDE are kept (default EIJA_SYSTEMS or ~/PlayIDE)")
     mcp.add_argument("--max-provider-calls", type=int, default=DEFAULT_MAX_PROVIDER_CALLS, help="Cap on networked provider calls per MCP session (spend guard; 0 forbids them)")
     args = parser.parse_args(argv)
     try:
