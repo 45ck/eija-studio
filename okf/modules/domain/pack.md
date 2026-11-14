@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py
   title: domain/pack.py
   hash_method: ast-api-v1
-  sha256: 488cd23625bd6a04a3ccaf55794f61c385ae7ba1f819aba2ff52b503635738a8
-notes_baseline: fb4f32ef552cd4f02cdd28b88d12acd6705e1f93b982f510009f20a07a990b3e
+  sha256: c27dd4c945ef5bcbe45fb6f1594b2e9b7c23ce91df341c05aa9bc9a22a3c7f8b
+notes_baseline: 99a41d4a9474992505b2653ccb546dcb065c3c5b02e072019f2f116416be17ba
 ---
 
 # domain.pack

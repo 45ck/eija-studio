@@ -508,3 +508,58 @@ def test_an_edit_made_while_undo_reloads_the_screens_is_kept():
             assert errors == []
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_two_tabs_on_one_system_keep_each_others_work():
+    """Inspection 2026-11-14 (ADR-0250, D15 and D16): two tabs on one system shared the browser draft key, so the tab
+    that wrote last replaced the other tab's kept work (and one that undid back to nothing deleted it), and each
+    tab's Save replaced the other's saved draft unseen."""
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    def ask(page, text):
+        page.fill("#chat-input", text)
+        page.click("#chat-send")
+        page.wait_for_selector("#chat-log .msg.ai .plan .plan-verdict")
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            context = chrome.new_context(viewport={"width": 1600, "height": 900})
+            first, second = context.new_page(), context.new_page()
+            errors: list[str] = []
+            for page in (first, second):
+                page.on("pageerror", lambda error: errors.append(str(error)))
+                page.goto(f"{server.base_url}/play#{server.token}")
+                page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            ask(first, "add state Archived after Returned")
+            ask(second, "add state Shelved after Returned")  # the other tab's work is kept beside, not replaced
+            key = first.evaluate("() => `playide.draft.v1:${PlayIDE.pack().id}:`")
+            kept = first.evaluate("k => Object.keys(localStorage).filter((x) => x.startsWith(k)).map((x) => localStorage.getItem(x)).join(' ')", key)
+            assert "Archived" in kept and "Shelved" in kept
+            second.wait_for_selector("#chat-log .recovered:has-text('open in another tab too')")
+            # Save in the first tab, then in the second: the second is refused until pressed again.
+            first.click("#system-save")
+            first.wait_for_selector("#system-saved[data-dirty=false]", state="attached")
+            second.click("#system-save")
+            second.wait_for_selector("#system-saved:has-text('DRAFT_CHANGED')", state="attached")
+            saved = second.evaluate("() => PlayIDE.api('/api/play/draft')")["draft"]
+            assert saved["steps"][0]["transaction"]["state"] == "Archived"
+            second.click("#system-save")
+            second.wait_for_selector("#system-saved[data-dirty=false]", state="attached")
+            assert second.evaluate("() => PlayIDE.api('/api/play/draft')")["draft"]["steps"][0]["transaction"]["state"] == "Shelved"
+            # The first tab closes; a reload of the second offers the first tab's work to reopen.
+            first.close()
+            second.reload()
+            second.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            log = second.text_content("#chat-log")
+            assert "Recovered your unsaved work" in log and "Work from another tab on this system" in log
+            second.locator("text=Reopen earlier draft").first.click()
+            second.wait_for_selector("#plan-banner:not([hidden])")
+            assert "Archived" in second.evaluate("() => JSON.stringify(PlayIDE.document().plan.steps)")
+            assert errors == []
+        finally:
+            chrome.close()

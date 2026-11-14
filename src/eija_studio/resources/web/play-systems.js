@@ -10,6 +10,7 @@
   let sketch; // the sketch box, found once
   let failed = null; // the last save that was refused, and the work it was about: shown until that work changes
   let opened = ""; // the system this page opened on: Save and Clear name it, so a tab left on another system cannot save over this one
+  let revision = null; // the saved draft this page last opened or saved: another tab's later save is not overwritten unseen (ADR-0250)
   let umlFile = { name: "", text: "" }; // "From a UML file" (ADR-0190): the file chosen, read in the page and checked by the server
   const canSave = () => { const current = new URLSearchParams(location.search); return !current.get("case") && current.get("view") !== "review"; };
 
@@ -32,11 +33,14 @@
     if (!canSave() || !P) return;
     const draft = P.draft();
     try {
-      const result = await P.api("/api/play/draft", { ...draft, ...(opened ? { pack: opened } : {}) });
+      const result = await P.api("/api/play/draft", { ...draft, ...(opened ? { pack: opened } : {}), base: revision });
       saved = JSON.stringify(draft);
       savedAt = result.saved;
+      revision = result.revision || null;
       failed = null;
     } catch (error) {
+      // Another tab saved since: the next Save, pressed knowing that, replaces its work.
+      if (error.code === "DRAFT_CHANGED") revision = await savedRevision();
       // Kept until the work changes, so the reason is not replaced by "Unsaved changes" a moment later.
       failed = { work: JSON.stringify(draft), text: `Not saved (${error.code || "ERROR"}): ${error.message}` };
       $("system-saved").textContent = failed.text;
@@ -46,8 +50,24 @@
     setSaveState();
   }
 
+  async function savedRevision() {
+    try { const now = await P.api("/api/play/draft"); return (now.draft && now.draft.revision) || null; } catch { return revision; }
+  }
+
+  async function clearSaved(button) {
+    try {
+      await P.api("/api/play/draft/clear", { ...(opened ? { pack: opened } : {}), base: revision });
+    } catch (error) {
+      if (error.code === "DRAFT_CHANGED") revision = await savedRevision();
+      button.textContent = `Not cleared (${error.code || "ERROR"}): ${error.message}`;
+      return;
+    }
+    revision = null; saved = ""; savedAt = 0; setSaveState(); button.textContent = "Saved work cleared"; button.disabled = true;
+  }
+
   async function reopen() {
     const { draft, moved, set_aside: setAside, set_aside_as: asideAs } = await P.api("/api/play/draft");
+    revision = (draft && draft.revision) || null;
     if (setAside) {
       const li = P.el("li", undefined, { class: "msg ai recovered" });
       li.append(P.el("p", `The saved work on this system could not be read, so it was set aside beside it (${asideAs || "draft.unreadable.json"}) and the model in force is open.`));
@@ -115,7 +135,7 @@
     }
     if (canSave()) {
       const clear = P.el("button", "Clear saved work on this system", { type: "button", class: "quiet small", id: "systems-clear" });
-      clear.addEventListener("click", async () => { await P.api("/api/play/draft/clear", opened ? { pack: opened } : {}); saved = ""; savedAt = 0; setSaveState(); clear.textContent = "Saved work cleared"; clear.disabled = true; });
+      clear.addEventListener("click", () => clearSaved(clear));
       box.append(clear);
     }
   }

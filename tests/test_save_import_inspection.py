@@ -139,7 +139,7 @@ def test_a_save_from_a_page_on_another_system_is_refused(served):  # noqa: F811
 
 def test_the_page_names_its_system_when_it_saves():
     script = (Path(__file__).parents[1] / "src/eija_studio/resources/web/play-systems.js").read_text(encoding="utf-8")
-    assert "pack: opened" in script and 'P.api("/api/play/draft/clear", opened ? { pack: opened } : {})' in script
+    assert "pack: opened" in script and 'P.api("/api/play/draft/clear", { ...(opened ? { pack: opened } : {}), base: revision })' in script
 
 
 # ---- D9: reasons still said value guards and composite states were planned, after both shipped ---------------------

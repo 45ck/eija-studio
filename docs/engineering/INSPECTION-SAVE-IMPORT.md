@@ -61,3 +61,32 @@ Every defect has a test that fails on main and passes with the fix (19 failed on
 Before and after screenshots of each visible defect are in [`docs/demos/assets/inspection-save-import-20261113`](../demos/assets/inspection-save-import-20261113/).
 
 Run the browser tests with `EIJA_BROWSER_TESTS=1 EIJA_CHROMIUM=<chromium> pytest tests/test_play_history.py -m "slow or not slow"`.
+
+## Second pass (2026-11-14)
+
+Decision record: [ADR-0250](../adr/0250-imports-match-names-and-tabs-keep-each-others-work.md). This pass went where the
+first did not. It round-tripped every shipped pack in all four formats with the kernel features the packs use
+(refund-desk's composite states and time event, ai-ops's linked object, library-fines's signal). Then it edited the
+exported files as a person would, gave names and text a format writes differently, put two tabs on one system, and
+read the folder lookup behind every file beside `pack.json`.
+
+Unchanged files of every pack still come back CLEAN. Today's `UNDECLARED_ROLE` needs nothing from interchange: an
+import already reports a role the pack does not declare as not imported, and never plans it.
+
+| # | Severity | Where | Defect | Status |
+|---|---|---|---|---|
+| D11 | Major | `interop/mapping.py` `import_state_machine` | A state renamed in a file was planned as add, retarget and remove. It left its composite state, and the removal of a composite's initial state was refused, leaving the old state behind. | Fixed: `rename_state` when exactly one pair carries the same arrows (`interop/names.py`) |
+| D12 | Major | `interop/plantuml.py` `_text`, `_alias` | PlantUML wrote `"` as `'`, so the import renamed the state; a state named `state` came back as a state named `-->`; a literal starting with `'` was read as a comment and lost. | Fixed: `<U+XXXX>` escapes, keywords by alias |
+| D13 | Minor | every reader; `interop/mapping.py` | A name, description or literal with a tab, two spaces or a trailing space came back as a change (a state removed and re-added). | Fixed: matched and kept but for spacing |
+| D14 | Major | `interop/mermaid.py`, `mapping.py` `import_class_model` | Mermaid's export says it does not carry attribute descriptions; its import of that same file deleted them from the candidate `data.json`. | Fixed: kept, listed under "Kept or filled in" |
+| D15 | Major | `interfaces/play_systems.py` `play_save_draft`, `play_clear_draft` | Two tabs on one system: each Save replaced the other's `draft.json` unseen; the check and the write could also straddle a switch of system. | Fixed: `revision` and `DRAFT_CHANGED`, under the systems lock |
+| D16 | Major | `play.js` `persist` | Two tabs on one system shared one browser key: the tab that wrote last replaced the other's kept work, and a tab undone to nothing deleted it. | Fixed: drafts name their tab; the other tab's work is kept under `:earlier:tab-<id>` |
+| D17 | Major | `domain/pack.py` `load_pack`; `play_systems.templates`, `play.py` siblings | Opening the systems dialog read every shipped pack, which filed a matching snapshot under the shipped folder: a copy of a shipped pack with its own class model then read the shipped `data.json` (and screens, tests). | Fixed: `load_pack(..., claim=False)` for a look at a pack |
+
+Noted, not changed: scenario steps accept only identifier-like state names (`^[A-Za-z][A-Za-z0-9_:-]{0,59}$`) while a
+state may be named freely, so a state named `On loan` cannot be expected in a test. That is a kernel contract, passed to
+the kernel owners.
+
+Regression tests: `tests/test_save_import_second_pass.py` (D11 to D15, D17; 34 of its 44 tests fail on main, all pass here) and
+`tests/test_play_history.py::test_two_tabs_on_one_system_keep_each_others_work` (D15 and D16 in a real browser).
+Before and after screenshots are in [`docs/demos/assets/inspection-save-import-20261114`](../demos/assets/inspection-save-import-20261114/).

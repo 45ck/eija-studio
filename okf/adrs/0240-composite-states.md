@@ -61,4 +61,8 @@ _No curated notes yet._
 ## Related decisions
 
 * [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
+
+## Referenced by
+
+* [ADR-0250: An import matches renamed and respaced names, and two tabs keep each other's work](/adrs/0250-imports-match-names-and-tabs-keep-each-others-work.md) - A second, deeper inspection of saving and UML interchange followed ADR-0245.
 <!-- okf:generated:end links -->

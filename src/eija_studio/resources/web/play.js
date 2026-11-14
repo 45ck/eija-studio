@@ -2545,6 +2545,12 @@
   let restoring = false, planUid = 0, recoveredWork = false;
   const clone = (value) => (value == null ? null : JSON.parse(JSON.stringify(value)));
   const draftKey = () => `playide.draft.v1:${packInfo.id}:${caseId || ""}`;
+  // Two tabs on one system share the draft key (ADR-0250). Each draft names the tab that wrote it: a tab never
+  // writes over, or removes, another tab's draft without first keeping it under that tab's own earlier key, so both
+  // tabs' work survives a reload. A draft this tab recovered on load is its own until the tab that wrote it writes again.
+  const TAB = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+  let adopted = null; // { tab, saved } of the draft recovered on load
+  const ownDraft = (d) => !d || !d.tab || d.tab === TAB || (adopted !== null && d.tab === adopted.tab && d.saved === adopted.saved);
   const navigationKey = () => `playide.navigation.v1:${packInfo.id}:${caseId || ""}`;
 
   // Presentation is deliberately separate from the edit document. No runtime, check or approval is restored.
@@ -2708,12 +2714,18 @@
     if (REVIEW_VIEW || !packInfo) return;
     const now = edits.stack[edits.at], empty = !now || (!now.doc.plan && !now.doc.screens && !now.doc.tests); // nothing to keep
     try {
-      if (empty) { localStorage.removeItem(draftKey()); browserNote = { bad: false, text: "", title: "" }; renderSaveStatus(); return; }
+      const other = keepOtherTab();
+      if (empty) {
+        if (!other) localStorage.removeItem(draftKey());
+        localStorage.removeItem(`${earlierKey()}:tab-${TAB}`);
+        browserNote = { bad: false, text: "", title: "" }; renderSaveStatus(); return;
+      }
       const from = Math.max(0, edits.at - STORED), keep = edits.stack.slice(from, edits.at + STORED + 1);
-      const draft = { v: 1, model: modelPrint(), saved: Date.now(), at: edits.at - from, stack: keep.map(({ label, doc, at }) => ({ label, doc, at })) };
+      const draft = { v: 1, model: modelPrint(), saved: Date.now(), tab: TAB, at: edits.at - from, stack: keep.map(({ label, doc, at }) => ({ label, doc, at })) };
       try { localStorage.setItem(draftKey(), JSON.stringify(draft)); } catch {
         localStorage.setItem(draftKey(), JSON.stringify({ ...draft, at: 0, stack: [keep[edits.at - from]] })); // the current work, without its history
       }
+      localStorage.removeItem(`${earlierKey()}:tab-${TAB}`); // this tab's work is under the key again: no older copy of it is offered
       browserNote = { bad: false, text: "Edits kept in this browser", title: `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.` };
     } catch {
       setAsideOutdated();
@@ -2776,11 +2788,30 @@
       return key;
     } catch { return null; } // left where it was
   }
-  // Every retained draft (`:earlier`, `:earlier:2`, ...), oldest first, as [key, draft]; unreadable ones are skipped.
+  // Another tab's draft under the key: kept under that tab's own earlier key (its newest work replaces its older
+  // copy there) before this tab writes. True when the key held another tab's draft.
+  function keepOtherTab() {
+    const raw = localStorage.getItem(draftKey());
+    if (raw === null) return false;
+    let found = null;
+    try { found = JSON.parse(raw); } catch { return false; }
+    if (!isRecord(found) || ownDraft(found) || typeof found.tab !== "string" || !/^[a-z0-9]{1,40}$/.test(found.tab)) return false;
+    localStorage.setItem(`${earlierKey()}:tab-${found.tab}`, raw);
+    noteOtherTab();
+    return true;
+  }
+  let otherTabNoted = false;
+  function noteOtherTab() {
+    if (otherTabNoted) return;
+    otherTabNoted = true;
+    say("ai", el("p", "This system is open in another tab too. Each tab's edits are kept in this browser separately, so "
+      + "neither replaces the other; a reload offers the other tab's work to reopen. Save from the tab whose work you want to keep.")).classList.add("recovered");
+  }
+  // Every retained draft (`:earlier`, `:earlier:2`, `:earlier:tab-…`), oldest first, as [key, draft]; unreadable ones are skipped.
   function retainedDrafts() {
     const found = [];
     try {
-      const pattern = new RegExp(`^${earlierKey().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(:\\d+)?$`);
+      const pattern = new RegExp(`^${earlierKey().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(:\\d+|:tab-[a-z0-9]{1,40})?$`);
       for (let i = 0; i < localStorage.length; i += 1) {
         const key = localStorage.key(i);
         if (!key || !pattern.test(key)) continue;
@@ -2794,7 +2825,9 @@
     for (const [key, draft] of retainedDrafts()) {
       offerEarlier(draft, key, draft.model !== modelPrint()
         ? "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams."
-        : `An earlier browser draft from ${new Date(draft.saved).toLocaleString()} is retained. Later edits were not kept in this browser, so it was set aside.`);
+        : key.includes(":tab-")
+          ? `Work from another tab on this system, ${new Date(draft.saved).toLocaleString()}, is kept. Both tabs edited at once, so each tab's work was kept separately.`
+          : `An earlier browser draft from ${new Date(draft.saved).toLocaleString()} is retained. Later edits were not kept in this browser, so it was set aside.`);
     }
   }
   function offerEarlier(draft, key, text) {
@@ -2817,6 +2850,11 @@
 
   // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
   // restored plan again; a step that no longer applies (the model in force changed) is shown as such.
+  window.addEventListener("storage", (event) => { // another tab of this browser wrote this system's draft
+    if (REVIEW_VIEW || !packInfo || event.key !== draftKey() || !event.newValue) return;
+    try { if (!ownDraft(JSON.parse(event.newValue))) noteOtherTab(); } catch { /* not a draft */ }
+  });
+
   async function recover() {
     edits.stack = [{ label: "open the model", doc: { plan: null, screens: null }, card: null, at: Date.now() }];
     edits.at = 0;
@@ -2836,6 +2874,7 @@
       return;
     }
     offerRetained(); // drafts retained on earlier loads stay offered beside the newer work
+    adopted = { tab: draft.tab, saved: draft.saved }; // recovered: this tab's own until the tab that wrote it writes again
     planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
     edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens || draft.stack[0].doc.tests ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
     edits.at = edits.stack.length - draft.stack.length + draft.at;

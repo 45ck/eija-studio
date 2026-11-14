@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### 14 November 2026: saving and UML import, inspected again
+
+- A second inspection of saving and UML interchange ([log](docs/engineering/INSPECTION-SAVE-IMPORT.md#second-pass-2026-11-14), [ADR-0250](docs/adr/0250-imports-match-names-and-tabs-keep-each-others-work.md)) found seven defects; all are fixed, each with a test that fails on the old code.
+- Fixed: a state renamed in a UML file is imported as one `rename_state`, so it keeps its composite state; before, the plan removed and re-added it, and a composite's initial state could not be removed.
+- Fixed: PlantUML writes `"`, a leading `'` and keyword-like state names so they read back as written; names, descriptions and literals that differ only in spacing are not a change; a Mermaid import keeps the attribute descriptions Mermaid cannot carry.
+- Fixed: two tabs on one system no longer replace each other's work. Save is refused with `DRAFT_CHANGED` when another tab saved since (press Save again to replace it), and each tab's browser draft is kept separately and offered with Reopen.
+- Fixed: opening the systems dialog no longer makes a copy of a shipped pack read the shipped pack's `data.json`.
+
 ### 13 November 2026: inspection of the app generator
 
 - Fixed: a built app's page now lets a person choose the object a record refers to, or add one in place (ai-ops records could not be created from the page before). Ten defects in all; [inspection record](docs/quality/inspection-2026-11-13-app-generator.md), [ADR-0249](docs/adr/0249-app-generator-inspection-fixes.md).

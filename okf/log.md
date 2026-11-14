@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-14
+* **Second inspection of saving and UML import (ADR-0250)**: synced ADR-0250, `load_pack` (`claim=False` for a look at a pack), `domain.pack` and `interfaces.play_systems` (`DRAFT_CHANGED`, `revision`), and the backlinks on ADR-0240 and ADR-0245. No Notes were hand-edited, nothing was recorded as verified, and no human source approval was recorded.
 * **Inspection of the app generator (ADR-0249)**: synced ADR-0249, `CASE_KINDS` (`object_cases`), `object_cases` and its answer helper, `signal_cases` (stored values and a second delivery), `generate` (README counts every case), `GENERATED_TESTS` (20) and `check_accessibility` (the label contract follows the page's `Control` and reference chooser). Re-read the Notes of `check_accessibility` as `process:claude-code-app-generator-inspection`; they still hold. No human source approval was recorded.
 
 ## 2026-11-13

@@ -65,3 +65,40 @@ def keep_unread(document: dict[str, Any], data: DataModel, report: Any) -> None:
     key = lambda a: tuple(_part(a, k) for k in _ENDS)  # noqa: E731
     for link in _restore(document["associations"], joined, key, report.unread):
         report.add("defaulted", "class model", f"{link.kind} {link.source} -> {link.target}", _KEPT)
+
+
+
+def _spaced(text: str) -> str:
+    return " ".join(text.split())
+
+
+def _same_text(read: str, current: str) -> bool:
+    return _spaced(read) == _spaced(current)
+
+
+def _keep_attribute_text(attr: dict[str, Any], was: Any, attribute_notes: bool, report: Any, owner: str) -> None:
+    if not attribute_notes and not attr.get("description") and was.description:
+        attr["description"] = was.description
+        report.add("defaulted", "class model", f"{owner}.{was.name}: description",
+                   "this format has no notes on attributes; kept the current description")
+    elif was.description and _same_text(attr.get("description", ""), was.description):
+        attr["description"] = was.description
+    read = attr.get("choices") or []
+    if read and len(read) == len(was.choices) and all(map(_same_text, read, was.choices)):
+        attr["choices"] = list(was.choices)
+
+
+def keep_text(document: dict[str, Any], data: DataModel, attribute_notes: bool, report: Any) -> None:
+    """Text a file gives back with its spacing collapsed (every format reads it on one line) is the current text, not a
+    change (ADR-0250); and where the format has no notes on attributes (Mermaid), their descriptions are kept."""
+    current = {e.name: e for e in data.entities}
+    for entity in (e for e in document["entities"] if e["name"] in current):
+        _keep_entity_text(entity, current[entity["name"]], attribute_notes, report)
+
+
+def _keep_entity_text(entity: dict[str, Any], was: Any, attribute_notes: bool, report: Any) -> None:
+    if was.description and _same_text(entity.get("description", ""), was.description):
+        entity["description"] = was.description
+    old = {a.name: a for a in was.attributes}
+    for attr in (a for a in entity["attributes"] if a["name"] in old):
+        _keep_attribute_text(attr, old[attr["name"]], attribute_notes, report, was.name)
