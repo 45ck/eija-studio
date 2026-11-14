@@ -3,6 +3,7 @@
 # Modules
 
 * [domain.affordance](affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
+* [domain.app_http](app_http.md) - The HTTP status a generated app answers each refusal code with (ADR-0254).
 * [domain.change_case](change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.data](data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.evidence](evidence.md) - Compatibility is computed.

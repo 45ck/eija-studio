@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import ast
 import re
+from pathlib import Path
 
 import jsonschema
 import pytest
@@ -12,8 +13,11 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from hypothesis_jsonschema import from_schema
 
-from eija_studio.application.api_contract import REFUSALS, api_contract
+from eija_studio.application.api_contract import api_contract
+from eija_studio.application import runtime
 from eija_studio.bootstrap import source_identity
+from eija_studio.domain.app_http import STATUS
+from eija_studio.domain import data as data_module
 from eija_studio.domain.data import check_record, check_values, data_for
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import PACKS_ROOT, load_pack
@@ -39,7 +43,7 @@ def served(server: str) -> set[tuple[str, str]]:
         method = function.name.removeprefix("do_").lower()
         for test in (n.test for n in ast.walk(function) if isinstance(n, ast.If)):
             text = ast.unparse(test)
-            if literal := re.fullmatch(r"url\.path == '(/api/[a-z/]+)'", text):
+            if literal := re.fullmatch(r"url\.path == '(/api/[a-z/]+)'( and MODEL\.receives)?", text):
                 routes.add((method, literal.group(1)))
             elif text == "stored":
                 routes.add((method, "/api/objects/{class}"))
@@ -50,18 +54,49 @@ def served(server: str) -> set[tuple[str, str]]:
     return routes
 
 
-def test_every_route_the_server_serves_is_in_the_contract_and_no_other():
-    pack, document = contract()
+@pytest.mark.parametrize(("pack_id", "routes"), [("library-loan", 8), ("library-fines", 9)])
+def test_every_route_the_server_serves_is_in_the_contract_and_no_other(pack_id, routes):
+    """The signals route is served, and documented, only for a model that receives a signal (ADR-0254: it was missing,
+    and the route parser could not see it, so this test could not fail for it)."""
+    pack, document = contract(pack_id)
     server = app_files(pack, pack.model, identity_provider=source_identity)[0]["app/server.py"]
     documented = {(method, path) for path, item in document["paths"].items() for method in item}
-    assert served(server) == documented and len(documented) == 8
+    server_routes = served(server) - (set() if pack.model.receives else {("post", "/api/signals")})
+    assert server_routes == documented and len(documented) == routes
 
 
-def test_the_refusal_codes_are_the_servers_by_status():
-    pack, _ = contract()
+def test_the_server_and_the_contract_read_one_status_table():
+    """No status table of its own in the server: it answers each refusal with `status_of`, which the contract documents."""
+    pack, document = contract()
     server = app_files(pack, pack.model, identity_provider=source_identity)[0]["app/server.py"]
-    sets = {name: set(ast.literal_eval(re.search(rf"^{name} = (\{{.*\}})$", server, re.M).group(1))) for name in ("FORBIDDEN", "INVALID")}
-    assert set(REFUSALS["403"][1]) == sets["FORBIDDEN"] and set(REFUSALS["400"][1]) == sets["INVALID"]
+    assert "from eija_studio.domain.app_http import status_of" in server
+    assert not re.search(r"^(FORBIDDEN|INVALID) = ", server, re.M) and not re.search(r"self\._json\((4|5)\d\d,", server)
+    documented = {c for responses in (op["responses"] for item in document["paths"].values() for op in item.values())
+                  for status, response in responses.items() if status >= "400"
+                  for c in response["content"]["application/json"]["examples"]}
+    assert documented == set(STATUS)
+
+
+def raised_codes() -> set[str]:
+    """Every refusal code the built app can answer with: what the kernel, the data model's checks and the app raise."""
+    templates = Path(runtime.__file__).resolve().parents[1] / "resources" / "appgen"
+    sources = [Path(runtime.__file__).read_text(), Path(data_module.__file__).read_text()]
+    sources += [(templates / name).read_text() for name in ("service.py.tmpl", "server.py.tmpl")]  # what answers requests
+    codes = {m for text in sources for m in re.findall(r'(?:DomainError|Refused)\(\s*"([A-Z_]+)"', text)}
+    codes |= {m for text in sources for m in re.findall(r'"code": "([A-Z_]+)"', text)}
+    return codes - {"DATA_INVALID", "DATA_PACK_MISMATCH"}  # build-time checks of the data model, never a request's
+
+
+def test_every_code_the_app_can_refuse_with_has_a_documented_status():
+    assert raised_codes() - set(STATUS) == set()
+    assert {"ROLE_CANNOT_START", "SEPARATION_DENIED", "HOST_DENIED", "INTERNAL_ERROR", "OPERATION_CONFLICT"} <= raised_codes()
+
+
+def test_an_act_must_carry_an_operation_id_and_a_create_may():
+    _, document = contract()
+    schemas = document["components"]["schemas"]
+    assert "operation_id" in schemas["Act"]["required"] and schemas["Act"]["properties"]["operation_id"]["minLength"] == 1
+    assert "operation_id" not in schemas["NewRecord"]["required"] and "operation_id" in schemas["NewRecord"]["properties"]
 
 
 def test_the_actions_and_actors_come_from_the_model_and_the_pack():

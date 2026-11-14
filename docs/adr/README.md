@@ -131,6 +131,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0250](0250-kernel-second-inspection.md) | Who starts a record is checked like who acts, and a law never protects a state that is gone | accepted |
 | [0251](0251-server-boundaries-second-inspection.md) | Request caps per route, no repository filters, and a server that cleans up after itself | accepted |
 | [0253](0253-imports-match-names-and-tabs-keep-each-others-work.md) | An import matches renamed and respaced names, and two tabs keep each other's work | accepted |
+| [0254](0254-app-generator-second-pass.md) | One status table, retryable creates and bounded requests in the generated app | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
