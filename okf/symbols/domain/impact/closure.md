@@ -49,5 +49,5 @@ Edges mean *source affects target*. Roots are sorted and the queue visits sorted
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
+* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - The ripple of a change.
 <!-- okf:generated:end links -->

@@ -48,5 +48,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [domain.policy.declared_codes](/symbols/domain/policy/declared_codes.md) - Every transition must perform a declared action, with exactly its declared guards and required effects, and must declare every pack-forbidden effect forbidden.
+* [domain.policy.declared_codes](/symbols/domain/policy/declared_codes.md) - Every transition must perform a declared action, held by a declared role, with exactly its declared guards and required effects, and must declare every pack-fo…
 <!-- okf:generated:end links -->

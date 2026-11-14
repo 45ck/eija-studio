@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_catalog.py#case_diagrams
   title: application/diagram_catalog.py
   hash_method: ast-v2
-  sha256: 2c6fb20ba0c33c05d9ec2820bb6bef46e4af98aa8c5dee070f46a314ea4a34fa
-notes_baseline: 465d21df8f972232903e29412606759f8ef0856503ff642c14db965cc1642f4d
+  sha256: c8a9bf2a39a0dc8b38e86bbfc85850b882db649ae974d36ffa967be2d30a1963
+notes_baseline: 11566ac59709cb005973edf00a6523f3ab7fd9a805ebc03bfd160ea8c9d7121c
 ---
 
 # application.diagram_catalog.case_diagrams
@@ -48,6 +48,6 @@ _No curated notes yet._
 * [application.diagram_catalog.render_view](/symbols/application/diagram_catalog/render_view.md) - Generated diagram text for one view.
 * [application.diagrams.diff_summary](/symbols/application/diagrams/diff_summary.md) - Structured diff of two workflows: states, and transitions by action with each changed field's before and after.
 * [application.diagrams.policy_violations](/symbols/application/diagrams/policy_violations.md) - Codes `domain.policy.check_policy` reports for `workflow` (empty: the protected policy accepts it).
-* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
+* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - The ripple of a change.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 <!-- okf:generated:end links -->

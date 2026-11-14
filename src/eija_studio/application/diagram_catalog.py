@@ -98,7 +98,7 @@ def case_diagrams(before: Workflow, after: Workflow | None, fmt: str = "mermaid"
         views["impact"] = render_view("impact", fmt, before, after)
         summary = diff_summary(before, after)
         report = model_impact(before, after)
-        impact = {k: report[k] for k in ("changed_actions", "affected", "complete", "frontier", "envelope")}
+        impact = _impact_summary(report)
     if fmt in VIEW_FORMATS["class"]:
         views["class"] = render_view("class", fmt, before)
     if fmt in VIEW_FORMATS["sequence"]:
@@ -107,6 +107,12 @@ def case_diagrams(before: Workflow, after: Workflow | None, fmt: str = "mermaid"
     return {"format": fmt, "sources": {"baseline": before.semantic_hash, "candidate": after.semantic_hash if after else None},
             "policy_violations": list(policy_violations(subject)), "views": views, "summary": summary, "impact": impact,
             "unsupported": sorted(v for v in ("sequence", "class") if fmt not in VIEW_FORMATS[v])}
+
+
+def _impact_summary(report: dict[str, Any]) -> dict[str, Any]:
+    """The parts of `model_impact` a case's diagrams show; `model_changes` only when the change has some (ADR-0246)."""
+    keys = ("changed_actions", "affected", "complete", "frontier", "envelope", "model_changes")
+    return {k: report[k] for k in keys if k in report}
 
 
 def _page(title: str, blurb: str, text: str, extra: str = "") -> str:

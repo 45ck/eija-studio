@@ -284,7 +284,8 @@ def diff_graph(before: Workflow, after: Workflow) -> Graph:
 
 NODE_KIND = {"rule": "Rule", "runtime": "Runtime", "state-view": "State view", "journey": "Journey",
              "obligation": "Obligation", "receipt": "Receipt"}
-SHARED_NODE = {"review-packet": "Review packet", "local-decision": "Local decision"}
+SHARED_NODE = {"review-packet": "Review packet", "local-decision": "Local decision",
+               "record-start": "Record start (initial state, initiators, signals)"}
 
 
 IMPACT_LEGEND = {"changed": "changed rule (root of the ripple)", "affected": "affected downstream", "same": "unaffected"}
@@ -316,7 +317,7 @@ def impact_graph(before: Workflow, after: Workflow, impact: dict[str, Any] | Non
     changed rules -> runtime -> state view -> journey -> obligation -> receipt -> review packet -> decision.
     The mapping is the model's own; consequences outside it are not drawn (see the `envelope` note)."""
     report = impact if impact is not None else model_impact(before, after)
-    roots = {"rule:" + a for a in report["changed_actions"]}
+    roots = {"rule:" + a for a in report["changed_actions"]} | ({"record-start"} if "record-start" in report["graph"] else set())
     affected = set(report["affected"])
     ids = sorted(set(report["graph"]) | {t for targets in report["graph"].values() for t in targets})
     nodes = tuple(_impact_node(i, roots, affected) for i in ids)

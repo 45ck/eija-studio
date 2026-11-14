@@ -302,10 +302,13 @@ def reachable(edges: Iterable[tuple[str, str]], start: str, blocked: str | None 
 
 
 def _path_breaks(law: PathRequires, model: Workflow) -> bool:
+    """Some step enters `state` from a state a record reaches without passing `via`. A new record in the initial state
+    has taken no step, so it does not break the law; re-entering it does, as `evaluate_run` judges it (ADR-0246, K2)."""
     if law.via in (model.initial_state, law.state):
         return False
     edges = [(t.from_state, t.to_state) for t in model.transitions]
-    return law.state in reachable(edges, model.initial_state, blocked=law.via)
+    before = reachable(edges, model.initial_state, blocked=law.via)
+    return any(source in before and target == law.state for source, target in edges)
 
 
 def _kind_path_breaks(law: PathRequiresKind, model: Workflow) -> bool:

@@ -22,5 +22,6 @@
 * [scenarios](scenarios/) - Symbols of domain.scenarios
 * [screens](screens/) - Symbols of domain.screens
 * [signals](signals/) - Symbols of domain.signals
+* [state_tree](state_tree/) - Symbols of domain.state_tree
 * [transactions](transactions/) - Symbols of domain.transactions
 * [value_guards](value_guards/) - Symbols of domain.value_guards
