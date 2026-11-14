@@ -77,14 +77,13 @@ def test_po_s1_join_is_a_function_of_the_set_for_every_list_length_up_to_6() -> 
 
 def test_po_s4_join_equals_the_kernel_aggregate_on_every_flat_list_up_to_length_6(f2) -> None:
     r = f2
-    if not r["kernel_present"]:
-        pytest.skip("kernel not importable: NOT_RUN")
+    # The kernel is part of this repository. formal_checks imports it as an optional "third opinion" for use outside it,
+    # so a renamed kernel function used to turn this into a NOT_RUN skip; here it must fail.
+    assert r["kernel_present"], "graph/bench/formal_checks.py could not import the kernel's evidence module"
     assert r["join_equals_kernel_aggregate_on_flat_inputs"] is True
 
 
 def test_po_s4_kernel_rollup_defect_is_reproduced_and_the_join_composes() -> None:
-    evidence = pytest.importorskip("eija_studio.domain.evidence")
-    del evidence
     agg = bench._kernel_aggregate
     assert agg(["PASS", "FAIL", "FAIL"]) == "CONFLICT"
     assert agg([agg(["PASS", "FAIL"]), "FAIL"]) == "FAIL"  # the kernel does not compose (needs its own ADR)

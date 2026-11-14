@@ -1,0 +1,23 @@
+{
+  "schema": "eija.skip-ledger.v1",
+  "routed": {
+    "NOT_RUN: opt-in browser tests": "nox -s hci (full, release)",
+    "property suite not requested": "nox -s property (full), nox -s property_deep (release)"
+  },
+  "skips": {
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: java or the pinned Alloy jar is absent": 4,
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.canon:dumps has nothing to check": 1,
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.links:link_status_pure has nothing to check": 1,
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.order:lexicographic_topological_order has nothing to check": 1,
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.order:scc_labels has nothing to check": 1,
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.status:claim_status has nothing to check": 1,
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.status:join has nothing to check": 1,
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.status:meet has nothing to check": 1,
+    "tests/graph/formal/test_formal_tools_and_drift.py: NOT_RUN: the eijagraph package is not built yet, so eijagraph.store:closure has nothing to check": 1,
+    "tests/graph/test_rules_reference.py: NOT_RUN: the OASIS SARIF 2.1.0 schema is not available offline (set EIJA_SARIF_SCHEMA)": 1,
+    "tests/test_appgen_inspection.py: NOT_RUN: set EIJA_BROWSER_TESTS=1 for actual browser": 1,
+    "tests/test_formal_bend.py: opt-in (EIJA_BEND_DOCKER_TESTS=1): nox formal_bend_quick / formal_bend run this proof (NOT_RUN here)": 1,
+    "tests/test_syntax_validator.py: NOT_RUN: real-browser check; run by the release session diagrams_syntax (EIJA_BROWSER_TESTS=1)": 2,
+    "tests/test_tla_formal.py: NOT_RUN: tla2tools.jar is not in .cache/tla (run without --no-fetch to download the pinned release)": 3
+  }
+}

@@ -1,7 +1,9 @@
 """One switch for running pytest across cores in nox sessions (pytest-xdist).
 
-Only the pytest-driven sessions that are CPU-bound and share nothing use it. The heavy formal sessions (Z3, TLC,
-Bend, Chrome) stay serial: they are RAM-bound, and the reference PC has 16 GB shared with other sessions.
+Only the pytest-driven sessions that are CPU-bound and share nothing use it. The heavy formal sessions (TLC,
+Bend, Chrome) stay serial: they are RAM-bound, and the reference PC has 16 GB shared with other sessions. The
+generated-law Z3 gate (`verification/smt/laws.py`) is the exception: one process per pack needs about 90 MB, so it
+proves 4 packs at a time and honours EIJA_SERIAL too.
 
     EIJA_SERIAL=1          force a serial run (debugging a failure, or comparing against the parallel result)
     EIJA_XDIST_WORKERS=N   worker count, default 4 (the machine has 12 logical cores but shares RAM)

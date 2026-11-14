@@ -9,6 +9,7 @@ differential checks.
 """
 from __future__ import annotations
 
+import importlib
 import json
 import shutil
 from pathlib import Path
@@ -160,7 +161,7 @@ def test_the_scxml_chart_carries_the_object_and_the_differential_catches_a_chart
     chart = to_scxml(OPS)
     assert "_event.data.object_target == &quot;Idle&quot;" in chart and '<data id="moved"' in chart
     assert "object_target" not in to_scxml(OPS, FLAT) and '<data id="moved"' not in to_scxml(OPS, FLAT)
-    differential = pytest.importorskip("verification.scxml.differential")
+    differential = importlib.import_module("verification.scxml.differential")  # first-party: a broken import must fail, not skip
     if differential.load is None:
         pytest.skip("python-statemachine is not installed")
     assert differential.compare(OPS)["status"] == "PASS"
@@ -224,7 +225,7 @@ def test_the_differential_runs_a_timed_step_on_a_linked_object():
     raw = OPS.model.model_dump(mode="json")
     next(t for t in raw["transitions"] if t["id"] == "TR-WINDOW")["after"] = {"amount": 1, "unit": "hours"}
     timed = Workflow.model_validate(raw)
-    differential = pytest.importorskip("verification.scxml.differential")
+    differential = importlib.import_module("verification.scxml.differential")  # first-party: a broken import must fail, not skip
     if differential.load is None:
         pytest.skip("python-statemachine is not installed")
     assert differential.compare(OPS, timed)["status"] == "PASS"

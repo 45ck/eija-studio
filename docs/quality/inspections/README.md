@@ -57,6 +57,7 @@ Each area thread inspected its area again, deeper, and one thread reviewed #250-
 | The kernel | [inspection-2026-11-14-kernel.md](../inspection-2026-11-14-kernel.md) | #267 | [ADR-0250](../../adr/0250-kernel-second-inspection.md) |
 | The `eija` command and local server | [CLI-SERVER-INSPECTION.md, second pass](../../engineering/CLI-SERVER-INSPECTION.md#second-pass-14-november-2026) | #268 | [ADR-0251](../../adr/0251-server-boundaries-second-inspection.md) |
 | Drawing and editing diagrams (E1-E9) | [hci/inspection-2026-11-14](../../hci/inspection-2026-11-14/README.md) | #269 | none |
+| Tests, gates, hosted CI and docs (TD-01 to TD-12) | [2026-11-14-tests-gates-docs-deeper.md](2026-11-14-tests-gates-docs-deeper.md) | this PR | none |
 
 ADR-0252 was not used.
 

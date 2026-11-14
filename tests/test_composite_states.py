@@ -7,6 +7,7 @@ on the composite; the differential checks the engine's hierarchy against the ker
 """
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 
@@ -94,7 +95,7 @@ def test_scxml_nests_the_states_and_carries_a_shared_action_on_the_composite():
     assert all(t.action != "Withdraw" for name in ("Requested", "Assessed", "Deciding", "AwaitingApproval") for t in carried.get(name, []))
     partly = grouped(DESK.model, [c.model_dump() for c in DESK.model.composites], [withdraw_from("AwaitingApproval")])
     assert [t.from_state for t in hoisted(partly)["AwaitingApproval"] if t.action == "Withdraw"] == ["AwaitingApproval"]
-    differential = pytest.importorskip("verification.scxml.differential")
+    differential = importlib.import_module("verification.scxml.differential")  # first-party: a broken import must fail, not skip
     if differential.load is None:
         pytest.skip("python-statemachine is not installed")
     assert differential.compare(DESK)["status"] == "PASS"

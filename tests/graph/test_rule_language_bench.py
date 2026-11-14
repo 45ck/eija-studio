@@ -110,8 +110,9 @@ def test_committed_result_records_agreement_for_every_size_and_rule() -> None:
 
 
 def test_shacl_agrees_with_the_other_engines_on_a_small_graph() -> None:
-    # pyshacl is a comparison engine for the bench only (pyproject.toml deptry DEP001), installed by hand when wanted.
-    pytest.importorskip("pyshacl", reason="NOT_RUN: pyshacl is installed by hand for the rule-language bench")
+    # pyshacl is a comparison engine for the bench only (deptry DEP001: nothing shipped imports it). The `graph` extra
+    # installs it since 2026-11-14; before that no gate environment had it and this test ran nowhere.
+    pytest.importorskip("pyshacl", reason="NOT_RUN: pyshacl (extra `graph`) is not installed")
     n = 200
     f = bench.make_facts(n)
     for rule in ("R1", "R4"):

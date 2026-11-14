@@ -37,11 +37,19 @@ def test_mermaid_has_no_actors_and_says_so():
             "reason": "the file draws no actors; every role is a person"} in started["defaulted"]
 
 
-@pytest.mark.parametrize("name", sorted(p.name for p in PACKS_ROOT.iterdir() if (p / "pack.json").is_file()))
+# Only the packs whose roles are all people: the others are not "skipped", they are outside this test's domain (they
+# showed up as 4 permanent skips in every run and hid the skips that mean something).
+PEOPLE_ONLY = sorted(p.name for p in PACKS_ROOT.iterdir()
+                     if (p / "pack.json").is_file() and all(r.kind == "human" for r in load_pack(p).roles))
+
+
+def test_some_packs_have_only_people_and_some_do_not():
+    assert PEOPLE_ONLY and len(PEOPLE_ONLY) < sum(1 for p in PACKS_ROOT.iterdir() if (p / "pack.json").is_file())
+
+
+@pytest.mark.parametrize("name", PEOPLE_ONLY)
 def test_a_pack_of_people_exports_as_before(name):
     pack = load_pack(PACKS_ROOT / name)
-    if any(r.kind != "human" for r in pack.roles):
-        pytest.skip("this pack has actors that are not people")
     for fmt in FORMATS:
         text, report = export_model(fmt, pack, None, data_for(pack))
         assert not any(k in text for k in ("profileApplication", "<<agent", "&laquo;agent", "base_Actor"))

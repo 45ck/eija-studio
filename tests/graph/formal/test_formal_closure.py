@@ -11,13 +11,15 @@ import sqlite3
 import pytest
 from eijaref import closure, suites
 
+from eija_studio.domain.impact import closure as kernel_closure
+
 from weave_formal_support import load_bench
 
 bench = load_bench()
 
 
 def test_po_g1_kernel_closure_equals_two_independent_references_on_every_3_node_graph() -> None:
-    kernel = pytest.importorskip("eija_studio.domain.impact").closure
+    kernel = kernel_closure  # the kernel is part of this repository: a broken import fails, never skips
     assert suites.suite_closure(lambda g, r: kernel(g, r)["affected"], n=3) == []
     assert suites.suite_closure(closure.warshall_closure, n=3) == []
 
@@ -85,7 +87,7 @@ def test_po_g6_a_limit_inside_the_recursive_select_truncates_silently() -> None:
 
 
 def test_po_g1_random_larger_graphs_agree_across_all_four_implementations() -> None:
-    kernel = pytest.importorskip("eija_studio.domain.impact").closure
+    kernel = kernel_closure  # the kernel is part of this repository: a broken import fails, never skips
     rng = random.Random(21)
     for _ in range(300):
         n = rng.randrange(2, 30)

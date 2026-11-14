@@ -14,8 +14,8 @@ sources:
 - resource: repo://quality/sessions/interop.py#interop_plantuml
   title: interop.py
   hash_method: ast-v2
-  sha256: 56c3d3e0e966dd33edbdfef0d8d17f43997ba7270daeeefca896b5e4255a2325
-notes_baseline: 5471155090ca5b626dea6a5b03705019f580cc909f1e3b1ee16d4ecb475b2076
+  sha256: da87eecb78d2acd4ed26dde9e6c0fc32ee56ce6e4aed36002211deb14816b6d9
+notes_baseline: 7205acb1bedcaddb3ad6c90c2d8cb42cbde04b10dae73e808eeb80b8ee803f43
 ---
 
 # nox -s interop_plantuml
