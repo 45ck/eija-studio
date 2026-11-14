@@ -36,7 +36,7 @@ claim. Product code belongs to the other inspections; product defects found here
 
 | ID | Sev | Where | Defect | Fix | Before → after |
 |---|---|---|---|---|---|
-| TG-01 | major | `pyproject.toml` markers, `quality/sessions/` | No tier selected the `slow` or `browser` tests outside `tests/metrics` and `tests/test_syntax_validator.py`: 116 tests in 31 files (PlayIDE browser walks, the exact-app journey, 26 seeded conformance divergences). The marker text said `nox -s metrics` and `diagrams_syntax` ran them | New release session `browser_suite` (`quality/sessions/browser.py`); fails with NOT_RUN without Playwright; marker text corrected | `pytest --collect-only -m "slow or browser"` selected by 0 sessions → `nox -s browser_suite` runs all 116: 114 pass, 2 fail (#225, below) |
+| TG-01 | major | `pyproject.toml` markers, `quality/sessions/` | No tier selected the `slow` or `browser` tests outside `tests/metrics` and `tests/test_syntax_validator.py`: 116 tests in 31 files (PlayIDE browser walks, the exact-app journey, 26 seeded conformance divergences). The marker text said `nox -s metrics` and `diagrams_syntax` ran them | New release session `browser_suite` (`quality/sessions/browser.py`); fails with NOT_RUN without Playwright; marker text corrected | `pytest --collect-only -m "slow or browser"` selected by 0 sessions → `nox -s browser_suite` runs them serially: 122 pass on `main` with #256 (the #225 placement fix) merged |
 | TG-02 | major | `.github/workflows/quality.yml` | Hosted jobs installed fewer extras than a local run, and read only nox's exit code. nox exits 0 for `session.skip()`, so missing `smt`, `mutation`, `graph`, `graph-formal` turned the full-tier `formal_smt` and `mutation_quick` sessions and seven fast-tier graph tests into silent NOT_RUN | Both jobs install `graph,graph-formal,okf,interop-api,smt,mutation`; both write `nox --report`; new `quality/tools/nox_report.py` fails the fast job on any skipped session and lists NOT_RUN sessions in the nightly summary | CI extras, fast tier: 7 tests NOT_RUN (rfc8785, networkx, clingo), exit 0 → same extras as local, report check fails on any skip (`tests/tools/test_nox_report.py`) |
 | TG-03 | major | `pyproject.toml` `fail_under` | Coverage floor 78 against a measured 93.78 %: the ratchet rule ("raise it whenever coverage rises") was not applied for six weeks, so a 15-point drop passed | `fail_under = 93` | floor 78 → 93 (`nox -s coverage`: 93.78 %) |
 | TG-04 | minor | `graph/bench/metamodel_dogfood.py`, `graph/bench/consistency_checks.py` | Three tests looked for an `okf` sibling worktree from the lane era and skipped forever; the okf lane has been in this repository since then | Look in this repository first, sibling worktree second | 3 skipped (`okf worktree not found`) → 3 pass |
@@ -50,14 +50,16 @@ claim. Product code belongs to the other inspections; product defects found here
 | DC-04 | minor | `docs/getting-started.md` | "three interchangeable proposal providers" (eight: `eija propose --help`); "There is no MCP server" (`eija mcp`) | Corrected | see the diff |
 | DC-05 | minor | `docs/quality/gates.md` | `tests` listed as fast and full (fast only); no row for the new session or the report check | Corrected and added | see the diff |
 | DC-06 | minor | ADR-0228, ADR-0243 | ADR-0228 said browser tests ran in the full tier; ADR-0243 said the fast tier ran every once-missed divergence (they are `slow`) | Amendment section on ADR-0228; ADR-0243 sentence corrected | see the diff |
-| DC-07 | minor | `.github/workflows/test.yml` | Comment said hosted CI was unavailable (ADR-0017), superseded by ADR-0228 | Comment says why this workflow stays manual | see the diff |
+| DC-07 | minor | `.github/workflows/test.yml` | Comment said hosted CI was unavailable (ADR-0017), superseded by ADR-0228 | Fixed on `main` by a parallel inspection while this one ran; its wording kept | stale comment → corrected on `main` |
 
 ## Product defects passed on
 
-* **#225 (open):** `test_play_place::test_a_state_lands_where_you_put_it_and_stays_there_in_a_real_browser` and
-  `test_play_drop_place::test_a_state_lands_under_the_pointer_and_nothing_else_moves` fail on `main`: the plan banner
-  pushes the canvas down when the first change lands (measured 58 px here). It needs a product choice (the issue lists
-  three options), so it is left to the diagram-editing inspection rather than deselected. `browser_suite` stays red until then.
+* **#225 (fixed by #256):** `test_play_place::test_a_state_lands_where_you_put_it_and_stays_there_in_a_real_browser` and
+  `test_play_drop_place::test_a_state_lands_under_the_pointer_and_nothing_else_moves` failed on `main` (the plan banner
+  pushed the canvas down 58 px). Passed to the diagram-editing inspection rather than deselected; its fix merged in #256,
+  and `browser_suite` is green on top of it.
+* **Parallel browsers:** under `-n 4`, `test_play_place::test_pick_then_click_double_click_and_edit_inline_in_a_real_browser`
+  timed out (it passes alone). `browser_suite` therefore runs serially, one browser at a time, as CONTRIBUTING.md asks.
 
 ## Not defects
 
