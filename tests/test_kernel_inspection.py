@@ -229,3 +229,12 @@ def test_packs_are_unaffected():
         if (directory / "pack.json").is_file():
             pack = load_pack(directory)
             assert check_policy(pack.model, pack) == [], directory.name
+
+
+def test_k1_an_undeclared_action_is_judged_once_not_also_for_its_role():
+    """A transition of an action the pack does not declare is UNSUPPORTED_ACTION already; its role adds no second code
+    (the SMT encoding and the legacy oracle model the role per declared action only)."""
+    data = LOAN.model.model_dump(mode="json")
+    extra = dict(next(t for t in data["transitions"] if t["action"] == "Cancel"), id="TR-AUDIT", action="Audit", role="Auditor")
+    data["transitions"].append(extra)
+    assert check_policy(Workflow.model_validate(data), LOAN) == ["UNSUPPORTED_ACTION"]

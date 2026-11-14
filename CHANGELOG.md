@@ -19,6 +19,7 @@
 - Fixed: the law proof and Simulate never tried `1` or `0` for an attribute also guarded as true/false.
 - Fixed: the impact ripple was empty for a change to who may start a record, the initial state, the signals that start one, or a linked object's lifecycle. It now names it in `model_changes` and marks the review packet affected.
 - Each initiator and each state of a linked object's lifecycle is now a 1 to 60 character name (contracts regenerated).
+- Follow-up: the legacy policy oracle and both SMT encodings now know `UNDECLARED_ROLE`, which had turned two z3-only tests red; `UNDECLARED_ROLE` is not reported for an action the pack does not declare (it is `UNSUPPORTED_ACTION`).
 ### 13 November 2026: running and checking a design in place, inspected
 
 - A Fagan inspection of Simulate, the run bar, the Tests, Laws and permissions tabs, the ripple check and the game layer logged eleven defects, all fixed here, each with a before and after screenshot ([inspection record](docs/engineering/2026-11-13-INSPECTION-CHECK-IN-PLACE.md)).
