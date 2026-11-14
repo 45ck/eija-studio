@@ -39,6 +39,7 @@ PR, so this review stays at the level of the whole. The index of every inspectio
 | I5 | Documents | `CLI-SERVER-INSPECTION.md` D10; `2026-11-13-tests-gates-docs.md` | Two records still said "left" or "passed on" for defects another thread fixed later the same day (the generated app's `Host` check in #260; the SMT-gated tests in #261). | Each now names the PR that fixed it. |
 | I6 | Documents | `CHANGELOG.md` | Six of the ten inspections had a CHANGELOG section; chat plan mode (#253), diagram editing (#256), the merged-PR re-inspection (#257) and tests and gates (#259) had none. | One section covers the four. |
 | I7 | Documents | `docs/ROADMAP.md`, issue #221 | The single list of current work did not mention the inspection day. | A line in both. |
+| I9 | Test race | `tests/test_play_diff.py`, `tests/test_play_diagram_inspection.py` | In `browser_suite` (124 of 126 passed) two tests read text the page had not finished writing: the inspector heading still said "draw a state", and the review panel still said "Proving the laws…". Both pass alone; serially after other browser tests they lost the race. | Each waits for the text it then reads with a locator (`has_text`), which the page's CSP allows, before asserting. |
 
 ## Checked and consistent
 
