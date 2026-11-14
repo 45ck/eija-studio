@@ -43,6 +43,22 @@ These were logged and deliberately not changed. Each record gives the reasoning.
 * Diagram editing: a class diagram wider than the canvas at the readable scale pans rather than shrinking below 0.8.
 * Tests and gates: `.gitattributes` for LF line endings is still issue #55.
 
+## 14 November 2026: second passes
+
+Each area thread inspected its area again, deeper, and one thread reviewed #250-#261 PR by PR. Records as they merged:
+
+| Area | Record | Fixed in | Decision record |
+|---|---|---|---|
+| AI chat, start flow and review view | [2026-11-14-ai-chat-deeper.md](2026-11-14-ai-chat-deeper.md) | #262 | ADR-0156, ADR-0216 amendments |
+| The day's inspection PRs, one by one (N1-N3) | [inspection-2026-11-14-todays-prs.md](../inspection-2026-11-14-todays-prs.md) | #263 | [ADR-0246](../../adr/0246-kernel-inspection-fixes.md) amendment |
+| The app generator | [inspection-2026-11-14-app-generator-pass-2.md](../inspection-2026-11-14-app-generator-pass-2.md) | #264 | [ADR-0254](../../adr/0254-app-generator-second-pass.md) |
+| Running and checking a design in place | [2026-11-14-INSPECTION-CHECK-IN-PLACE-2.md](../../engineering/2026-11-14-INSPECTION-CHECK-IN-PLACE-2.md) | #265 | none |
+| Saving and UML import | [INSPECTION-SAVE-IMPORT.md, second pass](../../engineering/INSPECTION-SAVE-IMPORT.md#second-pass-2026-11-14) | #266 | [ADR-0253](../../adr/0253-imports-match-names-and-tabs-keep-each-others-work.md) |
+| The kernel | [inspection-2026-11-14-kernel.md](../inspection-2026-11-14-kernel.md) | #267 | [ADR-0250](../../adr/0250-kernel-second-inspection.md) |
+| The `eija` command and local server | [CLI-SERVER-INSPECTION.md, second pass](../../engineering/CLI-SERVER-INSPECTION.md#second-pass-14-november-2026) | #268 | [ADR-0251](../../adr/0251-server-boundaries-second-inspection.md) |
+
+ADR-0252 was not used.
+
 ## 14 November 2026: integration review
 
 [2026-11-14-integration-review.md](2026-11-14-integration-review.md) reviews `main` after #250-#261 as one change: every
