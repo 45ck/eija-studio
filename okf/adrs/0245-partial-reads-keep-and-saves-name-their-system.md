@@ -64,4 +64,8 @@ _No curated notes yet._
 * [ADR-0185: Start, open and save your own system in PlayIDE](/adrs/0185-start-open-and-save-your-own-system.md) - PlayIDE could only show the pack the server was started with (`eija serve --pack …`), and every pack was one that ships with EIJA.
 * [ADR-0190: UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel](/adrs/0190-uml-import-and-export-through-the-kernel.md) - PlayIDE's users already know UML and already keep UML somewhere else: XMI in Enterprise Architect, Cameo, Papyrus or Visual Paradigm; PlantUML beside the code;…
 * [ADR-0198: Undo, redo and autosave of the edited document in PlayIDE](/adrs/0198-undo-redo-and-autosave-of-the-edited-document.md) - PlayIDE is meant to be more robust than the UML tools engineers already use, and every one of those has undo.
+
+## Referenced by
+
+* [ADR-0253: An import matches renamed and respaced names, and two tabs keep each other's work](/adrs/0253-imports-match-names-and-tabs-keep-each-others-work.md) - A second, deeper inspection of saving and UML interchange followed ADR-0245.
 <!-- okf:generated:end links -->

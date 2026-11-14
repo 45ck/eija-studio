@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#load_pack
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: cd8a326080eb01e8287f325605044a8ed5bd13792dc14f6f366f20ecf9426726
-notes_baseline: f5148a23f6d2a62de10a93671451d31148d6fca95ad70c59250d7aa36e1815f0
+  sha256: 406930edf425923103453152324c9473c91ce0fbf0e2293682c572e1e55fe870
+notes_baseline: e9a9a0ff4472d014d544993557aaaf1ed3aee7e78820580b5ca745a891e99e1a
 ---
 
 # domain.pack.load_pack
@@ -25,7 +25,7 @@ notes_baseline: f5148a23f6d2a62de10a93671451d31148d6fca95ad70c59250d7aa36e1815f0
 |---|---|
 | Kind | function |
 | Module | [`domain/pack`](/modules/domain/pack.md) |
-| Signature | `def load_pack(location: str \| Path) -> Pack` |
+| Signature | `def load_pack(location: str \| Path, *, claim: bool=True) -> Pack` |
 | Code | `repo://src/eija_studio/domain/pack.py#load_pack` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -33,6 +33,12 @@ notes_baseline: f5148a23f6d2a62de10a93671451d31148d6fca95ad70c59250d7aa36e1815f0
 
 ~~~text
 Read current file contents and retain an immutable, digest-addressed pack snapshot.
+
+Files beside `pack.json` (data.json, screens.json, scenarios.json) are read from the folder the snapshot was read
+from. Two folders can hold the same `pack.json` (a copy of a shipped pack whose class model was changed), so a
+read that only looks at a pack, such as listing the templates or the workflows beside the open one, passes
+`claim=False`: it does not move the snapshot to its folder, and the open system keeps reading its own files
+(ADR-0253).
 ~~~
 <!-- okf:generated:end facts -->
 

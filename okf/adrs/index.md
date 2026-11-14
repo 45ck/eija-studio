@@ -133,3 +133,4 @@
 * [ADR-0249: Fixes from the inspection of the app generator](0249-app-generator-inspection-fixes.md) - The 13 November 2026 inspection (record) found ten defects in the generated app and its conformance suite.
 * [ADR-0250: Who starts a record is checked like who acts, and a law never protects a state that is gone](0250-kernel-second-inspection.md) - The first inspection of the kernel (ADR-0246) read each kernel function against its own ADR.
 * [ADR-0251: Request caps per route, no repository filters, and a server that cleans up after itself](0251-server-boundaries-second-inspection.md) - A second, deeper inspection of the `eija` command and the local server (CLI-SERVER-INSPECTION, "Second pass") found eight defects (S1 to S8).
+* [ADR-0253: An import matches renamed and respaced names, and two tabs keep each other's work](0253-imports-match-names-and-tabs-keep-each-others-work.md) - A second, deeper inspection of saving and UML interchange followed ADR-0245.

@@ -12,6 +12,7 @@ import json
 import os
 import threading
 import time
+import uuid
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -105,10 +106,14 @@ class SaveWork(SavedWork):
     left open on the system it was on before another tab opened a different one would otherwise save its work over
     that other system's saved draft."""
     pack: str | None = Field(default=None, min_length=1, max_length=1000)
+    # The saved draft's revision the page last opened or saved (null: none was saved). Two tabs on one system would
+    # otherwise each save over the other's work unseen; a page that does not send it is not checked (ADR-0253).
+    base: str | None = Field(default=None, max_length=64)
 
 
 class ClearWork(Contract):
     pack: str | None = Field(default=None, min_length=1, max_length=1000)  # the system the page has open, as for Save
+    base: str | None = Field(default=None, max_length=64)  # as for Save
 
 
 def _reopenable(draft: dict[str, Any]) -> bool:
@@ -126,7 +131,7 @@ def templates() -> list[dict[str, Any]]:
     for folder in sorted(PACKS_ROOT.iterdir()) if PACKS_ROOT.is_dir() else ():
         if (folder / PACK_FILE).is_file():
             try:
-                pack = load_pack(folder)
+                pack = load_pack(folder, claim=False)  # a look at a template: the open system keeps its own files
             except PackError:
                 continue
             found.append({"id": pack.id, "name": pack.pack.name, "description": pack.pack.description,
@@ -295,26 +300,38 @@ def register(app, systems: Systems) -> None:
             raise DomainError("SYSTEM_CHANGED", f"{systems.current['name']} is open now, not the system this page shows. "
                               "Reload the page to work on it; your edits are still kept in this browser")
 
+    def same_draft(body: SaveWork | ClearWork) -> None:
+        """Refuse a save or clear from a page that has not seen the saved draft now on disk (another tab saved since)."""
+        if "base" not in body.model_fields_set:
+            return
+        now = systems.library.read_draft(workspace())
+        if (now or {}).get("revision") != body.base and (now is not None or body.base is not None):
+            at = time.strftime("%H:%M", time.localtime(now["saved"])) if now and isinstance(now.get("saved"), int) else "a moment ago"
+            raise DomainError("DRAFT_CHANGED", f"Another tab saved this system's work at {at}, after this page last "
+                              "opened or saved it. Press Save again to replace it with the work on this page, or reload to see it")
+
     @app.post("/api/play/draft")
     def play_save_draft(body: SaveWork):
         """Save the work in progress: the plan's steps as typed transactions, edited screens and the tests draft. Nothing is applied."""
-        same_system(body.pack)
-        for step in body.steps:
-            parse_step(step.transaction)  # a malformed step is refused here, not on reopening
-        if body.screens is not None:
-            parse_screens(body.screens, systems.handle.pack.id)
-        if body.scenarios is not None:
-            parse_scenarios(body.scenarios, systems.handle.pack.id)
-        with systems.lock:  # checked and written with no switch between: never into the system another tab opened
+        with systems.lock:  # the check and the write as one: no other save, clear or switch of system in between
             same_system(body.pack)
-            saved = body.model_dump(mode="json", exclude={"pack"}) | {"saved": int(time.time()), "system": systems.current["id"], "model": in_force()}
+            same_draft(body)
+            for step in body.steps:
+                parse_step(step.transaction)  # a malformed step is refused here, not on reopening
+            if body.screens is not None:
+                parse_screens(body.screens, systems.handle.pack.id)
+            if body.scenarios is not None:
+                parse_scenarios(body.scenarios, systems.handle.pack.id)
+            saved = body.model_dump(mode="json", exclude={"pack", "base"}) | {
+                "saved": int(time.time()), "system": systems.current["id"], "model": in_force(), "revision": uuid.uuid4().hex}
             systems.library.write_draft(workspace(), saved)
-        return {"saved": saved["saved"]}
+        return {"saved": saved["saved"], "revision": saved["revision"]}
 
     @app.post("/api/play/draft/clear")
     def play_clear_draft(body: ClearWork):
         with systems.lock:
             same_system(body.pack)
+            same_draft(body)
             systems.library.write_draft(workspace(), None)
         return {"cleared": True}
 
