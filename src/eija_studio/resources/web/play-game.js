@@ -73,11 +73,12 @@
   function checks(event) {
     const { checks: now, key } = event.detail, health = $("health"), ring = $("health-ring");
     const all = now.every((c) => c.ok);
-    for (const c of now) if (c.ok) everPassed.add(c.id);
+    for (const c of now) if (c.ok && !c.na) everPassed.add(c.id);
     if (live && last && last.key === key) {
       now.forEach((c, i) => {
         const was = last.checks.find((x) => x.id === c.id);
-        if (!was || was.ok === c.ok || !c.ok) return;
+        // A part that became not applicable (the plan undone or dropped) checked nothing: it is no moment.
+        if (!was || was.ok === c.ok || !c.ok || c.na) return;
         flash(ring && ring.children[i], "game-pop");
         if (!was.detail.endsWith("…")) note(`✓ ${c.name}`, "pass", `${c.name}: ${c.detail}`); // not for a check that was only still working
       });
@@ -361,7 +362,7 @@
       if (!Number.isFinite(target) || target < 2) continue;
       const start = performance.now(), ms = 900;
       const frame = (t) => {
-        const f = Math.min(1, (t - start) / ms);
+        const f = Math.max(0, Math.min(1, (t - start) / ms)); // a frame's time can precede `start`: never below 0
         strong.textContent = String(Math.round(target * (1 - (1 - f) ** 3)));
         if (f < 1) requestAnimationFrame(frame); else strong.textContent = String(target);
       };

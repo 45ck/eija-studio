@@ -9,11 +9,11 @@
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, savedData = null, classGraph = null, useCaseGraph = null, tab = "states";
-  let components = null, componentGraph = null, lastBuild = null;
+  let components = null, componentsAsk = null, componentGraph = null, lastBuild = null; // componentsAsk: the report being read, per view
   let navigationReady = false, asking = false;
   let activeStatus = null; // server identities, never re-created or interpreted in the browser
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
-  let packInfo = null, points = 0, simKey = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
+  let packInfo = null, points = 0, simKey = null, simulated = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
   let shownChange = null; // while the Changes view is on: the union of the model in force and the change (ADR-0176), drawn on the class and use case diagrams too
   let ripple = null, rippleSeq = 0; // what the accepted plan does to every diagram, with the proposer's follow-ons (ADR-0158)
   let effectsSeq = 0; // late effect reports cannot replace the subject currently being inspected
@@ -42,6 +42,17 @@
     const options = { headers: { Authorization: "Bearer " + token } };
     if (body !== undefined) Object.assign(options, { method: "POST", body: JSON.stringify(body) }, { headers: { ...options.headers, "Content-Type": "application/json" } });
     return PlayApi.request(fetch, path, options); // a stopped server or a crash page reads as a sentence, not a parse error
+  }
+
+  // One rule for every answer the page asks the server for: it is shown only while it is the newest asked on its
+  // channel and the view it was asked about (the model, plan and screens on show, and whatever `also` reads) is still
+  // the one on show. A caller takes a ticket before it asks and drops the answer once `current()` is false, so a late,
+  // superseded or stale answer never paints over the question now on screen. tests/test_play_answers_follow_view.py
+  // checks that every request in the run, check and lens modules does this.
+  const tickets = Object.create(null);
+  function ticket(channel, also = () => "") {
+    const n = (tickets[channel] = (tickets[channel] || 0) + 1), at = viewKey() + "\u0000" + also();
+    return Object.freeze({ current: () => tickets[channel] === n && viewKey() + "\u0000" + also() === at });
   }
 
   function el(tag, text, attrs = {}) {
@@ -1050,7 +1061,7 @@
     const panel = $("canvas").closest(".workbench"), scrolled = panel ? panel.scrollTop : 0;
     for (const g of [graph, classGraph, useCaseGraph, componentGraph]) if (g) g.destroy();
     for (const box of ["canvas", "class-canvas", "usecase-canvas", "component-canvas"]) $(box).replaceChildren();
-    classGraph = useCaseGraph = componentGraph = components = null;
+    classGraph = useCaseGraph = componentGraph = components = componentsAsk = null;
     for (const key of Object.keys(base)) delete base[key];
     clearSimPanel();
     outline();
@@ -1501,7 +1512,9 @@
   function checksNow() {
     const key = viewKey(), ai = plan ? plan.steps.filter((s) => s.author === "ai") : [];
     const seen = ai.filter((s) => s.checked).length, built = lastBuild && lastBuild.key === key ? lastBuild : null;
-    const simulated = sim && simKey === key ? sim : null;
+    // What was simulated, not what is painted: the run bar repaints and clears the diagram, which ran nothing new and
+    // changed no model, so it neither empties this part nor fills it.
+    const done = simulated && simKey === key ? simulated : null;
     return [
       { id: "ai", name: "AI steps checked", ok: seen === ai.length, na: !ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
       { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length && Boolean(a11y) && !a11y.failed,
@@ -1510,8 +1523,8 @@
       { id: "conformance", name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       rippleCheck(),
-      { id: "simulated", name: "Simulated", ok: Boolean(simulated),
-        detail: simulated ? `${simulated.attempts} attempts, ${simulated.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
+      { id: "simulated", name: "Simulated", ok: Boolean(done),
+        detail: done ? `${done.attempts} attempts, ${done.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
     ];
   }
 
@@ -1998,9 +2011,22 @@
 
   // The components report of the model on screen, read once per view: the component diagram and the deployment
   // diagram (ADR-0206) are both read from it.
-  async function loadComponents() {
-    if (!components) components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
-    return components;
+  // Callers for the same view share one request; a report of a view no longer on show is returned to its caller, never
+  // kept for this one.
+  function loadComponents() {
+    if (components) return Promise.resolve(components);
+    const key = viewKey();
+    if (componentsAsk && componentsAsk.key === key) return componentsAsk.promise;
+    const mine = ticket("components");
+    const promise = api("/api/play/components", { ...about(), screens: screensEdited ? screens : null }).then((result) => {
+      if (mine.current() && componentsAsk && componentsAsk.promise === promise) components = result;
+      return result;
+    }, (error) => {
+      if (componentsAsk && componentsAsk.promise === promise) componentsAsk = null; // asked again next time
+      throw error;
+    });
+    componentsAsk = { key, promise };
+    return promise;
   }
 
   async function drawComponents() {
@@ -2019,6 +2045,7 @@
         box.replaceChildren(said);
         return;
       }
+      if (!components) return; // the view changed while the report was read: the redraw of the new view draws it
     }
     if (componentGraph) { restyleComponents(); fit(); return; }
     const { Graph, InternalEvent } = maxgraph;
@@ -2128,7 +2155,7 @@
     commit(label);
     lastBuild = null; // the last build was of other screens
     restyleComponents();
-    components = null;
+    components = componentsAsk = null;
     renderDesigner();
     clearTimeout(checkTimer);
     problemsFor = null; // pending until the check of this design answers
@@ -2366,11 +2393,11 @@
     score.hidden = false;
     score.className = "score";
     score.textContent = "Building and checking against the kernel…";
+    // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
+    const key = viewKey(), mine = ticket("build");
     try {
-      // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
-      const key = viewKey();
       const result = await api("/api/play/build", { ...about(), screens: screensEdited ? screens : null });
-      if (key !== viewKey()) { score.textContent = "The model changed during this build. Build the current revision again."; score.className = "score bad"; return; }
+      if (!mine.current()) { score.textContent = "The model changed during this build. Build the current revision again."; score.className = "score bad"; return; }
       const pass = result.conformance.status === "PASS";
       lastBuild = { ...result, key };
       if (pass) rewardTrying("build", 3, `Built the AI's change and ran its ${result.cases} conformance cases`, key);
@@ -2384,6 +2411,7 @@
       document.dispatchEvent(new CustomEvent("playide:built", { detail: { subject: result.subject, approval: result.approval, conformance: result.conformance } }));
     } catch (error) {
       score.className = "score bad";
+      if (!mine.current()) { score.textContent = `A build of an earlier model was refused (${error.code || "ERROR"}). Build the current revision again.`; return; }
       score.textContent = error.code === "MODEL_CHANGED"
         ? "The model changed since this page loaded. Reload to see it, then build again."
         : `Build refused (${error.code || "ERROR"}): ${error.message}`;
@@ -2511,17 +2539,18 @@
   async function simulate() {
     const button = $("simulate");
     button.disabled = true;
-    const key = viewKey();
+    const key = viewKey(), mine = ticket("simulate");
     try {
       const result = await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 });
       // A run of a model no longer on screen is not painted on this one: its counts are of other states and transitions.
-      if (key !== viewKey()) { notify("The model changed while simulating. Press Simulate to run the model shown."); return; }
+      if (!mine.current()) { notify("The model changed while simulating. Press Simulate to run the model shown."); return; }
       showSim(result);
       simKey = key;
+      simulated = { attempts: result.attempts, refused: result.refused };
       rewardTrying("simulate", 2, "Simulated users on the AI's change", key);
       renderHealth();
     } catch (error) {
-      if (key !== viewKey()) { notify(`A simulation of an earlier model was refused (${error.code || "ERROR"}). Press Simulate to run the model shown.`); return; }
+      if (!mine.current()) { notify(`A simulation of an earlier model was refused (${error.code || "ERROR"}). Press Simulate to run the model shown.`); return; }
       $("sim").hidden = false;
       $("sim-summary").textContent = error.code === "MODEL_CHANGED"
         ? "The model changed since this page loaded. Reload to see it, then simulate again."
@@ -2897,7 +2926,7 @@
     screensEdited = false;
     lastBuild = null;
     restyleComponents();
-    components = null;
+    components = componentsAsk = null;
     await loadScreens(null);
     renderDesigner();
     if (plan) refreshRipple();
@@ -3097,6 +3126,7 @@
     lastBuild = null;
     shownChange = null;
     simKey = null;
+    simulated = null;
     $("run").hidden = true;
     $("run-frame").src = "about:blank";
     $("run-open").removeAttribute("href");
@@ -3236,7 +3266,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    api, ticket, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
     activationDraft, activated, showEffects, status: () => activeStatus,
     buildForReview: () => { if (plan && !plan.previewing) enterPreview(); return build(); },
     inspectChange: () => { if (plan && !plan.previewing) enterPreview(); showTab("review"); },
