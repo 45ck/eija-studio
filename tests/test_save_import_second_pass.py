@@ -67,7 +67,9 @@ def test_plantuml_gives_back_the_state_name_it_wrote(name):
     pack, data = _loaded(LOAN)
     model = _named(pack.model, "Returned", name)
     report = import_model("plantuml", export_model("plantuml", pack, model=model, data=data)[0], pack, model=model, data=data)
-    assert report["status"] == "CLEAN" and report["state_machine"]["transactions"] == [], report["state_machine"]["transactions"]
+    # The status may be REFUSED: the pack's laws still name Returned (ADR-0250). The file itself must change nothing.
+    machine = report["state_machine"]
+    assert machine["transactions"] == [] and not machine["changed"] and report["unmapped"] == [], machine["transactions"]
 
 
 @pytest.mark.parametrize("choice", ['a"b', "'q'"])
