@@ -9,7 +9,7 @@
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, savedData = null, classGraph = null, useCaseGraph = null, tab = "states";
-  let components = null, componentGraph = null, lastBuild = null;
+  let components = null, componentsAsk = null, componentGraph = null, lastBuild = null; // componentsAsk: the report being read, per view
   let navigationReady = false, asking = false;
   let activeStatus = null; // server identities, never re-created or interpreted in the browser
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
@@ -1061,7 +1061,7 @@
     const panel = $("canvas").closest(".workbench"), scrolled = panel ? panel.scrollTop : 0;
     for (const g of [graph, classGraph, useCaseGraph, componentGraph]) if (g) g.destroy();
     for (const box of ["canvas", "class-canvas", "usecase-canvas", "component-canvas"]) $(box).replaceChildren();
-    classGraph = useCaseGraph = componentGraph = components = null;
+    classGraph = useCaseGraph = componentGraph = components = componentsAsk = null;
     for (const key of Object.keys(base)) delete base[key];
     clearSimPanel();
     outline();
@@ -2011,11 +2011,22 @@
 
   // The components report of the model on screen, read once per view: the component diagram and the deployment
   // diagram (ADR-0206) are both read from it.
-  async function loadComponents() {
-    if (components) return components;
-    const mine = ticket("components"), result = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
-    if (mine.current()) components = result; // a report of a view no longer on show is returned to its caller, never kept for this one
-    return result;
+  // Callers for the same view share one request; a report of a view no longer on show is returned to its caller, never
+  // kept for this one.
+  function loadComponents() {
+    if (components) return Promise.resolve(components);
+    const key = viewKey();
+    if (componentsAsk && componentsAsk.key === key) return componentsAsk.promise;
+    const mine = ticket("components");
+    const promise = api("/api/play/components", { ...about(), screens: screensEdited ? screens : null }).then((result) => {
+      if (mine.current() && componentsAsk && componentsAsk.promise === promise) components = result;
+      return result;
+    }, (error) => {
+      if (componentsAsk && componentsAsk.promise === promise) componentsAsk = null; // asked again next time
+      throw error;
+    });
+    componentsAsk = { key, promise };
+    return promise;
   }
 
   async function drawComponents() {
@@ -2034,6 +2045,7 @@
         box.replaceChildren(said);
         return;
       }
+      if (!components) return; // the view changed while the report was read: the redraw of the new view draws it
     }
     if (componentGraph) { restyleComponents(); fit(); return; }
     const { Graph, InternalEvent } = maxgraph;
@@ -2143,7 +2155,7 @@
     commit(label);
     lastBuild = null; // the last build was of other screens
     restyleComponents();
-    components = null;
+    components = componentsAsk = null;
     renderDesigner();
     clearTimeout(checkTimer);
     problemsFor = null; // pending until the check of this design answers
@@ -2875,7 +2887,7 @@
     screensEdited = false;
     lastBuild = null;
     restyleComponents();
-    components = null;
+    components = componentsAsk = null;
     await loadScreens(null);
     renderDesigner();
     if (plan) refreshRipple();

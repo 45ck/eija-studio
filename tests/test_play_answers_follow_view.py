@@ -60,3 +60,13 @@ def test_a_ticket_is_current_only_for_the_newest_question_about_the_view_on_show
     body = source[source.index("function ticket("):source.index("function el(")]
     assert "tickets[channel] === n" in body and 'viewKey() + "\\u0000" + also() === at' in body
     assert "ticket," in source[source.index("window.PlayIDE = {"):]  # the modules reach it through the bridge
+
+
+def test_component_draws_share_one_request_and_stop_on_a_stale_report():
+    """Codex review of #265: a stale report used to be returned to `drawComponents`, which then built a graph from no
+    report. Callers for one view now share a request, and a draw whose view changed stops before building."""
+    source = (WEB / "play.js").read_text(encoding="utf-8")
+    load = source[source.index("function loadComponents()"):source.index("async function drawComponents()")]
+    assert "componentsAsk.key === key) return componentsAsk.promise" in load
+    draw = source[source.index("async function drawComponents()"):source.index("if (componentGraph) { restyleComponents()")]
+    assert "if (!components) return;" in draw
