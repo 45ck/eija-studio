@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-13
+* **Re-inspection of merged PRs (M1 to M5)**: synced `policy.declared_codes` and the new `policy.lifecycle_conflicts`, `transactions.apply_structural` (another source keeps what an action shares), and amendments to ADR-0231, ADR-0232, ADR-0238 and ADR-0241. Re-read the Notes of `domain.policy` as `process:claude-code`; they still hold. Nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of saving, undo and UML import (ADR-0245)**: synced ADR-0245 and the page for `interfaces.play_systems` (`SaveWork`, `ClearWork`, `SYSTEM_CHANGED`). The interop modules have no pages of their own. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of open PRs (D2)**: synced `adapters.system_library`. `set_aside_draft` now returns the name of the file it used, so PlayIDE's message names it. The page has no curated Notes, and nothing was recorded as verified.
 * **Command line and server inspection (ADR-0244)**: synced ADR-0244 and the pages for `interfaces.play` (`APP_ENVIRONMENT`, `app_environment`) and `interfaces.uml_interop` (the export's policy check). No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.

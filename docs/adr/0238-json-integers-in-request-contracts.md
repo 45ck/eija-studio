@@ -40,3 +40,10 @@ pins the cases.
 * Neutral: a stored case is read back with real ints, so nothing stored changes.
 * Bad: `GeneratedAppBinding`'s strict ints (`timeout_seconds`, `baseline_version`) still refuse `1.0`. They are
   evidence bindings the kernel writes itself, not request input, so they stay as they are.
+
+## Amendment, 13 November 2026: the built app reads them too
+
+Re-inspection of the merged PRs (`docs/quality/inspection-2026-11-13-merged-prs.md`, M3) found that the built app's
+`POST /api/records/{id}/act` kept its own `isinstance(int)` check and refused `expected_version: 1.0`, which its
+published `Act` contract and `ExecuteCommand` accept. It now reads a whole float as an int and still refuses a
+fractional float, a string or a boolean.
