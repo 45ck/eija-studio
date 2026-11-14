@@ -14,24 +14,19 @@ from .runtime import initialise
 
 def create_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
     """Every fixture actor, and one unknown actor, starting a record with valid values: the state and version it starts
-    in, or the refusal. Revoked and unknown actors are refused as the kernel refuses them an action; a model that names
-    its initiators refuses anyone else (ADR-0231); everyone else gets a record in the model's initial state."""
-    declared = {a.id: a for a in pack.fixtures.actors}
+    in, or the refusal. The kernel decides each (ADR-0250): unknown and revoked actors are refused as they are refused an
+    action, a model that names its initiators refuses anyone else (ADR-0231), and everyone else gets a record in the
+    model's initial state."""
+    declared = {a.id for a in pack.fixtures.actors}
     cases: list[dict[str, object]] = []
-    for actor_id in [*sorted(declared), absent(UNKNOWN_ACTOR, set(declared))]:
-        actor = declared.get(actor_id)
-        if actor is None:
-            expect: dict[str, object] = {"outcome": "REFUSED", "code": "UNKNOWN_ACTOR"}
-        elif not actor.active:
-            expect = {"outcome": "REFUSED", "code": "ACTOR_REVOKED"}
+    for actor_id in [*sorted(declared), absent(UNKNOWN_ACTOR, declared)]:
+        session = OracleSession(pack, model, model.initial_state)
+        try:
+            item = initialise(session, "app", model, pack=pack, actor_id=actor_id)  # type: ignore[arg-type]
+        except DomainError as refused:
+            expect: dict[str, object] = {"outcome": "REFUSED", "code": refused.code}
         else:
-            session = OracleSession(pack, model, model.initial_state)
-            try:
-                item = initialise(session, "app", model, pack=pack, role=actor.role)  # type: ignore[arg-type]
-            except DomainError as refused:
-                expect = {"outcome": "REFUSED", "code": refused.code}
-            else:
-                expect = {"outcome": "CREATED", "state": item["state"], "version": item["version"]}
+            expect = {"outcome": "CREATED", "state": item["state"], "version": item["version"]}
         cases.append({"actor": actor_id, "expect": expect})
     return cases
 
