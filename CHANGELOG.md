@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 14 November 2026: review of the day's inspection PRs
+
+- Reviewed #250 to #261 one by one ([record](docs/quality/inspection-2026-11-14-todays-prs.md)); each holds, with three defects found and fixed, each with a regression test in `tests/test_todays_pr_review.py`.
+- Fixed: the SCXML export ordered any text against a date, so its chart took `[due > "2026-01-15"]` for `due = "other"` where the kernel refuses (ADR-0246 K3 had reached the kernel only).
+- Fixed: the SCXML export compared a record value with a guard of another kind, taking `True` for `1` and `6` for `!= "a"`, and failing with a `TypeError` on `"6" > 5`. Each guard now needs its own kind, as in the kernel.
+- Fixed: two inspection test modules named log files that do not exist.
+
 ### 13 November 2026: inspection of the app generator
 
 - Fixed: a built app's page now lets a person choose the object a record refers to, or add one in place (ai-ops records could not be created from the page before). Ten defects in all; [inspection record](docs/quality/inspection-2026-11-13-app-generator.md), [ADR-0249](docs/adr/0249-app-generator-inspection-fixes.md).
