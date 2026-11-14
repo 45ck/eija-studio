@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0175-review-a-change-as-a-uml-diff-you-can-run.md
   title: 0175-review-a-change-as-a-uml-diff-you-can-run.md
   hash_method: lf-sha256-v1
-  sha256: eb505f946d58a6037c913862d14ffc528603be2d0f490e0ba753275ef07ca026
-notes_baseline: 4d3e6c1fc931d0afaeb1ba5a7406643045791f7782cde7b33f62305d7e3dfacd
+  sha256: ca36b68f248a03ce66837c692769d878310be4825923d375f15c616824e3568b
+notes_baseline: 1f626ccb6af7eb4825bc86743b82de92c297424621230efea4d5abd80a09955d
 ---
 
 # ADR-0175: Review a change as a UML diff you can run, not as a pull request
@@ -48,6 +48,12 @@ notes_baseline: 4d3e6c1fc931d0afaeb1ba5a7406643045791f7782cde7b33f62305d7e3dfacd
 * Considered options
 * Decision outcome
 * OSS check (required for any custom module)
+
+## Code and docs mentioned
+
+Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
+
+* `repo://docs/quality/inspections/2026-11-14-ai-chat-deeper.md`
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -60,6 +66,9 @@ _No curated notes yet._
 * [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
 * [ADR-0157: Drawn edits join the plan, and a checks ring rewards checking](/adrs/0157-drawn-edits-and-checks-ring.md) - The owner wants PlayIDE to be visual and mouse-driven ("drag and drop, design then test in place") and to feel rewarding, "tied to real checks".
 * [ADR-0176: How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses](/adrs/0176-how-a-uml-change-looks.md) - The owner asked how a change can be reviewed as a UML change instead of a pull request, and "how you even view a UML change (ghost UI/UX?)".
+* [ADR-0234: Guards over record values](/adrs/0234-guards-over-record-values.md) - Issue #93, item 1.
+* [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
+* [ADR-0241: Actions on linked objects](/adrs/0241-actions-on-linked-objects.md) - Issue #93, item 4.
 
 ## Referenced by
 

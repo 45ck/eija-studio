@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py#guard_condition
   title: application/scxml.py
   hash_method: ast-v2
-  sha256: 22e4bda4ee4a8b2ac18d262da9eb739fec91ba3b279e8904e622403765ff9f6a
-notes_baseline: a301bfa4eb7be1d845c141369c678ffd1855be4ace3f5ccf1920395c887ee7b8
+  sha256: bef54d7026cc57a11af27391ac12aafb555849c0866a1c39f7a0070bd0b85acc
+notes_baseline: 8655e652c5250d867a0750c6f83c6acdadb850004359f2d82f5dddb9bffe309c
 ---
 
 # application.scxml.guard_condition

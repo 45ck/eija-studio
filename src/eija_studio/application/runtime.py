@@ -110,11 +110,32 @@ def _committed(instance: dict[str, Any], t: Transition, moves: list[dict[str, st
     return result | ({"moved": moves} if moves else {})
 
 
+def _conforms(model: Workflow, pack: Pack) -> None:
+    """The model belongs to the pack whose catalog and laws judge it, and conforms to them: the policy check, asked once
+    per model and pack object (ADR-0199). A model is named for its pack (`Workflow.id`); judged under another pack's laws
+    it could pass them and run as that pack's workflow (ADR-0250)."""
+    if model.id != pack.id:
+        raise DomainError("WORKFLOW_PACK_MISMATCH", f"Workflow {model.id!r} does not belong to pack {pack.id!r}")
+    ensure_conforms(model, pack, ensure_policy)
+
+
+def check_starter(session: UnitOfWork, actor_id: str) -> str:
+    """The role of the actor starting a record: an unknown actor is refused by the directory and a revoked one as it is
+    refused an action (ADR-0250), so whoever starts a record is checked like whoever acts on one."""
+    actor = session.actor(actor_id)
+    if not actor["active"]:
+        raise DomainError("ACTOR_REVOKED", "Actor is not active at commit time")
+    return str(actor["role"])
+
+
 def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None = None,
-               pack: Pack | None = None, role: str | None = None) -> dict[str, Any]:
-    """Start a record. With ``role`` (the creator's role) a model that names its initiators refuses anyone else
-    (ADR-0231); without it the caller is a preview or oracle that starts records on the kernel's behalf."""
-    ensure_conforms(model, pack if pack is not None else default_pack(), ensure_policy)
+               pack: Pack | None = None, role: str | None = None, actor_id: str | None = None) -> dict[str, Any]:
+    """Start a record. With ``actor_id`` the creator must be a known, active actor (ADR-0250), and their role is the
+    one judged; with ``role`` alone, that role. A model that names its initiators refuses any other role (ADR-0231).
+    With neither, the caller is a preview or oracle that starts records on the kernel's behalf."""
+    _conforms(model, pack if pack is not None else default_pack())
+    if actor_id is not None:
+        role = check_starter(session, actor_id)
     if role is not None and model.initiators and role not in model.initiators:
         raise DomainError("ROLE_CANNOT_START", f"{role} may not start a record; the model names who may: {', '.join(model.initiators)}",
                           {"codes": ["ROLE_CANNOT_START"], "refs": [f"role:{r}" for r in model.initiators]})
@@ -131,7 +152,7 @@ def execute(
     fault: Callable[[str], None] | None = None, pack: Pack | None = None,
 ) -> dict[str, Any]:
     pack = pack if pack is not None else default_pack()
-    ensure_conforms(model, pack, ensure_policy)  # the policy check, asked once per model and pack object (ADR-0199)
+    _conforms(model, pack)
     row = session.find_instance(command.instance_id, case_id)
     if row is None:
         raise DomainError("NOT_FOUND", "Preview instance not found in this case")
@@ -180,7 +201,7 @@ def receive(session: UnitOfWork, case_id: str, model: Workflow, signal: str, sen
     refused with SIGNAL_NOT_ACCEPTED. The operation id makes a redelivery start nothing new: the same signal, sender and
     record `values` return the original record, and anything else under that id is OPERATION_CONFLICT."""
     pack = pack if pack is not None else default_pack()
-    ensure_conforms(model, pack, ensure_policy)
+    _conforms(model, pack)
     if model.receiving(signal, sender) is None:
         raise DomainError("SIGNAL_NOT_ACCEPTED", f"This workflow does not start a record on {signal} from {sender}",
                           {"refs": [f"signal:{signal}", f"workflow:{sender}"]})

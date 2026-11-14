@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### 14 November 2026: the kernel, inspected a second time
+
+- A second, deeper inspection of the kernel read how its features meet ([record](docs/quality/inspection-2026-11-14-kernel.md), [ADR-0250](docs/adr/0250-kernel-second-inspection.md)). It found three defects, all fixed, each with a regression test in `tests/test_kernel_inspection_2.py`.
+- Fixed: a revoked user could start a record in Simulate (277 in a 500-step run across the shipped packs), though the built app refuses one. The kernel now checks whoever starts a record as it checks whoever acts (`initialise(actor_id=...)`: `UNKNOWN_ACTOR`, `ACTOR_REVOKED`, `ROLE_CANNOT_START`). Simulate logs a refused start, and the app oracle asks the kernel.
+- Fixed: renaming or removing a state switched off every law that protects it, so a rename could launder an edit the laws forbid. A law that protects a state the model lacks (`state_final`, `role_never_enters`, `state_only_via`, `only_kind_enters`, `path_requires`, `path_requires_kind`) is now broken, in the policy and in the generated SMT encoding.
+- Fixed: the runtime ran a model named for another pack under the pack it was given; it now refuses it with `WORKFLOW_PACK_MISMATCH`, as every application entry point already did.
+### 14 November 2026: review of the day's inspection PRs
+
+- Reviewed #250 to #261 one by one ([record](docs/quality/inspection-2026-11-14-todays-prs.md)); each holds, with three defects found and fixed, each with a regression test in `tests/test_todays_pr_review.py`.
+- Fixed: the SCXML export ordered any text against a date, so its chart took `[due > "2026-01-15"]` for `due = "other"` where the kernel refuses (ADR-0246 K3 had reached the kernel only).
+- Fixed: the SCXML export compared a record value with a guard of another kind, taking `True` for `1` and `6` for `!= "a"`, and failing with a `TypeError` on `"6" > 5`. Each guard now needs its own kind, as in the kernel.
+- Fixed: two inspection test modules named log files that do not exist.
+
 ### 13 November 2026: inspection of the app generator
 
 - Fixed: a built app's page now lets a person choose the object a record refers to, or add one in place (ai-ops records could not be created from the page before). Ten defects in all; [inspection record](docs/quality/inspection-2026-11-13-app-generator.md), [ADR-0249](docs/adr/0249-app-generator-inspection-fixes.md).

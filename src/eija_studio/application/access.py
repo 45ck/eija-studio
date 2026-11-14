@@ -43,7 +43,7 @@ def _choices(pack: Pack) -> dict[str, tuple[str, ...]]:
     return {a.name: a.choices for a in record.attributes if a.type == "choice"} if record else {}
 
 
-def _meeting(pack: Pack, transitions: list[Transition]) -> dict[str, Any] | None:
+def meeting(pack: Pack, transitions: list[Transition]) -> dict[str, Any] | None:
     """A record's values that meet every guard over values of these transitions (ADR-0234): {} when they have none,
     None when no values meet them all. A cell is about who may act, so it is tried on a record whose values let it.
 
@@ -68,7 +68,7 @@ def _try(pack: Pack, model: Workflow, transition: Transition, actor_id: str, ses
     session = session or MemorySession(pack)
     if record is None:
         record = initialise(session, CASE, model, state=transition.from_state, pack=pack)["id"]  # type: ignore[arg-type]
-        session.record_values[record] = _meeting(pack, [transition]) or {}
+        session.record_values[record] = meeting(pack, [transition]) or {}
     item = session.instances[record]
     command = ExecuteCommand(operation_id=f"access-{transition.id}-{actor_id}-{item['version']}", actor_id=actor_id,
                              instance_id=record, action=transition.action, expected_version=item["version"])
@@ -254,7 +254,7 @@ def reach(pack: Pack, model: Workflow, target: str, without: str | None = None) 
     path = _path(model, target, _usable(pack, model, allowed))
     if path is None:
         return _not_shown(question, "The model has a path, but no fixture actor could take every step in the kernel; other actors might.")
-    values = _meeting(pack, path)  # one record takes the whole path, so its values must meet every guard on it (ADR-0234)
+    values = meeting(pack, path)  # one record takes the whole path, so its values must meet every guard on it (ADR-0234)
     if values is None:
         return _not_shown(question, "The model has a path, but no one record's values meet every guard over values on it.")
     steps = _replay(pack, model, path, values, starter)

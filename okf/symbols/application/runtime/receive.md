@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#receive
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: 917f2dcc7dc94115064327d5a8309729b09bfff506d482a95cbed2b1edb5c1f2
-notes_baseline: fc74e6d3d2eaf7cdca6ba4a0866928cc7b7dcf217d94732435dbe4d525302cb5
+  sha256: d7cbb86e6fdcf33a5ae1b640dde1a792097fbc85b16204844b8f1422c8318d06
+notes_baseline: 1df5ff164ee3d6f61e8a51b7255e7c3531115912e4c506284c0a53cde9fc0204
 ---
 
 # application.runtime.receive
@@ -48,7 +48,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.memo.ensure_conforms](/symbols/application/memo/ensure_conforms.md) - `ensure(model, pack)` (the policy check): a pair it let through is remembered; any other is refused by it again, so the error is always the check's own.
 * [application.memo.model_hash](/symbols/application/memo/model_hash.md) - `model.semantic_hash`, computed once per model object.
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
@@ -57,5 +56,4 @@ _No curated notes yet._
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow, pack: Pack | None=None) -> None` in `domain/policy`.
 <!-- okf:generated:end links -->

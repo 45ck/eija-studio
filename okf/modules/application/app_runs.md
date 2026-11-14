@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/app_runs.py
   title: application/app_runs.py
   hash_method: ast-api-v1
-  sha256: 8b9af4a35e9106cdc65df2751b2a4054a81f5da5a6e302a070a713a874e64754
-notes_baseline: 4da169a63a25c9700996be9f32092c973a5a63495814f27154982add71a3b55d
+  sha256: dadc5ac8d2d41e57a2b8717c918b603fb6f5526486e6c065479415b8f6a4f341
+notes_baseline: 23ad0ffb576e970c0c9998264d1895873794bd9aec1ddf62a3f80592a0f2dd75
 ---
 
 # application.app_runs

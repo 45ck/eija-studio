@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py
   title: application/runtime.py
   hash_method: ast-api-v1
-  sha256: 31a8cb94dadbeac4f51a38588d0ba3eddcb75bd8348dea120083f4b8a697c9a1
-notes_baseline: b57d3477b0f5612276270989766e2dc9c5c507859ed3650faea2c322e99d033b
+  sha256: 4f34093b40dd186f1340593336f48d8f72fb710eac0303c0eed51129b19ad3ac
+notes_baseline: fbf7b2e5149d5df32d0af3201d8961d657b5290f7e123f6531160e553a45581c
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -56,6 +56,10 @@ verified:
   at: '2026-11-12T04:45:19Z'
   notes_sha256: dc4e2c9439ef0135548c10708a16ed205efa4c6841498bd927c73112acf6aafd
   sources_sha256: b57d3477b0f5612276270989766e2dc9c5c507859ed3650faea2c322e99d033b
+- by: process:kernel-inspection
+  at: '2026-11-14T02:00:00Z'
+  notes_sha256: 0f3b1338f81c269af6d2c2cee4323c83b632db4aa2f36fdb2da24545bdaf7b00
+  sources_sha256: fbf7b2e5149d5df32d0af3201d8961d657b5290f7e123f6531160e553a45581c
 ---
 
 # application.runtime
@@ -80,6 +84,7 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 * [`check_guards`](/symbols/application/runtime/check_guards.md) (function) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
 * [`check_linked`](/symbols/application/runtime/check_linked.md) (function) - The moves a transition makes on the objects the record links to, given each object's state (ADR-0241).
 * [`check_separation`](/symbols/application/runtime/check_separation.md) (function) - Refuse an actor who already took another action of a separation law on this record.
+* [`check_starter`](/symbols/application/runtime/check_starter.md) (function) - The role of the actor starting a record: an unknown actor is refused by the directory and a revoked one as it is refuse…
 * [`execute`](/symbols/application/runtime/execute.md) (function) - no docstring
 * [`initialise`](/symbols/application/runtime/initialise.md) (function) - Start a record.
 * [`receive`](/symbols/application/runtime/receive.md) (function) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
@@ -97,7 +102,7 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 
 ## Notes
 
-The generic execution algorithm. Policy, laws and typed effects come from the domain pack ([domain.pack](/modules/domain/pack.md), [domain.policy](/modules/domain/policy.md)); nothing here names a domain. Every check that reads more than the record (time, values, separation, linked objects) reads through a [UnitOfWork](/symbols/application/ports/UnitOfWork.md) port only when the transition needs it, so a model without the feature never touches the port. `receive` starts a record because another workflow sent a signal, as a unit of work of its own ([ADR-0242](/adrs/0242-messages-between-workflows.md)).
+The generic execution algorithm. Policy, laws and typed effects come from the domain pack ([domain.pack](/modules/domain/pack.md), [domain.policy](/modules/domain/policy.md)); nothing here names a domain. Every check that reads more than the record (time, values, separation, linked objects) reads through a [UnitOfWork](/symbols/application/ports/UnitOfWork.md) port only when the transition needs it, so a model without the feature never touches the port. `receive` starts a record because another workflow sent a signal, as a unit of work of its own ([ADR-0242](/adrs/0242-messages-between-workflows.md)). `initialise`, `execute` and `receive` each refuse a model named for another pack (`WORKFLOW_PACK_MISMATCH`) before the policy check, and `initialise(actor_id=...)` checks the creator as `execute` checks an actor ([ADR-0250](/adrs/0250-kernel-second-inspection.md)).
 
 <!-- okf:generated:begin links -->
 ## Imports
@@ -125,6 +130,7 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 * [application.runtime.check_guards](/symbols/application/runtime/check_guards.md) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
 * [application.runtime.check_linked](/symbols/application/runtime/check_linked.md) - The moves a transition makes on the objects the record links to, given each object's state (ADR-0241).
 * [application.runtime.check_separation](/symbols/application/runtime/check_separation.md) - Refuse an actor who already took another action of a separation law on this record.
+* [application.runtime.check_starter](/symbols/application/runtime/check_starter.md) - The role of the actor starting a record: an unknown actor is refused by the directory and a revoked one as it is refused an action (ADR-0250), so whoever start…
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
 * [application.runtime.receive](/symbols/application/runtime/receive.md) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
