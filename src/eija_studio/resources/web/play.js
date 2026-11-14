@@ -822,6 +822,7 @@
   // work grows round after round instead of each plan replacing the last. The card moves under the latest ask and
   // lists every round with what was asked; going back on an earlier round is unticking its steps or asking again.
   const roundOf = (step) => step.round || 1;
+  const MAX_PLAN_STEPS = 64; // MAX_DRAFT_STEPS on the server: the most steps one preview checks (ADR-0201)
   const rounds = () => (plan ? new Set(plan.steps.map(roundOf)).size : 0);
   const lastRound = () => (plan && plan.steps.length ? Math.max(...plan.steps.map(roundOf)) : 1); // a drawn step joins the round it follows
 
@@ -869,7 +870,7 @@
       const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text, plan: earlier ? accepted() : null, consent });
       if (result.on_top && earlier && earlier === plan) { await addRound(result, text); return; }
       retire();
-      plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false, round: 1, request: text })),
+      plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false, round: 1, request: text, provider: result.provider, live: result.live })),
         accepted: result.steps.map(() => true), previewing: false, card: null, rewarded: new Set(), uid: ++planUid };
       plan.card = say("ai", planCard());
       commit(`take the AI's plan: ${result.summary || text}`);
@@ -886,8 +887,13 @@
   // A round's steps join the plan; the card is redrawn and moved below the ask, and the server checks every step again.
   async function addRound(result, text) {
     const n = lastRound() + 1;
+    // Rejected steps stay in the plan, so the server cannot count them: a round that would not fit one preview is not added.
+    if (plan.steps.length + result.steps.length > MAX_PLAN_STEPS) {
+      failedRequest({ code: "PLAN_TOO_LONG", message: `A plan holds at most ${MAX_PLAN_STEPS} steps and this round would take it past that, so it was not added.` }, text);
+      return;
+    }
     for (const step of result.steps) {
-      plan.steps.push({ ...step, n: plan.steps.length + 1, author: "ai", checked: false, caught: false, round: n, request: text });
+      plan.steps.push({ ...step, n: plan.steps.length + 1, author: "ai", checked: false, caught: false, round: n, request: text, provider: result.provider, live: result.live });
       plan.accepted.push(true);
     }
     Object.assign(plan, { meaning: null, scope: "plan-proposal", provider: result.provider, live: result.live });
@@ -918,13 +924,22 @@
     if (activeRevision === null) document.dispatchEvent(new CustomEvent("playide:plan"));
   }
 
+  // Who proposed the AI steps. Rounds can come from different proposers (a live model, then the offline phrase reader),
+  // so each step keeps its own; one round never relabels another's (ADR-0230).
+  function provenance() {
+    const ai = plan.steps.filter((s) => s.author === "ai");
+    const named = [...new Set(ai.map((s) => s.provider || plan.provider))];
+    const live = ai.filter((s) => (s.live === undefined ? plan.live : s.live)).length;
+    return `${named.join(" + ") || plan.provider}${!live ? " · offline fixture, not a live model" : live < ai.length ? " · some steps from a live model, some offline" : ""}`;
+  }
+
   function planCard() {
     const box = el("div", undefined, { class: "plan" }), many = rounds() > 1;
     const both = plan.steps.some((s) => s.author === "ai") && plan.steps.some((s) => s.author === "you");
     box.append(el("p", many ? `The plan so far: ${rounds()} rounds, ${plan.steps.length} steps` : plan.summary || "A plan", { class: "plan-summary" }),
       el("p", plan.saved ? "Saved on this system · checked by the server again, like any plan" : plan.scope === "plan-draft" ? (plan.provider === "imported" ? "Imported from a UML file · checked by the server like any plan"
         : "Drawn by you on the diagram · checked by the server like any plan")
-        : `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"}${both ? " · with your own steps" : ""} · untrusted until you check it`, { class: "muted small" }));
+        : `${provenance()}${both ? " · with your own steps" : ""} · untrusted until you check it`, { class: "muted small" }));
     cards += 1;
     const list = el("ol", undefined, { class: "plan-steps" });
     plan.steps.forEach((step, i) => {
@@ -1311,6 +1326,7 @@
   const KINDS = { state: "a state", transition: "a transition", initial: "the initial state", rename: "a new name", move: "a moved transition" };
 
   async function addStep(transaction) {
+    if (plan && plan.steps.length >= MAX_PLAN_STEPS) { notify(`A plan holds at most ${MAX_PLAN_STEPS} steps: this edit was not added.`); return; }
     pinAll(); // nothing you did not touch moves when the plan redraws
     if (transaction.kind === "rename_state" && placed["state:" + transaction.state]) placed["state:" + transaction.to] = placed["state:" + transaction.state];
     if (!plan) {

@@ -80,6 +80,75 @@ def test_exact_phrases_stay_offline_and_never_reach_the_provider():
     assert stub.calls == 1 and asked["live"] is True and asked["provider"] == proposer.name
 
 
+def test_a_request_that_is_partly_exact_phrases_is_refused_before_anything_is_sent():
+    """Fagan inspection 2026-11-13: the model plans one meaning, so the exact clause was dropped from the plan unseen."""
+    pack = load_pack(ROOT / "packs" / "refund-desk")
+    proposer, stub = live("agent_hands_off")
+    state = pack.model.states[-1]
+    with pytest.raises(DomainError) as e:
+        propose_plan(f"add state Archived after {state} then let a supervisor take over when the bot is unsure", pack.model, pack, proposer)
+    assert e.value.code == "PLAN_REQUEST_MIXED" and stub.calls == 0
+
+
+def test_a_second_live_request_while_one_runs_is_refused_and_never_sent():
+    """Fagan inspection 2026-11-13: the chat's live path had no single-flight guard, unlike every other provider call."""
+    pack = load_pack(ROOT / "packs" / "refund-desk")
+    proposer, stub = live("agent_hands_off")
+    inner: list[str] = []
+    first = stub.propose
+
+    def reentrant(request, model):
+        if stub.calls == 0:
+            with pytest.raises(DomainError) as e:
+                propose_plan("Please let an agent hand this off to a human.", pack.model, pack, proposer)
+            inner.append(e.value.code)
+        return first(request, model)
+
+    stub.propose = reentrant
+    result = propose_plan("Please let an agent hand this off to a human.", pack.model, pack, proposer)
+    assert inner == ["PROVIDER_BUSY"] and stub.calls == 1 and result["live"] is True
+    assert propose_plan("Please let an agent hand this off to a human.", pack.model, pack, proposer)["live"] is True  # released
+
+
+def test_an_exact_phrase_naming_what_the_model_lacks_gets_the_phrase_readers_answer_and_is_not_sent():
+    """Fagan inspection 2026-11-13 (D5): the typo went to the model, which planned an unrelated meaning instead."""
+    pack = load_pack(ROOT / "packs" / "refund-desk")
+    proposer, stub = live("agent_hands_off")
+    with pytest.raises(DomainError) as e:
+        propose_plan("add state Archived after Nowhere", pack.model, pack, proposer)
+    assert e.value.code == "PLAN_UNKNOWN_NAME" and "Nowhere" in e.value.message and stub.calls == 0
+
+
+def test_every_live_call_is_audited_by_a_hash_never_the_request():
+    """Fagan inspection 2026-11-13 (D6): live chat calls left no audit event, unlike Studio.propose."""
+    pack = load_pack(ROOT / "packs" / "refund-desk")
+    proposer, _ = live("agent_hands_off")
+    events: list[tuple[str, dict]] = []
+    proposer.audit = lambda kind, body: events.append((kind, body))
+    request = "Please let an agent hand this off to a human."
+    propose_plan(request, pack.model, pack, proposer)
+    assert [k for k, _ in events] == ["PlanProviderCallStarted", "PlanProposalReceived"]
+    assert events[0][1]["request_hash"] and request not in repr(events) and events[1][1]["meaning"] == "agent_hands_off"
+    failing, _ = live("agent_hands_off")
+    failing.audit = lambda kind, body: events.append((kind, body))
+
+    def refuse(request, model):
+        raise DomainError("PROVIDER_TRANSPORT", "timed out")
+
+    failing.provider.propose = refuse
+    with pytest.raises(DomainError):
+        propose_plan(request, pack.model, pack, failing)
+    assert events[-1][0] == "PlanProviderCallNotAccepted" and events[-1][1]["error_code"] == "PROVIDER_TRANSPORT"
+
+
+def test_bootstrap_wires_the_live_proposer_to_the_studio_audit_log(tmp_path):
+    from eija_studio.bootstrap import build_studio  # noqa: PLC0415
+
+    studio = build_studio(tmp_path / "w", provider="openai", model="some-model", key="sk-test-not-used")
+    assert studio.live_plan_proposer is not None and studio.live_plan_proposer.audit == studio.record
+    studio.record("PlanProviderCallStarted", {"attempt_id": "a", "provider": "openai", "request_hash": "h", "egress": True})
+
+
 @pytest.fixture
 def client_for(tmp_path):
     def make(*, live_proposer, allow_network):
@@ -175,3 +244,32 @@ def test_plan_check_stores_nothing_and_rejects_an_empty_plan(tmp_path):
     with pytest.raises(DomainError) as e:
         surface.plan_check([])
     assert e.value.code == "INVALID_PLAN" and surface.list_cases() == before
+
+
+def test_plan_check_on_a_system_you_started_declares_new_names_as_the_chat_does(tmp_path):
+    """Fagan inspection 2026-11-13 (D7): plan_check always checked as a shipped pack and refused new vocabulary."""
+    pytest.importorskip("mcp", reason="NOT_RUN: install the agents extra")
+    from eija_studio.interfaces.mcp_server import AgentSurface, StudioAgentPort  # noqa: PLC0415
+
+    studio = harness_studio(tmp_path / "w", pack=ROOT / "packs" / "refund-desk")
+    state = studio.pack.model.states[0]
+    steps = [{"kind": "add_state", "state": "Archived", "after": None},
+             {"kind": "add_transition", "id": "TR-ARCHIVE", "action": "Archive", "from_state": state, "to_state": "Archived",
+              "role": studio.pack.roles[0].id}]
+    shipped = AgentSurface(StudioAgentPort(studio)).plan_check(steps)
+    assert shipped["legal"] is False and shipped["grows"] is False
+    studio.grows = True
+    started = AgentSurface(StudioAgentPort(studio)).plan_check(steps)
+    assert started["legal"] is True and started["grows"] is True and started["declared"] == {"actions": ["Archive"], "roles": []}
+
+
+def test_eija_mcp_checks_as_a_started_system_only_for_a_pack_in_the_systems_home(tmp_path):
+    from argparse import Namespace  # noqa: PLC0415
+    from eija_studio.interfaces.cli import _started_in_playide  # noqa: PLC0415
+
+    home = tmp_path / "home"
+    (home / "coffee").mkdir(parents=True)
+    (home / "coffee" / "pack.json").write_text("{}", encoding="utf-8")
+    assert _started_in_playide(Namespace(pack=home / "coffee", systems=home)) is True
+    assert _started_in_playide(Namespace(pack=ROOT / "packs" / "refund-desk", systems=home)) is False
+    assert _started_in_playide(Namespace(pack=None, systems=home)) is False

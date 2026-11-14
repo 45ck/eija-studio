@@ -28,6 +28,7 @@ class StudioViews(ABC):
 
     store: Repository
     pack: Pack
+    grows: bool  # a system the person started (ADR-0201)
     formal: FormalEvidenceSource | None
     identity_provider: IdentityProvider
     repository: RepositorySource | None
@@ -105,7 +106,8 @@ class StudioViews(ABC):
         from .plan import preview_plan  # noqa: PLC0415 - plan imports the service layer's siblings; keep the view import-light
         with self.store.transaction() as u:
             model = Workflow.model_validate(u.active()["model"])
-        return preview_plan(model, self.pack, list(steps), [True] * len(steps)) | {"model": model.semantic_hash}
+        grows = self.grows  # on a system you started, new actions and roles are declared as in the chat (ADR-0201)
+        return preview_plan(model, self.pack, list(steps), [True] * len(steps), grows=grows) | {"model": model.semantic_hash, "grows": grows}
 
     def affordances(self, case_id: str) -> dict[str, Any]:
         """Which single edits of the case's working model the kernel would accept (read-only)."""
