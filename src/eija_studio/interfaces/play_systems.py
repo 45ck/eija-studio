@@ -250,18 +250,19 @@ def register(app, systems: Systems) -> None:
             pack_id, documents, report = new_documents(systems.library, body, systems.describer)
         except PackError as error:
             return {"created": False, "problems": list(error.diagnostics)}
-        found: dict[str, Any]
-        if body.template == DESCRIBE:
-            found = {"system": described_summary(documents), "described": report}
-        else:
-            found = {"system": summary(documents)} | ({"import": report} if report is not None else {})
+        def found(documents: dict[str, dict[str, Any]], report: dict[str, Any] | None) -> dict[str, Any]:
+            if body.template == DESCRIBE:
+                return {"system": described_summary(documents), "described": report}
+            return {"system": summary(documents)} | ({"import": report} if report is not None else {})
+
         if body.check_only:
-            return {"created": False, "problems": []} | found
+            return {"created": False, "problems": []} | found(documents, report)
         with systems.creating:  # the id is chosen again under the lock: a double click makes x and x-2, not a 500
             if pack_id in systems.library.ids():
                 pack_id, documents, report = new_documents(systems.library, body, systems.describer)
             folder = systems.library.create(pack_id, documents)
-        return {"created": True, "problems": []} | found | {"opened": systems.open(folder, systems.library.workspace(folder))}
+        # The summary is of the documents written, so a request that made x-2 says x-2 (Codex review of #268).
+        return {"created": True, "problems": []} | found(documents, report) | {"opened": systems.open(folder, systems.library.workspace(folder))}
 
     @app.post("/api/play/systems/open")
     def play_open_system(body: OpenSystem):

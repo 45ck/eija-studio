@@ -212,6 +212,7 @@ def test_s7_two_new_systems_of_one_name_at_once_get_two_ids(tmp_path):
     finally:
         app.state.play.stop()
     assert [a.status_code for a in answers] == [200, 200, 200]
+    assert sorted(a.json()["system"]["id"] for a in answers) == ["desk", "desk-2", "desk-3"]  # each names its own
     assert sorted(p.name for p in (tmp_path / "home").iterdir() if p.is_dir()) == ["desk", "desk-2", "desk-3"]
 
 
