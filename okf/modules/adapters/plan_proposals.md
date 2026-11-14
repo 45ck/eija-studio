@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/plan_proposals.py
   title: adapters/plan_proposals.py
   hash_method: ast-api-v1
-  sha256: 76850eb1d9ec98a132d283e40ec5b7f48f4ebefc09fcf00014314f8f91cfebff
-notes_baseline: 836aeafec65fd46bb20bfde77fc5271349e081c97d08354064f1ad3aead71303
+  sha256: 6763e7409bbec93d55d984794cfc9ac386462400d32ead28fcfd74636b798d6d
+notes_baseline: 49cdcdb07fdb1a22f4bb797b897e2bdb3f2238155dc093fbe4962ba8f7abb1de
 ---
 
 # adapters.plan_proposals

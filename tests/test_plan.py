@@ -129,3 +129,18 @@ def test_the_chat_example_is_offered_only_when_it_passes_and_never_asks_a_live_p
     live = type("Live", (), {"name": "live", "live": True, "propose": lambda *a: pytest.fail("a live proposer was called")})()
     assert not example_passes(loan.fixtures.demo_request, loan.model, loan, live)
     assert not example_passes(loan.fixtures.demo_request, loan.model, loan, None)
+
+
+@pytest.mark.parametrize("request_text, limit", [
+    ("add Renew from Overdue to OnLoan for Librarian only when renewals under 3", "under 3"),
+    ("let a Librarian renew an overdue loan after 2 days", "after 2 days"),
+    ("let a Librarian renew an overdue loan, but never more than 3 times", "more than 3 times"),
+    ("allow Librarian to Renew when renewals <= 3", "<= 3"),
+])
+def test_a_limit_on_a_value_or_a_time_is_refused_not_dropped(request_text, limit):
+    """Inspection 2026-11-14 P1: the limit was dropped and an unguarded Renew planned, a green plan for a change nobody
+    asked for (the #152 substitution); no plan step adds a guard over values (ADR-0234) or a time event (ADR-0237)."""
+    with pytest.raises(DomainError) as e:
+        propose_plan(request_text, LOAN.model, LOAN, OfflinePlanProposer())
+    assert e.value.code == "PLAN_LIMIT_UNSUPPORTED" and f"“{limit}”" in e.value.message
+    assert propose_plan("add state Archived after Returned", LOAN.model, LOAN, OfflinePlanProposer())["steps"]  # a phrase still reads

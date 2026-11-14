@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/review.py#FIELD_LABEL
   title: application/review.py
   hash_method: ast-v2
-  sha256: 91a227188f6a213721d3b5fb65e45ca56657f8724aae2e6c298ac315b4cdae00
-notes_baseline: b1c192eac586a8652b0e47b3b44f6f96a59a828353bc5dead2148d8ab7bb0ca7
+  sha256: 58eafd5bc2bd78b16825cd22728ab8b9ba4f9c7db8fb8d5713ced265ba78125f
+notes_baseline: 3c0bf52e85a5bee93e2047eb324c4c7578af2af774392510ab6aba63c4565e3e
 ---
 
 # application.review.FIELD_LABEL
@@ -25,7 +25,7 @@ notes_baseline: b1c192eac586a8652b0e47b3b44f6f96a59a828353bc5dead2148d8ab7bb0ca7
 |---|---|
 | Kind | constant |
 | Module | [`application/review`](/modules/application/review.md) |
-| Signature | `FIELD_LABEL = {'guards': 'guard', 'required_effects': 'effect it must perform', 'forbidden_effects': 'effect it must never perform'}` |
+| Signature | `FIELD_LABEL = {'guards': 'guard', 'required_effects': 'effect it must perform', 'forbidden_effects': 'effect it must never perform', 'conditions': 'guard over…` |
 | Code | `repo://src/eija_studio/application/review.py#FIELD_LABEL` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

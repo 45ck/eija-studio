@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/access.py
   title: application/access.py
   hash_method: ast-api-v1
-  sha256: 2372d0c016f5ffe49cb2619d0d3c273e94fa57ec8267bac689200c6813141863
-notes_baseline: 0ec5e726af16ea5c6403c53687e3a0404086a9255c9d88bce1406de8708ff675
+  sha256: ec552dbaaf7c1540b486ef70985681922800e1235ad0be36d0e23fee4e349d86
+notes_baseline: fd4727bb1f98d1cf313a172b35fd8c16e70f5b5592065ed69e35f67049b86b49
 ---
 
 # application.access
@@ -47,6 +47,7 @@ actor could take it in the kernel; other actors might. Nothing persists and no e
 * [`Key`](/symbols/application/access/Key.md) (type-alias) - no docstring
 * [`access`](/symbols/application/access/access.md) (function) - The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with `base`.
 * [`matrix`](/symbols/application/access/matrix.md) (function) - Every role's actions from every state, each tried in the kernel with the fixture actors in that role.
+* [`meeting`](/symbols/application/access/meeting.md) (function) - A record's values that meet every guard over values of these transitions (ADR-0234): {} when they have none, None when…
 * [`reach`](/symbols/application/access/reach.md) (function) - Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?
 
 ## Internal imports
@@ -75,9 +76,11 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.access.Key](/symbols/application/access/Key.md) - Type alias `Key` in `application/access`.
 * [application.access.access](/symbols/application/access/access.md) - The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with `base`.
 * [application.access.matrix](/symbols/application/access/matrix.md) - Every role's actions from every state, each tried in the kernel with the fixture actors in that role.
+* [application.access.meeting](/symbols/application/access/meeting.md) - A record's values that meet every guard over values of these transitions (ADR-0234): {} when they have none, None when no values meet them all.
 * [application.access.reach](/symbols/application/access/reach.md) - Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?
 <!-- okf:generated:end links -->

@@ -203,7 +203,11 @@ def _changed_label(old: Transition, new: Transition) -> str:
 
 
 def _shown(value: Any) -> Any:
-    return sorted(value) if isinstance(value, tuple) else value
+    """A changed field's value as JSON a reader can show: a set as its sorted text, a value guard, time event or linked
+    step as its UML text (``renewals ≤ 3``, ``after(2 days)``, ``target.lock``), and no time event as None."""
+    if isinstance(value, tuple):
+        return sorted(str(x) for x in value)
+    return str(value) if isinstance(value, BaseModel) else value
 
 
 def diff_summary(before: Workflow, after: Workflow) -> dict[str, Any]:

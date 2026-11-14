@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/access.py#matrix
   title: application/access.py
   hash_method: ast-v2
-  sha256: 24a434366a3ee306f5bbcc593d16d8a6405cd459709c812e668152b6e4b8d8a4
-notes_baseline: 6df071434a07daaee5d76881905f251b31267b1eda54615402a036078355f6ea
+  sha256: 8a228897acf2006b78372e2eb7e289fc53c789aab01ea4025013829dac17ab39
+notes_baseline: 4ee034a08b8b23b7cbb2e8dedd858f5ccb96ba58ee73d78280ddcf668ab954d2
 ---
 
 # application.access.matrix

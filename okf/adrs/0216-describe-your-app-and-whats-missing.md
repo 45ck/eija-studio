@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0216-describe-your-app-and-whats-missing.md
   title: 0216-describe-your-app-and-whats-missing.md
   hash_method: lf-sha256-v1
-  sha256: 9f89113cba342643147fc489edd49586e0cd904c25a74dc6ad25e645d05f0db1
-notes_baseline: b03ca14c75199680c7e03cc7cc4c0c9ea693775982d04d4dbffcbe5ccc929aa0
+  sha256: 2726fbe3eeefb8105c0487748b4fbf5ba06500be519275f824f5834fcf984afe
+notes_baseline: cf8bbf833dacfd69f26b94ffb73e260b726f6cf2e9b5bee74090beaeb36ac69e
 ---
 
 # ADR-0216: Describe your app, and what's missing
@@ -65,6 +65,7 @@ notes_baseline: b03ca14c75199680c7e03cc7cc4c0c9ea693775982d04d4dbffcbe5ccc929aa0
 Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
 
 * `repo://demos/scenarios/playide_greenfield.py`
+* `repo://docs/quality/inspections/2026-11-14-ai-chat-deeper.md`
 * `repo://tests/test_play_data_steps.py`
 * `repo://tests/test_play_describe.py`
 <!-- okf:generated:end facts -->

@@ -78,11 +78,14 @@
   const outcome = (o) => o.outcome === "NO_STATE" ? "no such state" : o.outcome === "REFUSED" ? `refused (${o.code})`
     : `→ ${o.to}` + (o.effects.length ? ` · ${o.effects.join(", ")}` : "");
 
+  // The record values both attempts held to meet the action's guards over values (ADR-0234), when it has any.
+  const held = (r) => r.values ? " with " + Object.entries(r.values).map(([k, v]) => `${k} ${v}`).join(", ") : "";
+
   function behaviourList(rows) {
     const list = el("ul", undefined, { class: "review-rows" });
     for (const r of rows) {
       const li = el("li"), allowed = (o) => o.outcome === "COMMITTED", what = el("span");
-      what.append(el("strong", `${r.role} tries ${r.action} in ${r.state}`), el("span", ` (${r.actors.join(", ")})`, { class: "muted small" }),
+      what.append(el("strong", `${r.role} tries ${r.action} in ${r.state}` + held(r)), el("span", ` (${r.actors.join(", ")})`, { class: "muted small" }),
         el("br"), document.createTextNode("before " + outcome(r.before)), el("br"), document.createTextNode("after " + outcome(r.after)));
       li.append(what, el("span", `${allowed(r.before) ? "allowed" : "refused"} → ${allowed(r.after) ? "allowed" : "refused"}`,
         { class: "flip " + (allowed(r.after) ? "now-ok" : "now-refused") }));
