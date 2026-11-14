@@ -18,8 +18,10 @@ runs in production. What it keeps and what it leaves to the kernel:
   the transition's `cond`, and an actor not in the directory sends `known` False.
 * A guard over the record's values (`[amount > 500]`, ADR-0234) becomes a `cond` term over the event data too: whoever
   sends the event reads the record's values, as the kernel's `UnitOfWork.values` port does, and attaches each guarded
-  attribute as `value_<name>` with `has_<name>` (False when the record has no value). The data model has already
-  checked each value's type, so the chart compares without a type test.
+  attribute as `value_<name>` with `has_<name>` (False when the record has no value), `kind_<name>` (boolean, number,
+  text or none) and `date_<name>` (whether it is a YYYY-MM-DD date). Each term first requires the guard's own kind, so
+  `[x != "a"]` does not hold for a number and `[x == 1]` does not hold for True, as in the kernel; an ordering against a
+  date also needs `date_<name>` (ADR-0246, K3).
 * A time event (`after(14 days)`, ADR-0237) becomes a `cond` term over the event data as well: whoever sends the event
   reads how long the record has been in its state, as the kernel's `UnitOfWork.elapsed` port does, and attaches it as
   `elapsed` in seconds, with `has_elapsed` False when it is unknown, which is never due. It is not a delayed `<send>`: in the kernel a time
@@ -44,12 +46,13 @@ Pure: no IO, no clock. The same pack and model always give the same bytes.
 from __future__ import annotations
 
 import json
+import math
 import re
 import xml.etree.ElementTree as ET
 from typing import Any
 
 from eija_studio.domain.linked import combinations
-from eija_studio.domain.models import DomainError, Transition, Workflow
+from eija_studio.domain.models import DomainError, Transition, Workflow, iso_date
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
 
@@ -76,8 +79,27 @@ def _constant(value: object) -> str:
 
 
 def _value_terms(transition: Transition) -> list[str]:
-    return [f"_event.data.has_{g.attribute} and _event.data.value_{g.attribute} {_OPERATORS[g.op]} {_constant(g.value)}"
-            for g in transition.conditions]
+    """One term per guard, as `ValueGuard.holds` decides it. The record's value must be of the guard's kind
+    (`kind_<name>`): a guard never holds across kinds, `!=` included, and Python would take True for 1 and 1 for True.
+    An ordering against a date also needs the value to be a date (`date_<name>`, ADR-0246, K3)."""
+    return [f"_event.data.kind_{g.attribute} == {_literal(_kind(g.value))} and _event.data.has_{g.attribute}"
+            + (f" and _event.data.date_{g.attribute}" if _dated(g.value, g.op) else "")
+            + f" and _event.data.value_{g.attribute} {_OPERATORS[g.op]} {_constant(g.value)}" for g in transition.conditions]
+
+
+def _kind(value: object) -> str:
+    """The kind `ValueGuard.holds` compares (`models._kind`): a bool is not a number, an int and a float are both numbers,
+    and anything else, None and a non-finite number included, is no kind a guard has. The differential checks the two
+    agree on every value a guard can tell apart."""
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, int | float):
+        return "number" if math.isfinite(value) else "none"
+    return "text" if isinstance(value, str) else "none"
+
+
+def _dated(value: object, op: str) -> bool:
+    return isinstance(value, str) and op not in ("eq", "ne")  # ValueGuard allows an ordering on text only for a date
 
 
 def guard_condition(transition: Transition) -> str:
@@ -99,8 +121,7 @@ def event_data(actor: dict[str, Any] | None, expected_version: int, values: dict
     """What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, the
     record's value of each guarded attribute in `attributes`, for a `timed` model how long it has been in its state
     (`elapsed`, None when unknown), and for a model with linked objects the state of each (`objects`, by link)."""
-    held = values or {}
-    record = {f"has_{a}": held.get(a) is not None for a in attributes} | {f"value_{a}": held.get(a) for a in attributes}
+    record = _record_values(values or {}, attributes)
     if timed:  # sent for a model with time events only
         record |= {"has_elapsed": elapsed is not None, "elapsed": 0 if elapsed is None else elapsed}
     record |= {f"object_{link}": state or "" for link, state in (objects or {}).items()}  # linked objects (ADR-0241)
@@ -108,6 +129,16 @@ def event_data(actor: dict[str, Any] | None, expected_version: int, values: dict
         return {"known": False, "active": False, "role": "", "assigned": False, "expected_version": expected_version} | record
     return {"known": True, "active": bool(actor["active"]), "role": str(actor["role"]),
             "assigned": bool(actor["assigned"]), "expected_version": expected_version} | record
+
+
+def _record_values(held: dict[str, Any], attributes: tuple[str, ...]) -> dict[str, Any]:
+    """Each guarded attribute's value, whether the record has one, its kind and whether it is a date."""
+    record: dict[str, Any] = {}
+    for a in attributes:
+        value = held.get(a)
+        record |= {f"has_{a}": value is not None, f"value_{a}": value, f"kind_{a}": _kind(value),
+                   f"date_{a}": isinstance(value, str) and iso_date(value) is not None}
+    return record
 
 
 def _transition(parent: ET.Element, model: Workflow, transition: Transition) -> None:

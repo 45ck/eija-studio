@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-14
+* **Review of the day's inspection PRs (N1 to N3)**: synced `application.scxml` (`event_data` sends `kind_<name>` and `date_<name>`; `guard_condition` requires the guard's kind, and a date for an ordering against one) and the ADR-0246 amendment. None of these pages has curated Notes. Nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of the app generator (ADR-0249)**: synced ADR-0249, `CASE_KINDS` (`object_cases`), `object_cases` and its answer helper, `signal_cases` (stored values and a second delivery), `generate` (README counts every case), `GENERATED_TESTS` (20) and `check_accessibility` (the label contract follows the page's `Control` and reference chooser). Re-read the Notes of `check_accessibility` as `process:claude-code-app-generator-inspection`; they still hold. No human source approval was recorded.
 
 ## 2026-11-13

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py#event_data
   title: application/scxml.py
   hash_method: ast-v2
-  sha256: c00f4849209f96444473642a2a4c10ea45ce596284e6d0ee9cbaa98184481a1a
-notes_baseline: 1197abc121751f9dee7ba30c729a2fa85ca4ca1d3e6dd4d9e433db83a518fed4
+  sha256: ad4cb74d788621b942fc7c1420fa1a07b0596b3cb26d4d25999ad8fdfe31f777
+notes_baseline: 6380c2572b5c904c50e3c5b4b4019cbd68abef2bb0acd3fa24f221aaed58cbd4
 ---
 
 # application.scxml.event_data
