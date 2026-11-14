@@ -224,6 +224,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.impact.model_changes](/symbols/domain/impact/model_changes.md) - What changed outside the transitions that changes what the kernel does: how a record starts, and the lifecycles of linked objects.
 * [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - The ripple of a change.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [domain.laws.protects_absent](/symbols/domain/laws/protects_absent.md) - Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept.
 * [domain.linked.admitting](/symbols/domain/linked/admitting.md) - The first combination of states (as `combinations` orders them) from which `transition` can move every object it names; `{}` when it moves none, None when no c…
 * [domain.linked.advance](/symbols/domain/linked/advance.md) - The objects' states after `transition` (unchanged when it moves none), or None when one of its moves is not possible from their states.
 * [domain.linked.along](/symbols/domain/linked/along.md) - For each state a record can reach, the states its linked objects are in when only this record moves them, from every object in its initial state: the first suc…

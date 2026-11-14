@@ -280,6 +280,7 @@
 
   function describe(e) {
     if (e.outcome === "CREATED") return `${e.actor} created ${e.record} in ${e.to}`;
+    if (e.start) return `${e.actor} tried to start a record: refused, ${e.code}`; // a revoked user (ADR-0250)
     return `${e.actor} ${e.action} on ${e.record}: ` + (e.outcome === "REFUSED" ? `refused, ${e.code}` : `${e.from} → ${e.to}`);
   }
 

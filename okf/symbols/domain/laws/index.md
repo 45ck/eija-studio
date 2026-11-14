@@ -29,6 +29,7 @@
 * [domain.laws.KIND_LAWS](KIND_LAWS.md) - Constant `KIND_LAWS` in `domain/laws`.
 * [domain.laws.LAW_ID](LAW_ID.md) - Constant `LAW_ID` in `domain/laws`.
 * [domain.laws.LAW_KINDS](LAW_KINDS.md) - Constant `LAW_KINDS` in `domain/laws`.
+* [domain.laws.PROTECTING](PROTECTING.md) - Constant `PROTECTING` in `domain/laws`.
 * [domain.laws.ROLE_KINDS](ROLE_KINDS.md) - Constant `ROLE_KINDS` in `domain/laws`.
 
 # Functions
@@ -36,6 +37,8 @@
 * [domain.laws.applies](applies.md) - `def applies(law: _Law, actions: set[str]) -> bool` in `domain/laws`.
 * [domain.laws.evaluate_run](evaluate_run.md) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [domain.laws.evaluate_table](evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [domain.laws.protected](protected.md) - The one state ``law`` protects, if it is a law of that kind.
+* [domain.laws.protects_absent](protects_absent.md) - Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept.
 * [domain.laws.reachable](reachable.md) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
 * [domain.laws.separation_breach](separation_breach.md) - The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.
 * [domain.laws.stuck_states](stuck_states.md) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.

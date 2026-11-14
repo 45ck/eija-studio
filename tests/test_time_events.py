@@ -132,11 +132,11 @@ def test_the_law_proof_lets_time_pass():
 
 
 def test_simulated_time_makes_the_time_event_fall_due():
-    run = simulate(DESK, DESK.model, seed=3, steps=600)
+    run = simulate(DESK, DESK.model, seed=4, steps=600)
     assert run["time"]["seconds_per_step"] == TWO_DAYS / 12
     assert run["transitions"]["TR-ESCALATE"]["committed"] > 0
     assert run["transitions"]["TR-ESCALATE"]["refused"].get("TIMER_NOT_DUE", 0) > 0
-    plain = simulate(DESK, UNTIMED, seed=3, steps=600)
+    plain = simulate(DESK, UNTIMED, seed=4, steps=600)
     assert "time" not in plain and "TIMER_NOT_DUE" not in json.dumps(plain)
 
 

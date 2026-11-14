@@ -136,6 +136,7 @@ class _Run:
         self.commits: Counter[str] = Counter()
         self.refusals: dict[str, Counter[str]] = defaultdict(Counter)
         self.slips: dict[str, Counter[str]] = defaultdict(Counter)  # per state, refused actions that do not leave it
+        self.unstarted: Counter[str] = Counter()  # refused attempts to start a record, by code (ADR-0250)
         self.codes: Counter[str] = Counter()
         self.entered: Counter[str] = Counter()
         self.by_role: dict[str, Counter[str]] = defaultdict(Counter)  # per role: "committed" and each refusal code
@@ -298,7 +299,15 @@ def _step(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _
         return
     if not may_start:
         return  # nothing to act on, and this user may not start a record
-    record = initialise(session, CASE, model, pack=pack, role=actor["role"])["id"]  # type: ignore[arg-type]
+    try:
+        record = initialise(session, CASE, model, pack=pack, actor_id=actor["id"])["id"]  # type: ignore[arg-type]
+    except DomainError as refused:  # a revoked user tries to start one, as people do, and the kernel refuses (ADR-0250)
+        run.unstarted[refused.code] += 1
+        run.codes[refused.code] += 1
+        run.by_role[actor["role"]][refused.code] += 1
+        run.log({"step": n, "actor": actor["id"], "role": actor["role"], "start": True, "action": "start a record",
+                 "record": "-", "transition": None, "from": model.initial_state, "outcome": "REFUSED", "code": refused.code})
+        return
     run.labels[record] = f"R{len(run.labels) + 1}"
     run.entered[model.initial_state] += 1
     run.log({"step": n, "actor": actor["id"], "role": actor["role"], "record": run.labels[record],
@@ -376,7 +385,7 @@ def _report(pack: Pack, model: Workflow, seed: int, steps: int, session: MemoryS
                    for s in model.states},
         "effects": {"audit": dict(Counter(session.audit)), "outbox": dict(Counter(session.outbox))},
         "by_kind": _by_kind(pack, run), "findings": _findings(model, run, occupancy), "trace": run.trace,
-        **_time(model, session),
+        **_time(model, session), **({"starts_refused": dict(run.unstarted.most_common())} if run.unstarted else {}),
         "limits": ["Simulated users are the pack's fixture actors acting at random, not measured human behaviour.",
                    "Each attempt is decided by the kernel against in-memory storage; no effect leaves the process."],
     }

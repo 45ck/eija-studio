@@ -203,7 +203,14 @@ _VIOLATION: dict[type, Callable[[Grammar, Any], z3.BoolRef]] = {
 def violation(g: Grammar, law: Any) -> z3.BoolRef | None:
     """"The candidate breaks ``law``" as a formula, or None for a law kind that is not encoded (see NOT_ENCODED)."""
     fn = _VIOLATION.get(type(law))
-    return None if fn is None else z3.And(_when(g, law), fn(g, law))
+    if fn is None:
+        return None
+    broken = fn(g, law)
+    state = L.protected(law)
+    if state is not None:  # the state it protects is gone (ADR-0250): broken, never vacuously kept
+        present = g.w.states_in.get(state)
+        broken = z3.Or(broken, TRUE if present is None else z3.Not(present))
+    return z3.And(_when(g, law), broken)
 
 
 def encoded_laws(pack: Pack) -> list[Any]:

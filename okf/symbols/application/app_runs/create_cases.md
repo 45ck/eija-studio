@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/app_runs.py#create_cases
   title: application/app_runs.py
   hash_method: ast-v2
-  sha256: 251b503f1d0c40b774a56827f2f9330cc6b5d1f390fdb9b282898550e4420053
-notes_baseline: 520ed24fa6deec80b390107e06c710802d9949cb7bc51545b495786e098ff853
+  sha256: 1c5bd5790cf58598ed662e3434f4e900b7fed2d9bec7896e81447909695d7b5f
+notes_baseline: 1f171919f81f1d34edb51ca0cf7cb1ff6ca7eb8d5a61a37c351094663861de60
 ---
 
 # application.app_runs.create_cases
@@ -33,8 +33,9 @@ notes_baseline: 520ed24fa6deec80b390107e06c710802d9949cb7bc51545b495786e098ff853
 
 ~~~text
 Every fixture actor, and one unknown actor, starting a record with valid values: the state and version it starts
-in, or the refusal. Revoked and unknown actors are refused as the kernel refuses them an action; a model that names
-its initiators refuses anyone else (ADR-0231); everyone else gets a record in the model's initial state.
+in, or the refusal. The kernel decides each (ADR-0250): unknown and revoked actors are refused as they are refused an
+action, a model that names its initiators refuses anyone else (ADR-0231), and everyone else gets a record in the
+model's initial state.
 ~~~
 <!-- okf:generated:end facts -->
 

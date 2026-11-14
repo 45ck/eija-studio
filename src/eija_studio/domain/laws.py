@@ -331,7 +331,27 @@ def _stuck_violation(law: CanReachEnd, model: Workflow) -> Violation | None:
     return Violation(law.id, law.code, ("law:" + law.id, *("state:" + s for s in stuck))) if stuck else None
 
 
+# Laws that protect one state: who may enter it, by what route, and that nothing leaves it. A model without that state
+# would satisfy them vacuously, so renaming or removing it would switch them off (ADR-0250).
+PROTECTING = (StateFinal, RoleNeverEnters, StateOnlyVia, OnlyKindEnters, PathRequires, PathRequiresKind)
+
+
+def protected(law: _Law) -> str | None:
+    """The one state ``law`` protects, if it is a law of that kind."""
+    if isinstance(law, StateFinal | RoleNeverEnters | StateOnlyVia | OnlyKindEnters | PathRequires | PathRequiresKind):
+        return law.state
+    return None
+
+
+def protects_absent(law: _Law, model: Workflow) -> bool:
+    """Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept."""
+    state = protected(law)
+    return state is not None and state not in model.states
+
+
 def _table_violation(law: _Law, model: Workflow) -> Violation | None:
+    if protects_absent(law, model):
+        return Violation(law.id, law.code, ("law:" + law.id, f"state:{protected(law)}"))
     if isinstance(law, CanReachEnd):
         return _stuck_violation(law, model)
     if isinstance(law, ClosedShape) and _shape_breaks(law, model):

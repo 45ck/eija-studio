@@ -28,7 +28,9 @@ def test_a_seed_replays_exactly_and_the_totals_add_up(name):
     assert sum(t["committed"] for t in run["transitions"].values()) == run["committed"]
     # A refusal is a transition's, or, for a slip (an action that does not leave the record's state), its state's.
     slips = sum(sum(s.get("slips", {}).values()) for s in run["states"].values())
-    assert sum(sum(t["refused"].values()) for t in run["transitions"].values()) + slips == run["refused"] == sum(run["codes"].values())
+    # A revoked user's attempt to start a record is refused too, and belongs to no transition (ADR-0250).
+    unstarted = sum(run.get("starts_refused", {}).values())
+    assert sum(sum(t["refused"].values()) for t in run["transitions"].values()) + slips + unstarted == run["refused"] == sum(run["codes"].values())
     assert sum(s["now"] for s in run["states"].values()) == run["records"]
     assert run["model"] == p.model.semantic_hash and len(run["trace"]) <= 60
 
@@ -40,7 +42,12 @@ def test_every_logged_step_is_the_kernels_answer():
     session, ids = MemorySession(p), {}
     for entry in run["trace"]:
         if entry["outcome"] == "CREATED":
-            ids[entry["record"]] = initialise(session, "simulation", p.model, pack=p)["id"]
+            ids[entry["record"]] = initialise(session, "simulation", p.model, pack=p, actor_id=entry["actor"])["id"]
+            continue
+        if entry.get("start"):  # a refused start (ADR-0250): the kernel refuses it again
+            with pytest.raises(DomainError) as refused_start:
+                initialise(session, "simulation", p.model, pack=p, actor_id=entry["actor"])
+            assert (entry["outcome"], entry["code"]) == ("REFUSED", refused_start.value.code)
             continue
         version = session.instances[ids[entry["record"]]]["version"]
         stale = entry["outcome"] == "REFUSED" and entry["code"] == "STALE_VERSION"
