@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-13
+* **Inspection of checking in place**: synced `application.access` and `access.reach` (a record must be started by a role that may start one, ADR-0231, or by a signal, ADR-0242), `access.access` (`changes.changed`) and `simulation` (a slip names no transition; `states[s].slips`). Their Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
 * **Re-inspection of merged PRs (M1 to M5)**: synced `policy.declared_codes` and the new `policy.lifecycle_conflicts`, `transactions.apply_structural` (another source keeps what an action shares), and amendments to ADR-0231, ADR-0232, ADR-0238 and ADR-0241. Re-read the Notes of `domain.policy` as `process:claude-code`; they still hold. Nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of saving, undo and UML import (ADR-0245)**: synced ADR-0245 and the page for `interfaces.play_systems` (`SaveWork`, `ClearWork`, `SYSTEM_CHANGED`). The interop modules have no pages of their own. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of open PRs (D2)**: synced `adapters.system_library`. `set_aside_draft` now returns the name of the file it used, so PlayIDE's message names it. The page has no curated Notes, and nothing was recorded as verified.

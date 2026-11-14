@@ -1289,7 +1289,7 @@
 
   function rippleCheck() {
     const name = "Diagrams agree", id = "ripple";
-    if (!plan || !plan.steps.length) return { id, name, ok: true, detail: "No change, so nothing ripples" };
+    if (!plan || !plan.steps.length) return { id, name, ok: true, na: true, detail: "No change, so nothing ripples" };
     if (!plan.result || !plan.result.legal) return { id, name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
     if (!ripple || ripple.key !== rippleKey()) return { id, name, ok: false, detail: "Working out the ripple…" };
     if (ripple.error) return { id, name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
@@ -1487,7 +1487,7 @@
     const seen = ai.filter((s) => s.checked).length, built = lastBuild && lastBuild.key === key ? lastBuild : null;
     const simulated = sim && simKey === key ? sim : null;
     return [
-      { id: "ai", name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
+      { id: "ai", name: "AI steps checked", ok: seen === ai.length, na: !ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
       { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length && Boolean(a11y) && !a11y.failed,
         detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens`
           : a11y && a11y.failed ? `${a11y.failed} accessibility check(s) fail: see Screens` : "Every screen can be built and meets the accessibility checks" },
@@ -1499,21 +1499,25 @@
     ];
   }
 
+  // A part with nothing to check (no AI plan, no change) is not applicable: it neither blocks nor counts as passed, and
+  // it is drawn grey, never green, so the ring only fills from checks that ran.
   function renderHealth() {
-    const checks = checksNow(), done = checks.filter((c) => c.ok).length, ring = $("health-ring"), ns = "http://www.w3.org/2000/svg";
+    const checks = checksNow(), ring = $("health-ring"), ns = "http://www.w3.org/2000/svg";
+    const applicable = checks.filter((c) => !c.na), done = applicable.filter((c) => c.ok).length;
     const r = 14, length = 2 * Math.PI * r, part = length / checks.length;
     if (ring.children.length !== checks.length) ring.replaceChildren(...checks.map(() => document.createElementNS(ns, "circle")));
     checks.forEach((c, i) => { // the same arcs are kept, so a part filling or emptying can be animated
-      const attrs = { cx: 18, cy: 18, r, stroke: c.ok ? "#17734a" : "#dfe3ea", "stroke-dasharray": `${part - 2} ${length - part + 2}`,
+      const attrs = { cx: 18, cy: 18, r, stroke: c.na ? "#9aa3b2" : c.ok ? "#17734a" : "#dfe3ea", "stroke-opacity": c.na ? "0.45" : "1", "stroke-dasharray": `${part - 2} ${length - part + 2}`,
         "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)", "data-check": c.id || "" };
       for (const [k, v] of Object.entries(attrs)) ring.children[i].setAttribute(k, v);
     });
-    $("health-text").textContent = `${done}/${checks.length} checks · ${points} pts`;
-    $("health").title = checks.map((c) => `${c.ok ? "✓" : "○"} ${c.name}: ${c.detail}`).join("\n");
+    $("health-text").textContent = `${done}/${applicable.length} checks · ${points} pts`;
+    const mark = (c) => (c.na ? "–" : c.ok ? "✓" : "○");
+    $("health").title = checks.map((c) => `${mark(c)} ${c.name}: ${c.detail}${c.na ? " (not applicable)" : ""}`).join("\n");
     $("points").textContent = `${points} pts`;
     $("check-list").replaceChildren(...checks.map((c) => {
-      const li = el("li", undefined, { class: c.ok ? "ok" : "" });
-      li.append(el("span", c.ok ? "✓" : "○", { class: "mark" }), el("span", c.name), el("span", c.detail, { class: "detail" }));
+      const li = el("li", undefined, { class: c.na ? "na" : c.ok ? "ok" : "", ...(c.na ? { title: "Not applicable: nothing to check" } : {}) });
+      li.append(el("span", mark(c), { class: "mark" }), el("span", c.name), el("span", c.na ? `${c.detail} (not applicable)` : c.detail, { class: "detail" }));
       return li;
     }));
     $("earned").replaceChildren(...(earned.length ? earned.slice(0, 20).map((e) => {
@@ -2393,7 +2397,9 @@
       for (const s of model.states) {
         const r = result.states[s], heat = r.now / maxNow;
         const fill = r.entered ? `rgba(49,87,213,${(0.08 + 0.42 * heat).toFixed(2)})` : "#fdf4e3";
-        restyle("state:" + s, { fillColor: fill, strokeColor: r.entered ? "#5b74d6" : "#c27c0e" }, `${s}\n${r.now} here · ${r.entered} in`);
+        // Tries of an action that does not leave this state (slips) are the state's, not another state's transition's.
+        const slips = Object.values(r.slips || {}).reduce((a, b) => a + b, 0);
+        restyle("state:" + s, { fillColor: fill, strokeColor: r.entered ? "#5b74d6" : "#c27c0e" }, `${s}\n${r.now} here · ${r.entered} in${slips ? ` · ✗ ${slips}` : ""}`);
       }
     });
   }
@@ -2473,13 +2479,14 @@
       paint(sim);
       graph.batchUpdate(() => {
         // The run names the transition it tried: one action may leave several states (ADR-0232).
-        const t = entry.action && (model.transitions.find((x) => x.id === entry.transition) || model.transitions.find((x) => x.action === entry.action));
+        // A slip (an action that does not leave the record's state) names no transition: only its state is marked.
+        const t = entry.transition ? model.transitions.find((x) => x.id === entry.transition) : null;
         if (t) restyle("transition:" + t.id, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 6 }, graph.getDataModel().getCell("transition:" + t.id).value);
         const at = entry.outcome === "REFUSED" ? entry.from : entry.to;
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
         document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
-      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.action && (model.transitions.find((x) => x.id === entry.transition) || model.transitions.find((x) => x.action === entry.action));
+      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.transition ? model.transitions.find((x) => x.id === entry.transition) : null;
       if (here) follow(["state:" + here, ...(step ? ["transition:" + step.id] : [])]); // the state and the line taken, as Run does
       i += 1;
     }, 450);
@@ -2488,13 +2495,17 @@
   async function simulate() {
     const button = $("simulate");
     button.disabled = true;
+    const key = viewKey();
     try {
-      const key = viewKey();
-      showSim(await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 }));
+      const result = await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 });
+      // A run of a model no longer on screen is not painted on this one: its counts are of other states and transitions.
+      if (key !== viewKey()) { notify("The model changed while simulating. Press Simulate to run the model shown."); return; }
+      showSim(result);
       simKey = key;
       rewardTrying("simulate", 2, "Simulated users on the AI's change", key);
       renderHealth();
     } catch (error) {
+      if (key !== viewKey()) { notify(`A simulation of an earlier model was refused (${error.code || "ERROR"}). Press Simulate to run the model shown.`); return; }
       $("sim").hidden = false;
       $("sim-summary").textContent = error.code === "MODEL_CHANGED"
         ? "The model changed since this page loaded. Reload to see it, then simulate again."
