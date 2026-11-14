@@ -34,7 +34,7 @@ gates and a required check that never starts blocks a pull request (ADR-0228).
 **Missing prerequisites report `NOT_RUN`, never PASS.** The only gate here that needs anything outside the venv is `audit`
 (network). nox exits 0 for a skipped session, and an exit code cannot tell NOT_RUN from PASS, so `audit` **fails** offline with a
 `NOT_RUN` message unless `EIJA_ALLOW_NOT_RUN=1` is set (then it skips, prints NOT_RUN, and the reader must not count it as PASS).
-Any script that aggregates nox results must treat a skipped session as NOT_RUN. The hosted workflow does so with `python -m quality.tools.nox_report`, which reads `nox --report`: in the fast tier a skipped session fails the job, and the nightly full tier lists every NOT_RUN session in the job summary. The hosted jobs install the same extras a local run uses (`graph`, `graph-formal`, `okf`, `interop-api`, `smt`, `mutation` among them), so a missing extra cannot quietly skip a gate. The reachability probe is a TCP connect to
+Any script that aggregates nox results must treat a skipped session as NOT_RUN. The hosted workflow does so with `python -m quality.tools.nox_report`, which reads `nox --report`: in the fast tier a skipped session fails the job, and the nightly full tier lists every NOT_RUN session in the job summary. The hosted jobs install the same extras a local run uses (`graph`, `graph-formal`, `okf`, `interop-api`, `smt`, `mutation`, and since 2026-11-14 `metrics`, `hci` and `visual`), so a missing extra cannot quietly skip a gate. A skipped *test* inside a green session is checked too: the `tests` session writes junit and `python -m quality.tools.skip_ledger` fails on any skip that `quality/tools/skip_ledger.json` does not record (counted per file and reason, with every extra installed and no jar fetched). Fewer skips than the ledger is fine; accepting a new skip is a reviewed diff from `--update`. The full tier fetches its pinned Java tools itself (`python -m quality.tools.pinned_jars`, sha256-verified): before 2026-11-14 the Alloy and PlantUML jars had only a manual `curl` in a docstring, so `graph_formal_full` and `interop_plantuml` were NOT_RUN everywhere, the hosted nightly included. The reachability probe is a TCP connect to
 `pypi.org:443`, so it does not prove the advisory API answers. Tests that need a `lint`-extra tool (radon, ruff, mypy,
 import-linter) skip with a `NOT_RUN:` reason when it is missing; the baseline suite still runs with only `.[dev]`, but the gates
 need `.[dev,lint]`.
@@ -50,7 +50,7 @@ need `.[dev,lint]`.
 | `dependencies` | fast, full | deptry 0.25.1 | `[tool.deptry]` | 0 issues: every import declared, every runtime dependency used, no transitive imports | Adding a rule ignore needs a written reason in `pyproject.toml` |
 | `coverage` | full | pytest-cov 7.1.0 (coverage.py 7.16.2), branch coverage | `[tool.coverage.*]` | `fail_under = 93` (measured 93.78 % on 2026-11-13, Linux, Python 3.13; the floor stayed at 78 from 2026-09-28 until then, 15 points under the measured value, so a large drop could not fail it) | Raise `fail_under` to the new floor whenever coverage rises; reports go to `reports/coverage/` (gitignored) |
 | `audit` | release | pip-audit 2.10.1 against the PyPI advisory database | `requirements-tested.txt` | 0 known vulnerabilities in the measured runtime pins. **Currently FAILS**: see "Known audit findings" | Fixes are pin bumps in the tested set (an owner decision). Offline it fails with NOT_RUN (see above) |
-| `tests` (foundation lane) | fast | pytest | `[tool.pytest.ini_options]` | all pass; the full tier runs the same suite inside `coverage` | not this lane |
+| `tests` (foundation lane) | fast | pytest, then `quality/tools/skip_ledger.py` | `[tool.pytest.ini_options]`, `quality/tools/skip_ledger.json` | all pass, and no test skips more often than the ledger records (177 skips in 25 groups on 2026-11-14: the property suite, the opt-in HCI and browser tests, the unbuilt `eijagraph` bindings, the TLA and Alloy jars, Docker and the offline SARIF schema); the full tier runs the same suite inside `coverage` | Lower the ledger with `--update` when skips go away; a new skip needs a reviewed ledger diff |
 | `browser_suite` | release | pytest `-m "slow or browser"` with `EIJA_BROWSER_TESTS=1` (Playwright, Chromium via `EIJA_CHROMIUM`) | `quality/sessions/browser.py` | all pass. Fails with NOT_RUN when Playwright is missing, unless `EIJA_ALLOW_NOT_RUN=1`. Before 2026-11-13 no tier selected these (116 tests in 31 files: the PlayIDE browser walks, the exact-app journey and 26 seeded conformance divergences). 122 pass on 2026-11-14 | Never deselect a test to make it green; fix the test or the product |
 
 ### Architecture contracts
@@ -82,7 +82,7 @@ ratchet item, and `disallow_any_explicit` stays off until then. `adapters`, `int
 are not yet strict (about 60 missing annotations under `--strict`). Order of work, one module per change, each removing
 a debt line: (1) annotate the provider table in `bootstrap.py` and drop its `arg-type` override, (2) `adapters.*`,
 (3) `interfaces.*`. `ignore_errors` is never used. The analysis platform is pinned to `linux` because the process-group calls
-in `adapters/providers.py` are POSIX-only branches that a Windows host would otherwise flag.
+in `adapters/providers/process.py` are POSIX-only branches that a Windows host would otherwise flag.
 
 ### Ruff debt inventory
 
@@ -242,6 +242,6 @@ executed lines, not verified behaviour, and `interfaces/cli.py` is 0 % covered b
 ## Notes for lane authors
 
 * **New modules need tests at or above the coverage floor.** Headroom is under one point (floor 78, measured 78.7); adding an under-tested module trips the gate. Add tests; do not lower the floor.
-* **Moving a function** (for example `adapters/providers.py` into a package) leaves a stale key in `complexity_baseline.json`, and `--update` will not add the moved entry. Rename the key by hand in the same change, and say so in the PR.
+* **Moving a function** (for example `adapters/providers.py` into the `adapters/providers/` package) leaves a stale key in `complexity_baseline.json`, and `--update` will not add the moved entry. Rename the key by hand in the same change, and say so in the PR.
 * **Optional extras are not dev groups** for deptry: only `dev` and `lint` are. A lane that imports its extra's package from `src/` or a tooling tree is fine; declare the distribution-to-module name in `[tool.deptry.package_module_name_map]` when they differ.
 * **`typecheck_win32`** (full tier) re-runs mypy as `win32` so Windows-only branches are checked; the default `typecheck` runs as `linux`.

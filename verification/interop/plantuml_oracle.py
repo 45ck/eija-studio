@@ -8,10 +8,10 @@ PlantUML would draw something other than the model, so the check fails.
 
     python -m verification.interop.plantuml_oracle --out reports/interop/plantuml.json
 
-Needs Java and the pinned jar (`JAR_NAME`, sha256 `JAR_SHA256`), found at $EIJA_PLANTUML_JAR or in `.tmp/tools/`:
+Needs Java and the pinned jar (`JAR_NAME` from `JAR_URL`, sha256 `JAR_SHA256`), found at $EIJA_PLANTUML_JAR or in
+`.tmp/tools/`. The `interop_plantuml` session fetches and verifies it first:
 
-    curl -o .tmp/tools/plantuml-mit-1.2026.8.jar \\
-      https://repo1.maven.org/maven2/net/sourceforge/plantuml/plantuml-mit/1.2026.8/plantuml-mit-1.2026.8.jar
+    python -m quality.tools.pinned_jars plantuml
 
 Without them the report is NOT_RUN (exit 3), never PASS. PlantUML's XMI 1.x writer turns a `:` inside a label into a
 space, so labels are compared with that one substitution.
@@ -37,6 +37,7 @@ from .generate import ROOT, packs, say
 
 JAR_NAME = "plantuml-mit-1.2026.8.jar"
 JAR_SHA256 = "8a171e8941d1f68f4ec28f5c180a4bf8d54a2cd679348370d4ba59fc9fb910e3"
+JAR_URL = f"https://repo1.maven.org/maven2/net/sourceforge/plantuml/plantuml-mit/1.2026.8/{JAR_NAME}"
 UML = "{href://org.omg/UML/1.3}"
 
 

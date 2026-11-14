@@ -47,4 +47,5 @@ def interop_mermaid(session: nox.Session) -> None:
 @nox.session(python=False, tags=["full", "release"])
 def interop_plantuml(session: nox.Session) -> None:
     """PlantUML reads every PlantUML export as PlayIDE does; its negative controls are caught."""
+    session.run(PYTHON, "-m", "quality.tools.pinned_jars", "plantuml", success_codes=[0, 3])  # exit 3 leaves the oracle NOT_RUN
     _oracle(session, "plantuml_oracle", "plantuml")

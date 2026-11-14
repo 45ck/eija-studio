@@ -10,6 +10,7 @@ PROOF (measured, not predicted):
 """
 from __future__ import annotations
 
+import importlib
 import copy
 import json
 from pathlib import Path
@@ -66,7 +67,8 @@ def test_pack_policy_equals_legacy_policy_on_the_examples(excursion, path):
 
 
 def _differential(pack: Pack, mutants: int = 1500, fresh: int = 500) -> tuple[int, int, list]:
-    differential = pytest.importorskip("verification.smt.differential", reason="z3-solver (extra `smt`) is not installed: NOT_RUN")
+    pytest.importorskip("z3", reason="z3-solver (extra `smt`) is not installed: NOT_RUN")
+    differential = importlib.import_module("verification.smt.differential")  # first-party: a broken import must fail, not skip
     total, valid, disagreements = 0, 0, []
     for model, schema_valid in differential.candidates(20260928, mutants, fresh):
         total, valid = total + 1, valid + int(schema_valid)

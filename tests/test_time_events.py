@@ -8,6 +8,7 @@ the time cases, and the SCXML chart carries the time event as a `cond` term the 
 """
 from __future__ import annotations
 
+import importlib
 import json
 import shutil
 from pathlib import Path
@@ -154,7 +155,7 @@ def test_the_oracle_timer_cases_and_the_scxml_projection():
     escalate = DESK.model.transition_for("EscalateStale")
     assert escalate is not None and f"_event.data.has_elapsed and _event.data.elapsed >= {TWO_DAYS}" in guard_condition(escalate)
     assert "has_elapsed" not in to_scxml(DESK, UNTIMED)
-    differential = pytest.importorskip("verification.scxml.differential")
+    differential = importlib.import_module("verification.scxml.differential")  # first-party: a broken import must fail, not skip
     if differential.load is None:
         pytest.skip("python-statemachine is not installed")
     assert differential.compare(DESK)["status"] == "PASS"

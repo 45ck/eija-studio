@@ -103,6 +103,8 @@ def graph_formal_full(session: nox.Session) -> None:
 
     Java 17 and the jar pinned in graph/formal/TOOLS.lock are needed for the Alloy commands; without them they are NOT_RUN.
     """
+    # Fetch and verify the pinned jar first (quality/tools/pinned_jars.py); exit 3 leaves the Alloy commands NOT_RUN below.
+    session.run(PYTHON, "-m", "quality.tools.pinned_jars", "alloy", success_codes=[0, 3])
     # selfcheck exits 0 (PASS), 1 (FAIL) or 2 (NOT_RUN: a suite passed but Java or the pinned jar is missing). NOT_RUN is a skip, never a pass
     # and never a failure, so it is reported after the tests have run.
     report = session.run(PYTHON, "graph/formal/selfcheck.py", "--alloy", env=_env(), silent=True, success_codes=[0, 2])
@@ -121,4 +123,5 @@ def graph_formal_release(session: nox.Session) -> None:
     Run serially: one JVM at a time on the shared PC.
     """
     session.run(PYTHON, "graph/bench/formal_checks.py", "--timing", env=_env())
+    session.run(PYTHON, "-m", "quality.tools.pinned_jars", "alloy", success_codes=[0, 3])
     session.run(PYTHON, "graph/formal/run_alloy.py", "graph/formal/alloy/certificates.als", "--solver", "sat4j", env=_env())

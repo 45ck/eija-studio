@@ -7,6 +7,7 @@ the generated app's oracle and the SCXML differential try every combination of v
 """
 from __future__ import annotations
 
+import importlib
 import json
 import shutil
 from pathlib import Path
@@ -170,7 +171,7 @@ def test_the_oracle_value_cases_and_the_scxml_projection():
     assert value_cases(DESK, DESK.model) == []
     assert "_event.data.has_amount and _event.data.value_amount <= 500" in guard_condition(model.transition_for("ApproveRefund"))
     assert "has_amount" in to_scxml(DESK, model) and "has_amount" not in to_scxml(DESK, DESK.model)
-    differential = pytest.importorskip("verification.scxml.differential")
+    differential = importlib.import_module("verification.scxml.differential")  # first-party: a broken import must fail, not skip
     if differential.load is None:
         pytest.skip("python-statemachine is not installed")
     report = differential.compare(DESK, model)
