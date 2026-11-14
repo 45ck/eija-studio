@@ -38,7 +38,7 @@
     const first = !layoutWas;
     layoutWas = layout;
     const P = window.PlayIDE;
-    if (!first && P && P.fit && P.tab && ["states", "classes", "usecases", "components"].includes(P.tab())) requestAnimationFrame(() => P.fit());
+    if (!first && P && P.fit && P.tab && ["states", "classes", "usecases", "components"].includes(P.tab())) requestAnimationFrame(() => P.refit());
   }
 
   // The side columns give way before the diagram does: the centre keeps at least CENTRE pixels, the chat narrows first.
