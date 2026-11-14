@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0250: An import matches renamed and respaced names, and two tabs keep each other''s work'
+title: 'ADR-0253: An import matches renamed and respaced names, and two tabs keep each other''s work'
 description: A second, deeper inspection of saving and UML interchange followed ADR-0245.
-resource: repo://docs/adr/0250-imports-match-names-and-tabs-keep-each-others-work.md
+resource: repo://docs/adr/0253-imports-match-names-and-tabs-keep-each-others-work.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0250-imports-match-names-and-tabs-keep-each-others-work.md
-  title: 0250-imports-match-names-and-tabs-keep-each-others-work.md
+- resource: repo://docs/adr/0253-imports-match-names-and-tabs-keep-each-others-work.md
+  title: 0253-imports-match-names-and-tabs-keep-each-others-work.md
   hash_method: lf-sha256-v1
-  sha256: 3c492b8a38d309283df1451aa27a5b2bf3921c8db352746d15509dd8da69bdc0
-notes_baseline: 80bfaa426767f40db1a08341ca744d976d99a04fe7a86f2b8fe067da0a0877b0
+  sha256: 569fb978302d29618dfaca829f8c9b4263f31ceb1c1b00f768920b942b6b8580
+notes_baseline: 4c1e07655e150e96ce63b31fcfa6dd78489e09f7b456f121f903d8ea43ab42db
 ---
 
-# ADR-0250: An import matches renamed and respaced names, and two tabs keep each other's work
+# ADR-0253: An import matches renamed and respaced names, and two tabs keep each other's work
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 80bfaa426767f40db1a08341ca744d976d99a04fe7a86f2b8fe067da0a0877b0
 | Status | accepted |
 | Date | 2026-11-14 |
 | Lane | PlayIDE saving and UML interchange (second inspection, 2026-11-14) |
-| Source | `repo://docs/adr/0250-imports-match-names-and-tabs-keep-each-others-work.md` |
+| Source | `repo://docs/adr/0253-imports-match-names-and-tabs-keep-each-others-work.md` |
 
 ## Decision outcome (verbatim)
 

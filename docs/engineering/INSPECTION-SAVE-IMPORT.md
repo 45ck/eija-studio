@@ -64,7 +64,7 @@ Run the browser tests with `EIJA_BROWSER_TESTS=1 EIJA_CHROMIUM=<chromium> pytest
 
 ## Second pass (2026-11-14)
 
-Decision record: [ADR-0250](../adr/0250-imports-match-names-and-tabs-keep-each-others-work.md). This pass went where the
+Decision record: [ADR-0253](../adr/0253-imports-match-names-and-tabs-keep-each-others-work.md). This pass went where the
 first did not. It round-tripped every shipped pack in all four formats with the kernel features the packs use
 (refund-desk's composite states and time event, ai-ops's linked object, library-fines's signal). Then it edited the
 exported files as a person would, gave names and text a format writes differently, put two tabs on one system, and

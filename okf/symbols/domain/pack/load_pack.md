@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#load_pack
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: 57f43f106ad9530ad34e8708153b447800fcea52ffda0d6de2e0747d3e0ef8f8
-notes_baseline: e73fdaab5f02db62c63ffb01c6cfb771841f30e05b05346c88cea7c38122a52d
+  sha256: 406930edf425923103453152324c9473c91ce0fbf0e2293682c572e1e55fe870
+notes_baseline: e9a9a0ff4472d014d544993557aaaf1ed3aee7e78820580b5ca745a891e99e1a
 ---
 
 # domain.pack.load_pack
@@ -38,7 +38,7 @@ Files beside `pack.json` (data.json, screens.json, scenarios.json) are read from
 from. Two folders can hold the same `pack.json` (a copy of a shipped pack whose class model was changed), so a
 read that only looks at a pack, such as listing the templates or the workflows beside the open one, passes
 `claim=False`: it does not move the snapshot to its folder, and the open system keeps reading its own files
-(ADR-0250).
+(ADR-0253).
 ~~~
 <!-- okf:generated:end facts -->
 

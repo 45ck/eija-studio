@@ -1,4 +1,4 @@
-# ADR-0250: An import matches renamed and respaced names, and two tabs keep each other's work
+# ADR-0253: An import matches renamed and respaced names, and two tabs keep each other's work
 
 * Status: accepted
 * Date: 2026-11-14

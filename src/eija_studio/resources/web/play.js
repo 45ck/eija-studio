@@ -2545,7 +2545,7 @@
   let restoring = false, planUid = 0, recoveredWork = false;
   const clone = (value) => (value == null ? null : JSON.parse(JSON.stringify(value)));
   const draftKey = () => `playide.draft.v1:${packInfo.id}:${caseId || ""}`;
-  // Two tabs on one system share the draft key (ADR-0250). Each draft names the tab that wrote it: a tab never
+  // Two tabs on one system share the draft key (ADR-0253). Each draft names the tab that wrote it: a tab never
   // writes over, or removes, another tab's draft without first keeping it under that tab's own earlier key, so both
   // tabs' work survives a reload. A draft this tab recovered on load is its own until the tab that wrote it writes again.
   const TAB = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);

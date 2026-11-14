@@ -86,7 +86,7 @@ class SaveWork(SavedWork):
     that other system's saved draft."""
     pack: str | None = Field(default=None, min_length=1, max_length=1000)
     # The saved draft's revision the page last opened or saved (null: none was saved). Two tabs on one system would
-    # otherwise each save over the other's work unseen; a page that does not send it is not checked (ADR-0250).
+    # otherwise each save over the other's work unseen; a page that does not send it is not checked (ADR-0253).
     base: str | None = Field(default=None, max_length=64)
 
 

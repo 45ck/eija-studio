@@ -90,7 +90,7 @@ def _keep_attribute_text(attr: dict[str, Any], was: Any, attribute_notes: bool, 
 
 def keep_text(document: dict[str, Any], data: DataModel, attribute_notes: bool, report: Any) -> None:
     """Text a file gives back with its spacing collapsed (every format reads it on one line) is the current text, not a
-    change (ADR-0250); and where the format has no notes on attributes (Mermaid), their descriptions are kept."""
+    change (ADR-0253); and where the format has no notes on attributes (Mermaid), their descriptions are kept."""
     current = {e.name: e for e in data.entities}
     for entity in (e for e in document["entities"] if e["name"] in current):
         _keep_entity_text(entity, current[entity["name"]], attribute_notes, report)

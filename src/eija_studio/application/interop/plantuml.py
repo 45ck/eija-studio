@@ -30,7 +30,7 @@ _PRESENTATION = re.compile(r"^(title|skinparam|hide|show|left to right direction
 def _text(text: str) -> str:
     """Creole and the preprocessor would read `<`, `[[` and `%`; PlantUML documents `<U+XXXX>` for literal characters.
     A double quote would end a quoted name, and a quote that starts a line or follows `/` starts a comment, so those
-    are written the same way and read back as they were (ADR-0250)."""
+    are written the same way and read back as they were (ADR-0253)."""
     plain = " ".join(text.split())
     return re.sub(r'%|<|\[\[|"|^\'|(?<=/)\'', lambda m: _ESCAPE[m.group()], plain)
 

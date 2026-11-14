@@ -67,5 +67,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [ADR-0250: An import matches renamed and respaced names, and two tabs keep each other's work](/adrs/0250-imports-match-names-and-tabs-keep-each-others-work.md) - A second, deeper inspection of saving and UML interchange followed ADR-0245.
+* [ADR-0253: An import matches renamed and respaced names, and two tabs keep each other's work](/adrs/0253-imports-match-names-and-tabs-keep-each-others-work.md) - A second, deeper inspection of saving and UML interchange followed ADR-0245.
 <!-- okf:generated:end links -->

@@ -514,7 +514,7 @@ def test_an_edit_made_while_undo_reloads_the_screens_is_kept():
 @pytest.mark.slow
 @browser
 def test_two_tabs_on_one_system_keep_each_others_work():
-    """Inspection 2026-11-14 (ADR-0250, D15 and D16): two tabs on one system shared the browser draft key, so the tab
+    """Inspection 2026-11-14 (ADR-0253, D15 and D16): two tabs on one system shared the browser draft key, so the tab
     that wrote last replaced the other tab's kept work (and one that undid back to nothing deleted it), and each
     tab's Save replaced the other's saved draft unseen."""
     api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")

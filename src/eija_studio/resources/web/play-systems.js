@@ -10,7 +10,7 @@
   let sketch; // the sketch box, found once
   let failed = null; // the last save that was refused, and the work it was about: shown until that work changes
   let opened = ""; // the system this page opened on: Save and Clear name it, so a tab left on another system cannot save over this one
-  let revision = null; // the saved draft this page last opened or saved: another tab's later save is not overwritten unseen (ADR-0250)
+  let revision = null; // the saved draft this page last opened or saved: another tab's later save is not overwritten unseen (ADR-0253)
   let umlFile = { name: "", text: "" }; // "From a UML file" (ADR-0190): the file chosen, read in the page and checked by the server
   const canSave = () => { const current = new URLSearchParams(location.search); return !current.get("case") && current.get("view") !== "review"; };
 

@@ -1,4 +1,4 @@
-"""Regression tests for the second inspection of saving and UML import (2026-11-14, ADR-0250).
+"""Regression tests for the second inspection of saving and UML import (2026-11-14, ADR-0253).
 
 The first pass (ADR-0245) read the code for partial reads and a tab on another system. This one round-trips every
 shipped pack through all four formats with the kernel features they use, edits the files as a person would (rename a

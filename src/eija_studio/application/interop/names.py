@@ -1,4 +1,4 @@
-"""State names as a file gives them back, matched to the model in force before the difference is planned (ADR-0250).
+"""State names as a file gives them back, matched to the model in force before the difference is planned (ADR-0253).
 
 Two things make a file's name differ from the model's when the person did not change it, or changed only the name:
 

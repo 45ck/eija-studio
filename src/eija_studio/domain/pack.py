@@ -391,7 +391,7 @@ def load_pack(location: str | Path, *, claim: bool = True) -> Pack:
     from. Two folders can hold the same `pack.json` (a copy of a shipped pack whose class model was changed), so a
     read that only looks at a pack, such as listing the templates or the workflows beside the open one, passes
     `claim=False`: it does not move the snapshot to its folder, and the open system keeps reading its own files
-    (ADR-0250)."""
+    (ADR-0253)."""
     path = Path(location)
     path = (path / PACK_FILE if path.is_dir() else path).resolve()
     pack = _cached(_read_text(path), path.name)
