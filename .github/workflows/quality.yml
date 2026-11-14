@@ -46,8 +46,9 @@ jobs:
   full:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    # The full tier takes ~13 min on 4 cores; a hung session must not bill up to the 6 h default.
-    timeout-minutes: 30
+    # The full tier took 43 min on 4 cores (2026-11-14, every extra, jars fetched); a hung session
+    # must still not bill up to the 6 h default.
+    timeout-minutes: 60
     permissions:
       contents: read
       issues: write

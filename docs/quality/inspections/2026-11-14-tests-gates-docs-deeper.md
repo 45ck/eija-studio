@@ -103,4 +103,15 @@ A floor is a ratchet, not a target: a module below it now fails, where before ev
 
 ## R1: the full tier
 
-TBD
+`nox -t full` on this branch, 4 cores, every hosted extra, the jars fetched by the sessions themselves, Chrome
+present, no Docker: **43 min 2 s** wall clock; 41 sessions passed, 2 failed, 1 NOT_RUN.
+
+* The two failures are the #79 budgets, not this pass: `hci` fails `memory.max_chunks_viewport` (52 against 27), and
+  `metrics` fails LANE-01 because the HCI lane report says FAIL. Before TD-03 LANE-01 failed here too, but for an
+  UNKNOWN trace; now it names the real failing lane.
+* NOT_RUN: `formal_bend_quick` (no Docker daemon).
+* Long poles: `conformance_divergence` 8 min, `okf_tools` 8, `formal_smt` 6 (18 before TD-02), `formal_tla` 6,
+  `coverage` 5, `property` 2, `mutation_quick` 2. The rest take under a minute each.
+* The hosted job's `timeout-minutes: 30` (its comment said "~13 min", measured on 31 October before the 11 to 14
+  November gates) would cancel every nightly even with TD-02. It is now 60, with the measured time in the comment.
+  Running sessions in parallel is the next step and is left for #206's long-pole item.

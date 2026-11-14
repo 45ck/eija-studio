@@ -29,7 +29,7 @@ This record supersedes only the "manual dispatch until hosted CI is enabled" par
 `.github/workflows/quality.yml`:
 
 * `fast` job: every pull request to `main` and every push to `main` runs `nox -t fast` on Python 3.12 (about 2 minutes of tests on 4 cores, under 15 minutes cap).
-* `full` job: nightly at 15:17 UTC, and on manual dispatch, runs `nox -t full` (about 13 minutes, 30-minute cap). The nightly run skips itself when `main` has not changed for 26 hours. A failed nightly run opens one issue, "Nightly full tier failed on main", or comments on it if it is already open.
+* `full` job: nightly at 15:17 UTC, and on manual dispatch, runs `nox -t full` (about 13 minutes, 30-minute cap; amended 14 November 2026: 43 minutes measured after the 11 to 14 November gates, 60-minute cap, see [the second tests and gates inspection](../quality/inspections/2026-11-14-tests-gates-docs-deeper.md#r1-the-full-tier)). The nightly run skips itself when `main` has not changed for 26 hours. A failed nightly run opens one issue, "Nightly full tier failed on main", or comments on it if it is already open.
 * Docs-only changes are **not** excluded with `paths-ignore`. The fast tier contains docs gates (`docs_links`, `adr_index`, `community_files`), and a required check that never starts leaves a pull request blocked.
 * Concurrency groups cancel a superseded run on the same ref; pip caching is keyed on `pyproject.toml`.
 
