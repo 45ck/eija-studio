@@ -54,7 +54,7 @@ docs = ["mkdocs==1.6.1", "mkdocs-material==9.7.7", "pymdown-extensions==12.1", "
 visual = ["playwright==1.63.0", "pydot==4.0.1"]
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
-graph = ["jsonschema==4.26.0", "rfc8785==0.1.4", "networkx==3.5", "numpy==2.5.3", "scipy==1.18.1", "pyshacl==0.40.2"]  # numpy and scipy: networkx.pagerank (the PPR test oracle) imports them lazily; pyshacl: the SHACL engine tests/graph/test_rule_language_bench.py compares (test-time only; without it that test ran in no tier)
+graph = ["jsonschema==4.26.0", "rfc8785==0.1.4", "networkx==3.5", "numpy==2.5.3", "scipy==1.18.1", "pyshacl==0.40.2", "rdflib==7.6.0"]  # numpy and scipy: networkx.pagerank (the PPR test oracle) imports them lazily; pyshacl and rdflib: the SHACL engine and its graph library that graph/bench/rule_language_bench.py imports and tests/graph/test_rule_language_bench.py compares (test-time only; without them that test ran in no tier)
 dod = []
 smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 okf = ["PyYAML==6.0.3", "markdown-it-py==4.0.0"]
@@ -300,9 +300,10 @@ markdown-it-py = "markdown_it"
 DEP004 = ["nox", "pytest", "radon", "tomlkit", "yaml", "clingo"]  # clingo: the ASP oracle in graph/formal/eijaref/asp.py imports it lazily; absent means NOT_RUN
 # scripts/browser_*smoke.py import Playwright lazily; it belongs to the hci extra, and the scripts report
 # NOT_RUN when it is absent. Declaring it here would make a runtime dependency out of a QA tool.
-# graph/bench scripts import their optional comparison engines (duckdb, rustworkx, ladybug, pyshacl, rdflib) inside the function that
-# measures them; a missing engine is reported NOT_RUN. They are not runtime dependencies of anything.
-DEP001 = ["playwright", "duckdb", "rustworkx", "ladybug", "pyshacl", "rdflib"]
+# graph/bench scripts import their optional comparison engines (duckdb, rustworkx, ladybug) inside the function that
+# measures them; a missing engine is reported NOT_RUN. They are not runtime dependencies of anything. pyshacl and rdflib
+# are in the `graph` extra since 2026-11-14, so the SHACL comparison test runs where the extras are installed.
+DEP001 = ["playwright", "duckdb", "rustworkx", "ladybug"]
 # numpy and scipy are declared for networkx.pagerank (a test oracle) which imports them lazily; nothing of ours imports them.
 DEP002 = ["numpy", "scipy"]
 
