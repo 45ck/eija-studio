@@ -17,8 +17,6 @@ import sys
 
 import nox
 
-from quality.tools.parallel import xdist_args
-
 PYTHON = sys.executable  # the project environment nox runs in; sessions use python=False
 # Run by their own sessions: the metrics lane's slow and timing tests, and the renderer checks of diagrams_syntax.
 OWNED_ELSEWHERE = ("--ignore=tests/metrics", "--deselect=tests/test_syntax_validator.py")
@@ -32,5 +30,7 @@ def browser_suite(session: nox.Session) -> None:
         if os.environ.get("EIJA_ALLOW_NOT_RUN") == "1":
             session.skip(message)
         session.error(message + " Set EIJA_ALLOW_NOT_RUN=1 to record it as an accepted gap.")
-    session.run(PYTHON, "-m", "pytest", "-q", "-rfEs", "-m", "slow or browser", *OWNED_ELSEWHERE, *xdist_args(),
-                *session.posargs, env={"EIJA_BROWSER_TESTS": "1"})
+    # Serial on purpose: one browser at a time (CONTRIBUTING.md). Under `-n 4` a Chromium per worker made
+    # test_play_place's inline-edit walk time out, though it passes alone.
+    session.run(PYTHON, "-m", "pytest", "-q", "-rfEs", "-m", "slow or browser", *OWNED_ELSEWHERE, *session.posargs,
+                env={"EIJA_BROWSER_TESTS": "1"})

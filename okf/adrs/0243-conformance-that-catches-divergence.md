@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0243-conformance-that-catches-divergence.md
   title: 0243-conformance-that-catches-divergence.md
   hash_method: lf-sha256-v1
-  sha256: eb9c41428ac12d089373e5f7ba850377dc2bdd1d45c176f07f55657c8a8de0bb
-notes_baseline: a38b01e906150e54ea122c251d3d5a89710b14dc26ce58e7a6fd68ad393d56d1
+  sha256: bf0e4fbb467e2b7a3b4f5f02e8211f20ffe6b2785f14ed2af5070ed97fe79953
+notes_baseline: 929124cb3d4de4431c32615d93a3fa111a6714a11991b5ea81f328856960bfe7
 ---
 
 # ADR-0243: Conformance that catches a divergent app by behaviour

@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-13
+* **Inspection of tests, gates and docs**: synced the amended ADR-0228 and ADR-0243 and the new `browser_suite` gate page (`quality/sessions/browser.py`). None of these pages has curated Notes. Nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of saving, undo and UML import (ADR-0245)**: synced ADR-0245 and the page for `interfaces.play_systems` (`SaveWork`, `ClearWork`, `SYSTEM_CHANGED`). The interop modules have no pages of their own. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 * **Inspection of open PRs (D2)**: synced `adapters.system_library`. `set_aside_draft` now returns the name of the file it used, so PlayIDE's message names it. The page has no curated Notes, and nothing was recorded as verified.
 * **Command line and server inspection (ADR-0244)**: synced ADR-0244 and the pages for `interfaces.play` (`APP_ENVIRONMENT`, `app_environment`) and `interfaces.uml_interop` (the export's policy check). No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
