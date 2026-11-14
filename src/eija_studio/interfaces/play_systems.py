@@ -12,7 +12,10 @@ import json
 import os
 import threading
 import time
-from collections.abc import Callable
+import uuid
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Literal
 
@@ -34,20 +37,39 @@ DESCRIBE = "describe"  # start from a description of the app (ADR-0216)
 TEMPLATE_FILES = ("pack.json", "data.json", "screens.json", "scenarios.json")
 
 
+_PINNED: ContextVar[Any] = ContextVar("eija_pinned_studio", default=None)
+
+
 class StudioHandle:
-    """The studio every route uses, which `switch` replaces when another system is opened."""
+    """The studio every route uses, which `switch` replaces when another system is opened.
+
+    A request pins the studio it started on (`pinned`), so one that is still running when another tab opens a
+    different system reads and writes the system it began with from start to end, never half of each."""
 
     def __init__(self, studio: Any):
         object.__setattr__(self, "_current", studio)
 
+    def _studio(self) -> Any:
+        pinned = _PINNED.get()
+        return pinned if pinned is not None else object.__getattribute__(self, "_current")
+
     def __getattr__(self, name: str) -> Any:
-        return getattr(object.__getattribute__(self, "_current"), name)
+        return getattr(object.__getattribute__(self, "_studio")(), name)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        setattr(object.__getattribute__(self, "_current"), name, value)
+        setattr(object.__getattribute__(self, "_studio")(), name, value)
 
     def switch(self, studio: Any) -> None:
         object.__setattr__(self, "_current", studio)
+
+    @contextmanager
+    def pinned(self) -> Iterator[None]:
+        """Within this block (one request), the handle is the studio current when it began."""
+        token = _PINNED.set(object.__getattribute__(self, "_current"))
+        try:
+            yield
+        finally:
+            _PINNED.reset(token)
 
 
 class NewSystem(Contract):
@@ -84,10 +106,14 @@ class SaveWork(SavedWork):
     left open on the system it was on before another tab opened a different one would otherwise save its work over
     that other system's saved draft."""
     pack: str | None = Field(default=None, min_length=1, max_length=1000)
+    # The saved draft's revision the page last opened or saved (null: none was saved). Two tabs on one system would
+    # otherwise each save over the other's work unseen; a page that does not send it is not checked (ADR-0253).
+    base: str | None = Field(default=None, max_length=64)
 
 
 class ClearWork(Contract):
     pack: str | None = Field(default=None, min_length=1, max_length=1000)  # the system the page has open, as for Save
+    base: str | None = Field(default=None, max_length=64)  # as for Save
 
 
 def _reopenable(draft: dict[str, Any]) -> bool:
@@ -105,7 +131,7 @@ def templates() -> list[dict[str, Any]]:
     for folder in sorted(PACKS_ROOT.iterdir()) if PACKS_ROOT.is_dir() else ():
         if (folder / PACK_FILE).is_file():
             try:
-                pack = load_pack(folder)
+                pack = load_pack(folder, claim=False)  # a look at a template: the open system keeps its own files
             except PackError:
                 continue
             found.append({"id": pack.id, "name": pack.pack.name, "description": pack.pack.description,
@@ -163,7 +189,8 @@ class Systems:
                  pack: Path, workspace: Path, on_switch: Callable[[], Any] = lambda: None, describer: Any = None):
         self.handle, self.library, self.opener, self.on_switch = handle, library, opener, on_switch
         self.describer = describer
-        self.lock = threading.Lock()
+        self.lock = threading.Lock()  # one switch at a time, and no draft written across a switch
+        self.creating = threading.Lock()  # one new system at a time, so two of one name get two ids, not a collision
         self.current = self._entry(handle.pack, Path(pack), Path(workspace))
         self.launched = dict(self.current)
         self.studios: dict[str, Any] = {self._key(pack): object.__getattribute__(handle, "_current")}
@@ -228,15 +255,19 @@ def register(app, systems: Systems) -> None:
             pack_id, documents, report = new_documents(systems.library, body, systems.describer)
         except PackError as error:
             return {"created": False, "problems": list(error.diagnostics)}
-        found: dict[str, Any]
-        if body.template == DESCRIBE:
-            found = {"system": described_summary(documents), "described": report}
-        else:
-            found = {"system": summary(documents)} | ({"import": report} if report is not None else {})
+        def found(documents: dict[str, dict[str, Any]], report: dict[str, Any] | None) -> dict[str, Any]:
+            if body.template == DESCRIBE:
+                return {"system": described_summary(documents), "described": report}
+            return {"system": summary(documents)} | ({"import": report} if report is not None else {})
+
         if body.check_only:
-            return {"created": False, "problems": []} | found
-        folder = systems.library.create(pack_id, documents)
-        return {"created": True, "problems": []} | found | {"opened": systems.open(folder, systems.library.workspace(folder))}
+            return {"created": False, "problems": []} | found(documents, report)
+        with systems.creating:  # the id is chosen again under the lock: a double click makes x and x-2, not a 500
+            if pack_id in systems.library.ids():
+                pack_id, documents, report = new_documents(systems.library, body, systems.describer)
+            folder = systems.library.create(pack_id, documents)
+        # The summary is of the documents written, so a request that made x-2 says x-2 (Codex review of #268).
+        return {"created": True, "problems": []} | found(documents, report) | {"opened": systems.open(folder, systems.library.workspace(folder))}
 
     @app.post("/api/play/systems/open")
     def play_open_system(body: OpenSystem):
@@ -269,24 +300,39 @@ def register(app, systems: Systems) -> None:
             raise DomainError("SYSTEM_CHANGED", f"{systems.current['name']} is open now, not the system this page shows. "
                               "Reload the page to work on it; your edits are still kept in this browser")
 
+    def same_draft(body: SaveWork | ClearWork) -> None:
+        """Refuse a save or clear from a page that has not seen the saved draft now on disk (another tab saved since)."""
+        if "base" not in body.model_fields_set:
+            return
+        now = systems.library.read_draft(workspace())
+        if (now or {}).get("revision") != body.base and (now is not None or body.base is not None):
+            at = time.strftime("%H:%M", time.localtime(now["saved"])) if now and isinstance(now.get("saved"), int) else "a moment ago"
+            raise DomainError("DRAFT_CHANGED", f"Another tab saved this system's work at {at}, after this page last "
+                              "opened or saved it. Press Save again to replace it with the work on this page, or reload to see it")
+
     @app.post("/api/play/draft")
     def play_save_draft(body: SaveWork):
         """Save the work in progress: the plan's steps as typed transactions, edited screens and the tests draft. Nothing is applied."""
-        same_system(body.pack)
-        for step in body.steps:
-            parse_step(step.transaction)  # a malformed step is refused here, not on reopening
-        if body.screens is not None:
-            parse_screens(body.screens, systems.handle.pack.id)
-        if body.scenarios is not None:
-            parse_scenarios(body.scenarios, systems.handle.pack.id)
-        saved = body.model_dump(mode="json", exclude={"pack"}) | {"saved": int(time.time()), "system": systems.current["id"], "model": in_force()}
-        systems.library.write_draft(workspace(), saved)
-        return {"saved": saved["saved"]}
+        with systems.lock:  # the check and the write as one: no other save, clear or switch of system in between
+            same_system(body.pack)
+            same_draft(body)
+            for step in body.steps:
+                parse_step(step.transaction)  # a malformed step is refused here, not on reopening
+            if body.screens is not None:
+                parse_screens(body.screens, systems.handle.pack.id)
+            if body.scenarios is not None:
+                parse_scenarios(body.scenarios, systems.handle.pack.id)
+            saved = body.model_dump(mode="json", exclude={"pack", "base"}) | {
+                "saved": int(time.time()), "system": systems.current["id"], "model": in_force(), "revision": uuid.uuid4().hex}
+            systems.library.write_draft(workspace(), saved)
+        return {"saved": saved["saved"], "revision": saved["revision"]}
 
     @app.post("/api/play/draft/clear")
     def play_clear_draft(body: ClearWork):
-        same_system(body.pack)
-        systems.library.write_draft(workspace(), None)
+        with systems.lock:
+            same_system(body.pack)
+            same_draft(body)
+            systems.library.write_draft(workspace(), None)
         return {"cleared": True}
 
 

@@ -92,6 +92,7 @@ class Parsed:
     actors: dict[str, tuple[str, str]] | None = None  # actor -> (kind, where); None when the file draws no actors
     unread: int = 0  # parts of the state machine the file draws that were not read: an import then removes nothing
     pseudostates: set[str] = field(default_factory=set)  # choice, fork, join and history: never read as states
+    attribute_notes: bool = True  # False for a format with no notes on attributes (Mermaid): their descriptions are kept
 
     def skip(self, where: str, element: str, reason: str) -> None:
         self.skipped.append({"where": where, "element": element, "reason": reason})

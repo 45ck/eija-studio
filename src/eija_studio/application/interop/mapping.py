@@ -29,7 +29,8 @@ from eija_studio.domain.policy import apply_structural_all, check_policy
 from eija_studio.domain.transactions import Transaction, parse_transaction
 from eija_studio.application.law_proof import prove_laws
 
-from .kept import changes as _changes, keep_unread as _keep_unread
+from .kept import changes as _changes, keep_text as _keep_text, keep_unread as _keep_unread
+from .names import renames as _renames, same_names as _same_names
 from .several import _gone_transitions, _new_id, _several_steps, _single
 from .model import (DEFAULT_MAX_LENGTH, MULTIPLICITIES, READ_TYPES, WIDENED, Attr, Edge, Klass, Label, Link, Parsed, kind_label,
                     parse_label)
@@ -248,9 +249,13 @@ def import_state_machine(pack: Pack, model: Workflow, parsed: Parsed, report: Im
         return {"found": True, "changed": False, "candidate": None}
     if parsed.initial is None:
         report.add("defaulted", "state machine", "initial state", f"the file marks none; kept {model.initial_state}")
+    for read, state in _same_names(model, parsed).items():
+        report.add("defaulted", "state machine", f"state {read}", f"the same as {state!r} but for spacing, which no UML file keeps; kept {state!r}")
     seen: set[str] = set()
     wanted = _wanted(pack, model, parsed, seen, report)
-    candidate, applied = _apply(pack, model, _steps(model, parsed, wanted, seen, report), report)
+    renamed, applied = _apply(pack, model, _renames(model, parsed, wanted), report)
+    candidate, rest = _apply(pack, renamed, _steps(renamed, parsed, wanted, seen, report), report)
+    applied += rest
     _record_states(parsed, report)
     _record_transitions(candidate, wanted, report)
     refused = check_policy(candidate, pack)
@@ -381,6 +386,8 @@ def import_class_model(pack: Pack, data: DataModel | None, parsed: Parsed, repor
     document = _document(pack, data, parsed, entities, report)
     if data is not None and report.unread:
         _keep_unread(document, data, report)
+    if data is not None:
+        _keep_text(document, data, parsed.attribute_notes, report)
     candidate = _validated(document, report)
     if not isinstance(candidate, DataModel):
         return {"found": True, "changed": False, "candidate": None, "errors": candidate}

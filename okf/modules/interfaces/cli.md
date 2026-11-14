@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/cli.py
   title: interfaces/cli.py
   hash_method: ast-api-v1
-  sha256: 4bb6bd0bbd541811f97670fbae7e431e87cf080a4d39cb3b7f04f59184c76de3
-notes_baseline: 81d777ece37c56486901666d45eaece7d8bc5c6299f6dcd060a99bb43698729b
+  sha256: 1b7f788642bc1b4adfc2f783beab3a1f106fad9b3e35ba355af1c00e4e1806ba
+notes_baseline: 67b2d32ae1951c3b0d9401d2758a220b0219c6acdf304dbe74390616fc839eb7
 ---
 
 # interfaces.cli
