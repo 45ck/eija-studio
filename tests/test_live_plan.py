@@ -261,3 +261,15 @@ def test_plan_check_on_a_system_you_started_declares_new_names_as_the_chat_does(
     studio.grows = True
     started = AgentSurface(StudioAgentPort(studio)).plan_check(steps)
     assert started["legal"] is True and started["grows"] is True and started["declared"] == {"actions": ["Archive"], "roles": []}
+
+
+def test_eija_mcp_checks_as_a_started_system_only_for_a_pack_in_the_systems_home(tmp_path):
+    from argparse import Namespace  # noqa: PLC0415
+    from eija_studio.interfaces.cli import _started_in_playide  # noqa: PLC0415
+
+    home = tmp_path / "home"
+    (home / "coffee").mkdir(parents=True)
+    (home / "coffee" / "pack.json").write_text("{}", encoding="utf-8")
+    assert _started_in_playide(Namespace(pack=home / "coffee", systems=home)) is True
+    assert _started_in_playide(Namespace(pack=ROOT / "packs" / "refund-desk", systems=home)) is False
+    assert _started_in_playide(Namespace(pack=None, systems=home)) is False

@@ -231,6 +231,12 @@ def _report_failure(command: str, exc: BaseException) -> None:
         output(failure)
 
 
+def _started_in_playide(args) -> bool:
+    """Whether `--pack` is a system started in PlayIDE (in the systems home): there plan_check declares new names as the
+    chat does (ADR-0201)."""
+    return args.pack is not None and SystemLibrary(args.systems or default_home()).contains(Path(args.pack))
+
+
 def _run_mcp(args) -> int:
     """`eija mcp`: print client config, or serve the agent-facing MCP server on stdio. Errors here go to stderr."""
     if args.print_config:
@@ -251,8 +257,7 @@ def _run_mcp(args) -> int:
                                                    'mcp==2.2.0: pip install -e ".[agents]"') from error
     studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None, formal=not args.no_formal,
                           pack=args.pack, repository_root=args.repo)
-    # On a system started in PlayIDE (one in the systems home), plan_check declares new names as the chat does (ADR-0201).
-    studio.grows = args.pack is not None and SystemLibrary(args.systems or default_home()).contains(Path(args.pack))
+    studio.grows = _started_in_playide(args)
     serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls,
                 diagram_renderer=_agent_diagram)
     return 0
