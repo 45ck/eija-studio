@@ -1,6 +1,7 @@
 """Loopback-only local adapter. No public hosting, CORS, remote provider proxy or raw file endpoint."""
 from __future__ import annotations
 import hmac
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Literal
 from fastapi import FastAPI, Query, Request
@@ -10,6 +11,7 @@ from pydantic import Field
 from eija_studio.application.diagram_catalog import case_diagrams
 from eija_studio.application.edit_preview import EditPreview
 from eija_studio.application.edit_proposal import TypedEditProposal
+from eija_studio.application.interop import MAX_CHARS
 from eija_studio.application.plan import example_passes
 from eija_studio.application.repository import COMMIT_OID_PATTERN
 from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand, Workflow
@@ -17,7 +19,7 @@ from eija_studio.domain.pack import Pack
 from eija_studio.domain.change_case import OwnerPlanRequest
 from eija_studio.domain.transactions import Transaction
 from .play import register as register_play
-from .play_systems import register as register_systems
+from .play_systems import StudioHandle, register as register_systems
 
 # The Studio page keeps this policy. Only /visual-frame, a static document with no API access, relaxes styles
 # (Mermaid writes inline style attributes) and is sandboxed; docs/SECURITY_AND_TRUST.md and ADR-0023 record why.
@@ -31,6 +33,23 @@ WEB_ASSETS |= frozenset({"play-live.js", "play-live.css"})
 WEB_ASSETS |= frozenset({"play-c4.js", "play-c4.css"})
 WEB_ASSETS |= frozenset({"play-presentation.js", "play-presentation.css"})
 WEB_ASSETS |= frozenset({"play-api.js"})
+# The streamed request body cap, per route. Each route's contract decides how large a request it can legitimately take:
+# the Change Case routes stay at 32 KiB (the page checks plan transfers against that, play-activation.js); PlayIDE's
+# routes carry the model shown, up to 64 plan steps twice (`plan` and `since`), edited screens and a tests draft; and a
+# UML file may be up to MAX_CHARS characters, which JSON escaping can double (every `"` in XMI becomes two bytes).
+BODY_LIMIT = 32 * 1024
+PLAY_BODY_LIMIT = 1024 * 1024
+UML_BODY_LIMIT = 2 * MAX_CHARS + 512 * 1024
+UML_UPLOADS = frozenset({"/api/play/import", "/api/play/systems/new"})
+
+
+def body_limit(path: str) -> int:
+    """The largest request body `path` accepts, in bytes."""
+    if path in UML_UPLOADS:
+        return UML_BODY_LIMIT
+    return PLAY_BODY_LIMIT if path.startswith("/api/play/") else BODY_LIMIT
+
+
 # PlayIDE frames the app built from the model, which runs as a separate process on its own loopback port (ADR-0151).
 PLAY_CSP = PAGE_CSP.replace("frame-src 'self'", "frame-src 'self' http://127.0.0.1:*")
 
@@ -86,6 +105,8 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
     allowed_origins = {"http://" + host for host in allowed_hosts}
 
+    pinned = studio.pinned if isinstance(studio, StudioHandle) else nullcontext
+
     @app.middleware("http")
     async def boundary(request: Request, call_next):
         if request.headers.get("host", "") not in allowed_hosts:
@@ -101,14 +122,16 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
                 if request.headers.get("content-type", "").split(";")[0] != "application/json":
                     return JSONResponse({"code": "CONTENT_TYPE", "message": "JSON required"}, status_code=415)
                 # ASGI streaming body cap; Content-Length alone is not trustworthy.
-                data, size = [], 0
+                data, size, limit = [], 0, body_limit(request.url.path)
                 async for chunk in request.stream():
                     size += len(chunk)
-                    if size > 32768:
-                        return JSONResponse({"code": "BODY_TOO_LARGE", "message": "32 KiB request limit"}, status_code=413)
+                    if size > limit:
+                        return JSONResponse({"code": "BODY_TOO_LARGE", "message": f"{limit // 1024} KiB request limit"},
+                                            status_code=413)
                     data.append(chunk)
                 request._body = b"".join(data)
-        response = await call_next(request)
+        with pinned():  # the whole request sees the system it began on, even if another tab opens a different one
+            response = await call_next(request)
         _set_security_headers(response, request.url.path)
         return response
 
@@ -150,6 +173,9 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
 
     own = (lambda: systems.library.contains(Path(systems.current["pack"]))) if systems is not None else (lambda: False)
     app.state.play = register_play(app, studio, web, own)
+    # Stop the built app when the server shuts down. uvicorn runs this on Ctrl+C and on SIGTERM; atexit alone is not
+    # enough, since uvicorn re-raises SIGTERM after its shutdown and the default handler ends the process unflushed.
+    app.router.add_event_handler("shutdown", app.state.play.stop)
     if systems is not None:
         systems.on_switch = app.state.play.stop
         register_systems(app, systems)

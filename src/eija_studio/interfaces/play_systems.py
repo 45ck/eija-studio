@@ -12,7 +12,9 @@ import json
 import os
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Literal
 
@@ -34,20 +36,39 @@ DESCRIBE = "describe"  # start from a description of the app (ADR-0216)
 TEMPLATE_FILES = ("pack.json", "data.json", "screens.json", "scenarios.json")
 
 
+_PINNED: ContextVar[Any] = ContextVar("eija_pinned_studio", default=None)
+
+
 class StudioHandle:
-    """The studio every route uses, which `switch` replaces when another system is opened."""
+    """The studio every route uses, which `switch` replaces when another system is opened.
+
+    A request pins the studio it started on (`pinned`), so one that is still running when another tab opens a
+    different system reads and writes the system it began with from start to end, never half of each."""
 
     def __init__(self, studio: Any):
         object.__setattr__(self, "_current", studio)
 
+    def _studio(self) -> Any:
+        pinned = _PINNED.get()
+        return pinned if pinned is not None else object.__getattribute__(self, "_current")
+
     def __getattr__(self, name: str) -> Any:
-        return getattr(object.__getattribute__(self, "_current"), name)
+        return getattr(object.__getattribute__(self, "_studio")(), name)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        setattr(object.__getattribute__(self, "_current"), name, value)
+        setattr(object.__getattribute__(self, "_studio")(), name, value)
 
     def switch(self, studio: Any) -> None:
         object.__setattr__(self, "_current", studio)
+
+    @contextmanager
+    def pinned(self) -> Iterator[None]:
+        """Within this block (one request), the handle is the studio current when it began."""
+        token = _PINNED.set(object.__getattribute__(self, "_current"))
+        try:
+            yield
+        finally:
+            _PINNED.reset(token)
 
 
 class NewSystem(Contract):
@@ -163,7 +184,8 @@ class Systems:
                  pack: Path, workspace: Path, on_switch: Callable[[], Any] = lambda: None, describer: Any = None):
         self.handle, self.library, self.opener, self.on_switch = handle, library, opener, on_switch
         self.describer = describer
-        self.lock = threading.Lock()
+        self.lock = threading.Lock()  # one switch at a time, and no draft written across a switch
+        self.creating = threading.Lock()  # one new system at a time, so two of one name get two ids, not a collision
         self.current = self._entry(handle.pack, Path(pack), Path(workspace))
         self.launched = dict(self.current)
         self.studios: dict[str, Any] = {self._key(pack): object.__getattribute__(handle, "_current")}
@@ -235,7 +257,10 @@ def register(app, systems: Systems) -> None:
             found = {"system": summary(documents)} | ({"import": report} if report is not None else {})
         if body.check_only:
             return {"created": False, "problems": []} | found
-        folder = systems.library.create(pack_id, documents)
+        with systems.creating:  # the id is chosen again under the lock: a double click makes x and x-2, not a 500
+            if pack_id in systems.library.ids():
+                pack_id, documents, report = new_documents(systems.library, body, systems.describer)
+            folder = systems.library.create(pack_id, documents)
         return {"created": True, "problems": []} | found | {"opened": systems.open(folder, systems.library.workspace(folder))}
 
     @app.post("/api/play/systems/open")
@@ -279,14 +304,17 @@ def register(app, systems: Systems) -> None:
             parse_screens(body.screens, systems.handle.pack.id)
         if body.scenarios is not None:
             parse_scenarios(body.scenarios, systems.handle.pack.id)
-        saved = body.model_dump(mode="json", exclude={"pack"}) | {"saved": int(time.time()), "system": systems.current["id"], "model": in_force()}
-        systems.library.write_draft(workspace(), saved)
+        with systems.lock:  # checked and written with no switch between: never into the system another tab opened
+            same_system(body.pack)
+            saved = body.model_dump(mode="json", exclude={"pack"}) | {"saved": int(time.time()), "system": systems.current["id"], "model": in_force()}
+            systems.library.write_draft(workspace(), saved)
         return {"saved": saved["saved"]}
 
     @app.post("/api/play/draft/clear")
     def play_clear_draft(body: ClearWork):
-        same_system(body.pack)
-        systems.library.write_draft(workspace(), None)
+        with systems.lock:
+            same_system(body.pack)
+            systems.library.write_draft(workspace(), None)
         return {"cleared": True}
 
 

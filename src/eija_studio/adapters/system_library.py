@@ -87,9 +87,13 @@ class SystemLibrary:
         try:
             for name, document in documents.items():
                 _write_json(staging / name, document)
+            if folder.exists():  # made since the check above (another `eija new`, or another tab)
+                raise FileExistsError(folder)
             staging.rename(folder)
-        except BaseException:
+        except BaseException as error:
             shutil.rmtree(staging, ignore_errors=True)
+            if isinstance(error, OSError) and folder.exists():
+                raise DomainError("SYSTEM_EXISTS", f"A system called {pack_id} already exists in {self.home}") from None
             raise
         return folder
 

@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import atexit
 import hashlib
+import http.client
+import json
 import os
 import socket
 import subprocess
@@ -132,6 +134,23 @@ def _listening(port: int) -> bool:
         return probe.connect_ex(("127.0.0.1", port)) == 0
 
 
+def _serves(port: int, digest: str) -> bool:
+    """Whether the server on `port` is the app built as `digest`: its /api/app names that build subject. The port was
+    free when chosen, but another program can take it before the app binds it; the IDE must not then frame that
+    program, or report it as this model's app."""
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=2)  # direct: never through an HTTP proxy
+    try:
+        connection.request("GET", "/api/app", headers={"Host": f"127.0.0.1:{port}"})
+        response = connection.getresponse()
+        about = json.loads(response.read(1_000_000)) if response.status == 200 else None
+    except (OSError, ValueError, http.client.HTTPException):
+        return False
+    finally:
+        connection.close()
+    subject = about.get("subject") if isinstance(about, dict) else None
+    return isinstance(subject, dict) and subject.get("digest") == digest
+
+
 # What the built app's process may see of the IDE's environment: enough for Python to start and find its locale and
 # temp folder, nothing else. Provider API keys (OPENAI_API_KEY and the like) and other secrets stay with the IDE.
 APP_ENVIRONMENT = frozenset({"PATH", "SYSTEMROOT", "WINDIR", "COMSPEC", "PATHEXT", "HOME", "USERPROFILE", "LANG", "LC_ALL",
@@ -188,6 +207,10 @@ class AppRunner:
                 self._stop()
                 raise DomainError("APP_START_FAILED", "The built app did not start")
             time.sleep(0.05)
+        if self.process.poll() is not None or not _serves(port, key):
+            self._stop()
+            raise DomainError("APP_START_FAILED", f"Port {port} was taken by another program before the built app "
+                                                  "could use it; press Build & run again")
         self.running = {"key": key, "url": f"http://127.0.0.1:{port}/"}
         return self.running["url"]
 
