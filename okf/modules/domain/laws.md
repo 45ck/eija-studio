@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py
   title: domain/laws.py
   hash_method: ast-api-v1
-  sha256: 84bedd561a58d92c5aac08d4cedc2c5ac8690033e51baa11360627470c237010
-notes_baseline: 6163960fabc9e489123cbd8c9fdba62310d472e4a1b8e0b911bf901f56ba17fb
+  sha256: 07a351df6cf85932fd913541f382e2cc8a27681da6a440bf05e6040e8518690b
+notes_baseline: 007d9942ccb91d655097199921ac7576985c92f98731a34b5266b37bf69f2bbe
 ---
 
 # domain.laws
@@ -57,6 +57,7 @@ Nothing here names a domain: every state, role, action and effect comes from the
 * [`OnlyKindEnters`](/symbols/domain/laws/OnlyKindEnters.md) (class) - Every transition entering ``state`` is held by a role of one of ``role_kinds``.
 * [`OnlyKindHolds`](/symbols/domain/laws/OnlyKindHolds.md) (class) - Every transition performing ``action`` is held by a role of one of ``role_kinds`` (e.g.
 * [`OnlyRoleHolds`](/symbols/domain/laws/OnlyRoleHolds.md) (class) - Every transition performing ``action`` is held by ``role``.
+* [`PROTECTING`](/symbols/domain/laws/PROTECTING.md) (constant) - no docstring
 * [`PathRequires`](/symbols/domain/laws/PathRequires.md) (class) - Every path from the initial state to ``state`` passes through ``via`` (a sequence law).
 * [`PathRequiresKind`](/symbols/domain/laws/PathRequiresKind.md) (class) - Every path from the initial state to ``state`` includes a step by a role of one of ``role_kinds``, the step entering ``…
 * [`ROLE_KINDS`](/symbols/domain/laws/ROLE_KINDS.md) (constant) - no docstring
@@ -72,6 +73,7 @@ Nothing here names a domain: every state, role, action and effect comes from the
 * [`applies`](/symbols/domain/laws/applies.md) (function) - no docstring
 * [`evaluate_run`](/symbols/domain/laws/evaluate_run.md) (function) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [`evaluate_table`](/symbols/domain/laws/evaluate_table.md) (function) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [`protects_absent`](/symbols/domain/laws/protects_absent.md) (function) - Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept.
 * [`reachable`](/symbols/domain/laws/reachable.md) (function) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
 * [`separation_breach`](/symbols/domain/laws/separation_breach.md) (function) - The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.
 * [`stuck_states`](/symbols/domain/laws/stuck_states.md) (function) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.
@@ -119,6 +121,7 @@ _No curated notes yet._
 * [domain.laws.OnlyKindEnters](/symbols/domain/laws/OnlyKindEnters.md) - Every transition entering ``state`` is held by a role of one of ``role_kinds``.
 * [domain.laws.OnlyKindHolds](/symbols/domain/laws/OnlyKindHolds.md) - Every transition performing ``action`` is held by a role of one of ``role_kinds`` (e.g.
 * [domain.laws.OnlyRoleHolds](/symbols/domain/laws/OnlyRoleHolds.md) - Every transition performing ``action`` is held by ``role``.
+* [domain.laws.PROTECTING](/symbols/domain/laws/PROTECTING.md) - Constant `PROTECTING` in `domain/laws`.
 * [domain.laws.PathRequires](/symbols/domain/laws/PathRequires.md) - Every path from the initial state to ``state`` passes through ``via`` (a sequence law).
 * [domain.laws.PathRequiresKind](/symbols/domain/laws/PathRequiresKind.md) - Every path from the initial state to ``state`` includes a step by a role of one of ``role_kinds``, the step entering ``state`` included: a human in the loop be…
 * [domain.laws.ROLE_KINDS](/symbols/domain/laws/ROLE_KINDS.md) - Constant `ROLE_KINDS` in `domain/laws`.
@@ -134,6 +137,7 @@ _No curated notes yet._
 * [domain.laws.applies](/symbols/domain/laws/applies.md) - `def applies(law: _Law, actions: set[str]) -> bool` in `domain/laws`.
 * [domain.laws.evaluate_run](/symbols/domain/laws/evaluate_run.md) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [domain.laws.protects_absent](/symbols/domain/laws/protects_absent.md) - Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept.
 * [domain.laws.reachable](/symbols/domain/laws/reachable.md) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
 * [domain.laws.separation_breach](/symbols/domain/laws/separation_breach.md) - The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.
 * [domain.laws.stuck_states](/symbols/domain/laws/stuck_states.md) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.

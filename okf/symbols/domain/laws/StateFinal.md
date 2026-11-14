@@ -55,4 +55,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [domain.laws.Law](/symbols/domain/laws/Law.md) - Type alias `Law` in `domain/laws`.
+* [domain.laws.PROTECTING](/symbols/domain/laws/PROTECTING.md) - Constant `PROTECTING` in `domain/laws`.
 <!-- okf:generated:end links -->

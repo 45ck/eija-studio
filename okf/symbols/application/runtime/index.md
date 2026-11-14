@@ -7,6 +7,7 @@
 * [application.runtime.check_guards](check_guards.md) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
 * [application.runtime.check_linked](check_linked.md) - The moves a transition makes on the objects the record links to, given each object's state (ADR-0241).
 * [application.runtime.check_separation](check_separation.md) - Refuse an actor who already took another action of a separation law on this record.
+* [application.runtime.check_starter](check_starter.md) - The role of the actor starting a record: an unknown actor is refused by the directory and a revoked one as it is refused an action (ADR-0250), so whoever starts a record is checked like whoever acts on one.
 * [application.runtime.execute](execute.md) - Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.
 * [application.runtime.initialise](initialise.md) - Creates an isolated preview instance bound to a model hash at version 0, after the policy check.
 * [application.runtime.receive](receive.md) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).

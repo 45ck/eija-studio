@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-14
+* **Second kernel inspection (ADR-0250)**: synced ADR-0250, `runtime.initialise` (`actor_id`, `check_starter`), `runtime._conforms` (`WORKFLOW_PACK_MISMATCH` in `execute`, `initialise` and `receive`), `laws.PROTECTING` and `protects_absent`, Simulate's refused starts (`starts_refused`) and `app_runs.create_cases` (asks the kernel). Re-read the Notes of the runtime module, `execute` and `initialise` as `process:kernel-inspection` and updated all three. No human source approval was recorded.
 * **Inspection of the app generator (ADR-0249)**: synced ADR-0249, `CASE_KINDS` (`object_cases`), `object_cases` and its answer helper, `signal_cases` (stored values and a second delivery), `generate` (README counts every case), `GENERATED_TESTS` (20) and `check_accessibility` (the label contract follows the page's `Control` and reference chooser). Re-read the Notes of `check_accessibility` as `process:claude-code-app-generator-inspection`; they still hold. No human source approval was recorded.
 
 ## 2026-11-13
