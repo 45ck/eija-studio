@@ -91,8 +91,9 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
         if request.headers.get("host", "") not in allowed_hosts:
             return JSONResponse({"code": "HOST_DENIED", "message": "Loopback host required"}, status_code=403)
         if request.url.path.startswith("/api/"):
-            supplied = request.headers.get("authorization", "")
-            if not hmac.compare_digest(supplied, "Bearer " + token):
+            # Compare bytes: compare_digest refuses a non-ASCII str, and a header can hold any latin-1 byte.
+            supplied = request.headers.get("authorization", "").encode("latin-1", "replace")
+            if not hmac.compare_digest(supplied, ("Bearer " + token).encode("latin-1", "replace")):
                 return JSONResponse({"code": "SESSION_REQUIRED", "message": "Use the private launch link"}, status_code=401)
             if request.method not in {"GET", "HEAD"}:
                 if request.headers.get("origin") not in allowed_origins:

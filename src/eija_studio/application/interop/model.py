@@ -90,9 +90,40 @@ class Parsed:
     skipped: list[dict[str, str]] = field(default_factory=list)
     derived: list[dict[str, str]] = field(default_factory=list)
     actors: dict[str, tuple[str, str]] | None = None  # actor -> (kind, where); None when the file draws no actors
+    unread: int = 0  # parts of the state machine the file draws that were not read: an import then removes nothing
+    pseudostates: set[str] = field(default_factory=set)  # choice, fork, join and history: never read as states
 
     def skip(self, where: str, element: str, reason: str) -> None:
         self.skipped.append({"where": where, "element": element, "reason": reason})
+
+    def unread_part(self, where: str, element: str, reason: str) -> None:
+        """A transition (or region) the file draws that PlayIDE could not read. It is reported like any skip, and it
+        makes the read partial, so the import removes nothing the file may still have (issue #165)."""
+        self.skip(where, element, reason)
+        self.unread += 1
+
+    def pseudostate(self, name: str, where: str, element: str, reason: str) -> None:
+        """A choice, fork, join or history pseudostate: reported, and never read as a state, even when arrows use it."""
+        self.skip(where, element, reason)
+        self.pseudostates.add(name)
+
+    def _through(self, edge: Edge) -> str | None:
+        return next((s for s in (edge.source, edge.target) if s in self.pseudostates), None)
+
+    def settle(self) -> Parsed:
+        """After reading: an arrow to or from a pseudostate is a transition PlayIDE could not read, not an edge between
+        states, and a pseudostate is not a state (whichever order the file declared them in)."""
+        if self.pseudostates and self.states is not None:
+            self._unread_through_pseudostates()
+            self.states = [s for s in self.states if s not in self.pseudostates]
+            self.initial = None if self.initial in self.pseudostates else self.initial
+        return self
+
+    def _unread_through_pseudostates(self) -> None:
+        for edge in [e for e in self.edges if self._through(e)]:
+            self.unread_part(edge.where, f"{edge.source} -> {edge.target}" + (f" : {edge.label}" if edge.label else ""),
+                             f"it goes through pseudostate {self._through(edge)}, which is not in PlayIDE's state vocabulary")
+        self.edges = [e for e in self.edges if not self._through(e)]
 
     def derive(self, where: str, element: str) -> None:
         """An element PlayIDE derives from the model (use cases, final states), so reading it back would add nothing."""
@@ -253,11 +284,13 @@ def export_report(fmt: str, pack: Pack, model: Workflow, data: DataModel | None,
 
 
 def _guards_not_carried(model: Workflow) -> list[str]:
-    """Guards over record values (ADR-0234), time events (ADR-0237), composite states (ADR-0240), linked objects
-    (ADR-0241) and received signals (ADR-0242), which the exported files do not write yet."""
+    """Who may start a record (ADR-0231), guards over record values (ADR-0234), time events (ADR-0237), composite
+    states (ADR-0240), linked objects (ADR-0241) and received signals (ADR-0242), which the exported files do not write
+    yet."""
     valued = sum(bool(t.conditions) for t in model.transitions)
     timed = sum(t.after is not None for t in model.transitions)
-    return ([f"guards over record values on {valued} transition(s) (ADR-0234)"] if valued else []) + \
+    starts = [f"who may start a record: {', '.join(model.initiators)} (ADR-0231)"] if model.initiators else []
+    return starts + ([f"guards over record values on {valued} transition(s) (ADR-0234)"] if valued else []) + \
         ([f"time events on {timed} transition(s), such as after(2 days) (ADR-0237)"] if timed else []) + \
         ([f"{len(model.composites)} composite state(s) grouping the states (ADR-0240)"] if model.composites else []) + \
         ([f"{len(model.objects)} linked object lifecycle(s) and the steps that move them (ADR-0241)"] if model.objects else []) + \

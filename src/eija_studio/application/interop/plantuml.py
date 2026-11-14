@@ -19,7 +19,7 @@ from eija_studio.domain.pack import Pack
 
 from .model import (ACTOR_KINDS, GENERATOR, PERSON_STEREOTYPES, Parsed, attribute_type, character, enumerations, export_report, multiplicity, terminals,
                     transition_label, use_case_links)
-from .textual import read_body, read_relation, read_transition
+from .textual import read_body, read_relation, read_transition, unread_line
 
 _PLAIN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _ESCAPE = {"%": "<U+0025>", "<": "<U+003C>", "[[": "<U+005B>["}
@@ -146,10 +146,10 @@ def _state_decl(found: re.Match[str], line: str, where: str, parsed: Parsed, ali
         aliases[found.group("alias")] = name
     rest = found.group("rest")
     if "<<" in rest:
-        parsed.skip(where, line, "pseudostates (choice, fork, join, history) are not in PlayIDE's state vocabulary")
+        parsed.pseudostate(name, where, line, "pseudostates (choice, fork, join, history) are not in PlayIDE's state vocabulary")
     elif rest.startswith("{"):
         depth[0] += 1
-        parsed.skip(where, f"composite state {name}", "composite states are planned (issue #93); its contents are not imported")
+        parsed.skip(where, f"composite state {name}", "composite states (ADR-0240) are grouped in the pack, not read from a UML file; its contents are not imported")
     else:
         parsed.state(name)
         if rest.startswith(":"):
@@ -166,7 +166,7 @@ def _state_line(line: str, where: str, parsed: Parsed, aliases: dict[str, str], 
     if line.startswith("note") or line == "end note":
         parsed.skip(where, line, "notes on a state machine are not carried")
     elif not _PRESENTATION.match(line) and line not in ("}", "--", "||"):
-        parsed.skip(where, line, "not a PlayIDE state machine element")
+        unread_line(line, where, parsed)
 
 
 def _read_states(block: list[tuple[str, str]], parsed: Parsed) -> None:

@@ -38,3 +38,9 @@ Issue #142: a workflow said who may take each transition, but not who may start 
 * Bad: the chat's proposal rules cannot yet add or remove initiators; a change to them is a direct model edit.
 * Bad: kernel change; needs owner source review (#80) like every kernel change.
 * Revisit when: starting a record needs a guard (a condition, not just a role), or plans need a transaction to change initiators.
+
+## Amendment, 13 November 2026: UML exports say initiators are not carried
+
+Re-inspection of the merged PRs (`docs/quality/inspection-2026-11-13-merged-prs.md`, M4) found that PlantUML, Mermaid,
+XMI and draw.io exports dropped the initiators without listing them under `not_carried`, as they list value guards,
+time events, composites, lifecycles and signals. They now list `who may start a record: ‹roles› (ADR-0231)`.

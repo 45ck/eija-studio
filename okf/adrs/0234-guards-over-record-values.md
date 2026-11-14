@@ -72,5 +72,6 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
 * [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
 <!-- okf:generated:end links -->

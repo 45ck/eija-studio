@@ -29,6 +29,7 @@ from eija_studio.domain.policy import apply_structural_all, check_policy
 from eija_studio.domain.transactions import Transaction, parse_transaction
 from eija_studio.application.law_proof import prove_laws
 
+from .kept import changes as _changes, keep_unread as _keep_unread
 from .several import _gone_transitions, _new_id, _several_steps, _single
 from .model import (DEFAULT_MAX_LENGTH, MULTIPLICITIES, READ_TYPES, WIDENED, Attr, Edge, Klass, Label, Link, Parsed, kind_label,
                     parse_label)
@@ -42,6 +43,8 @@ class ImportReport:
         self.mapped: list[dict[str, str]] = []
         self.defaulted: list[dict[str, str]] = []
         self.unmapped: list[dict[str, str]] = [dict(s) for s in skipped]
+        # Class model elements the file has but PlayIDE could not read: the current model's own are kept (issue #165)
+        self.unread: set[tuple[str, ...]] = set()
 
     def add(self, bucket: str, where: str, element: str, reason: str = "") -> None:
         entry = {"where": where, "element": element} | ({"reason": reason} if reason else {})
@@ -74,7 +77,7 @@ def _declared_checks(pack: Pack, label: Label, edge: Edge, report: ImportReport)
                    f"the pack declares {', '.join(spec.required_effects) or 'no effects'}; kept the pack's")
     for term in label.unread:
         report.add("unmapped", edge.where, f"{label.trigger}: guard {term!r}",
-                   "not in PlayIDE's guard vocabulary (role, assigned); value guards are planned (issue #93)")
+                   "not in PlayIDE's guard vocabulary (role, assigned); guards over record values (ADR-0234) are declared in the pack, not read from a UML file")
 
 
 def _edge_action(pack: Pack, edge: Edge, current: dict[str, Transition], seen: set[str], drawn: set[tuple[str, str]],
@@ -133,7 +136,8 @@ def _edit_steps(model: Workflow, wanted: list[tuple[Edge, str, str]], taken: set
 
 def _partial(parsed: Parsed, wanted: list[tuple[Edge, str, str]]) -> int:
     """How many transitions or composite states of the file's state machine were not read."""
-    return len(parsed.edges) - len(wanted) + sum(1 for s in parsed.skipped if s["element"].startswith("composite state"))
+    composites = sum(1 for s in parsed.skipped if s["element"].startswith("composite state"))
+    return len(parsed.edges) - len(wanted) + composites + parsed.unread
 
 
 
@@ -274,11 +278,13 @@ def _attribute_type(attr: Attr, enums: dict[str, tuple[str, ...]], where: str, e
 def _attribute(klass: Klass, attr: Attr, enums: dict[str, tuple[str, ...]], report: ImportReport) -> dict[str, Any] | None:
     element, where = f"{klass.name}.{attr.name}", attr.where or klass.where
     if attr.upper not in ("1", "0..1", ""):
+        report.unread.add((klass.name, attr.name))
         report.add("unmapped", where, element, f"multiplicity [{attr.lower}..{attr.upper}]: a collection of values is not "
                    "in the data vocabulary; draw an association to a class instead")
         return None
     typed = _attribute_type(attr, enums, where, element, report)
     if typed is None:
+        report.unread.add((klass.name, attr.name))
         return None
     out: dict[str, Any] = {"name": attr.name, "required": attr.lower >= 1} | typed
     if attr.max_length is not None and out["type"] == "text":
@@ -307,6 +313,7 @@ def _entity(klass: Klass, enums: dict[str, tuple[str, ...]], report: ImportRepor
 
 def _link(link: Link, names: set[str], report: ImportReport) -> dict[str, Any] | None:
     element = f"{link.kind} {link.source} -> {link.target}"
+    report.unread.add((link.source, link.target, link.role[:40]))  # taken back below once the link is read
     if link.source not in names or link.target not in names:
         report.add("unmapped", link.where, element, "it joins a class that was not imported")
         return None
@@ -315,6 +322,7 @@ def _link(link: Link, names: set[str], report: ImportReport) -> dict[str, Any] |
         report.add("unmapped", link.where, element, f"multiplicity {link.source_multiplicity} / {link.target_multiplicity}: "
                    "PlayIDE ends are 0..1, 1, 0..* or 1..*")
         return None
+    report.unread.discard((link.source, link.target, link.role[:40]))
     report.add("mapped", link.where, element)
     return {"source": link.source, "target": link.target, "kind": link.kind, "role": link.role[:40],
             "source_multiplicity": ends[0], "target_multiplicity": ends[1]}
@@ -344,13 +352,6 @@ def _record(parsed: Parsed, names: list[str], data: DataModel | None, report: Im
     return names[0]
 
 
-def _changes(before: DataModel | None, after: DataModel) -> dict[str, list[str]]:
-    old = {e.name: e for e in before.entities} if before else {}
-    new = {e.name: e for e in after.entities}
-    return {"added": sorted(set(new) - set(old)), "removed": sorted(set(old) - set(new)),
-            "changed": sorted(n for n in set(new) & set(old) if new[n] != old[n])}
-
-
 def _document(pack: Pack, data: DataModel | None, parsed: Parsed, entities: list[dict[str, Any]],
               report: ImportReport) -> dict[str, Any]:
     names = [e["name"] for e in entities]
@@ -377,7 +378,10 @@ def import_class_model(pack: Pack, data: DataModel | None, parsed: Parsed, repor
     if not entities:
         report.add("unmapped", "class model", "class model", "no class could be imported")
         return {"found": True, "changed": False, "candidate": None}
-    candidate = _validated(_document(pack, data, parsed, entities, report), report)
+    document = _document(pack, data, parsed, entities, report)
+    if data is not None and report.unread:
+        _keep_unread(document, data, report)
+    candidate = _validated(document, report)
     if not isinstance(candidate, DataModel):
         return {"found": True, "changed": False, "candidate": None, "errors": candidate}
     return {"found": True, "changed": data is None or candidate.digest != data.digest,

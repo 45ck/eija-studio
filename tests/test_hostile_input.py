@@ -263,7 +263,7 @@ def test_a_saved_draft_in_another_shape_is_set_aside_not_reopened(tmp_path, stor
         draft = tmp_path / "workspace" / "draft.json"
         draft.write_text(json.dumps(stored), encoding="utf-8")
         body = client.get("/api/play/draft", headers=HEADERS).json()
-        assert body["draft"] is None and body["set_aside"] is True
+        assert body["draft"] is None and body["set_aside"] is True and body["set_aside_as"] == "draft.unreadable.json"
         assert not draft.exists() and json.loads((tmp_path / "workspace" / "draft.unreadable.json").read_text()) == stored
         # The next Save writes a fresh draft, and the set-aside one is still there.
         assert client.post("/api/play/draft", json={"steps": []}, headers=HEADERS).status_code == 200
@@ -271,7 +271,8 @@ def test_a_saved_draft_in_another_shape_is_set_aside_not_reopened(tmp_path, stor
         assert (tmp_path / "workspace" / "draft.unreadable.json").is_file()
         # A second unreadable draft is set aside beside the first, never over it.
         draft.write_text(json.dumps({"steps": "second"}), encoding="utf-8")
-        assert client.get("/api/play/draft", headers=HEADERS).json()["set_aside"] is True
+        second = client.get("/api/play/draft", headers=HEADERS).json()  # the page names the file it really went to
+        assert second["set_aside"] is True and second["set_aside_as"] == "draft.unreadable-2.json"
         assert json.loads((tmp_path / "workspace" / "draft.unreadable.json").read_text()) == stored
         assert json.loads((tmp_path / "workspace" / "draft.unreadable-2.json").read_text()) == {"steps": "second"}
     finally:

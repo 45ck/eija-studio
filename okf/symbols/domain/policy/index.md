@@ -21,6 +21,7 @@
 * [domain.policy.first_supported_meaning](first_supported_meaning.md) - The id of the pack's first supported meaning (the demo candidate's meaning).
 * [domain.policy.forbidden_effects](forbidden_effects.md) - `def forbidden_effects(pack: Pack | None=None) -> tuple[str, ...]` in `domain/policy`.
 * [domain.policy.law_violations](law_violations.md) - `def law_violations(model: Workflow, pack: Pack | None=None) -> list[Violation]` in `domain/policy`.
+* [domain.policy.lifecycle_conflicts](lifecycle_conflicts.md) - Links to one class must declare the same lifecycle, its states, initial state and moves in any order (ADR-0241, amended 2026-11-13): an object has one state whichever link names it, and the built app stores one.
 * [domain.policy.meaning_options](meaning_options.md) - The pack's meanings as the review surface shows them: label, whether supported, consequences.
 * [domain.policy.meaning_questions](meaning_questions.md) - The three critical questions a local owner must answer correctly before a decision is sealed.
 * [domain.policy.meaning_transactions](meaning_transactions.md) - `def meaning_transactions(meaning_id: str, pack: Pack | None=None) -> tuple[Transaction, ...]` in `domain/policy`.

@@ -79,6 +79,17 @@ class SavedWork(Contract):
     scenarios: dict[str, Any] | None = None  # the Tests tab's draft (eija.scenarios.v1), kept with the work (ADR-0216)
 
 
+class SaveWork(SavedWork):
+    """Save's request: the work, and which system the page has open. The server serves one system at a time, so a tab
+    left open on the system it was on before another tab opened a different one would otherwise save its work over
+    that other system's saved draft."""
+    pack: str | None = Field(default=None, min_length=1, max_length=1000)
+
+
+class ClearWork(Contract):
+    pack: str | None = Field(default=None, min_length=1, max_length=1000)  # the system the page has open, as for Save
+
+
 def _reopenable(draft: dict[str, Any]) -> bool:
     """A saved draft in the shape Save writes (`SavedWork`); its steps are checked again by the kernel when reopened."""
     try:
@@ -248,25 +259,33 @@ def register(app, systems: Systems) -> None:
         draft = systems.library.read_draft(workspace())
         if draft is not None and not _reopenable(draft):
             # A draft.json edited by hand or written by another version: the page would fail on it, so it is set aside.
-            systems.library.set_aside_draft(workspace())
-            return {"draft": None, "system": systems.current, "moved": False, "set_aside": True}
+            aside = systems.library.set_aside_draft(workspace())
+            return {"draft": None, "system": systems.current, "moved": False, "set_aside": True, "set_aside_as": aside}
         return {"draft": draft, "system": systems.current, "moved": draft is not None and draft.get("model") != in_force()}
 
+    def same_system(pack: str | None) -> None:
+        """Refuse a save or clear from a page that has another system open than the one the server serves now."""
+        if pack is not None and Path(pack).resolve() != Path(systems.current["pack"]):
+            raise DomainError("SYSTEM_CHANGED", f"{systems.current['name']} is open now, not the system this page shows. "
+                              "Reload the page to work on it; your edits are still kept in this browser")
+
     @app.post("/api/play/draft")
-    def play_save_draft(body: SavedWork):
+    def play_save_draft(body: SaveWork):
         """Save the work in progress: the plan's steps as typed transactions, edited screens and the tests draft. Nothing is applied."""
+        same_system(body.pack)
         for step in body.steps:
             parse_step(step.transaction)  # a malformed step is refused here, not on reopening
         if body.screens is not None:
             parse_screens(body.screens, systems.handle.pack.id)
         if body.scenarios is not None:
             parse_scenarios(body.scenarios, systems.handle.pack.id)
-        saved = body.model_dump(mode="json") | {"saved": int(time.time()), "system": systems.current["id"], "model": in_force()}
+        saved = body.model_dump(mode="json", exclude={"pack"}) | {"saved": int(time.time()), "system": systems.current["id"], "model": in_force()}
         systems.library.write_draft(workspace(), saved)
         return {"saved": saved["saved"]}
 
     @app.post("/api/play/draft/clear")
-    def play_clear_draft():
+    def play_clear_draft(body: ClearWork):
+        same_system(body.pack)
         systems.library.write_draft(workspace(), None)
         return {"cleared": True}
 
@@ -289,8 +308,15 @@ def add_parser(subs) -> None:
 def start_system(library: Any, name: str, template: str = BLANK, record: str = "Record", sketch: str = "",
                  uml: Path | None = None) -> tuple[int, dict[str, Any]]:
     """`eija new`: create the system in `library` and say where it is (0), or the problems the kernel's pack check found (2)."""
-    body = NewSystem(name=name, template=UML if uml else template, record=record, sketch=sketch,
-                     uml=uml.read_text(encoding="utf-8") if uml else "", filename=uml.name if uml else "")
+    if template == DESCRIBE:  # "Describe your app" reads a description typed in PlayIDE; the command line has none to read
+        return 2, {"created": False, "problems": ["--from describe is only in PlayIDE (Start your own system); "
+                                                  "on the command line use a sketch, a template or --uml"]}
+    try:
+        body = NewSystem(name=name, template=UML if uml else template, record=record, sketch=sketch,
+                         uml=uml.read_text(encoding="utf-8") if uml else "", filename=uml.name if uml else "")
+    except ValidationError as error:  # the arguments, not a file: name each one that is wrong and how
+        return 2, {"created": False, "problems": [f"{'.'.join(str(p) for p in e['loc'])}: {e['msg']}"
+                                                  for e in error.errors(include_url=False, include_input=False)]}
     try:
         pack_id, documents, report = new_documents(library, body)
     except PackError as error:
