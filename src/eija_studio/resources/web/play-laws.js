@@ -25,14 +25,24 @@
   let P = null, report = null, key = null, draft = null, download = null, selectedLaw = null, inspection = 0;
 
   const now = () => P.viewKey() + JSON.stringify(P.model()) + JSON.stringify(draft); // the model on screen and any draft
-  const transitionFor = (action) => P.model().transitions.find((t) => t.action === action);
+  // One action may leave several states (ADR-0232): a run's step is the transition leaving the state it was in.
+  const transitionFor = (action, from) => {
+    const labelled = P.model().transitions.filter((t) => t.action === action);
+    return labelled.find((t) => t.from_state === from) || labelled[0];
+  };
 
+  // A law about an action governs every transition that action labels.
   function cellsOf(subject) {
-    return subject.map((ref) => {
-      if (ref.startsWith("state:")) return ref;
-      const t = transitionFor(ref.slice(7));
-      return t ? "transition:" + t.id : null;
-    }).filter(Boolean);
+    return subject.flatMap((ref) => {
+      if (ref.startsWith("state:")) return [ref];
+      return P.model().transitions.filter((t) => t.action === ref.slice(7)).map((t) => "transition:" + t.id);
+    });
+  }
+
+  // A law names states and actions; a transition on the diagram is linked to the laws about it and about its action.
+  function refsOf(ref) {
+    const t = ref.startsWith("transition:") && P.model().transitions.find((x) => "transition:" + x.id === ref);
+    return t ? [ref, "action:" + t.action] : [ref];
   }
 
   function onDiagram(paint) {
@@ -49,7 +59,7 @@
   function showRun(law) {
     onDiagram(() => {
       law.counterexample.forEach((step, i) => {
-        const t = transitionFor(step.action);
+        const t = transitionFor(step.action, step.from);
         if (t) P.restyle("transition:" + t.id, PATH, `${i + 1}. ${P.label(t)}`);
       });
       const last = law.counterexample[law.counterexample.length - 1];
@@ -137,7 +147,19 @@
     if (retainFocus) focusLaw(selectedLaw);
   }
 
-  async function prove() {
+  // One proof per model and draft at a time: opening the tab and "Inspect its laws" both ask for one, and a second
+  // proof finishing late would repaint the panel over what the inspection just said.
+  let proving = null, provingKey = null;
+  function prove() {
+    const asked = now();
+    if (proving && provingKey === asked) return proving;
+    provingKey = asked;
+    const mine = proveNow().finally(() => { if (proving === mine) proving = null; });
+    proving = mine;
+    return mine;
+  }
+
+  async function proveNow() {
     const asked = now();
     $("laws-prove").disabled = true;
     $("laws-summary").className = "laws-summary";
@@ -217,7 +239,7 @@
       if (!report || key !== now()) await prove();
       if (own !== inspection || $("laws").hidden) return;
       if (!report || key !== now()) { $("laws-limits").textContent = "The current law report is unavailable. Inspect the returned proof failure before following this transition's rule links."; return; }
-      const linked = report.laws.filter((law) => law.subject.includes(ref));
+      const refs = refsOf(ref), linked = report.laws.filter((law) => law.subject.some((s) => refs.includes(s)));
       selectedLaw = linked.length ? linked[0].id : null;
       render();
       if (selectedLaw) focusLaw(selectedLaw);

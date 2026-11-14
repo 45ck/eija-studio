@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.access.access
-description: The matrix for `model`, and, when `base` differs, the permissions it adds and removes compared with `base`.
+description: The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with `base`.
 resource: repo://src/eija_studio/application/access.py#access
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/access.py#access
   title: application/access.py
   hash_method: ast-v2
-  sha256: 21d085000af09f19354258ef84964b175fe59a2d12de11a61fbdac06e659a316
-notes_baseline: 3d439057ce2d1428f15a162f7d0c9abfe2a433685cbff8e23b39eee69018fbca
+  sha256: 0238088a04be5dbdc216d3a7b08f63509e42ea3635f4c6123c1d4d419d65c334
+notes_baseline: abab3e13c6faba6e13702881900d7103364e97d79bb1228982817054d3b529ee
 ---
 
 # application.access.access
@@ -32,7 +32,8 @@ notes_baseline: 3d439057ce2d1428f15a162f7d0c9abfe2a433685cbff8e23b39eee69018fbca
 ## Docstring
 
 ~~~text
-The matrix for `model`, and, when `base` differs, the permissions it adds and removes compared with `base`.
+The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with
+`base`.
 ~~~
 <!-- okf:generated:end facts -->
 

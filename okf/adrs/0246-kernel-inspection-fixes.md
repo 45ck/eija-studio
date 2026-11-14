@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0246-kernel-inspection-fixes.md
   title: 0246-kernel-inspection-fixes.md
   hash_method: lf-sha256-v1
-  sha256: c0c24e24090d1977955a5f9d1b2e3cb9eea6864e3a048dc78b729e62b1165289
-notes_baseline: bf895d641758c1baacd9b4e9c78c905ec7ab4c4f849ac7553c1af89f897f79ea
+  sha256: 0f807d52dc19cb8b0085fe19387490cc219ead992b478f2ec0f0e8e2bc742f0d
+notes_baseline: 1899155485c8ea6a0161ad8060607c414d63adc6e4e1b51595f29f53132792a2
 ---
 
 # ADR-0246: The kernel refuses undeclared roles, judges path laws alike, and fails value guards closed
@@ -38,7 +38,8 @@ notes_baseline: bf895d641758c1baacd9b4e9c78c905ec7ab4c4f849ac7553c1af89f897f79ea
 > * **K3, K4**: `ValueGuard.holds` orders text against a date only when the text is a real date, and a value that is not a
 >   bool, a number or a string is no kind a guard compares. Both fail closed (`VALUE_GUARD_DENIED` at runtime).
 > * **K5**: `add_transition` gives a new source of an existing action that action's value guards, time event and linked
->   steps, so its transitions stay alike.
+>   steps, so its transitions stay alike. #257 landed the same fix (`transactions._another_source`) while this was open;
+>   its code is kept and the K5 tests here cover it.
 > * **K6**: `value_guards.points` keeps `1` apart from `True` and `0` apart from `False`.
 > * **K7**: `model_impact` adds `model_changes` (only when non-empty) naming `initial_state`, `initiators`, `receives` or
 >   `objects`. A start change roots a `record-start` node rippling to the review packet; a lifecycle change marks the
