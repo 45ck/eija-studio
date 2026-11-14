@@ -78,4 +78,8 @@ _No curated notes yet._
 * [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
 * [ADR-0241: Actions on linked objects](/adrs/0241-actions-on-linked-objects.md) - Issue #93, item 4.
 * [ADR-0242: Messages between workflows](/adrs/0242-messages-between-workflows.md) - Issue #93, item 5.
+
+## Referenced by
+
+* [ADR-0249: Fixes from the inspection of the app generator](/adrs/0249-app-generator-inspection-fixes.md) - The 13 November 2026 inspection (record) found ten defects in the generated app and its conformance suite.
 <!-- okf:generated:end links -->

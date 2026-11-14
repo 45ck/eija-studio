@@ -1,5 +1,8 @@
 # Update log
 
+## 2026-11-14
+* **Inspection of the app generator (ADR-0249)**: synced ADR-0249, `CASE_KINDS` (`object_cases`), `object_cases` and its answer helper, `signal_cases` (stored values and a second delivery), `generate` (README counts every case), `GENERATED_TESTS` (20) and `check_accessibility` (the label contract follows the page's `Control` and reference chooser). Re-read the Notes of `check_accessibility` as `process:claude-code-app-generator-inspection`; they still hold. No human source approval was recorded.
+
 ## 2026-11-12
 * **Conformance that catches a divergent app (ADR-0243)**: synced ADR-0243 (renumbered: 0242 is messages between workflows), the new oracle lists in `application/appgen.py` and its helper modules `application/oracle_session.py` and `application/app_runs.py` (`create_cases`, `journeys`, `options_cases`, `rules`, `valid_values`, and `written` on committed cases), and the `conformance_divergence` gates. After the Codex review, journeys start on a record created just now. No Notes were hand-edited and nothing was recorded as verified. No human source approval was recorded.
 * **Messages between workflows (issue #93, item 5)**: synced ADR-0242, `Receive`, `Workflow.receives` and `receiving`, the `signal` effect kind and its checks, `runtime.receive`, the landscape's `sends`, `receives`, `signals` and its two findings, the oracle's `signal_cases`, the verifier's outbox count and the UML reader's unaddressed signal; after the Codex review, the delivery binding includes the record values. Re-read the Notes of the runtime module, `verify_runtime`, `Workflow`, `Workflow.semantic_hash` and the integration-test evidence kind as `process:claude-code`; updated the first four. No human source approval was recorded.

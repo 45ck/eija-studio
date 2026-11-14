@@ -117,8 +117,10 @@ def _react_labels(page: str) -> bool:
     contracts = (
         r'<label\s+htmlFor="actor"', r'<NativeSelect\s+id="actor"',
         r'<TextInput\s+id="title"\s+label="Record name"',
-        r'const\s+id\s*=\s*`field-\$\{field\.name\}`',
-        r'const\s+common\s*=\s*\{id,\s*label:\s*field\.label',
+        # every record field's control gets id `field-<name>` and its label, a reference field's chooser too (ADR-0249)
+        r'<Control\s+id=\{`field-\$\{field\.name\}`\}\s+field=\{field\}\s+label=\{field\.label\}',
+        r'<NativeSelect\s+id=\{`field-\$\{field\.name\}`\}\s+label=\{field\.label\}',
+        r'const\s+common\s*=\s*\{id,\s*label,',
         r'<Checkbox\s+\{\.\.\.common\}', r'<NativeSelect\s+\{\.\.\.props\}',
         r'<TextInput\s+\{\.\.\.props\}', r'const\s+props\s*=\s*\{\.\.\.common,',
     )
@@ -128,6 +130,7 @@ def _react_labels(page: str) -> bool:
 def _react_required(page: str) -> bool:
     title = re.search(r'<TextInput\s+id="title"\s+[^>]*\brequired\b', page)
     fields = re.search(r'const\s+props\s*=\s*\{\.\.\.common,[^}]*required:\s*field\.required', page)
+    fields = fields and re.search(r'<NativeSelect\s+id=\{`field-[^>]*required=\{field\.required\}', page)
     return bool(title and fields)
 
 

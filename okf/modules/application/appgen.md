@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: b7b02dd588e4e877f31a3e1c95016462e076a4baba8624637d48de698d5f1e54
-notes_baseline: 0fd47df4d2e1a016895b8ada98917d45b929ede30847720f232ef5b760a9f879
+  sha256: 9e86db53ee9ea4e1a6ae54bc93d5d5e370b29faf58943af0b425bffc639f69db
+notes_baseline: ab57a581d930903389710337c4005e16f4fcae7e0e0ecbe453de667c6ecf44bc
 ---
 
 # application.appgen
@@ -54,6 +54,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`generate`](/symbols/application/appgen/generate.md) (function) - Return the per-model files and the build manifest (without file hashes or test results).
 * [`linked_cases`](/symbols/application/appgen/linked_cases.md) (function) - For each transition that moves linked objects, an actor who may take it tries it with the objects in every state of the…
 * [`may_start`](/symbols/application/appgen/may_start.md) (function) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
+* [`object_cases`](/symbols/application/appgen/object_cases.md) (function) - Objects of each class a record refers to, created through the app (ADR-0235): a valid one, which starts in its lifecycl…
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
 * [`separation_cases`](/symbols/application/appgen/separation_cases.md) (function) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record;…
@@ -119,6 +120,7 @@ _No curated notes yet._
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
 * [application.appgen.linked_cases](/symbols/application/appgen/linked_cases.md) - For each transition that moves linked objects, an actor who may take it tries it with the objects in every state of their lifecycles, and the kernel's answer,…
 * [application.appgen.may_start](/symbols/application/appgen/may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
+* [application.appgen.object_cases](/symbols/application/appgen/object_cases.md) - Objects of each class a record refers to, created through the app (ADR-0235): a valid one, which starts in its lifecycle's initial state when the model gives i…
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…

@@ -12,7 +12,7 @@ from __future__ import annotations
 from itertools import product
 from typing import Any
 
-from eija_studio.domain.data import Attribute, DataModel, check_record, record_fields, references
+from eija_studio.domain.data import Attribute, DataModel, Entity, check_record, check_values, record_fields, references
 from eija_studio.domain.laws import DistinctActors
 from eija_studio.domain.linked import along, combinations as linked_combinations
 from eija_studio.domain.models import DomainError, Transition, ValueGuard, Workflow, canonical, fingerprint
@@ -29,7 +29,7 @@ from .simulation import MemorySession
 FORMAT = "eija.app-build.v1"
 # The oracle's case lists beside `cases`, each checked by its own generated test (ADR-0243 added the last three).
 CASE_KINDS = ("data_cases", "start_cases", "separation_cases", "value_cases", "timer_cases", "linked_cases", "signal_cases",
-              "create_cases", "journeys", "options_cases")
+              "create_cases", "journeys", "options_cases", "object_cases")
 UNDECLARED_ACTION = "UndeclaredAction"
 LIMITS = (
     "The app runs the EIJA kernel itself (eija-studio must be installed). Records created under an earlier model are "
@@ -212,7 +212,7 @@ def _people_cases(pack: Pack, model: Workflow, data: DataModel | None = None) ->
     asks for them, so every other oracle keeps its exact bytes."""
     found = {"separation_cases": separation_cases(pack, model), "value_cases": value_cases(pack, model),
              "timer_cases": timer_cases(pack, model), "linked_cases": linked_cases(pack, model),
-             "signal_cases": signal_cases(pack, model, data)}
+             "signal_cases": signal_cases(pack, model, data), "object_cases": object_cases(pack, model, data)}
     return ({"start_cases": start_cases(pack, model)} if model.initiators else {}) | {k: v for k, v in found.items() if v}
 
 
@@ -222,20 +222,28 @@ def signal_cases(pack: Pack, model: Workflow, data: DataModel | None) -> list[di
     refused (ADR-0242). Empty when the model receives none, so other oracles keep their exact bytes."""
     if not model.receives:
         return []
-    fields = data_cases(pack, data, model)[0]["fields"] if data is not None else {}
+    sample: dict[str, Any] = data_cases(pack, data, model)[0] if data is not None else {"fields": {}, "expect": {"fields": {}}}
     first = model.receives[0]
     tries = [(r.signal, r.sender) for r in model.receives]
     tries += [(absent("Signal:Unheard", {r.signal for r in model.receives}), first.sender),
               (first.signal, absent("unheard-workflow", {r.sender for r in model.receives}))]
-    cases = []
-    for n, (signal, sender) in enumerate(tries, start=1):
-        try:
-            receive(MemorySession(pack), "app", model, signal, sender, f"signal-{n}", pack=pack)  # type: ignore[arg-type]
-            expect: dict[str, Any] = {"outcome": "STARTED", "state": model.initial_state}
-        except DomainError as refused:
-            expect = {"outcome": "REFUSED", "code": refused.code}
-        cases.append({"signal": signal, "sender": sender, "fields": fields, "expect": expect})
-    return cases
+    return [_signal_case(pack, model, f"signal-{n}", signal, sender, sample)
+            for n, (signal, sender) in enumerate(tries, start=1)]
+
+
+def _signal_case(pack: Pack, model: Workflow, operation: str, signal: str, sender: str, sample: dict[str, Any]) -> dict[str, Any]:
+    """One signal delivered with the sample record's values: the kernel's answer, the values the record keeps, and the
+    answer to the same signal sent again as a new message, under another operation id."""
+    session = MemorySession(pack)
+    try:
+        receive(session, "app", model, signal, sender, operation, pack=pack)  # type: ignore[arg-type]
+    except DomainError as refused:
+        return {"signal": signal, "sender": sender, "fields": sample["fields"],
+                "expect": {"outcome": "REFUSED", "code": refused.code}}
+    again = receive(session, "app", model, signal, sender, f"{operation}-again", pack=pack)  # type: ignore[arg-type]
+    return {"signal": signal, "sender": sender, "fields": sample["fields"],
+            "expect": {"outcome": "STARTED", "state": model.initial_state, "fields": sample["expect"]["fields"]},
+            "again": {"outcome": "DUPLICATE" if again["duplicate"] else "STARTED"}}
 
 
 def _creator(pack: Pack, model: Workflow | None) -> str:
@@ -252,6 +260,33 @@ def stock(data: DataModel) -> list[dict[str, object]]:
     classes = sorted({r.target for r in references(data)})
     return [{"class": c, "id": f"obj{n}", "fields": {a.name: _sample(a) for a in data.entity(c).attributes}}
             for n, c in enumerate(classes, start=1)]
+
+
+def object_cases(pack: Pack, model: Workflow, data: DataModel | None) -> list[dict[str, Any]]:
+    """Objects of each class a record refers to, created through the app (ADR-0235): a valid one, which starts in its
+    lifecycle's initial state when the model gives it one (ADR-0241), then each value missing, of the wrong type, too
+    long or not a choice, and the data model's answer for each. Empty when no association is built, so other oracles
+    keep their exact bytes."""
+    if data is None or not references(data):
+        return []
+    creator, lifecycles = _creator(pack, model), {o.entity: o.initial for o in reversed(model.objects)}
+    cases: list[dict[str, Any]] = []
+    for item in stock(data):
+        cls, valid = str(item["class"]), dict(item["fields"])  # type: ignore[call-overload]
+        entity = data.entity(cls)
+        unknown = ("unknown field", valid | {absent("extra", {a.name for a in entity.attributes}): "x"})
+        cases += [{"class": cls, "name": name, "actor": creator, "fields": values,
+                   "expect": _object_answer(entity, values, lifecycles.get(cls))}
+                  for name, values in [("valid", valid), *(bad for a in entity.attributes for bad in _breaks(a, valid)), unknown]]
+    return cases
+
+
+def _object_answer(entity: Entity, values: dict[str, Any], initial: str | None) -> dict[str, Any]:
+    """The data model's answer for one object's values, and the state it starts in when its class has a lifecycle."""
+    try:
+        return {"outcome": "CREATED", "fields": check_values(entity, values)} | ({"state": initial} if initial else {})
+    except DomainError as refused:
+        return {"outcome": "REFUSED", "code": refused.code}
 
 
 def _reference_breaks(data: DataModel, valid: dict[str, object]) -> list[tuple[str, dict[str, object]]]:
@@ -399,8 +434,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
     navigation = navigation_for(pack, model, data, screens)
     files = {"app/model.json": canonical(model) + "\n", "app/pack.json": canonical(pack) + "\n",
              "app/screens.json": canonical(screens) + "\n",
-             "app/navigation.json": canonical(navigation) + "\n",
-             "README.md": readme(pack, model, len(cases), data)}
+             "app/navigation.json": canonical(navigation) + "\n"}
     if data is not None:
         oracle |= {"data_digest": data.digest, "data_cases": data_cases(pack, data, model)}
         oracle |= {"objects": stock(data)} if references(data) else {}
@@ -413,6 +447,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
                "options_cases": options_cases(pack, model, valid), "rules": rules(model)}
     files["tests/oracle.json"] = canonical(oracle) + "\n"
     total = len(cases) + sum(len(oracle.get(k, [])) for k in CASE_KINDS)
+    files["README.md"] = readme(pack, model, total, data)  # the same count the build manifest reports
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": total, "hash": fingerprint(oracle)},
                 "data": {"digest": data.digest, "record": data.record} if data else None,

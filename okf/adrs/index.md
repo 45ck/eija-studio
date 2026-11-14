@@ -127,3 +127,4 @@
 * [ADR-0241: Actions on linked objects](0241-actions-on-linked-objects.md) - Issue #93, item 4.
 * [ADR-0242: Messages between workflows](0242-messages-between-workflows.md) - Issue #93, item 5.
 * [ADR-0243: Conformance that catches a divergent app by behaviour](0243-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
+* [ADR-0249: Fixes from the inspection of the app generator](0249-app-generator-inspection-fixes.md) - The 13 November 2026 inspection (record) found ten defects in the generated app and its conformance suite.

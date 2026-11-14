@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/screen_access.py#check_accessibility
   title: application/screen_access.py
   hash_method: ast-v2
-  sha256: 1a5c2f301e22350c5e8fe0cc3ba45bceeaa2259e3ce1e6315a332fb824992bff
-notes_baseline: 3c6c265fce8949367500d98caca1e5b012710ae612f77b32dd772e3d9dd21a50
+  sha256: e38fc9c1efc24b7ad434c7f1144510b0c4942f33cba6776924df26afced7b96a
+notes_baseline: 0e4bd8dd029c84cab3b9943b3d64a608cee8e652635b8dea5b1c832b16f59e79
 verified:
 - by: process:playide-design
   at: '2026-10-11T01:03:14Z'
@@ -37,6 +37,10 @@ verified:
   at: '2026-11-11T12:00:00Z'
   notes_sha256: 79ad1da7814e575c3edefda331839bf5ef77e54e30c29572f5d5e33a05e50c7b
   sources_sha256: 3c6c265fce8949367500d98caca1e5b012710ae612f77b32dd772e3d9dd21a50
+- by: process:claude-code-app-generator-inspection
+  at: '2026-11-14T00:30:00Z'
+  notes_sha256: 79ad1da7814e575c3edefda331839bf5ef77e54e30c29572f5d5e33a05e50c7b
+  sources_sha256: 0e4bd8dd029c84cab3b9943b3d64a608cee8e652635b8dea5b1c832b16f59e79
 ---
 
 # application.screen_access.check_accessibility

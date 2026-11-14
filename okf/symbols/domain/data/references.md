@@ -49,6 +49,7 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
+* [application.appgen.object_cases](/symbols/application/appgen/object_cases.md) - Objects of each class a record refers to, created through the app (ADR-0235): a valid one, which starts in its lifecycle's initial state when the model gives i…
 * [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [application.appgen.valid_values](/symbols/application/appgen/valid_values.md) - A valid record: a sample of each attribute, and each reference naming the first `stock` object of its class.
 * [application.class_build.class_build](/symbols/application/class_build/class_build.md) - Which classes and associations the built app stores and checks, and what to consider about the rest.

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 13 November 2026: inspection of the app generator
+
+- Fixed: a built app's page now lets a person choose the object a record refers to, or add one in place (ai-ops records could not be created from the page before). Ten defects in all; [inspection record](docs/quality/inspection-2026-11-13-app-generator.md), [ADR-0249](docs/adr/0249-app-generator-inspection-fixes.md).
+- Fixed (issue #249): a built app refuses a request whose `Host` is not its own loopback address (`HOST_DENIED`).
+- Fixed: a stale record offers no action; reads never see a write that rolls back; a non-text title is refused, not stored as `None`; an unforeseen error is answered `500`; README.md counts every conformance case.
+- The generated conformance suite runs 20 tests, up from 17: objects created through the app, a step restarting the record's clock, and the `Host` check. Signals now also run over HTTP. Five seeded faults it missed are now caught and kept in the divergence harness.
+
 ### 13 November 2026: inspection of open pull requests
 
 - Fixed: a built app's `POST /api/records/{id}/act` turned a missing operation id into the shared id `missing` and cut a long one to 100 characters. A client that sent no id had every action after its first refused as `OPERATION_CONFLICT`. The route now refuses such a request with `BAD_REQUEST`, as `/api/signals` already did ([inspection record](docs/quality/inspection-2026-11-13-pull-requests.md)).

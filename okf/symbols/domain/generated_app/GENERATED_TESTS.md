@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/generated_app.py#GENERATED_TESTS
   title: domain/generated_app.py
   hash_method: ast-v2
-  sha256: 0dabc775202573ab88a6cc47ca6c8c654d656f07ff86b33e350f58feea434c8f
-notes_baseline: a29539a01588a4418180b6edcc0e452f270a5d0b79bd8368f6036b239bb46eb1
+  sha256: 39d1b9c32af072a25d382566b854824f7607877d6b412ac8e843e12b43002434
+notes_baseline: 98df87a6919d061d5a70f264b0d63bc0e5904239694155e4c4c178d4237b28a2
 ---
 
 # domain.generated_app.GENERATED_TESTS
@@ -25,7 +25,7 @@ notes_baseline: a29539a01588a4418180b6edcc0e452f270a5d0b79bd8368f6036b239bb46eb1
 |---|---|
 | Kind | constant |
 | Module | [`domain/generated_app`](/modules/domain/generated_app.md) |
-| Signature | `GENERATED_TESTS = 17` |
+| Signature | `GENERATED_TESTS = 20` |
 | Code | `repo://src/eija_studio/domain/generated_app.py#GENERATED_TESTS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

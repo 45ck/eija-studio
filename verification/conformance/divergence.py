@@ -46,7 +46,7 @@ from eija_studio.application.build_subject import SUBJECT_FILE, build_subject
 from eija_studio.application.generated_app import TEMPLATES
 from eija_studio.application.law_proof import prove_laws
 from eija_studio.bootstrap import implementation_manifest
-from eija_studio.domain.data import DataModel, data_for
+from eija_studio.domain.data import DataModel, data_for, references
 from eija_studio.domain.laws import DistinctActors
 from eija_studio.domain.models import DomainError, Workflow, canonical, fingerprint
 from eija_studio.domain.pack import Pack, PackError, load_pack, parse_pack
@@ -395,6 +395,11 @@ APPLIES: dict[str, Callable[[Subject], bool]] = {
     "who acted is not remembered": _separation, "offered actions ignore separation of duties": _separation,
     "anyone may start a record": lambda s: bool(s.model.initiators),
     "rule table shows one source per action": _several_sources,
+    "a step does not restart the record's clock": lambda s: any(t.after for t in s.model.transitions),
+    "created objects skip their lifecycle's start": lambda s: bool(s.model.objects),
+    "created objects' values not checked": lambda s: bool(references(s.data)),
+    "HTTP signal drops its values": lambda s: bool(s.model.receives) and s.data is not None,
+    "HTTP signals share one operation id": lambda s: bool(s.model.receives),
 }
 
 # Seeded faults in the app's own code. Each changes what the app does in a way the model does not allow.
@@ -440,8 +445,8 @@ CODE: dict[str, tuple[str, str, str]] = {
         "app/service.py", "            check_separation(separations(PACK, MODEL, t.action), t.action, actor_id, acts or [])\n", ""),
     "history shows every record's steps": ('app/service.py', 'if body.get("instance_id") == record_id:', "if True:"),
     "HTTP drops the expected version": (
-        "app/server.py", 'str(body.get("action", "")),\n                                                       version,',
-        'str(body.get("action", "")),\n                                                       0,'),
+        "app/server.py", 'self._text(body, "action"),\n                                                       version,',
+        'self._text(body, "action"),\n                                                       0,'),
     "HTTP drops the operation id": (
         "app/server.py", 'version, self._operation(body)))', 'version, "missing"))'),
     "HTTP refusals answered as success": ("app/server.py", 'self._json(status, {"code": refused.code, "message": refused.message})',
@@ -450,6 +455,21 @@ CODE: dict[str, tuple[str, str, str]] = {
                                  'fields = {}\n                    if not isinstance(fields, dict):\n                        raise Refused("BAD_REQUEST", "fields must be a JSON object")\n                    return self._json(201, service.create('),
     "rule table shows one source per action": (
         "app/server.py", '{"from": ", ".join(MODEL.sources(t.action)), "to"', '{"from": t.from_state, "to"'),
+    # Added by the 13 November 2026 inspection of the generator (ADR-0249): each was MISSED before its test existed.
+    "a step does not restart the record's clock": (
+        "app/service.py", '(item["state"], item["version"], now(), item["id"], expected)',
+        '(item["state"], item["version"], 0.0, item["id"], expected)'),
+    "created objects skip their lifecycle's start": (
+        "app/service.py", "state = lifecycle.initial if lifecycle is not None else None", "state = None"),
+    "created objects' values not checked": (
+        "app/service.py", "values = check_values(DATA.entity(cls), fields or {})", "values = dict(fields or {})"),
+    "HTTP signal drops its values": (
+        "app/server.py", 'self._text(body, "sender"), self._operation(body), fields)', 'self._text(body, "sender"), self._operation(body), {})'),
+    "HTTP signals share one operation id": (
+        "app/server.py", 'self._text(body, "sender"), self._operation(body), fields)', 'self._text(body, "sender"), "missing", fields)'),
+    "stale records offer their actions": ("app/service.py", "            if stale is not None:", "            if False:"),
+    "the app answers any host": ("app/server.py", 'if self.headers.get("Host", "") in {f"127.0.0.1:{port}", f"localhost:{port}"}:',
+                                 "if True:"),
 }
 
 
