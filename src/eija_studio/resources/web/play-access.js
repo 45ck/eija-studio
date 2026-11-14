@@ -5,7 +5,7 @@
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
-  let P = null, seq = 0, asked = false, question = { target: "", without: "" }; // asked: re-ask on every redraw
+  let P = null, asked = false, question = { target: "", without: "" }; // asked: re-ask on every redraw
 
   const VERDICTS = {
     UNREACHABLE: ["No", "ok"],
@@ -15,13 +15,13 @@
 
   async function render() {
     if (!P || P.tab() !== "access") return;
-    const mine = ++seq, panel = $("access-panel");
+    const mine = P.ticket("access"), panel = $("access-panel");
     try {
       const result = await P.api("/api/play/access", P.about());
-      if (mine !== seq) return; // a newer render (another preview) is on its way
+      if (!mine.current()) return; // a newer render (another preview) is on its way
       panel.replaceChildren(ask(result), changes(result), table(result), P.el("p", result.limits.join(" "), { class: "muted small" }));
     } catch (error) {
-      if (mine === seq) panel.replaceChildren(P.el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
+      if (mine.current()) panel.replaceChildren(P.el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
     }
   }
 
@@ -44,10 +44,14 @@
       if (event) { event.preventDefault(); asked = true; }
       question = { target: target.value, without: without.value };
       answer.replaceChildren(P.el("span", "Checking…", { class: "muted" }));
+      // Only the answer to the question last asked, about the model on show, is shown: an earlier question's answer
+      // arriving late would otherwise sit under the new question.
+      const mine = P.ticket("reach");
       try {
-        showAnswer(answer, await P.api("/api/play/reach", { ...P.about(), target: question.target, without: question.without || null }));
+        const reply = await P.api("/api/play/reach", { ...P.about(), target: question.target, without: question.without || null });
+        if (mine.current()) showAnswer(answer, reply);
       } catch (error) {
-        answer.replaceChildren(P.el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
+        if (mine.current()) answer.replaceChildren(P.el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
       }
     };
     form.addEventListener("submit", run);
@@ -141,6 +145,10 @@
     if (c.assigned_only) box.append(P.el("span", "assigned only", { class: "tag" }));
     // A guard over the record's values (ADR-0234): the actors were tried on a record whose values meet it.
     if (c.when) box.append(P.el("span", `when [${c.when.join(" and ")}]`, { class: "tag when", title: "Tried on a record whose values meet this guard; on other values the kernel refuses (VALUE_GUARD_DENIED)" }));
+    // A time event (ADR-0237) or a linked object it moves (ADR-0241): tried on a record that has waited, with an object
+    // that can make the move, as in Simulate.
+    if (c.after) box.append(P.el("span", c.after, { class: "tag when", title: "Tried on a record that has waited this long; before then the kernel refuses (TIMER_NOT_DUE)" }));
+    for (const m of c.moves || []) box.append(P.el("span", `moves ${m}`, { class: "tag when", title: "Tried with a linked object that can make this move; otherwise the kernel refuses (LINKED_OBJECT_REFUSED)" }));
     if (isNew) box.append(P.el("span", "new", { class: "tag new" }));
     if (isChanged) box.append(P.el("span", "changed", { class: "tag changed", title: "This plan changes what this permission depends on" }));
     const who = P.el("ul", undefined, { class: "who-can", "aria-label": "Fixture actors the kernel tried" });

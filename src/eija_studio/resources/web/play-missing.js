@@ -40,8 +40,11 @@
   // "Update the tests": the kernel records them again on the model shown; the result is the Tests tab's draft.
   async function update(button) {
     button.disabled = true;
+    // Tests recorded on a model no longer on show would expect what another model does: they are not written.
+    const mine = P.ticket("tests-update", () => JSON.stringify(window.PlayTests.draft()));
     try {
       const result = await P.api("/api/play/tests/update", asked());
+      if (!mine.current()) { updated = [{ change: "not updated", title: "The model or the tests changed while they were recorded; press Update the tests again" }]; refresh(); return; }
       updated = result.changes;
       window.PlayTests.edit(result.document);
       if (P.commit) P.commit("update the tests"); // undoable, and kept in this browser like any edit
