@@ -31,14 +31,15 @@ TARGETS: tuple[Target, ...] = (
                                        "tests/test_kernel_inspection.py")),
     Target(f"{SRC}/domain/impact.py", ("tests/test_impact_oracle.py", "tests/test_domain.py")),
     Target(f"{SRC}/domain/evidence.py", ("tests/test_evidence_oracle.py",)),
-    Target(f"{SRC}/application/runtime.py", ("tests/test_runtime_oracle.py", "tests/test_runtime.py")),
+    Target(f"{SRC}/application/runtime.py", ("tests/test_runtime_oracle.py", "tests/test_runtime.py", "tests/test_kernel_inspection_2.py")),
     Target(f"{SRC}/application/verifier.py", ("tests/test_verifier_oracle.py",)),
     # ADR-0239: the representatives the law proof, Simulate and the generated app's oracle try for value guards.
     Target(f"{SRC}/domain/value_guards.py", ("tests/test_value_guard_edges.py", "tests/test_value_guards.py",
                                              "tests/property/test_value_guards.py", "tests/test_kernel_inspection.py")),
     Target(f"{SRC}/domain/laws.py", ("tests/test_reach_end_law.py", "tests/test_law_proof.py", "tests/test_library_loan.py",
                                      "tests/test_actor_kinds.py", "tests/test_separation_of_duties.py",
-                                     "tests/property/test_value_guards.py", "tests/test_kernel_inspection.py")),
+                                     "tests/property/test_value_guards.py", "tests/test_kernel_inspection.py",
+                                     "tests/test_kernel_inspection_2.py")),
 )
 QUICK_MODULES: tuple[str, ...] = (f"{SRC}/domain/policy.py",)
 

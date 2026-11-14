@@ -209,7 +209,7 @@ class Service:
 
     @staticmethod
     def _replayed(session: Session, operation_id: str | None, request: dict[str, Any]) -> dict[str, Any] | None:
-        """What a create sent before under this operation id answered, or None for a new one (ADR-0250). The id binds
+        """What a create sent before under this operation id answered, or None for a new one (ADR-0251). The id binds
         the whole request, as the kernel's do: the same id with anything else is OPERATION_CONFLICT."""
         if operation_id is None:
             return None

@@ -73,5 +73,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [ADR-0250: One status table, retryable creates and bounded requests in the generated app](/adrs/0250-app-generator-second-pass.md) - The second inspection of the app generator (record) found that the API contract and the server kept the status of each refusal in two copies that had drifted,…
+* [ADR-0251: One status table, retryable creates and bounded requests in the generated app](/adrs/0251-app-generator-second-pass.md) - The second inspection of the app generator (record) found that the API contract and the server kept the status of each refusal in two copies that had drifted,…
 <!-- okf:generated:end links -->

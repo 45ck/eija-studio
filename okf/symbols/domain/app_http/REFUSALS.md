@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/app_http.py#REFUSALS
   title: domain/app_http.py
   hash_method: ast-v2
-  sha256: 3d14a85d637d2356a3736f31f36ee89029417fbec07c75c2b1b834637082440c
-notes_baseline: ae52c3110df4a6ad918547217927b21f370b172b2325b39ed36d07aacf44af89
+  sha256: 773976cd171a3ee69879c0eca3ef918b9fabf31f99280a23c04e4fcd1e56f473
+notes_baseline: 9139d455f54bd00350538a5e55ce518bb2abcd7ab2743f18f94692ecd81ecd9c
 ---
 
 # domain.app_http.REFUSALS

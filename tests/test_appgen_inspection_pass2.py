@@ -1,4 +1,4 @@
-"""Regressions from the second, principal-engineer pass over the app generator on 14 November 2026 (ADR-0250,
+"""Regressions from the second, principal-engineer pass over the app generator on 14 November 2026 (ADR-0251,
 docs/quality/inspection-2026-11-14-app-generator-pass-2.md). Each test failed on the generator before its fix."""
 from __future__ import annotations
 

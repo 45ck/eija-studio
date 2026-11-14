@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0250: One status table, retryable creates and bounded requests in the generated app'
+title: 'ADR-0251: One status table, retryable creates and bounded requests in the generated app'
 description: The second inspection of the app generator (record) found that the API contract and the server kept the status of each refusal in two copies that had drifted, that the signals route was missing from the contract, that a…
-resource: repo://docs/adr/0250-app-generator-second-pass.md
+resource: repo://docs/adr/0251-app-generator-second-pass.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0250-app-generator-second-pass.md
-  title: 0250-app-generator-second-pass.md
+- resource: repo://docs/adr/0251-app-generator-second-pass.md
+  title: 0251-app-generator-second-pass.md
   hash_method: lf-sha256-v1
-  sha256: 85136bbe0b48a704acd81ac933fe3d28849f74a9f78f3c08d33fed2a52fba777
-notes_baseline: 193a3f2fe0dbe8d8e3dab3cb92465ac6680f5ebbdb0d5440326f3ec3bdcce8fe
+  sha256: cc4d2ae6794da43807b759811d04f7579c44826a02d682b4b4e425e27f862724
+notes_baseline: 7b20794ec2499e75885fd420872e60b126375c04409845605af5fed47ed689ce
 ---
 
-# ADR-0250: One status table, retryable creates and bounded requests in the generated app
+# ADR-0251: One status table, retryable creates and bounded requests in the generated app
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 193a3f2fe0dbe8d8e3dab3cb92465ac6680f5ebbdb0d5440326f3ec3bdcce8fe
 | Status | accepted |
 | Date | 2026-11-14 |
 | Lane | app generator (ADR-0150, ADR-0207, ADR-0249) |
-| Source | `repo://docs/adr/0250-app-generator-second-pass.md` |
+| Source | `repo://docs/adr/0251-app-generator-second-pass.md` |
 
 ## Decision outcome (verbatim)
 

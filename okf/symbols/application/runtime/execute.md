@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#execute
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: 1daae9ffa274b22eed0a022308bdfe1fce49e791a65618e111765a428d27db37
+  sha256: 87bc93a509f660b23622f7ec4b03cf48d412c8217e2afb67793fc461df5c74a2
 description_override: 'Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.'
-notes_baseline: 585b3c807e68801a3cf09dfbf68c55727320b52f675fa0c69a16acec50203f1e
+notes_baseline: 5588daa3fba8c3fe5dd3ebb8160aab73475b66eb9dee24d19eaf26a4d652ada7
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -54,6 +54,10 @@ verified:
   at: '2026-11-12T04:00:08Z'
   notes_sha256: 6a221897ae96cef4faaf5cd38fff1d7a8bc938d919f25007fe725fdac1f42593
   sources_sha256: 585b3c807e68801a3cf09dfbf68c55727320b52f675fa0c69a16acec50203f1e
+- by: process:kernel-inspection
+  at: '2026-11-14T02:00:00Z'
+  notes_sha256: 4c84962601ac1687d5b5326317a6dfc6afc4398e1a179f33d804d49a23606500
+  sources_sha256: 5588daa3fba8c3fe5dd3ebb8160aab73475b66eb9dee24d19eaf26a4d652ada7
 ---
 
 # application.runtime.execute
@@ -75,7 +79,7 @@ _The source carries no docstring._
 ## Notes
 
 The transition is the one the command's action takes from the record's state; an action may leave several states, all alike but for their source, so authority does not depend on which one ([ADR-0232](/adrs/0232-one-action-from-several-states.md)). The commit sequence, in the order the code performs it:
-1. `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`). Both go through [application.memo](/modules/application/memo.md), which asks them once per frozen model and pack object; a refusal still comes from `ensure_policy` itself ([ADR-0199](/adrs/0199-playide-at-the-kernel-limits.md)).
+1. The model must belong to the pack (`WORKFLOW_PACK_MISMATCH`, [ADR-0250](/adrs/0250-kernel-second-inspection.md)), then `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`). Both go through [application.memo](/modules/application/memo.md), which asks them once per frozen model and pack object; a refusal still comes from `ensure_policy` itself ([ADR-0199](/adrs/0199-playide-at-the-kernel-limits.md)).
 2. **Authorise first** with [check_actor](/symbols/application/runtime/check_actor.md): active, current role, and assignment where the guard requires it. A cached success is not continuing authority.
 3. Replay: an existing operation id with a different binding is `OPERATION_CONFLICT`; the same binding returns the original result and enqueues nothing again.
 4. Version and source-state guards (`STALE_VERSION`, `STATE_DENIED`). Then the transition's time event, read through `UnitOfWork.elapsed` only when it has one (`TIMER_NOT_DUE`, [ADR-0237](/adrs/0237-time-events.md)). Then the transition's guards over record values, read through `UnitOfWork.values` only when it has them (`VALUE_GUARD_DENIED`, [ADR-0234](/adrs/0234-guards-over-record-values.md)). Then separation of duties, only when a `distinct_actors` law in force names the action: an actor who already took another of its actions on this record is `SEPARATION_DENIED`, and otherwise the act is logged in the same unit of work ([ADR-0233](/adrs/0233-separation-of-duties.md)). Steps on linked objects are checked before separation of duties, only when the transition has `then`: each object's state is read through `UnitOfWork.object_state`, and an object with no move for the event from its state, or with no state, is `LINKED_OBJECT_REFUSED` ([ADR-0241](/adrs/0241-actions-on-linked-objects.md)). Then the state update, and each object's move through `UnitOfWork.move_object` in the same unit of work; the result lists `moved`.
@@ -86,7 +90,6 @@ Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/appli
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.memo.ensure_conforms](/symbols/application/memo/ensure_conforms.md) - `ensure(model, pack)` (the policy check): a pair it let through is remembered; any other is refused by it again, so the error is always the check's own.
 * [application.memo.model_hash](/symbols/application/memo/model_hash.md) - `model.semantic_hash`, computed once per model object.
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
@@ -97,7 +100,6 @@ Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/appli
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow, pack: Pack | None=None) -> None` in `domain/policy`.
 
 ## Referenced by
 

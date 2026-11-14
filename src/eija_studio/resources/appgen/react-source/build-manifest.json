@@ -12,7 +12,7 @@
   },
   "sources": {
     "main.jsx": "95ea17da315dd8996f368b5f9630c7414ca807890f7ac196b619eb1e748bf8dc",
-    "controller.js": "3612f75b1d8c0ec12b193bcade90bb086dad7ec8cccf910440a2bae82bd495fc",
+    "controller.js": "88eccd512a8fb8a7c26b53d72d561a9c8d6e5bf4c43d2c9d17df68bcee462a6c",
     "app.css": "972b05a41b03045c8232f2b94cdbcdf4a5914e6a7fde64c1fdc06f02eaafb07d",
     "package.json": "66ad9503013063689cba5741b9de83078cde7981630331c0b3a0119f4ca02faa",
     "package-lock.json": "ffab188033c9014c2ba0057618e606e3fdbca3ee482694491f4c14fa690f770f",
@@ -20,7 +20,7 @@
     "LICENSES.txt": "e73c794a8066b2b2742e081777f5dc8bdee9a094f1e626e58e9290d494dbba06"
   },
   "outputs": {
-    "app.js": "4091a929e797425dc8bd306f60c5a24afbbb2663a1a0bd6fbd096e3f2b86b6dd",
+    "app.js": "94e38219d3778aaf7bed13061a679df082d221b480d319cd1030861e3f205d31",
     "app.css": "972b05a41b03045c8232f2b94cdbcdf4a5914e6a7fde64c1fdc06f02eaafb07d"
   },
   "runtime": {

@@ -10,7 +10,7 @@ Checklist, on top of pass 1's:
 4. A resource a client can hold without limit.
 5. Work that grows with the size of the database on every request.
 
-Decision record: [ADR-0250](../adr/0250-app-generator-second-pass.md).
+Decision record: [ADR-0251](../adr/0251-app-generator-second-pass.md).
 
 ## Defects
 

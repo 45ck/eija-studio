@@ -473,7 +473,7 @@ CODE: dict[str, tuple[str, str, str]] = {
     "stale records offer their actions": ("app/service.py", "            if stale is not None:", "            if False:"),
     "the app answers any host": ("app/server.py", 'if self.headers.get("Host", "") in {f"127.0.0.1:{port}", f"localhost:{port}"}:',
                                  "if True:"),
-    # Added by the 14 November 2026 second pass (ADR-0250).
+    # Added by the 14 November 2026 second pass (ADR-0251).
     "a create sent again makes a second record": (
         "app/service.py", "prior = self._replayed(session, operation_id, request)\n            if prior is not None:\n                return self._record(",
         "prior = None\n            if prior is not None:\n                return self._record("),

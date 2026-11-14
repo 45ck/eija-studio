@@ -77,4 +77,8 @@ _No curated notes yet._
 * [ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check](/adrs/0165-executable-uml-on-the-eija-kernel.md) - PlayIDE draws six UML views (state machine, class, use case, screens, component, sequence) over one model (ADR-0093), and `eija build` turns the model into a r…
 * [ADR-0231: Who may start a record](/adrs/0231-who-may-start-a-record.md) - Issue #142: a workflow said who may take each transition, but not who may start a record.
 * [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
+
+## Referenced by
+
+* [ADR-0250: Who starts a record is checked like who acts, and a law never protects a state that is gone](/adrs/0250-kernel-second-inspection.md) - The first inspection of the kernel (ADR-0246) read each kernel function against its own ADR.
 <!-- okf:generated:end links -->

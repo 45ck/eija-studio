@@ -1,4 +1,4 @@
-# ADR-0250: One status table, retryable creates and bounded requests in the generated app
+# ADR-0251: One status table, retryable creates and bounded requests in the generated app
 
 * Status: accepted
 * Date: 2026-11-14

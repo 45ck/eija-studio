@@ -1,4 +1,4 @@
-"""The HTTP status a generated app answers each refusal code with (ADR-0250).
+"""The HTTP status a generated app answers each refusal code with (ADR-0251).
 
 One table, read by the generated server (app/server.py) when it answers a refusal and by the API contract
 (application/api_contract.py) when it documents one, so the two cannot drift apart. Every code the kernel, the data
@@ -23,7 +23,8 @@ REFUSALS: dict[str, tuple[str, tuple[str, ...]]] = {
             "signal does not allow it, its version moved on, the operation id was used for another request, or it was made "
             "under another model or data model",
             ("STATE_DENIED", "ACTION_DENIED", "VALUE_GUARD_DENIED", "TIMER_NOT_DUE", "LINKED_OBJECT_REFUSED", "SIGNAL_NOT_ACCEPTED",
-             "EFFECT_DENIED", "INVALID_STATE", "OPERATION_CONFLICT", "STALE_VERSION", "STALE_INSTANCE", "STALE_DATA")),
+             "EFFECT_DENIED", "INVALID_STATE", "OPERATION_CONFLICT", "STALE_VERSION", "STALE_INSTANCE", "STALE_DATA",
+             "WORKFLOW_PACK_MISMATCH")),
     "500": ("The app could not answer this request", ("INTERNAL_ERROR",)),
 }
 STATUS: dict[str, int] = {code: int(status) for status, (_, codes) in REFUSALS.items() for code in codes}

@@ -1,7 +1,7 @@
 ---
 type: Module
 title: domain.app_http
-description: The HTTP status a generated app answers each refusal code with (ADR-0250).
+description: The HTTP status a generated app answers each refusal code with (ADR-0251).
 resource: repo://src/eija_studio/domain/app_http.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/app_http.py
   title: domain/app_http.py
   hash_method: ast-api-v1
-  sha256: 9acdbe7f5d0a9ccbac6f79287e7eea17f9c4687843999a00daefbd62e8719f64
-notes_baseline: 0882d85878c4129249880aef5cf75b10eb93e23e7bded3a5b6a6ad107d1c19e1
+  sha256: 93cef6d7cfa3056c72d1e4c69c349f3ace5013c87b90cd06b6117b516f948722
+notes_baseline: 7c30cf4d161d204a8bcb39342990344d66dc334c1b209f842e4700ec523a4486
 ---
 
 # domain.app_http
@@ -29,7 +29,7 @@ notes_baseline: 0882d85878c4129249880aef5cf75b10eb93e23e7bded3a5b6a6ad107d1c19e1
 ## Module docstring
 
 ~~~text
-The HTTP status a generated app answers each refusal code with (ADR-0250).
+The HTTP status a generated app answers each refusal code with (ADR-0251).
 
 One table, read by the generated server (app/server.py) when it answers a refusal and by the API contract
 (application/api_contract.py) when it documents one, so the two cannot drift apart. Every code the kernel, the data

@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#initialise
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: a36af55ab31eadd5d8f19d3d71e26fd6233640c799d050e87d4ebcd054c32b99
+  sha256: 83b3bd6120c30aefbc6eeec03fc7a7a6051f89731eb7fafac3e1552504252871
 description_override: Creates an isolated preview instance bound to a model hash at version 0, after the policy check.
-notes_baseline: 496d6be764ff839c996699573601ebc078f196ddd5c9016a3494d1f0fdc48704
+notes_baseline: 54cd2f03a97cec02f27a5db17192164f5d7f1eeaec9d3d52c9b070ef86766b69
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -34,6 +34,10 @@ verified:
   at: '2026-11-11T12:00:00Z'
   notes_sha256: 9539d1eb64ce9ef5e67edc1c5d8bf22e7e6ecb51cf238018332b66c091702f1c
   sources_sha256: 496d6be764ff839c996699573601ebc078f196ddd5c9016a3494d1f0fdc48704
+- by: process:kernel-inspection
+  at: '2026-11-14T02:00:00Z'
+  notes_sha256: aca98502efbab7aa3d0d18240f6875d4f4867a36822acf80d507bb14d39a2b9e
+  sources_sha256: 54cd2f03a97cec02f27a5db17192164f5d7f1eeaec9d3d52c9b070ef86766b69
 ---
 
 # application.runtime.initialise
@@ -43,33 +47,33 @@ verified:
 |---|---|
 | Kind | function |
 | Module | [`application/runtime`](/modules/application/runtime.md) |
-| Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None, pack: Pack \| None=None, role: str \| None=None) -> dict[str, Any]` |
+| Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None, pack: Pack \| None=None, role: str \| None=None, actor_id: str \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/runtime.py#initialise` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
 ~~~text
-Start a record. With ``role`` (the creator's role) a model that names its initiators refuses anyone else
-(ADR-0231); without it the caller is a preview or oracle that starts records on the kernel's behalf.
+Start a record. With ``actor_id`` the creator must be a known, active actor (ADR-0250), and their role is the
+one judged; with ``role`` alone, that role. A model that names its initiators refuses any other role (ADR-0231).
+With neither, the caller is a preview or oracle that starts records on the kernel's behalf.
 ~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-A changed candidate makes the instance stale; reset creates a new instance instead of migrating the old one ([Preview Instance](/language/preview-instance.md)). Given the creator's `role`, a model that names its initiators refuses anyone else with `ROLE_CANNOT_START` and writes nothing (ADR-0231); without a role there is no check.
+A changed candidate makes the instance stale; reset creates a new instance instead of migrating the old one ([Preview Instance](/language/preview-instance.md)). Given the creator's `actor_id`, an unknown actor is `UNKNOWN_ACTOR` and a revoked one `ACTOR_REVOKED`, as for an action, and their role is the one judged ([ADR-0250](/adrs/0250-kernel-second-inspection.md)). Given a `role` (or an actor), a model that names its initiators refuses anyone else with `ROLE_CANNOT_START` and writes nothing (ADR-0231); with neither there is no check (previews and oracles). A model named for another pack is `WORKFLOW_PACK_MISMATCH`.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.memo.ensure_conforms](/symbols/application/memo/ensure_conforms.md) - `ensure(model, pack)` (the policy check): a pair it let through is remembered; any other is refused by it again, so the error is always the check's own.
 * [application.memo.model_hash](/symbols/application/memo/model_hash.md) - `model.semantic_hash`, computed once per model object.
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
+* [application.runtime.check_starter](/symbols/application/runtime/check_starter.md) - The role of the actor starting a record: an unknown actor is refused by the directory and a revoked one as it is refused an action (ADR-0250), so whoever start…
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow, pack: Pack | None=None) -> None` in `domain/policy`.
 
 ## Referenced by
 

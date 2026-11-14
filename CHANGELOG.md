@@ -4,9 +4,15 @@
 
 ### 14 November 2026: the app generator, second pass
 
-- Fixed: the API contract and the generated server read one status table (`eija_studio.domain.app_http`); the contract had left out 13 refusal codes and the signals route. `ROLE_CANNOT_START` and `SEPARATION_DENIED` are now 403. [Inspection record](docs/quality/inspection-2026-11-14-app-generator-pass-2.md), [ADR-0250](docs/adr/0250-app-generator-second-pass.md).
+- Fixed: the API contract and the generated server read one status table (`eija_studio.domain.app_http`); the contract had left out 13 refusal codes and the signals route. `ROLE_CANNOT_START` and `SEPARATION_DENIED` are now 403. [Inspection record](docs/quality/inspection-2026-11-14-app-generator-pass-2.md), [ADR-0251](docs/adr/0251-app-generator-second-pass.md).
 - Fixed: a create (record or stored object) can be retried after a lost answer: an optional `operation_id` returns the first result instead of making a second. The page sends one per draft.
 - Fixed: values and references are checked inside the write; a request that never sends its body is answered `408` after 30 s instead of holding a thread; the record list is one query and a view no longer scans every audit entry (5,000 records: 0.395 s to 0.03 s); a number the browser cannot hold is refused, not dropped; `/favicon.ico` is answered 204.
+### 14 November 2026: the kernel, inspected a second time
+
+- A second, deeper inspection of the kernel read how its features meet ([record](docs/quality/inspection-2026-11-14-kernel.md), [ADR-0250](docs/adr/0250-kernel-second-inspection.md)). It found three defects, all fixed, each with a regression test in `tests/test_kernel_inspection_2.py`.
+- Fixed: a revoked user could start a record in Simulate (277 in a 500-step run across the shipped packs), though the built app refuses one. The kernel now checks whoever starts a record as it checks whoever acts (`initialise(actor_id=...)`: `UNKNOWN_ACTOR`, `ACTOR_REVOKED`, `ROLE_CANNOT_START`). Simulate logs a refused start, and the app oracle asks the kernel.
+- Fixed: renaming or removing a state switched off every law that protects it, so a rename could launder an edit the laws forbid. A law that protects a state the model lacks (`state_final`, `role_never_enters`, `state_only_via`, `only_kind_enters`, `path_requires`, `path_requires_kind`) is now broken, in the policy and in the generated SMT encoding.
+- Fixed: the runtime ran a model named for another pack under the pack it was given; it now refuses it with `WORKFLOW_PACK_MISMATCH`, as every application entry point already did.
 ### 14 November 2026: review of the day's inspection PRs
 
 - Reviewed #250 to #261 one by one ([record](docs/quality/inspection-2026-11-14-todays-prs.md)); each holds, with three defects found and fixed, each with a regression test in `tests/test_todays_pr_review.py`.
