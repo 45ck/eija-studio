@@ -1,11 +1,13 @@
 """Review a change in PlayIDE (ADR-0175): what changed, how risky, and what the kernel does differently on both models."""
 from __future__ import annotations
 
+import json
+import shutil
 from pathlib import Path
 
 import pytest
 
-from eija_studio.application.review import behaviour_diff, review_change
+from eija_studio.application.review import behaviour_diff, review_change, row_text
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import load_pack
 from eija_studio.domain.policy import apply_transactions
@@ -118,3 +120,64 @@ def test_a_finding_about_a_renamed_state_stays_the_same_finding_whatever_the_nam
     assert review["renamed"] == {"Lost (manual)": "Lost"}
     assert "No record reached Lost (manual)" in review["simulation"]["before"]["findings"]
     assert review["simulation"]["new_findings"] == review["simulation"]["gone_findings"] == []
+
+
+
+def test_a_role_change_on_a_guarded_step_is_seen_on_a_record_whose_values_meet_the_guard(tmp_path):
+    """Inspection 2026-11-14 R1: each attempt began on a record with no values, so a step behind a guard over values
+    (ADR-0234) was refused on both sides and a role change on it showed no rows, no question and no kernel answer."""
+    pack_dir = tmp_path / "library-loan"
+    shutil.copytree(ROOT / "packs" / "library-loan", pack_dir)
+    doc = json.loads((pack_dir / "pack.json").read_text(encoding="utf-8"))
+    for t in doc["model"]["transitions"]:
+        if t["action"] == "Cancel":
+            t["conditions"] = [{"attribute": "renewals", "op": "le", "value": 3}]
+    (pack_dir / "pack.json").write_text(json.dumps(doc), encoding="utf-8")
+    pack = load_pack(pack_dir)
+    cancel = next(t for t in pack.model.transitions if t.action == "Cancel")
+    after = apply_transactions(pack.model, [parse_transaction({"kind": "set_role", "transition": cancel.id, "role": "Librarian"})], pack)
+    review = review_change(pack, pack.model, after)
+    rows = [r for r in review["behaviour"]["rows"] if r["action"] == "Cancel"]
+    assert len(rows) == 2 and all(r["values"]["renewals"] <= 3 for r in rows)
+    assert " with renewals " in row_text(rows[0])
+    (item,) = [i for i in review["items"] if "Cancel" in i["text"]]
+    assert item["question"]["text"] == "After this change, can a Librarian take Cancel on a record in Requested?"
+    assert item["question"]["answer"] == "yes"
+
+
+def test_a_role_change_on_a_timed_step_is_seen_once_its_time_event_is_due():
+    """Inspection 2026-11-14 R1: each attempt began on a record that had just entered its state, so a step with a time
+    event (ADR-0237) was refused TIMER_NOT_DUE on both sides and a role change on it showed nothing."""
+    desk = load_pack(ROOT / "packs" / "refund-desk")
+    after = apply_transactions(desk.model, [parse_transaction({"kind": "set_role", "transition": "TR-ESCALATE", "role": "Supervisor"})], desk)
+    review = review_change(desk, desk.model, after)
+    rows = {r["role"]: r for r in review["behaviour"]["rows"] if r["action"] == "EscalateStale"}
+    assert rows["SlaTimer"]["before"]["outcome"] == "COMMITTED" and rows["SlaTimer"]["after"]["code"] == "ROLE_DENIED"
+    assert rows["Supervisor"]["after"]["outcome"] == "COMMITTED"
+    (item,) = [i for i in review["items"] if "EscalateStale" in i["text"]]
+    assert item["question"]["answer"] == "no" and "SlaTimer" in item["question"]["text"]
+
+
+def test_a_change_to_value_guards_time_events_or_linked_steps_is_reviewed_not_a_crash():
+    """Inspection 2026-11-14 R2: review_change raised KeyError on a changed value guard (ADR-0234) or linked step
+    (ADR-0241) and read a time event (ADR-0237) as a renamed id; diff_summary sorted guard objects, so two guards on one
+    transition raised TypeError in the plan preview, the review and the case's diagrams."""
+    from eija_studio.application.diagram_catalog import _summary_table
+    from eija_studio.application.diagrams import diff_summary
+    from eija_studio.domain.models import Workflow
+    raw = LOAN.model.model_dump(mode="json")
+    for t in raw["transitions"]:
+        if t["action"] == "Return":
+            t["conditions"] = [{"attribute": "renewals", "op": "le", "value": 3}, {"attribute": "renewals", "op": "ge", "value": 0}]
+        if t["action"] == "MarkOverdue":
+            t["after"] = {"amount": 14, "unit": "days"}
+    after = Workflow.model_validate(raw)
+    changes = diff_summary(LOAN.model, after)["changed_actions"]
+    assert changes["Return"] == [{"field": "conditions", "before": [], "after": ["renewals ≤ 3", "renewals ≥ 0"]}]
+    assert changes["MarkOverdue"] == [{"field": "after", "before": None, "after": "after(14 days)"}]
+    assert "renewals ≤ 3" in _summary_table(LOAN.model, after)
+    reasons = {i["text"].split(":")[0]: (i["risk"], i["reasons"]) for i in review_change(LOAN, LOAN.model, after)["items"]}
+    assert reasons["Change Return"] == ("low", ["Adds guard over values: renewals ≤ 3, renewals ≥ 0."])
+    assert reasons["Change MarkOverdue"] == ("low", ["Adds a time event after(14 days): the step now waits that long in its source state."])
+    back = {i["text"].split(":")[0]: (i["risk"], i["reasons"]) for i in review_change(LOAN, after, LOAN.model)["items"]}
+    assert back["Change Return"][0] == "high" and back["Change MarkOverdue"] == ("high", ["Drops its time event after(14 days): it may be taken at once."])

@@ -112,7 +112,7 @@ def describe_documents(text: str, name: str, id_for: Callable[[str], str],
     documents["data.json"]["entities"][0]["attributes"] += [f for f in _fields(read.get("fields", [])) if f["name"] != "title"]
     documents["scenarios.json"] = tests_for(parse_pack(documents["pack.json"]), record)
     reading = {"provider": describer.name, "live": describer.live, "template": read.get("template"),
-               "reading": [str(x)[:300] for x in read.get("reading", [])][:8]}
+               "reading": [str(x)[:300] for x in read.get("reading", [])][:16]}
     return checked_documents(documents), reading  # the same checks every new system's documents pass
 
 
