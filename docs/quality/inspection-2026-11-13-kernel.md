@@ -89,6 +89,8 @@ the frozen legacy oracle did not know `UNDECLARED_ROLE`) and `tests/test_formal_
 the hand encoding (`verification/smt/encoding.py`) and the generated one (`verification/smt/laws_gen.py`) each gained
 the rule, written independently; `accepted_set.json` was regenerated and only its source hashes changed, because on
 the excursion pack an undeclared role already breaks `PROTECTED_AUTHORITY`. `UNDECLARED_ROLE` is not reported for a
-transition of an undeclared action, which is `UNSUPPORTED_ACTION` already. Run the SMT tests after any policy change:
+transition of an undeclared action, which is `UNSUPPORTED_ACTION` already. The generated encoding names the action's one
+transition slot (`TR-<ACTION>`), while a pack may name that transition otherwise (ai-ops `StartBuild` is `TR-BUILD`), so
+`laws_gate.differential` compares `UNDECLARED_ROLE` codes by slot (`_by_slot`); found by Codex review of #261. Run the SMT tests after any policy change:
 `pip install -e '.[smt]'`.
 
