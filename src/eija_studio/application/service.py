@@ -56,6 +56,7 @@ class Studio(StudioViews):
         self.edit_proposer = edit_proposer
         self.plan_proposer = plan_proposer  # the PlayIDE chat's plan mode (ADR-0156); untrusted, read-only
         self.live_plan_proposer = live_plan_proposer  # opt-in, per-request consent (ADR-0230); None unless the provider is networked
+        self.grows = False  # a system the person started (ADR-0201): a plan may name new actions and roles; set by the CLI
 
     @staticmethod
     def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable: bool = False) -> ChangeCase:
@@ -110,6 +111,11 @@ class Studio(StudioViews):
             u.event("CaseCreated", {"case_id": case.id, "request_hash": fingerprint(command.request)})
             u.event("OwnerPlanSelected", selection_event)
         return body
+
+    def record(self, kind: str, body: dict[str, Any]) -> None:
+        """Append one event to the audit log: how a live chat call that leaves the machine is recorded (ADR-0230)."""
+        with self.store.transaction() as u:
+            u.event(kind, body)
 
     def propose(self, case_id: str, expected: int, *, consent: bool = False) -> dict[str, Any]:
         with self.store.transaction() as u:

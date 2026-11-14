@@ -9,6 +9,8 @@ from typing import Annotated, Any, Literal
 from pydantic import (BaseModel, BeforeValidator, ConfigDict, Field, SerializerFunctionWrapHandler, StrictBool, StrictFloat, StrictInt,
                       StrictStr, model_serializer, model_validator)
 
+from .state_tree import is_tree
+
 
 class DomainError(ValueError):
     """Stable error code: never expose provider secrets or arbitrary exception text."""
@@ -54,15 +56,19 @@ def iso_date(text: str) -> date | None:
 
 def _kind(value: Any) -> str:
     """What a guard compares: a bool is not a number, and an int and a float are both numbers. NaN and infinity are
-    no kind a guard compares (a record never holds one), so every guard over them fails closed."""
+    no kind a guard compares (a record never holds one), and nor is anything but a bool, a number or a string (a list or
+    an object, ADR-0246 K4), so every guard over them fails closed."""
     if isinstance(value, float) and not math.isfinite(value):
         return "non-finite"
-    return "boolean" if isinstance(value, bool) else "number" if isinstance(value, int | float) else "text"
+    if isinstance(value, bool):
+        return "boolean"
+    return "number" if isinstance(value, int | float) else "text" if isinstance(value, str) else "other"
 
 
 class ValueGuard(Contract):
     """A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234). The transition
-    fires only when it holds. A value that is missing, or of another kind, never satisfies it (fail closed)."""
+    fires only when it holds. A value that is missing, or of another kind, never satisfies it (fail closed); nor does
+    text that is not a date under an ordering against a date."""
     attribute: str = Field(pattern=r"^[a-z][a-zA-Z0-9_]{0,39}$")
     op: Comparison
     value: StrictBool | StrictInt | StrictFloat | StrictStr
@@ -83,6 +89,8 @@ class ValueGuard(Contract):
         actual = values.get(self.attribute)
         if actual is None or _kind(actual) != _kind(self.value):
             return False
+        if isinstance(actual, str) and self.op not in ("eq", "ne") and iso_date(actual) is None:
+            return False  # only a date is ordered against a date; other text compared as strings (ADR-0246, K3)
         return bool(_COMPARE[self.op](actual, self.value))
 
     def __str__(self) -> str:
@@ -179,37 +187,6 @@ class Transition(Contract):
         return self
 
 
-def _is_tree(states: tuple[str, ...], composites: tuple[Composite, ...]) -> bool:
-    """Composite names are new and unique, each holds known, distinct children including its initial one, each state or
-    composite has at most one parent, and no composite holds itself. True when there are none."""
-    names = [c.name for c in composites]
-    return (_distinct(names) and not set(names) & set(states) and _known_children(states, composites)
-            and _acyclic({child: c.name for c in composites for child in c.states}))
-
-
-def _distinct(items: list[str]) -> bool:
-    return len(set(items)) == len(items)
-
-
-def _known_children(states: tuple[str, ...], composites: tuple[Composite, ...]) -> bool:
-    """Each child is a state or a composite, held by one composite only, and each composite's initial is its child."""
-    children = [child for c in composites for child in c.states]
-    known = set(states) | {c.name for c in composites}
-    return _distinct(children) and set(children) <= known and all(c.initial in c.states for c in composites)
-
-
-def _acyclic(parent: dict[str, str]) -> bool:
-    """No chain of parents comes back to where it started."""
-    for start in parent:
-        seen, node = {start}, start
-        while node in parent:
-            node = parent[node]
-            if node in seen:
-                return False
-            seen.add(node)
-    return True
-
-
 def guard_keys(conditions: tuple[ValueGuard, ...]) -> frozenset[str]:
     """Value guards as a set compared by their JSON, as the semantic hash compares them. Pydantic equality would make
     ``[x = true]`` equal ``[x = 1]`` (``True == 1`` in Python), though no record value satisfies both."""
@@ -246,7 +223,7 @@ class LinkedObject(Contract):
     object or state."""
     link: str = Field(pattern=LINK)  # the record's reference field (ADR-0235)
     entity: str = Field(pattern=r"^[A-Z][A-Za-z0-9]{0,39}$")  # the class at the far end of the association
-    states: tuple[str, ...] = Field(min_length=1, max_length=8)
+    states: tuple[Annotated[str, Field(min_length=1, max_length=60)], ...] = Field(min_length=1, max_length=8)
     initial: str = Field(min_length=1, max_length=60)
     moves: tuple[Move, ...] = Field(min_length=1, max_length=32)
 
@@ -305,7 +282,7 @@ class Workflow(Contract):
     transitions: tuple[Transition, ...] = Field(min_length=1, max_length=64)
     # Roles that may start a record (ADR-0231, issue #142). Empty means any active actor, as before: an empty tuple is
     # left out of every dump, so models that do not name initiators keep their exact bytes and hashes.
-    initiators: tuple[str, ...] = Field(default=(), max_length=16)
+    initiators: tuple[Annotated[str, Field(min_length=1, max_length=60)], ...] = Field(default=(), max_length=16)
     # Composite states (ADR-0240). Empty is left out of every dump, so flat models keep their exact bytes and hashes.
     composites: tuple[Composite, ...] = Field(default=(), max_length=16)
     # Lifecycles of the objects the record links to (ADR-0241). Empty is left out of every dump.
@@ -342,7 +319,7 @@ class Workflow(Contract):
         """Initiators are distinct and composite states form a tree (ADR-0231, ADR-0240)."""
         if len(set(self.initiators)) != len(self.initiators):
             raise ValueError("Duplicate initiator role")
-        if not _is_tree(self.states, self.composites):
+        if not is_tree(self.states, self.composites):
             raise ValueError("Composite states must form a tree over the states")
         if len({(r.signal, r.sender) for r in self.receives}) != len(self.receives):
             raise ValueError("Duplicate received signal")

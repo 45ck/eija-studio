@@ -49,5 +49,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.access.access](/symbols/application/access/access.md) - The matrix for `model`, and, when `base` differs, the permissions it adds and removes compared with `base`.
+* [application.access.access](/symbols/application/access/access.md) - The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with `base`.
 <!-- okf:generated:end links -->

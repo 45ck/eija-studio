@@ -58,7 +58,25 @@ def _refusal(pack: Pack, model: Workflow) -> dict[str, Any] | None:
 
 def _end_cases(pack: Pack, record: str, model: Workflow) -> list[dict[str, Any]]:
     """The way to each end state (`sequence_draft.journeys`, the drafting the Sequences tab uses), recorded by the kernel."""
-    return [_case(pack, model, f"{record} reaches {state}", steps) for state, steps in journeys(pack, model)]
+    return _unique([_case(pack, model, f"{record} reaches {state}", steps) for state, steps in journeys(pack, model)])
+
+
+def _unique(cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The cases with distinct ids: two titles that slug alike (`Paid_Out`, `Paid__Out`) get -2, -3 and so on."""
+    taken: set[str] = set()
+    for case in cases:
+        base, n = case["id"], 1
+        while case["id"] in taken:
+            n += 1
+            case["id"] = f"{base}-{n}"
+        taken.add(case["id"])
+    return cases
+
+
+def _fresh(pack: Pack, record: str, model: Workflow) -> list[dict[str, Any]]:
+    """Every test `tests_for` records on `model`: the way to each end state, then the refusal."""
+    refusal = _refusal(pack, model)
+    return _unique(_end_cases(pack, record, model) + ([refusal] if refusal else []))
 
 
 def tests_for(pack: Pack, record: str, model: Workflow | None = None) -> dict[str, Any]:
@@ -66,9 +84,7 @@ def tests_for(pack: Pack, record: str, model: Workflow | None = None) -> dict[st
     role that may not take it. They pin down what the kernel does now, so a later change that alters it shows.
     `model` is the model to record on (the pack's own when None)."""
     model = pack.model if model is None else model
-    scenarios = _end_cases(pack, record, model)
-    refusal = _refusal(pack, model)
-    return {"schema_version": "eija.scenarios.v1", "id": pack.id, "scenarios": scenarios + ([refusal] if refusal else [])}
+    return {"schema_version": "eija.scenarios.v1", "id": pack.id, "scenarios": _fresh(pack, record, model)}
 
 
 def _read(text: str, describer: SystemDescriber) -> dict[str, Any]:

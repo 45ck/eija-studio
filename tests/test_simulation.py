@@ -26,7 +26,9 @@ def test_a_seed_replays_exactly_and_the_totals_add_up(name):
     assert run != simulate(p, p.model, seed=12, steps=300)
     assert run["attempts"] + run["records"] == 300 and run["committed"] + run["refused"] == run["attempts"]
     assert sum(t["committed"] for t in run["transitions"].values()) == run["committed"]
-    assert sum(sum(t["refused"].values()) for t in run["transitions"].values()) == run["refused"] == sum(run["codes"].values())
+    # A refusal is a transition's, or, for a slip (an action that does not leave the record's state), its state's.
+    slips = sum(sum(s.get("slips", {}).values()) for s in run["states"].values())
+    assert sum(sum(t["refused"].values()) for t in run["transitions"].values()) + slips == run["refused"] == sum(run["codes"].values())
     assert sum(s["now"] for s in run["states"].values()) == run["records"]
     assert run["model"] == p.model.semantic_hash and len(run["trace"]) <= 60
 

@@ -62,5 +62,7 @@ notes_baseline: 790a9ed4d5d36c76506bbdfb8061804cc13c4c2b1a7fca9df81ffb39ca114860
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [ADR-0244: The built app gets no secrets, and `eija serve` binds its port before it prints a link](/adrs/0244-built-app-environment-and-bind-before-links.md) - A Fagan inspection of the `eija` command and the local server (CLI-SERVER-INSPECTION) found two boundary defects.
 <!-- okf:generated:end links -->

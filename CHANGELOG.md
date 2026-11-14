@@ -9,9 +9,42 @@
 - Fixed: a stale record offers no action; reads never see a write that rolls back; a non-text title is refused, not stored as `None`; an unforeseen error is answered `500`; README.md counts every conformance case.
 - The generated conformance suite runs 20 tests, up from 17: objects created through the app, a step restarting the record's clock, and the `Host` check. Signals now also run over HTTP. Five seeded faults it missed are now caught and kept in the divergence harness.
 
+### 13 November 2026: the kernel, inspected
+
+- A Fagan inspection of the kernel ([record](docs/quality/inspection-2026-11-13-kernel.md), [ADR-0246](docs/adr/0246-kernel-inspection-fixes.md)) found eight defects; all are fixed, each with a regression test in `tests/test_kernel_inspection.py` that fails on the old code.
+- Fixed: the policy accepted a transition held by a role the pack does not declare (it already refused an undeclared initiator). It now reports `UNDECLARED_ROLE:<transition id>`.
+- Fixed: a `path_requires` law on the initial state was always reported broken by the table check, so the policy refused models that no run breaks. The table and run judges now agree that a new record has entered no state.
+- Fixed: a value guard against a date compared any text as a string (`"1999"` was before `2026-12-01`), and a list or object as a record value crashed `execute` with a `TypeError`. Both now fail closed with `VALUE_GUARD_DENIED`.
+- Fixed: `add_transition` could not give a second source to an action with a value guard, a time event or a step on a linked object (ADR-0232); the new transition now takes what the action shares.
+- Fixed: the law proof and Simulate never tried `1` or `0` for an attribute also guarded as true/false.
+- Fixed: the impact ripple was empty for a change to who may start a record, the initial state, the signals that start one, or a linked object's lifecycle. It now names it in `model_changes` and marks the review packet affected.
+- Each initiator and each state of a linked object's lifecycle is now a 1 to 60 character name (contracts regenerated).
+### 13 November 2026: running and checking a design in place, inspected
+
+- A Fagan inspection of Simulate, the run bar, the Tests, Laws and permissions tabs, the ripple check and the game layer logged eleven defects, all fixed here, each with a before and after screenshot ([inspection record](docs/engineering/2026-11-13-INSPECTION-CHECK-IN-PLACE.md)).
+- Fixed: the run bar paused on, and showed, the wrong step in any model that names who may start a record. Fixed: Simulate showed a run of a model that had changed while it ran, and could report a false "Simulation refused". Fixed: "Inspect its laws" never found the laws about a refused transition.
+- Fixed: the Laws tab paints a counterexample on the transition that leaves the step's state, for an action that leaves several. Fixed: reachability takes into account who may start a record (ROLE_CANNOT_START), and that a signal from another workflow can start one. Fixed: Stop or Restart while the run log loads no longer lets the run start afterwards.
+- Fixed: Simulate counts a slip (an action that does not leave the record's state) against that state, as `states[s].slips`, not against another state's transition. Fixed: the checks ring marks a part with nothing to check as not applicable instead of green, and leaves it out of the count. Fixed: only the newest test run fills the Tests panel. Fixed: the permissions diff lists a permission kept on other conditions (a guard dropped or added) under `changes.changed`.
+
+### 13 November 2026: inspection of saving and UML import
+
+- An inspection of undo, autosave, Save and UML import/export found ten defects, all fixed ([ADR-0245](docs/adr/0245-partial-reads-keep-and-saves-name-their-system.md), log in [INSPECTION-SAVE-IMPORT](docs/engineering/INSPECTION-SAVE-IMPORT.md)).
+- Fixed: an arrow the UML reader skipped, an arrow through a `<<choice>>` pseudostate, or a labelled draw.io connector to another shape no longer makes the import plan remove that transition. A pseudostate is never read as a state. PlantUML arrows with the style after the direction (`-left[#red]->`) and backward arrows (`B <-- A`) are read.
+- Fixed: an attribute or association the file has but PlayIDE cannot read is kept as the current class model has it, not deleted from the candidate `data.json`. The import dialog names association changes.
+- Fixed: a tab still showing another system can no longer save over, or clear, the open system's saved work (`SYSTEM_CHANGED`). A browser draft from an earlier model is kept until it is reopened, an edit made while undo reloads the screens is kept, recovered work no longer shows as unsaved when it matches the saved draft, and when browser storage is full an older draft is no longer recovered as the latest work.
+
+### 13 November 2026: the command line and server, inspected
+
+- A Fagan inspection of the `eija` command and PlayIDE's local server ([record](docs/engineering/CLI-SERVER-INSPECTION.md), [ADR-0244](docs/adr/0244-built-app-environment-and-bind-before-links.md)) found ten defects; nine are fixed, each with a regression test in `tests/test_cli_server_inspection.py`.
+- Fixed: Build & run no longer passes the IDE's environment, including provider API keys, to the app it starts. The app gets an allowlist (path, home, locale, temp folders) and its port.
+- Fixed: `eija serve` binds its port before it prints the private links or opens the browser. A busy port is `PORT_IN_USE` (exit 2) and an invalid one is refused before any workspace is created.
+- Fixed: an `Authorization` header with a non-ASCII byte got a 500; it is now 401.
+- Fixed: `eija uml export` of a model the protected policy refuses exits 2 with `POLICY_BLOCKED` on stderr, as `render` does. `EIJA_PROVIDER` set to an unknown provider, a systems home that is a file, and `eija new` with too long a name or `--from describe` each get a message that says what is wrong.
+
 ### 13 November 2026: inspection of open pull requests
 
 - Fixed: a built app's `POST /api/records/{id}/act` turned a missing operation id into the shared id `missing` and cut a long one to 100 characters. A client that sent no id had every action after its first refused as `OPERATION_CONFLICT`. The route now refuses such a request with `BAD_REQUEST`, as `/api/signals` already did ([inspection record](docs/quality/inspection-2026-11-13-pull-requests.md)).
+- Fixed: when PlayIDE sets aside a second unreadable draft, its message now names the file the draft went to, such as `draft.unreadable-2.json`. Before, it always named `draft.unreadable.json`.
 
 ### 12 November 2026: conformance that catches a wrong app
 

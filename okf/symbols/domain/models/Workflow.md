@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: b7a7dbd91b86b461698fd82b0fcee9ee1f165b1d020477493d32b7d13e0ee1f4
+  sha256: 21eb25270daa41ef957d0df5d6ecdde07d97abf634fa849c09e5240b6551632b
 description_override: Immutable typed states, transitions, roles, guards and effect declarations with a normalised semantic hash.
-notes_baseline: 5b5fd018414bb16ac255ee4b4bdb46cc612be780cf06e6f9b07ab2afd8f9ed9e
+notes_baseline: c5a0b49a0e3eb92e3beec546ab8201aed2bea06fbfefe6991bb1f08a0ba8e426
 verified:
 - by: process:eija-wbs-1.3-agent
   at: '2026-09-29T08:20:47Z'
@@ -50,6 +50,10 @@ verified:
   at: '2026-11-12T04:32:06Z'
   notes_sha256: da7ebd079be596d37fc009e9e3a1ea2a7ff062d9a1b90f5161b6a18c259b77d6
   sources_sha256: 5b5fd018414bb16ac255ee4b4bdb46cc612be780cf06e6f9b07ab2afd8f9ed9e
+- by: process:kernel-inspection
+  at: '2026-11-14T00:30:00Z'
+  notes_sha256: 7ee0377a12ed5b6f2173e62cb3e2bfa2ffe27be98d8778c98f64199cbbe49a75
+  sources_sha256: c5a0b49a0e3eb92e3beec546ab8201aed2bea06fbfefe6991bb1f08a0ba8e426
 ---
 
 # domain.models.Workflow
@@ -76,7 +80,7 @@ _The source carries no docstring._
 | `initial_state` | `str` |  |
 | `states` | `tuple[str, ...]` | `Field(min_length=1, max_length=32)` |
 | `transitions` | `tuple[Transition, ...]` | `Field(min_length=1, max_length=64)` |
-| `initiators` | `tuple[str, ...]` | `Field(default=(), max_length=16)` |
+| `initiators` | `tuple[Annotated[str, Field(min_length=1, max_length=60)], ...]` | `Field(default=(), max_length=16)` |
 | `composites` | `tuple[Composite, ...]` | `Field(default=(), max_length=16)` |
 | `objects` | `tuple[LinkedObject, ...]` | `Field(default=(), max_length=8)` |
 | `receives` | `tuple[Receive, ...]` | `Field(default=(), max_length=16)` |
@@ -99,7 +103,7 @@ _The source carries no docstring._
 
 ## Notes
 
-The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237). `composites` groups the states into a tree of UML composite states, left out when empty; `parent`, `ancestors`, `leaves` and `entry` read it, and the kernel still runs the flat machine (ADR-0240). `objects` declares the lifecycles of the objects the record links to, left out when empty; every step in a transition's `then` must name one with that event, and `lifecycle(link)` reads it (ADR-0241). `receives` lists the signals from other workflows that start a record, left out when empty; `receiving(signal, sender)` reads it (ADR-0242).
+The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions, and asks `domain.state_tree.is_tree` whether the composites form a tree; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. One action may label several transitions alike but for id and source state; `transition_for` and `sources` read them (ADR-0232). `initiators` names the roles that may start a record, each a 1 to 60 character name (ADR-0246); empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231). `longest_wait` is the longest time event in seconds, 0 without any (ADR-0237). `composites` groups the states into a tree of UML composite states, left out when empty; `parent`, `ancestors`, `leaves` and `entry` read it, and the kernel still runs the flat machine (ADR-0240). `objects` declares the lifecycles of the objects the record links to, left out when empty; every step in a transition's `then` must name one with that event, and `lifecycle(link)` reads it (ADR-0241). `receives` lists the signals from other workflows that start a record, left out when empty; `receiving(signal, sender)` reads it (ADR-0242).
 
 <!-- okf:generated:begin links -->
 ## Depends on
@@ -114,7 +118,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 
 * [Execution](/contexts/execution.md) - Owns Trusted fixture actor state, preview instances, command replay, committed effect intents
 * [Workflow Definition](/language/workflow-definition.md) - Immutable typed states/transitions/roles/guards/effect declarations.
-* [application.access.access](/symbols/application/access/access.md) - The matrix for `model`, and, when `base` differs, the permissions it adds and removes compared with `base`.
+* [application.access.access](/symbols/application/access/access.md) - The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with `base`.
 * [application.access.matrix](/symbols/application/access/matrix.md) - Every role's actions from every state, each tried in the kernel with the fixture actors in that role.
 * [application.access.reach](/symbols/application/access/reach.md) - Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?
 * [application.api_contract.api_contract](/symbols/application/api_contract/api_contract.md) - The OpenAPI 3.1 document of the app this pack, model and data model build.
@@ -217,7 +221,8 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
 * [domain.evidence.expected_shape](/symbols/domain/evidence/expected_shape.md) - The runtime matrix a receipt must cover under ``pack``: exactly ``model``'s states when it is known.
 * [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
-* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
+* [domain.impact.model_changes](/symbols/domain/impact/model_changes.md) - What changed outside the transitions that changes what the kernel does: how a record starts, and the lifecycles of linked objects.
+* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - The ripple of a change.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
 * [domain.linked.admitting](/symbols/domain/linked/admitting.md) - The first combination of states (as `combinations` orders them) from which `transition` can move every object it names; `{}` when it moves none, None when no c…
 * [domain.linked.advance](/symbols/domain/linked/advance.md) - The objects' states after `transition` (unchanged when it moves none), or None when one of its moves is not possible from their states.
@@ -244,10 +249,11 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [domain.policy.apply_transactions](/symbols/domain/policy/apply_transactions.md) - Apply an edit sequence as one change: the start must conform, the result must conform (intermediate steps need only be coherent workflows).
 * [domain.policy.baseline](/symbols/domain/policy/baseline.md) - The pack's baseline workflow.
 * [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - Sorted, de-duplicated policy codes of ``model`` under the pack (empty means the model conforms).
-* [domain.policy.declared_codes](/symbols/domain/policy/declared_codes.md) - Every transition must perform a declared action, with exactly its declared guards and required effects, and must declare every pack-forbidden effect forbidden.
+* [domain.policy.declared_codes](/symbols/domain/policy/declared_codes.md) - Every transition must perform a declared action, held by a declared role, with exactly its declared guards and required effects, and must declare every pack-fo…
 * [domain.policy.demo_candidate](/symbols/domain/policy/demo_candidate.md) - The pack's baseline with its first supported meaning applied.
 * [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow, pack: Pack | None=None) -> None` in `domain/policy`.
 * [domain.policy.law_violations](/symbols/domain/policy/law_violations.md) - `def law_violations(model: Workflow, pack: Pack | None=None) -> list[Violation]` in `domain/policy`.
+* [domain.policy.lifecycle_conflicts](/symbols/domain/policy/lifecycle_conflicts.md) - Links to one class must declare the same lifecycle, its states, initial state and moves in any order (ADR-0241, amended 2026-11-13): an object has one state wh…
 * [domain.policy.meaning_questions](/symbols/domain/policy/meaning_questions.md) - The pack's meaning-check questions, with expected answers read from the model where the pack says so.
 * [domain.policy.policy_refs](/symbols/domain/policy/policy_refs.md) - The laws and model elements a refusal points at (``law:<id>``, ``transition:<id>``, ``state:<id>``), sorted.
 * [domain.policy.projections](/symbols/domain/policy/projections.md) - Journey wording and rules derive from executable transitions, not AI copy.

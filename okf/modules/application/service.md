@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: ae8c22228d90bf62238b306987e63e068faa2fbe46585a2b09541402a9ca5572
-notes_baseline: 20d84c17e9ecdc3fff8860d36cbef5a3fe33adcefc72a7b2bd3cb03e0b8f4b71
+  sha256: 65ce3a3634aec882cd521b9e9a141dc6ff49671c48c12d2d476f0df26d68bef7
+notes_baseline: 9fccebbaa01a5aa54a1af7786f0014e50aff41c6e57431aed70700b5231cc9ec
 ---
 
 # application.service
@@ -102,6 +102,7 @@ _No curated notes yet._
 * [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio(StudioViews)` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose_edit](/symbols/application/service/Studio.propose_edit.md) - Read-only offline proposal; capture and recheck the case revision without granting owner authority.
+* [application.service.Studio.record](/symbols/application/service/Studio.record.md) - Append one event to the audit log: how a live chat call that leaves the machine is recorded (ADR-0230).
 * [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
 * [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.save](/symbols/application/service/Studio.save.md) - `def save(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.

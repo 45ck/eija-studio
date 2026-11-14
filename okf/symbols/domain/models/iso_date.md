@@ -44,4 +44,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [domain.models.ValueGuard.comparable](/symbols/domain/models/ValueGuard.comparable.md) - `def comparable(self) -> ValueGuard` in `domain/models`.
+* [domain.models.ValueGuard.holds](/symbols/domain/models/ValueGuard.holds.md) - `def holds(self, values: dict[str, Any]) -> bool` in `domain/models`.
 <!-- okf:generated:end links -->

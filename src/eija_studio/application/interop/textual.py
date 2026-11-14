@@ -13,8 +13,10 @@ from .model import Attr, Edge, Klass, Link, Parsed, whole
 
 INITIAL = "[*]"
 _NAME = r'(?:\[\*\]|"[^"]+"|[^\s"]+)'
-TRANSITION = re.compile(rf"^(?P<a>{_NAME})\s*-+(?:\[[^\]]*\])?(?:left|right|up|down|le|ri|l|r|u|d)?-*>\s*(?P<b>{_NAME})"
-                        r"\s*(?::\s*(?P<label>.*))?$")
+_STYLE = r"(?:\[[^\]]*\])?"  # PlantUML's arrow style, `-[#red,dashed]->`, before or after the direction
+_DIRECTION = rf"{_STYLE}(?:left|right|up|down|le|ri|l|r|u|d)?{_STYLE}"
+TRANSITION = re.compile(rf"^(?P<a>{_NAME})\s*-+{_DIRECTION}-*>\s*(?P<b>{_NAME})\s*(?::\s*(?P<label>.*))?$")
+BACKWARD = re.compile(rf"^(?P<b>{_NAME})\s*<-*{_DIRECTION}-+\s*(?P<a>{_NAME})\s*(?::\s*(?P<label>.*))?$")  # `B <-- A`
 _MULT = r'(?:"(?P<{0}>[^"]*)")?'
 RELATION = re.compile(rf'^(?P<a>[A-Za-z_][\w.]*)\s*{_MULT.format("ma")}\s*(?P<arrow>[<*o]?[|]?(?:--|\.\.)[|]?[>*o]?)\s*'
                       rf'{_MULT.format("mb")}\s*(?P<b>[A-Za-z_][\w.]*)\s*(?::\s*(?P<label>.*))?$')
@@ -28,10 +30,22 @@ def unquote(name: str) -> str:
     return name[1:-1] if len(name) >= 2 and name[0] == name[-1] == '"' else name
 
 
+_ARROWISH = re.compile(r"[-.]\S*>|<\S*[-.]")  # `->`, `-[#red]-[bold]>`, `..>`, `<--`: something drawn as an arrow
+
+
+def unread_line(line: str, where: str, parsed: Parsed) -> None:
+    """A state machine line no reader understood. One that looks like an arrow is a transition the file draws but
+    PlayIDE could not read, so the import removes nothing (issue #165); anything else is only reported."""
+    if _ARROWISH.search(line):
+        parsed.unread_part(where, line, "an arrow PlayIDE cannot read; write it as A --> B : Action [role = Role]")
+    else:
+        parsed.skip(where, line, "not a PlayIDE state machine element")
+
+
 def read_transition(line: str, where: str, parsed: Parsed, aliases: dict[str, str],
                     unescape: Callable[[str], str]) -> bool:
     """A `A --> B : label` line; `[*]` is the initial pseudostate as a source and a final state as a target."""
-    found = TRANSITION.match(line)
+    found = TRANSITION.match(line) or BACKWARD.match(line)
     if found is None:
         return False
     a, b = (aliases.get(unquote(x), unquote(x)) for x in (found.group("a"), found.group("b")))

@@ -352,6 +352,7 @@
       const t = transition(cell.id.slice(11));
       return `${t.action}: ${t.from_state} → ${t.to_state}, by ${t.role}`;
     }
+    if (cell.id.startsWith("composite:")) return `Composite state ${cell.id.slice(10)}`;
     return cell.id.startsWith("state:") ? `State ${cell.id.slice(6)}` : "Initial state";
   }
 
@@ -491,8 +492,8 @@
     // Choosing in the outline moves the selection: the other diagram lets go of what it had, so going back to it shows
     // nothing selected rather than a stale handle beside an inspector that says something else.
     if (fromOutline) {
-      const other = id.startsWith("class:") ? graph : classGraph;
-      if (other && !other.isSelectionEmpty()) other.clearSelection();
+      const keep = id.startsWith("class:") ? classGraph : graph;
+      for (const other of [graph, classGraph, useCaseGraph, componentGraph]) if (other && other !== keep && !other.isSelectionEmpty()) other.clearSelection();
     }
     selected = id;
     for (const b of document.querySelectorAll(".outline button")) b.setAttribute("aria-current", String(b.dataset.id === id));
@@ -630,12 +631,15 @@
         style: { ...font, fontSize: 12, strokeColor: "#7a5bd6", endArrow: "open", labelBackgroundColor: "#fbfcfe" } });
       data.associations.forEach((a, i) => {
         const diamond = a.kind === "association" ? {} : { startArrow: "diamond", startSize: 14, startFill: a.kind === "composition" };
-        const edge = classGraph.insertEdge({ parent, id: "assoc:" + i, value: a.role, source: cells[a.source], target: cells[a.target],
+        const edge = classGraph.insertEdge({ parent, id: "assoc:" + i, value: "", source: cells[a.source], target: cells[a.target],
           style: { ...font, fontSize: 12, strokeColor: "#4a5568", endArrow: "none", labelBackgroundColor: "#fbfcfe", ...diamond } });
-        for (const [where, text] of [[-0.8, a.source_multiplicity], [0.8, a.target_multiplicity]]) {
-          const end = classGraph.insertVertex({ parent: edge, value: text, position: [where, 0], size: [0, 0], relative: true,
+        // Each end's multiplicity above the line; the target end's role name (data.py: "the target end's role name")
+        // below it, at that end. A label in the middle of the line would read as the association's own name.
+        for (const [where, text, below] of [[-0.8, a.source_multiplicity, false], [0.8, a.target_multiplicity, false], [0.8, a.role, true]]) {
+          if (!text) continue;
+          const end = classGraph.insertVertex({ parent: edge, ...(below ? { id: `role-end:${i}` } : {}), value: text, position: [where, 0], size: [0, 0], relative: true,
             style: { ...font, fontSize: 11, labelBackgroundColor: "#fbfcfe", selectable: false, movable: false } });
-          end.geometry.offset = new Point(0, -12);
+          end.geometry.offset = new Point(0, below ? 12 : -12);
         }
       });
     });
@@ -715,7 +719,10 @@
     // A use case whose association moves sits with its new actor; a removed one with the actor it had.
     const cases = roles.flatMap((role) => shape.cases.filter((t) => t.role === role));
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
-    const GAP = 76, TOP = 70, boundary = { x: 260, w: 360 }, height = TOP + (cases.length + 1) * GAP;
+    // Actors sit close enough to the boundary that the whole width fits the canvas of a 1280-pixel screen at the readable
+    // scale (READABLE), with the side bar and the chat open: an actor on the right was cut off there.
+    const GAP = 76, TOP = 70, boundary = { x: 200, w: 320 }, height = TOP + (cases.length + 1) * GAP;
+    const ACTOR_GAP = { human: 100, other: 56 }, BOX = 136; // from the boundary to a stick figure, or to a keyword box
     const rowY = (i) => TOP + (i + 1) * GAP - 4;
     useCaseGraph.batchUpdate(() => {
       useCaseGraph.insertVertex({ parent, id: "system", value: document.getElementById("model-name").textContent.split(" · ")[0],
@@ -737,11 +744,11 @@
         const y = near.length ? near.reduce((sum, [, j]) => sum + rowY(j), 0) / near.length - 8 : TOP - 12; // a creator sits by "Create"
         const left = i % 2 === 0, kind = roleKind(role), look = ACTOR_LOOK[kind];
         const actor = kind === "human"
-          ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
+          ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? boundary.x - ACTOR_GAP.human - 36 : boundary.x + boundary.w + ACTOR_GAP.human, y],
             size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
               verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } })
-          : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? 40 : boundary.x + boundary.w + 70, y + 8],
-            size: [136, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
+          : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? boundary.x - ACTOR_GAP.other - BOX : boundary.x + boundary.w + ACTOR_GAP.other, y + 8],
+            size: [BOX, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
               strokeColor: look.stroke, fontSize: 12, ...changeLook(actorStatus[role], "actor") } });
         if (starters.has(role)) useCaseGraph.insertEdge({ parent, source: actor, target: create, style: { strokeColor: "#4a5568", endArrow: "none" } });
         for (const link of shape.links.filter((l) => l.role === role)) {
@@ -815,6 +822,7 @@
   // work grows round after round instead of each plan replacing the last. The card moves under the latest ask and
   // lists every round with what was asked; going back on an earlier round is unticking its steps or asking again.
   const roundOf = (step) => step.round || 1;
+  const MAX_PLAN_STEPS = 64; // MAX_DRAFT_STEPS on the server: the most steps one preview checks (ADR-0201)
   const rounds = () => (plan ? new Set(plan.steps.map(roundOf)).size : 0);
   const lastRound = () => (plan && plan.steps.length ? Math.max(...plan.steps.map(roundOf)) : 1); // a drawn step joins the round it follows
 
@@ -862,7 +870,7 @@
       const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text, plan: earlier ? accepted() : null, consent });
       if (result.on_top && earlier && earlier === plan) { await addRound(result, text); return; }
       retire();
-      plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false, round: 1, request: text })),
+      plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false, round: 1, request: text, provider: result.provider, live: result.live })),
         accepted: result.steps.map(() => true), previewing: false, card: null, rewarded: new Set(), uid: ++planUid };
       plan.card = say("ai", planCard());
       commit(`take the AI's plan: ${result.summary || text}`);
@@ -879,8 +887,13 @@
   // A round's steps join the plan; the card is redrawn and moved below the ask, and the server checks every step again.
   async function addRound(result, text) {
     const n = lastRound() + 1;
+    // Rejected steps stay in the plan, so the server cannot count them: a round that would not fit one preview is not added.
+    if (plan.steps.length + result.steps.length > MAX_PLAN_STEPS) {
+      failedRequest({ code: "PLAN_TOO_LONG", message: `A plan holds at most ${MAX_PLAN_STEPS} steps and this round would take it past that, so it was not added.` }, text);
+      return;
+    }
     for (const step of result.steps) {
-      plan.steps.push({ ...step, n: plan.steps.length + 1, author: "ai", checked: false, caught: false, round: n, request: text });
+      plan.steps.push({ ...step, n: plan.steps.length + 1, author: "ai", checked: false, caught: false, round: n, request: text, provider: result.provider, live: result.live });
       plan.accepted.push(true);
     }
     Object.assign(plan, { meaning: null, scope: "plan-proposal", provider: result.provider, live: result.live });
@@ -911,13 +924,22 @@
     if (activeRevision === null) document.dispatchEvent(new CustomEvent("playide:plan"));
   }
 
+  // Who proposed the AI steps. Rounds can come from different proposers (a live model, then the offline phrase reader),
+  // so each step keeps its own; one round never relabels another's (ADR-0230).
+  function provenance() {
+    const ai = plan.steps.filter((s) => s.author === "ai");
+    const named = [...new Set(ai.map((s) => s.provider || plan.provider))];
+    const live = ai.filter((s) => (s.live === undefined ? plan.live : s.live)).length;
+    return `${named.join(" + ") || plan.provider}${!live ? " · offline fixture, not a live model" : live < ai.length ? " · some steps from a live model, some offline" : ""}`;
+  }
+
   function planCard() {
     const box = el("div", undefined, { class: "plan" }), many = rounds() > 1;
     const both = plan.steps.some((s) => s.author === "ai") && plan.steps.some((s) => s.author === "you");
     box.append(el("p", many ? `The plan so far: ${rounds()} rounds, ${plan.steps.length} steps` : plan.summary || "A plan", { class: "plan-summary" }),
       el("p", plan.saved ? "Saved on this system · checked by the server again, like any plan" : plan.scope === "plan-draft" ? (plan.provider === "imported" ? "Imported from a UML file · checked by the server like any plan"
         : "Drawn by you on the diagram · checked by the server like any plan")
-        : `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"}${both ? " · with your own steps" : ""} · untrusted until you check it`, { class: "muted small" }));
+        : `${provenance()}${both ? " · with your own steps" : ""} · untrusted until you check it`, { class: "muted small" }));
     cards += 1;
     const list = el("ol", undefined, { class: "plan-steps" });
     plan.steps.forEach((step, i) => {
@@ -1023,6 +1045,9 @@
   function redrawAll(workflow) {
     model = workflow;
     lastView = graph && graph.view ? { scale: graph.view.scale, x: graph.view.translate.x, y: graph.view.translate.y } : null;
+    // Emptying the canvas lets the panel around it scroll back to the top, which moves the whole drawing on screen:
+    // keep the panel where it was (#225).
+    const panel = $("canvas").closest(".workbench"), scrolled = panel ? panel.scrollTop : 0;
     for (const g of [graph, classGraph, useCaseGraph, componentGraph]) if (g) g.destroy();
     for (const box of ["canvas", "class-canvas", "usecase-canvas", "component-canvas"]) $(box).replaceChildren();
     classGraph = useCaseGraph = componentGraph = components = null;
@@ -1030,9 +1055,24 @@
     clearSimPanel();
     outline();
     draw(model);
-    inspect("");
+    if (panel && panel.scrollTop !== scrolled) {
+      panel.scrollTop = scrolled;
+      if (canvasTop !== null) canvasTop = $("canvas").getBoundingClientRect().top; // the drawing was placed for this spot
+    }
     refreshScreensForView(screensEdited ? screens : null); // screen edits survive a preview and are checked against the shown model
     if (tab !== "states") showTab(tab);
+    // The selection lives through the redraw only if what it names is still drawn: Delete, F9 and the status bar act on
+    // `selected`, so an element nothing shows as selected must never stay in it (a hidden state was removed).
+    reselect(validSelection(selected) ? selected : "");
+  }
+
+  // Select `id` again on the diagram shown, as well as in the inspector, outline and status bar.
+  function reselect(id) {
+    select(id, false);
+    if (!id || (hooks.diffGraph && hooks.diffGraph())) return;
+    const target = current(), cellId = tab === "usecases" ? id.replace(/^transition:/, "uc:").replace("usecase:create", "uc:create") : id;
+    const cell = target && target.getDataModel().getCell(cellId);
+    if (cell) target.setSelectionCell(cell);
   }
 
   async function refreshScreensForView(kept) {
@@ -1264,7 +1304,7 @@
 
   function rippleCheck() {
     const name = "Diagrams agree", id = "ripple";
-    if (!plan || !plan.steps.length) return { id, name, ok: true, detail: "No change, so nothing ripples" };
+    if (!plan || !plan.steps.length) return { id, name, ok: true, na: true, detail: "No change, so nothing ripples" };
     if (!plan.result || !plan.result.legal) return { id, name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
     if (!ripple || ripple.key !== rippleKey()) return { id, name, ok: false, detail: "Working out the ripple…" };
     if (ripple.error) return { id, name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
@@ -1286,6 +1326,7 @@
   const KINDS = { state: "a state", transition: "a transition", initial: "the initial state", rename: "a new name", move: "a moved transition" };
 
   async function addStep(transaction) {
+    if (plan && plan.steps.length >= MAX_PLAN_STEPS) { notify(`A plan holds at most ${MAX_PLAN_STEPS} steps: this edit was not added.`); return; }
     pinAll(); // nothing you did not touch moves when the plan redraws
     if (transaction.kind === "rename_state" && placed["state:" + transaction.state]) placed["state:" + transaction.to] = placed["state:" + transaction.state];
     if (!plan) {
@@ -1462,7 +1503,7 @@
     const seen = ai.filter((s) => s.checked).length, built = lastBuild && lastBuild.key === key ? lastBuild : null;
     const simulated = sim && simKey === key ? sim : null;
     return [
-      { id: "ai", name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
+      { id: "ai", name: "AI steps checked", ok: seen === ai.length, na: !ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
       { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length && Boolean(a11y) && !a11y.failed,
         detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens`
           : a11y && a11y.failed ? `${a11y.failed} accessibility check(s) fail: see Screens` : "Every screen can be built and meets the accessibility checks" },
@@ -1474,21 +1515,25 @@
     ];
   }
 
+  // A part with nothing to check (no AI plan, no change) is not applicable: it neither blocks nor counts as passed, and
+  // it is drawn grey, never green, so the ring only fills from checks that ran.
   function renderHealth() {
-    const checks = checksNow(), done = checks.filter((c) => c.ok).length, ring = $("health-ring"), ns = "http://www.w3.org/2000/svg";
+    const checks = checksNow(), ring = $("health-ring"), ns = "http://www.w3.org/2000/svg";
+    const applicable = checks.filter((c) => !c.na), done = applicable.filter((c) => c.ok).length;
     const r = 14, length = 2 * Math.PI * r, part = length / checks.length;
     if (ring.children.length !== checks.length) ring.replaceChildren(...checks.map(() => document.createElementNS(ns, "circle")));
     checks.forEach((c, i) => { // the same arcs are kept, so a part filling or emptying can be animated
-      const attrs = { cx: 18, cy: 18, r, stroke: c.ok ? "#17734a" : "#dfe3ea", "stroke-dasharray": `${part - 2} ${length - part + 2}`,
+      const attrs = { cx: 18, cy: 18, r, stroke: c.na ? "#9aa3b2" : c.ok ? "#17734a" : "#dfe3ea", "stroke-opacity": c.na ? "0.45" : "1", "stroke-dasharray": `${part - 2} ${length - part + 2}`,
         "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)", "data-check": c.id || "" };
       for (const [k, v] of Object.entries(attrs)) ring.children[i].setAttribute(k, v);
     });
-    $("health-text").textContent = `${done}/${checks.length} checks · ${points} pts`;
-    $("health").title = checks.map((c) => `${c.ok ? "✓" : "○"} ${c.name}: ${c.detail}`).join("\n");
+    $("health-text").textContent = `${done}/${applicable.length} checks · ${points} pts`;
+    const mark = (c) => (c.na ? "–" : c.ok ? "✓" : "○");
+    $("health").title = checks.map((c) => `${mark(c)} ${c.name}: ${c.detail}${c.na ? " (not applicable)" : ""}`).join("\n");
     $("points").textContent = `${points} pts`;
     $("check-list").replaceChildren(...checks.map((c) => {
-      const li = el("li", undefined, { class: c.ok ? "ok" : "" });
-      li.append(el("span", c.ok ? "✓" : "○", { class: "mark" }), el("span", c.name), el("span", c.detail, { class: "detail" }));
+      const li = el("li", undefined, { class: c.na ? "na" : c.ok ? "ok" : "", ...(c.na ? { title: "Not applicable: nothing to check" } : {}) });
+      li.append(el("span", mark(c), { class: "mark" }), el("span", c.name), el("span", c.na ? `${c.detail} (not applicable)` : c.detail, { class: "detail" }));
       return li;
     }));
     $("earned").replaceChildren(...(earned.length ? earned.slice(0, 20).map((e) => {
@@ -1561,11 +1606,15 @@
     box.append(form);
     editor = form;
     const w = form.offsetWidth, h = form.offsetHeight;
+    // Within the part of the canvas on screen: the canvas can be taller than the panel around it, and focusing an editor
+    // below the panel's foot would scroll the panel, moving the whole diagram under the pointer (#225).
+    const r = box.getBoundingClientRect(), panel = box.closest(".workbench"), p = panel ? panel.getBoundingClientRect() : r;
+    const top = Math.max(0, p.top - r.top), foot = Math.min(box.clientHeight, p.bottom - r.top);
     form.style.left = Math.max(6, Math.min(x, box.clientWidth - w - 6)) + "px";
-    form.style.top = Math.max(6, Math.min(y, box.clientHeight - h - 6)) + "px";
+    form.style.top = Math.max(top + 6, Math.min(y, foot - h - 6)) + "px";
     $("canvas-help").textContent = "Enter adds it to the plan; Escape cancels. Draft only; not active until Review & activate.";
     const first = form.querySelector("input, select");
-    first.focus();
+    first.focus({ preventScroll: true });
     if (first.select) first.select();
   }
 
@@ -1644,7 +1693,7 @@
 
   function onCanvasDoubleClick(cell, event) {
     if (tool || !event || reviewing() || (event.target && event.target.closest && event.target.closest(".inline-edit"))) return;
-    if (!cell) {
+    if (!cell || (cell.id && cell.id.startsWith("composite:"))) { // a composite's box is drawn around empty space (ADR-0240)
       const [x, y] = pointIn(event);
       newState(x, y, null);
     } else if (stateAt(cell)) renameState(cell);
@@ -1695,6 +1744,9 @@
   function startDrawing() {
     const box = $("canvas");
     new ResizeObserver(holdStill).observe(box);
+    // The plan banner moves the canvas down without always resizing it (the canvas can be taller than its panel), and
+    // a ResizeObserver sees only sizes: hold still when the banner shows or hides too (#225).
+    new MutationObserver(holdStill).observe($("plan-banner"), { attributes: true, attributeFilter: ["hidden"] });
     for (const b of $("draw-palette").querySelectorAll("button")) {
       b.setAttribute("aria-pressed", "false");
       b.addEventListener("dragstart", (event) => { arm(null); dragKind = b.dataset.kind; event.dataTransfer.setData("text/x-eija-kind", b.dataset.kind); event.dataTransfer.effectAllowed = "copy"; });
@@ -2361,7 +2413,9 @@
       for (const s of model.states) {
         const r = result.states[s], heat = r.now / maxNow;
         const fill = r.entered ? `rgba(49,87,213,${(0.08 + 0.42 * heat).toFixed(2)})` : "#fdf4e3";
-        restyle("state:" + s, { fillColor: fill, strokeColor: r.entered ? "#5b74d6" : "#c27c0e" }, `${s}\n${r.now} here · ${r.entered} in`);
+        // Tries of an action that does not leave this state (slips) are the state's, not another state's transition's.
+        const slips = Object.values(r.slips || {}).reduce((a, b) => a + b, 0);
+        restyle("state:" + s, { fillColor: fill, strokeColor: r.entered ? "#5b74d6" : "#c27c0e" }, `${s}\n${r.now} here · ${r.entered} in${slips ? ` · ✗ ${slips}` : ""}`);
       }
     });
   }
@@ -2441,13 +2495,14 @@
       paint(sim);
       graph.batchUpdate(() => {
         // The run names the transition it tried: one action may leave several states (ADR-0232).
-        const t = entry.action && (model.transitions.find((x) => x.id === entry.transition) || model.transitions.find((x) => x.action === entry.action));
+        // A slip (an action that does not leave the record's state) names no transition: only its state is marked.
+        const t = entry.transition ? model.transitions.find((x) => x.id === entry.transition) : null;
         if (t) restyle("transition:" + t.id, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 6 }, graph.getDataModel().getCell("transition:" + t.id).value);
         const at = entry.outcome === "REFUSED" ? entry.from : entry.to;
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
         document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
-      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.action && (model.transitions.find((x) => x.id === entry.transition) || model.transitions.find((x) => x.action === entry.action));
+      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.transition ? model.transitions.find((x) => x.id === entry.transition) : null;
       if (here) follow(["state:" + here, ...(step ? ["transition:" + step.id] : [])]); // the state and the line taken, as Run does
       i += 1;
     }, 450);
@@ -2456,13 +2511,17 @@
   async function simulate() {
     const button = $("simulate");
     button.disabled = true;
+    const key = viewKey();
     try {
-      const key = viewKey();
-      showSim(await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 }));
+      const result = await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 });
+      // A run of a model no longer on screen is not painted on this one: its counts are of other states and transitions.
+      if (key !== viewKey()) { notify("The model changed while simulating. Press Simulate to run the model shown."); return; }
+      showSim(result);
       simKey = key;
       rewardTrying("simulate", 2, "Simulated users on the AI's change", key);
       renderHealth();
     } catch (error) {
+      if (key !== viewKey()) { notify(`A simulation of an earlier model was refused (${error.code || "ERROR"}). Press Simulate to run the model shown.`); return; }
       $("sim").hidden = false;
       $("sim-summary").textContent = error.code === "MODEL_CHANGED"
         ? "The model changed since this page loaded. Reload to see it, then simulate again."
@@ -2514,11 +2573,7 @@
     try { kept = JSON.parse(localStorage.getItem(navigationKey()) || "null"); } catch { /* malformed or unavailable storage: use the default view */ }
     if (kept && kept.v === 1) {
       showTab(Object.hasOwn(PANELS, kept.tab) ? kept.tab : "states");
-      const id = validSelection(kept.selected) ? kept.selected : "";
-      select(id, false);
-      const target = current(), cellId = tab === "usecases" ? id.replace(/^transition:/, "uc:").replace("usecase:create", "uc:create") : id;
-      const cell = target && target.getDataModel().getCell(cellId);
-      if (cell) target.setSelectionCell(cell);
+      reselect(validSelection(kept.selected) ? kept.selected : "");
     }
     navigationReady = true;
     keepNavigation();
@@ -2599,7 +2654,7 @@
     persist();
     renderHistory();
     restoring = true;
-    let pending = null;
+    let pending = null, reset = false;
     try {
       const doc = entry.doc, old = plan;
       if (old && old.previewing) leavePreview();
@@ -2620,11 +2675,14 @@
       renderHealth();
       document.dispatchEvent(new CustomEvent("playide:plan"));
       if (doc.screens) { screens = clone(doc.screens); changed(); }
-      else if (screensEdited) await resetScreens();
+      else if (screensEdited) reset = true;
       if (window.PlayTests && JSON.stringify(doc.tests || null) !== JSON.stringify(window.PlayTests.draft())) window.PlayTests.edit(clone(doc.tests || null));
     } finally {
       restoring = false;
     }
+    // Reloading the model's own screens waits on the server, so it runs after `restoring` ends: an edit made in that
+    // wait is a new edit, kept in the history and in this browser, not dropped as part of the restore.
+    if (reset) await resetScreens();
     if (pending && pending === plan) {
       const result = await refreshPlan();
       if (result && result.legal && result.accepted && pending === plan && !plan.previewing) enterPreview();
@@ -2658,9 +2716,27 @@
       }
       browserNote = { bad: false, text: "Edits kept in this browser", title: `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.` };
     } catch {
+      setAsideOutdated();
       browserNote = { bad: true, text: "Not kept: browser storage is unavailable", title: "Undo still works, but a reload or crash would lose these edits." };
     }
     renderSaveStatus();
+  }
+
+  // Storage too full even for the current snapshot: the draft under the key is older than the work on screen. Left
+  // there, a reload would bring it back as "your unsaved work". It moves aside as an earlier draft (removed first, so
+  // its own space is reused), offered with a Reopen button, and put back only if even that fails.
+  function setAsideOutdated() {
+    let raw = null;
+    try {
+      raw = localStorage.getItem(draftKey());
+      if (raw === null) return;
+      localStorage.removeItem(draftKey());
+      let key = earlierKey(), n = 1;
+      while (localStorage.getItem(key) !== null && localStorage.getItem(key) !== raw) key = `${earlierKey()}:${++n}`; // never over another
+      localStorage.setItem(key, raw);
+    } catch {
+      try { if (raw !== null && localStorage.getItem(draftKey()) === null) localStorage.setItem(draftKey(), raw); } catch { /* storage gone */ }
+    }
   }
 
   // Browser storage is untrusted: a draft written by an older page, cut short by a full disk, or edited by hand. The
@@ -2689,6 +2765,56 @@
       + "The draft was set aside, not deleted.")).classList.add("recovered");
   }
 
+  // A browser draft written on an earlier model in force: kept under its own key until it is reopened.
+  const earlierKey = () => draftKey() + ":earlier";
+  function retainEarlier(raw) {
+    try {
+      let key = earlierKey(), n = 1;
+      while (localStorage.getItem(key) !== null && localStorage.getItem(key) !== raw) key = `${earlierKey()}:${++n}`; // never over another
+      localStorage.setItem(key, raw);
+      localStorage.removeItem(draftKey());
+      return key;
+    } catch { return null; } // left where it was
+  }
+  // Every retained draft (`:earlier`, `:earlier:2`, ...), oldest first, as [key, draft]; unreadable ones are skipped.
+  function retainedDrafts() {
+    const found = [];
+    try {
+      const pattern = new RegExp(`^${earlierKey().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(:\\d+)?$`);
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (!key || !pattern.test(key)) continue;
+        try { const draft = JSON.parse(localStorage.getItem(key)); if (readableDraft(draft)) found.push([key, draft]); } catch { /* skipped */ }
+      }
+    } catch { /* storage blocked */ }
+    return found.sort((a, b) => (a[1].saved || 0) - (b[1].saved || 0));
+  }
+  // Each retained draft is offered on every load until it is reopened, whether or not newer work came back too.
+  function offerRetained() {
+    for (const [key, draft] of retainedDrafts()) {
+      offerEarlier(draft, key, draft.model !== modelPrint()
+        ? "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams."
+        : `An earlier browser draft from ${new Date(draft.saved).toLocaleString()} is retained. Later edits were not kept in this browser, so it was set aside.`);
+    }
+  }
+  function offerEarlier(draft, key, text) {
+    const note = el("p", text);
+    const reopen = el("button", "Reopen earlier draft", { type: "button", class: "quiet" });
+    reopen.addEventListener("click", async () => {
+      reopen.disabled = true;
+      planUid = Math.max(planUid, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
+      recoveredWork = true;
+      await restore({ ...draft.stack[draft.at], card: null });
+      commit("reopen an earlier browser draft");
+      // Reopened: it is this browser's draft now, but only once that draft was written; with storage still full the
+      // retained copy stays, as the only one that survives a reload.
+      try { if (key && !browserNote.bad && localStorage.getItem(draftKey()) !== null) localStorage.removeItem(key); } catch { /* kept */ }
+      note.firstChild.textContent = "Earlier draft reopened and checked against the active revision. Nothing was activated.";
+    });
+    note.append(" ", reopen);
+    say("ai", note).classList.add("recovered");
+  }
+
   // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
   // restored plan again; a step that no longer applies (the model in force changed) is shown as such.
   async function recover() {
@@ -2698,25 +2824,18 @@
     if (REVIEW_VIEW) return;
     let draft = null, raw = null;
     try { raw = localStorage.getItem(draftKey()); } catch { return; } // storage blocked: nothing to recover
-    if (raw === null) return;
+    if (raw === null) { offerRetained(); return; }
     recoveringRaw = raw;
     try { draft = JSON.parse(raw); } catch { draft = null; }
     if (!readableDraft(draft)) { setAsideDraft(raw); return; }
     if (draft.model !== modelPrint()) {
-      const note = el("p", "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams.");
-      const reopen = el("button", "Reopen earlier draft", { type: "button", class: "quiet" });
-      reopen.addEventListener("click", async () => {
-        reopen.disabled = true;
-        planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
-        recoveredWork = true;
-        await restore({ ...draft.stack[draft.at], card: null });
-        commit("reopen an earlier browser draft");
-        note.firstChild.textContent = "Earlier draft reopened and checked against the active revision. Nothing was activated.";
-      });
-      note.append(" ", reopen);
-      say("ai", note).classList.add("recovered");
+      // Retained means kept: the first edit on the new model writes this browser's draft under the same key, so the
+      // earlier draft moves to a key of its own first (never over another), and comes back on later loads too.
+      retainEarlier(raw);
+      offerRetained();
       return;
     }
+    offerRetained(); // drafts retained on earlier loads stay offered beside the newer work
     planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
     edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens || draft.stack[0].doc.tests ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
     edits.at = edits.stack.length - draft.stack.length + draft.at;

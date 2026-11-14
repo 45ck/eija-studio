@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0238-json-integers-in-request-contracts.md
   title: 0238-json-integers-in-request-contracts.md
   hash_method: lf-sha256-v1
-  sha256: 39cafc689e4e89a9da3f288ade91c98b9d887816c507cbc4ab8c97a8087ad39b
-notes_baseline: 3a298bf64cf340cd1c490113edf0ada6b9496b47256a101b36d456f64667679b
+  sha256: 0aae38c1b576a68e4195802c88e080bdec2ac54f2ae251ebe346eb11ad82015e
+notes_baseline: 12ba2eb5fdc634718d07e645db2e96457f586a644794e58310e41d908a502b33
 ---
 
 # ADR-0238: Integers in request contracts are JSON integers
@@ -41,11 +41,13 @@ notes_baseline: 3a298bf64cf340cd1c490113edf0ada6b9496b47256a101b36d456f64667679b
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 13 November 2026: the built app reads them too
 
 ## Code and docs mentioned
 
 Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
 
+* `repo://docs/quality/inspection-2026-11-13-merged-prs.md`
 * `repo://tests/property/test_contract_schemas.py`
 * `repo://tests/test_hostile_input.py`
 <!-- okf:generated:end facts -->

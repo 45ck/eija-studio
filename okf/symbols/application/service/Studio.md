@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: 9f89e6e7ccafedb556b7c912ec2d959f7ae00418b481cde8d2005e1af621d5c5
+  sha256: f5fafdb78bb75fd360083740ccf9ebc229ee0425acba2aef0b37d449275ba154
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: d8c6791d0b3420d0141862f7d09137213063cbd5234f6a02b7af520c1992634f
+notes_baseline: 070ee3e19d71a566efca9c1adf9609eafa52621f7f6d6462e761ab40bbaed3a1
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -86,6 +86,10 @@ verified:
   at: '2026-11-11T04:00:00Z'
   notes_sha256: db632d4b946620da43165a1cb5def81b8e5d39bd163d68ee5c31fc0a869af664
   sources_sha256: d8c6791d0b3420d0141862f7d09137213063cbd5234f6a02b7af520c1992634f
+- by: process:claude-code
+  at: '2026-11-14T00:30:00Z'
+  notes_sha256: 1c1888f42be6bcc161afdd37904f80e8dff90d9e8352b85a88e2f3fdfdd0f3a8
+  sources_sha256: 070ee3e19d71a566efca9c1adf9609eafa52621f7f6d6462e761ab40bbaed3a1
 ---
 
 # application.service.Studio
@@ -117,6 +121,7 @@ _The source carries no docstring._
 * [`layout`](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]`
 * [`propose`](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]`
 * [`propose_edit`](/symbols/application/service/Studio.propose_edit.md) - `def propose_edit(self, case_id: str, expected: int, request: str) -> dict[str, Any]`
+* [`record`](/symbols/application/service/Studio.record.md) - `def record(self, kind: str, body: dict[str, Any]) -> None`
 * [`redo`](/symbols/application/service/Studio.redo.md) - `def redo(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]`
 * [`reset_preview`](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str \| None=None) -> dict[str, Any]`
 * [`save`](/symbols/application/service/Studio.save.md) - `def save(self, case_id: str, expected: int) -> dict[str, Any]`
@@ -131,7 +136,7 @@ Studio inherits read-only projections from [StudioViews](/symbols/application/se
 
 The generated method table lists declarations in this class, not all inherited methods. Follow StudioViews for current projection source; the deprecated Studio projection pages retain earlier locations. Matching signatures, source hashes and this process review establish neither behavioral equivalence nor successful resolution of every source/model binding.
 
-`live_plan_proposer` (ADR-0230) is set only when the composed provider is networked; the PlayIDE chat uses it for one request only with `--allow-network` and that request's consent. It plans pack meanings and writes nothing.
+`live_plan_proposer` (ADR-0230) is set only when the composed provider is networked; the PlayIDE chat uses it for one request only with `--allow-network` and that request's consent. It plans pack meanings and writes no model, case or decision; bootstrap wires its `audit` to `record`, which appends the live call's started and received or not-accepted events (request hash only) to the audit log. `grows` (default false) marks a system started in PlayIDE; the CLI sets it for `eija mcp`.
 
 Every mutation runs inside one unit of work with version checks. Governance methods require a [Principal](/symbols/domain/models/Principal.md) capability; verification and approval are separate steps and neither implies apply ([Local Decision](/language/local-decision.md)).
 
@@ -219,6 +224,7 @@ The generated-app port freezes exact selected bundles and supplies measured conf
 * [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose_edit](/symbols/application/service/Studio.propose_edit.md) - Read-only offline proposal; capture and recheck the case revision without granting owner authority.
+* [application.service.Studio.record](/symbols/application/service/Studio.record.md) - Append one event to the audit log: how a live chat call that leaves the machine is recorded (ADR-0230).
 * [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
 * [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.save](/symbols/application/service/Studio.save.md) - `def save(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.

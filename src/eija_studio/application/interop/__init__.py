@@ -66,7 +66,7 @@ def parse_file(fmt: str, text: str) -> Parsed:
     if len(text) > MAX_CHARS:
         raise DomainError("IMPORT_TOO_LARGE", f"A UML file is read up to {MAX_CHARS} characters")
     try:
-        return _READERS[fmt](text)
+        return _READERS[fmt](text).settle()
     except DomainError:
         raise
     except (ValueError, RecursionError) as error:

@@ -67,4 +67,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0230: Opt-in live plan mode, and a plan check for coding agents](/adrs/0230-opt-in-live-plan-mode-and-agent-plan-check.md) - On 2026-10-08 the owner kept PlayIDE's chat offline and synthetic: a phrase reader plus the pack's proposal rules, never a model.
+* [ADR-0244: The built app gets no secrets, and `eija serve` binds its port before it prints a link](/adrs/0244-built-app-environment-and-bind-before-links.md) - A Fagan inspection of the `eija` command and the local server (CLI-SERVER-INSPECTION) found two boundary defects.
 <!-- okf:generated:end links -->

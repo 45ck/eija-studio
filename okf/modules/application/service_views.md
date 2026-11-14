@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service_views.py
   title: application/service_views.py
   hash_method: ast-api-v1
-  sha256: e859c80d282f68922b88da75a43f8fac15fe3b0058ac64cae66dd413ca44826a
-notes_baseline: fbac326dd8812a5e71b46f3e8d81cec7ef7774901ccd1f42772921bde8e5cb0a
+  sha256: bb27c52c4bd11f8dea39fbaeea8c9744adf4aa55bba0d3fb1f73ecb062db38eb
+notes_baseline: 9d233ed94f198ec6de76ac3eae2a47dc3ebf5cc0e2b698bf290510214b19c4fd
 verified:
 - by: process:playide-service-cohesion
   at: '2026-10-12T05:30:41Z'
@@ -24,6 +24,10 @@ verified:
   at: '2026-11-11T04:00:00Z'
   notes_sha256: 0b8084be6fd6d42f0dd105985ffb5aa0d3b283b810c4a7923b5913f7846d4782
   sources_sha256: fbac326dd8812a5e71b46f3e8d81cec7ef7774901ccd1f42772921bde8e5cb0a
+- by: process:claude-code
+  at: '2026-11-14T00:30:00Z'
+  notes_sha256: af6af232699481c33627fdfafed2939813e8a3805129f6c440f49fba0f401179
+  sources_sha256: 9d233ed94f198ec6de76ac3eae2a47dc3ebf5cc0e2b698bf290510214b19c4fd
 ---
 
 # application.service_views
@@ -69,7 +73,7 @@ This module groups Studio's read-only workbench, repository, model/history, revi
 
 Reads retain their transaction scopes. `active_app_build` loads the recorded association and originating applied case, remeasures the review packet outside that read transaction, then rereads the active record before reporting current freshness. `build_approval` requires an exact subject match. Neither method writes an approval or activates a model.
 
-`plan_check` reads the active model and previews a plan of typed steps on it; it is the dry run behind the agent tool of the same name (ADR-0230).
+`plan_check` reads the active model and previews a plan of typed steps on it; it is the dry run behind the agent tool of the same name (ADR-0230). It previews with `grows` when the Studio is a system started in PlayIDE, so new actions and roles are declared as the chat declares them, and reports `grows`.
 
 Read-only means no case, baseline or audit mutation here. A view may inspect stored artifacts or call Studio's formal-evidence projection, which can seal observations in memory without persisting a decision. Repository text stays bounded to the existing configured read ports.
 

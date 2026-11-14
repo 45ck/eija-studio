@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#LinkedObject
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 4b3171580f8d8e39960b57b16df822e25e8820b98e56a46e771f0083d3b7e1f6
-notes_baseline: f2f9f2f02109d3604f2be2fb4dc1a7f8293187e780897e2f02ac605d734c5686
+  sha256: 8f6553602fcb62a15aab7e6e92689ff32527d01db19278e0dfe1bd46280a413a
+notes_baseline: 35af821c949afc843ddce4d07f4ad9bf612c20c00751c809ffe50a09ccd70e0d
 ---
 
 # domain.models.LinkedObject
@@ -44,7 +44,7 @@ object or state.
 |---|---|---|
 | `link` | `str` | `Field(pattern=LINK)` |
 | `entity` | `str` | `Field(pattern='^[A-Z][A-Za-z0-9]{0,39}$')` |
-| `states` | `tuple[str, ...]` | `Field(min_length=1, max_length=8)` |
+| `states` | `tuple[Annotated[str, Field(min_length=1, max_length=60)], ...]` | `Field(min_length=1, max_length=8)` |
 | `initial` | `str` | `Field(min_length=1, max_length=60)` |
 | `moves` | `tuple[Move, ...]` | `Field(min_length=1, max_length=32)` |
 

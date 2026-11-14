@@ -1,5 +1,5 @@
 from __future__ import annotations
-import argparse, getpass, importlib.util, json, os, secrets, sys
+import argparse, getpass, importlib.util, json, os, secrets, socket, sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
@@ -188,6 +188,8 @@ def _formal_for_compile(studio, model) -> dict:
 
 _GENERIC = "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"
 _FILE_ERRORS = ((FileNotFoundError, "FILE_NOT_FOUND", "No such file"), (IsADirectoryError, "NOT_A_FILE", "A directory, not a file"),
+                (NotADirectoryError, "NOT_A_DIRECTORY", "A file where a folder is needed"),
+                (FileExistsError, "PATH_EXISTS", "Already exists and is not a folder that can be used"),
                 (PermissionError, "PERMISSION_DENIED", "Not allowed to read or write"))
 
 
@@ -229,6 +231,12 @@ def _report_failure(command: str, exc: BaseException) -> None:
         output(failure)
 
 
+def _started_in_playide(args) -> bool:
+    """Whether `--pack` is a system started in PlayIDE (in the systems home): there plan_check declares new names as the
+    chat does (ADR-0201)."""
+    return args.pack is not None and SystemLibrary(args.systems or default_home()).contains(Path(args.pack))
+
+
 def _run_mcp(args) -> int:
     """`eija mcp`: print client config, or serve the agent-facing MCP server on stdio. Errors here go to stderr."""
     if args.print_config:
@@ -249,6 +257,7 @@ def _run_mcp(args) -> int:
                                                    'mcp==2.2.0: pip install -e ".[agents]"') from error
     studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None, formal=not args.no_formal,
                           pack=args.pack, repository_root=args.repo)
+    studio.grows = _started_in_playide(args)
     serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls,
                 diagram_renderer=_agent_diagram)
     return 0
@@ -271,6 +280,57 @@ def _systems(studio, args, key=None):
     launched = Path(args.pack) if args.pack else default_location()
     return handle, Systems(handle, SystemLibrary(args.systems or default_home()), opener, launched, args.workspace,
                            describer=OfflineSystemDescriber())
+
+
+def _check_provider(args) -> None:
+    """argparse checks `--provider` against its choices, but not a default taken from EIJA_PROVIDER: check it here."""
+    provider = getattr(args, "provider", None)
+    if provider is not None and provider not in PROVIDER_NAMES:
+        raise DomainError("CONFIGURATION", f"Unknown provider {provider!r} (from --provider or EIJA_PROVIDER); "
+                                           f"choose one of {', '.join(PROVIDER_NAMES)}")
+
+
+def _listen(port: int) -> socket.socket:
+    """Bind the loopback port before any link is printed or a browser opened, so a port another program holds is a
+    clear PORT_IN_USE, never a link to that program's page (with the session token in its address)."""
+    if not 1024 <= port <= 65535:
+        raise DomainError("CONFIGURATION", "Use an unprivileged port from 1024 through 65535")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if os.name != "nt":  # as uvicorn does; on Windows SO_REUSEADDR would let two servers share the port
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        sock.bind(("127.0.0.1", port))
+    except OSError:
+        sock.close()
+        raise DomainError("PORT_IN_USE", f"Port {port} on 127.0.0.1 is in use; stop the other program or pass --port") from None
+    sock.listen(128)  # a browser opened now waits in the backlog until the server takes it
+    return sock
+
+
+def _serve(app, sock: socket.socket) -> None:
+    import uvicorn
+    uvicorn.Server(uvicorn.Config(app, access_log=False, log_level="warning")).run(sockets=[sock])
+
+
+def _serve_command(args, key) -> int:
+    """`eija serve`: a bad or busy port is refused before the workspace (and its receipt key) is created, and no link
+    is printed or browser opened until the port is ours and listening (ADR-0244)."""
+    import webbrowser
+    from .http import create_app
+    with _listen(args.port) as listener:
+        studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key, formal=not args.no_formal,
+                              pack=args.pack, repository_root=args.repo)
+        token = secrets.token_urlsafe(32)
+        url = f"http://127.0.0.1:{args.port}/#{token}"
+        print("EIJA Studio — local single-owner session. Do not share these private links.\n" + url, flush=True)
+        print(f"PlayIDE (visual model, Build & run): http://127.0.0.1:{args.port}/play#{token}", flush=True)
+        if args.provider != "offline":
+            print("External inference requires configured credentials and explicit per-request consent.", flush=True)
+        if args.open:
+            webbrowser.open(url)  # the port is already ours and listening
+        handle, systems = _systems(studio, args, key)
+        _serve(create_app(handle, token, args.port, systems=systems), listener)
+    return 0
 
 
 def main(argv=None) -> int:
@@ -309,9 +369,11 @@ def main(argv=None) -> int:
     mcp.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")
     mcp.add_argument("--print-config", choices=["claude", "codex", "opencode", "gemini"], help="Print copy-paste client config for this MCP server and exit")
     mcp.add_argument("--egress-consent", action="store_true", help="Owner's STANDING consent: every propose call in this session may send the request to a networked provider; agents cannot grant it")
+    mcp.add_argument("--systems", type=Path, default=None, help="Where systems started in PlayIDE are kept (default EIJA_SYSTEMS or ~/PlayIDE)")
     mcp.add_argument("--max-provider-calls", type=int, default=DEFAULT_MAX_PROVIDER_CALLS, help="Cap on networked provider calls per MCP session (spend guard; 0 forbids them)")
     args = parser.parse_args(argv)
     try:
+        _check_provider(args)
         if args.command in EARLY_COMMANDS:
             return EARLY_COMMANDS[args.command](args)
         if args.command == "mcp":
@@ -321,6 +383,8 @@ def main(argv=None) -> int:
             if args.provider not in KEYED_PROVIDERS:
                 raise DomainError("CONFIGURATION", "--ask-key is only for the OpenRouter and Anthropic API providers")
             key = getpass.getpass(f"{args.provider} API key (not stored): ")
+        if args.command == "serve":
+            return _serve_command(args, key)
         studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key, formal=not args.no_formal,
                               pack=args.pack, repository_root=getattr(args, "repo", None))
         if args.command == "init":
@@ -332,22 +396,6 @@ def main(argv=None) -> int:
                       "live_inference": "NOT_RUN", "platform_validation": "See evidence/release-report.json"}
             output(result)
             return 0 if identity["trusted_fixture"] and result["provider"]["ready"] else 2
-        elif args.command == "serve":
-            if not 1024 <= args.port <= 65535:
-                raise DomainError("CONFIGURATION", "Use an unprivileged port from 1024 through 65535")
-            import uvicorn, webbrowser
-            from .http import create_app
-            token = secrets.token_urlsafe(32)
-            url = f"http://127.0.0.1:{args.port}/#{token}"
-            print("EIJA Studio — local single-owner session. Do not share these private links.\n" + url, flush=True)
-            print(f"PlayIDE (visual model, Build & run): http://127.0.0.1:{args.port}/play#{token}", flush=True)
-            if args.provider != "offline":
-                print("External inference requires configured credentials and explicit per-request consent.", flush=True)
-            if args.open:
-                # Browser may briefly arrive before the listener; refresh if necessary.
-                webbrowser.open(url)
-            handle, systems = _systems(studio, args, key)
-            uvicorn.run(create_app(handle, token, args.port, systems=systems), host="127.0.0.1", port=args.port, access_log=False, log_level="warning")
         elif args.command == "list":
             output([{k: c[k] for k in ("id", "stage", "version", "request")} for c in studio.store.list_cases()])
         elif args.command == "propose":

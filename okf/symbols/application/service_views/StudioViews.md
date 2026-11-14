@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service_views.py#StudioViews
   title: application/service_views.py
   hash_method: ast-sig-v1
-  sha256: 76b4733b07fdf7733d481d55e36cdd9f5bc4f4954e1893c5deaef8579b2c05ea
-notes_baseline: 866d71a2db2b9ac5dcf5048c2bdc93d6fba9fc1c66dd5ea24c58377b9aaab479
+  sha256: fe68c15a83ec129b9df8fb719f358b8cb686826a3e059664af9246c7d36a3b1d
+notes_baseline: e087214254ccf7130d2fb311635318a298464cddf28c21ecf6769b33773ee26a
 verified:
 - by: process:playide-service-cohesion
   at: '2026-10-12T05:30:41Z'
@@ -25,6 +25,10 @@ verified:
   at: '2026-11-11T04:00:00Z'
   notes_sha256: 667be48af8588aa40c30df3b9ceb73ef566ea671c8a647cf483e2839fe1d6358
   sources_sha256: 866d71a2db2b9ac5dcf5048c2bdc93d6fba9fc1c66dd5ea24c58377b9aaab479
+- by: process:claude-code
+  at: '2026-11-14T00:30:00Z'
+  notes_sha256: 68672a215f801eb60a64c1ced61230afa6aacbd55fdabcca9307a18dd7e187c2
+  sources_sha256: e087214254ccf7130d2fb311635318a298464cddf28c21ecf6769b33773ee26a
 ---
 
 # application.service_views.StudioViews
@@ -50,6 +54,7 @@ Projection half of Studio; callbacks use the command service's case and review c
 |---|---|---|
 | `store` | `Repository` |  |
 | `pack` | `Pack` |  |
+| `grows` | `bool` |  |
 | `formal` | `FormalEvidenceSource \| None` |  |
 | `identity_provider` | `IdentityProvider` |  |
 | `repository` | `RepositorySource \| None` |  |
@@ -80,7 +85,7 @@ Projection half of Studio; callbacks use the command service's case and review c
 
 StudioViews is the abstract projection part of [Studio](/symbols/application/service/Studio.md), not a standalone authority service. Studio supplies `_case`, `_compile`, `_decision_matches` and `formal_view`; these callbacks reuse its existing case validation, receipt policy, signed decision matching and formal projection.
 
-Its fifteen concrete public views retain their Studio call signatures and make no case, active-model or audit writes. `plan_check` (ADR-0230) previews a plan of typed steps on the model in force through `application.plan.preview_plan`, exactly as the chat does; it needs no case and stores nothing. `formal_view` in the generated table is an abstract callback contract; the concrete implementation remains in Studio. Fresh activation badges still require the recorded applied case, matching model/binding, authentic current decision, eligible packet and a second active-record read.
+Its fifteen concrete public views retain their Studio call signatures and make no case, active-model or audit writes. `plan_check` (ADR-0230) previews a plan of typed steps on the model in force through `application.plan.preview_plan`, exactly as the chat does (with `grows` on a system started in PlayIDE); it needs no case and stores nothing. `formal_view` in the generated table is an abstract callback contract; the concrete implementation remains in Studio. Fresh activation badges still require the recorded applied case, matching model/binding, authentic current decision, eligible packet and a second active-record read.
 
 The class page hashes fields and public signatures, not method bodies, inherited dispatch or adapter behavior. Use the method pages and actual concrete-service observations to inspect those boundaries. A process review of this page grants no source approval, owner authority or runtime evidence.
 
