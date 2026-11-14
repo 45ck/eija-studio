@@ -202,8 +202,13 @@ def test_committed_pack_schema_is_the_models_schema():
     assert committed == Pack.model_json_schema()
 
 
-def test_both_packs_validate_against_the_committed_schema():
+@pytest.mark.parametrize("location", sorted(p.parent for p in (ROOT / "packs").glob("*/pack.json")), ids=lambda p: p.name)
+def test_every_shipped_pack_validates_against_the_committed_schema(location):
+    """Every pack under packs/, not only the first two: the sector packs and later templates are contract inputs too."""
     jsonschema = pytest.importorskip("jsonschema")
     schema = json.loads((ROOT / "contracts" / "pack.schema.json").read_text(encoding="utf-8"))
-    for location in (EXCURSION, LIBRARY):
-        jsonschema.Draft202012Validator(schema).validate(raw(location))
+    jsonschema.Draft202012Validator(schema).validate(raw(location))
+
+
+def test_the_schema_check_covers_the_two_original_packs():
+    assert {EXCURSION, LIBRARY} <= {p.parent for p in (ROOT / "packs").glob("*/pack.json")}

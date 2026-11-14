@@ -70,7 +70,7 @@ The two feature variants exist only in the harness, so the shipped packs keep th
 
 **The fixes.** The outbox names the record acted on (`Session.record_id`). The rule table lists every source of an action (`server.transitions()`).
 
-**Gates.** `nox -s conformance_divergence` (full tier) runs the harness on library-loan and the two variants. `nox -s conformance_divergence_all` (release tier) runs every pack and both variants, about 20 minutes on four cores. `tests/test_conformance_divergence.py` (fast tier) runs every divergence that used to be missed, plus the controls: a resealed app with no divergence passes, and every seeded fault still matches the templates.
+**Gates.** `nox -s conformance_divergence` (full tier) runs the harness on library-loan and the two variants. `nox -s conformance_divergence_all` (release tier) runs every pack and both variants, about 20 minutes on four cores. `tests/test_conformance_divergence.py` runs the controls in the fast tier (a resealed app with no divergence passes, every seeded fault still matches the templates) and one model and one code divergence. Its 26 parametrized divergences, including every one that used to be missed, are marked `slow`, so the fast tier deselects them; the release session `browser_suite` runs them (amendment, 13 November 2026).
 
 ### Consequences
 

@@ -6,7 +6,7 @@ description: "Install PlayIDE (EIJA Studio) with Python 3.11+, run a bundled sys
 
 Everything you need to install, run and drive EIJA Studio from a terminal or browser. Start with the [connected IDE preview](README-HISTORY.md#try-the-connected-ide-preview) for the current integration. This page retains the earlier provider setup and verification commands; the [historical quickstart](README-HISTORY.md#historical-60-second-quickstart) describes that earlier kernel demonstration.
 
-EIJA means **Executable Intent and Journey Assurance**. One package contains a browser Studio, a command-line semantic compiler, the same deterministic kernel, persistent storage, and three interchangeable proposal providers. OpenRouter and Codex are implementation adapters, not separate products or approval engines.
+EIJA means **Executable Intent and Journey Assurance**. One package contains a browser Studio, a command-line semantic compiler, the same deterministic kernel, persistent storage, and interchangeable proposal providers (`offline`, `openrouter`, `anthropic`, `openai`, `codex`, `claude`, `opencode` and `gemini`; see [providers](providers.md)). They are implementation adapters, not separate products or approval engines.
 
 ## Where to look next
 
@@ -118,7 +118,7 @@ eija export CASE_ID --out output/change-case.json
 eija check-export output/change-case.json
 ```
 
-`compile` outputs the normalized model, projections, mapped impacts and optional runtime receipt. It is a **bounded semantic compiler**, not an arbitrary Python/TypeScript/repository compiler, theorem prover or automatic application generator. Unsupported semantics are rejected. There is no MCP server or installed Codex desktop extension in this version. The CLI, Python ports and included repository skill are the integration surfaces.
+`compile` outputs the normalized model, projections, mapped impacts and optional runtime receipt. It is a **bounded semantic compiler**, not an arbitrary Python/TypeScript/repository compiler, theorem prover or automatic application generator. Unsupported semantics are rejected. `eija mcp` serves an agent-facing MCP server on stdio (the `agents` extra; [agent quickstart](agents/quickstart.md)). There is no installed Codex desktop extension. The CLI, the MCP server, Python ports and the included repository skill are the integration surfaces.
 
 ## Verify and operate
 

@@ -14,6 +14,7 @@ import pytest
 
 from eija_studio.application.law_proof import prove_laws
 from eija_studio.application.scenario_run import run_scenarios
+from eija_studio.application.simulation import simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import load_pack
@@ -73,3 +74,25 @@ def test_every_use_case_has_an_authored_screen_that_passes_the_design_check(pack
 
 def test_each_sector_is_offered_as_a_template():
     assert set(SECTORS) <= {t["id"] for t in templates()}
+
+
+@pytest.mark.parametrize("pack_id", SECTORS)
+def test_simulate_runs_and_commits_on_every_sector_pack(pack_id):
+    """docs/sector-packs.md says Simulate runs on each pack; a run that commits nothing would not show the workflow."""
+    pack = load_pack(ROOT / "packs" / pack_id)
+    run = simulate(pack, pack.model, seed=1, steps=200)
+    assert run["committed"] > 0 and run["records"] > 0
+
+
+def test_the_sector_packs_guide_states_the_real_counts():
+    """The guide's table (states / transitions / roles) and its scenario and law ranges match the shipped packs."""
+    guide = (ROOT / "docs" / "sector-packs.md").read_text(encoding="utf-8")
+    packs = {pack_id: load_pack(ROOT / "packs" / pack_id) for pack_id in SECTORS}
+    for pack_id, pack in packs.items():
+        row = next(line for line in guide.splitlines() if line.startswith(f"| `{pack_id}` |"))
+        counts = row.split("|")[3].strip()
+        assert counts == f"{len(pack.model.states)} / {len(pack.model.transitions)} / {len(pack.roles)}", (pack_id, counts)
+    laws = sorted(len(pack.laws) for pack in packs.values())
+    scenarios = sorted(len(scenarios_for(pack).scenarios) for pack in packs.values())
+    assert f"{laws[0]} to {laws[-1]} laws" in guide, laws
+    assert f"{scenarios[0]} or {scenarios[-1]} scenarios" in guide, scenarios

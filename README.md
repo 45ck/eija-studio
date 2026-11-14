@@ -64,9 +64,9 @@ The review names the exact workflow, data contract, screens, generated files and
 | **Domain language and source** | Inspect DDD terms, declared links and read-only repository references | Structure and explicit bindings; no general source rewriting |
 | **Screens and roles** | Arrange supported forms, inspect actor permissions and run selected accessibility checks | Fixture identities; bounded checks, not full accessibility certification |
 | **UML import/export** | Bring models from supported PlantUML, XMI, Mermaid and draw.io forms | Import reports what it could not carry |
-| **Templates and chat** | Start from one of eleven bundled systems, including five [sector packs](docs/sector-packs.md) (healthcare referral, card payment, parcel delivery, SaaS subscription, building permit), or request supported typed changes | Current PlayIDE chat is an offline phrase reader; general live creation is unfinished |
-| **Relationships and connected workflows** | Draw related classes and several workflows; inspect disagreements | Related records and cross-workflow delivery are not implemented |
-| **Data-driven decisions and migrations** | Next: action inputs, value conditions, record updates and safe evolution | Planned; a stored amount does not yet decide refund eligibility |
+| **Templates and chat** | Start from one of eleven bundled systems, including five [sector packs](docs/sector-packs.md) (healthcare referral, card payment, parcel delivery, SaaS subscription, building permit), or request supported typed changes | Chat is an offline phrase reader by default; live chat is opt-in, with network enabled and per-request consent ([ADR-0230](docs/adr/0230-opt-in-live-plan-mode-and-agent-plan-check.md)); general live creation is unfinished |
+| **Relationships and connected workflows** | Draw related classes and several workflows; inspect disagreements; build to-one references; a `«signal»` starts a record in another workflow | To-one references only ([ADR-0235](docs/adr/0235-built-associations.md)); signals run in the kernel ([ADR-0242](docs/adr/0242-messages-between-workflows.md)), and delivery between separately built apps is not implemented |
+| **Data-driven decisions and migrations** | Guards over record values such as `[amount ≤ 500]`, checked by the kernel ([ADR-0234](docs/adr/0234-guards-over-record-values.md)). Next: action inputs, record updates and safe evolution | A guard compares one value with a constant; no action edits a record's values yet, and the shipped RefundDesk does not guard on amount |
 
 [Explore every view](docs/playide.md) · [Generated-app scope](docs/build-an-app.md) · [Lifecycle roadmap](docs/ROADMAP.md)
 
@@ -217,7 +217,7 @@ The current focus is PlayIDE's own change workflow:
 
 Exact workflow and generated-app review are implemented. A fresh-process browser test completes this journey with an explicitly labelled synthetic owner, then uses the changed React app. It checks refusals, atomic activation, duplicate safety and exact identity after restart. Legitimate owner source review and full integrated acceptance remain open. [Current evidence and limitations](docs/engineering/2026-10-11-EXACT-APP-ACCEPTANCE.md).
 
-General live AI creation, value-driven actions, migrations, connected delivery and production identity remain unfinished. Law, vocabulary, data-schema, screen and scenario edits do not silently become active policy.
+General live AI creation, actions that change record values, migrations, delivery between built apps and production identity remain unfinished. Law, vocabulary, data-schema, screen and scenario edits do not silently become active policy.
 
 ### What we are working on now
 

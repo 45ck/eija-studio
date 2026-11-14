@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0228-hosted-ci-on-pull-requests.md
   title: 0228-hosted-ci-on-pull-requests.md
   hash_method: lf-sha256-v1
-  sha256: c174fae14b7c4991fbb9a449501698de19f4139d19fab159288a98b6aa594d7d
-notes_baseline: e9cb769423eb843a3957ed02c3deb36bf526e43e7d3171faeea11d4ee67d055d
+  sha256: ea432a859b31516a18f03262e334d9030f7fc8bb86bdb0c3e77ab21826c5a00a
+notes_baseline: 3f4c476ded27996af5fec81e79914d122b041e8f8f3855ded7fe8b4d00d8f529
 ---
 
 # ADR-0228: Hosted CI on pull requests, nightly full tier and auto-merge
@@ -49,6 +49,7 @@ notes_baseline: e9cb769423eb843a3957ed02c3deb36bf526e43e7d3171faeea11d4ee67d055d
 * Considered options
 * Decision outcome
 * OSS check (required for any custom module)
+* Amendment, 13 November 2026: a skipped gate is not a green gate
 
 ## Code and docs mentioned
 
@@ -56,6 +57,8 @@ Existence-checked by the gate; not hashed (an ADR is a decision record, not a de
 
 * `repo://.claude/settings.json`
 * `repo://pyproject.toml`
+* `repo://quality/sessions/browser.py`
+* `repo://tests/test_syntax_validator.py`
 <!-- okf:generated:end facts -->
 
 ## Notes

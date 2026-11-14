@@ -65,10 +65,19 @@ def slug(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
 
+def _okf_root() -> Path | None:
+    """The okf lane merged into this repository; a sibling `okf` worktree (the lane era) is the fallback."""
+    for root in (ROOT, ROOT.parent / "okf"):
+        if (root / "quality" / "okf" / "codelink.py").exists() and (root / "okf").is_dir():
+            return root
+    return None
+
+
 def okf_codelink():
-    path = ROOT.parent / "okf" / "quality" / "okf" / "codelink.py"
-    if not path.exists():
+    root = _okf_root()
+    if root is None:
         return None
+    path = root / "quality" / "okf" / "codelink.py"
     spec = importlib.util.spec_from_file_location("okf_codelink", path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules["okf_codelink"] = mod
@@ -260,8 +269,9 @@ OKF_TYPES = {"Acceptance Criterion": "requirement", "Architecture Decision Recor
 
 def okf_bundle() -> dict:
     """Map every concept page of the sibling okf bundle to a weave node type and test its `resource` against the id pattern."""
-    bundle = ROOT.parent / "okf" / "okf"
-    if not bundle.is_dir():
+    root = _okf_root()
+    bundle = root / "okf" if root else None
+    if bundle is None:
         return {"status": "NOT_RUN", "reason": "okf worktree not found"}
     import collections
     patterns = {t: re.compile(build_schemas.id_pattern(MM, t)) for t in MM["node_types"]}

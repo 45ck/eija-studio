@@ -6,7 +6,6 @@ is ``quality/okf/codelink.py`` (okf lane). If it is not importable the tests are
 """
 from __future__ import annotations
 
-import contextlib
 import importlib.util
 import sys
 
@@ -79,9 +78,13 @@ def test_po_d10_a_missing_symbol_is_unresolved_never_a_digest(codelink, digest) 
         digest(BASE, fragment="g")
 
 
-@pytest.mark.xfail(strict=True, reason="FINDING (2026-09-29): a string literal holding a lone surrogate escape makes codelink.digest raise "
-                                       "UnicodeEncodeError instead of Unresolved or a digest; a link check would abort rather than report. "
-                                       "Fix in the okf lane; when fixed this test XPASSes and strict mode asks for the marker to be removed.")
-def test_po_d10_a_lone_surrogate_string_literal_does_not_crash_the_hash(codelink, digest) -> None:
-    with contextlib.suppress(codelink.Unresolved):  # an explicit, typed refusal is acceptable; an uncaught UnicodeEncodeError is not
+def test_po_d10_a_lone_surrogate_string_literal_is_a_typed_refusal_its_callers_report(digest) -> None:
+    """A lone surrogate escape ("\\ud800") cannot be UTF-8 encoded after normalisation, so the hash refuses with
+    UnicodeEncodeError, a ValueError. Every caller handles that: the okf checks catch ValueError and report
+    BROKEN_RESOURCE, and the weave index gives the symbol a labelled ``ast-dump-v0`` digest
+    (tests/weave/test_weave_index.py). This replaced a strict xfail from 2026-09-29 that expected no error at all."""
+    with pytest.raises(ValueError, match="surrogate"):
         digest('def f():\n    return "\\ud800"\n')
+    checks = (ROOT / "quality" / "okf" / "checks.py").read_text(encoding="utf-8")
+    calls = checks.count("cl.digest(")
+    assert calls and checks.count("except (cl.Unresolved, ValueError)") >= calls

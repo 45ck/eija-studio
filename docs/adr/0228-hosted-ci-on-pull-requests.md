@@ -50,3 +50,11 @@ Merging: the `fast` check is to be a required status on `main`, with GitHub's na
 ## OSS check (required for any custom module)
 
 No custom module. GitHub Actions and the existing nox sessions only.
+
+## Amendment, 13 November 2026: a skipped gate is not a green gate
+
+A Fagan inspection of the gates ([log](../quality/inspections/2026-11-13-tests-gates-docs.md)) found three gaps in this record:
+
+* **The hosted jobs installed fewer extras than a local run.** Without `graph`, `graph-formal`, `okf`, `interop-api`, `smt` and `mutation`, the graph tests, `formal_smt` and `mutation_quick` skip, and nox exits 0 for a skipped session, so a hosted run could be green with gates that never ran. Both jobs now install those extras.
+* **The workflow read only nox's exit code.** Both jobs now write `nox --report` and run `python -m quality.tools.nox_report`. In the fast tier any skipped session fails the job (`--fail-on-skip`). The nightly full tier lists every NOT_RUN session in the job summary, because some of its gates need Docker or Java that a standard runner may lack.
+* **"Browser tests stay local or in the full tier as before" was not true.** No tier selected the `slow` or `browser` tests outside `tests/metrics` and `tests/test_syntax_validator.py`. The new release session `browser_suite` (`quality/sessions/browser.py`) runs them; it is not in the hosted tiers.
