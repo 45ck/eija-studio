@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/browser.py#browser_suite
   title: browser.py
   hash_method: ast-v2
-  sha256: e1df2d300f0fe5df805190e1d7f8f3515121578e1b308755d1a60c1de2d40468
-notes_baseline: 048fb9144891326245475e733e682508465508b02f4a344dd33566bec33ce558
+  sha256: 5621c17aa13e9b3bcbc8539d8bd057dfb39c6a7639abf1e03ee3291b081a8b0f
+notes_baseline: ad6b6e768338596262b293fa112c53ae4f69927f5a73ae556073b5217d20f969
 ---
 
 # nox -s browser_suite
