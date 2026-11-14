@@ -144,6 +144,13 @@ def test_lines_and_labels_stay_off_the_shapes_they_do_not_belong_to():
                     page = _open(chrome, server, errors)
                     page.click("#tab-classes")
                     assert _settle(page, CROSSINGS, "classes") == [], name
+                    # Dragging a class to the other side of the one it is associated with turns the line: its end
+                    # labels follow, rather than keep an offset that now points into the class.
+                    page.evaluate("""() => { const g = window.PlayIDE.diagram("classes"), m = g.getDataModel();
+                        const a = m.getCell("assoc:0"), s = a.source.geometry, t = a.target.geometry;
+                        g.moveCells([a.target], 2 * (s.x - t.x) - t.width - 200, 2 * (s.y - t.y)); }""")
+                    moved = [f for f in _settle(page, CROSSINGS, "classes") if f[0] == "label on shape"]
+                    assert moved == [], (name, moved)
                     page.click("#tab-components")
                     assert _settle(page, CROSSINGS, "components") == [], name
                     _lens(page, "system")

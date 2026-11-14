@@ -624,6 +624,7 @@
     const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {}, drawnOnly = new Set((classBuild() || {}).drawn_only || []);
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
     const DRAWN_ONLY = { fillColor: "#f4f5f8", strokeColor: "#9aa3b5", fontColor: "#4a5568" }; // drawn, not built
+    const ends = [];
     classGraph.batchUpdate(() => {
       for (const e of data.entities) {
         const [x, y, w, h] = at(e.name), record = e.name === data.record;
@@ -651,25 +652,12 @@
           style: { ...font, fontSize: 12, strokeColor: "#4a5568", endArrow: "none", labelBackgroundColor: "#fbfcfe", ...diamond } });
         // Each end's multiplicity sits beside the line at its end, on one side; the target end's role name (data.py:
         // "the target end's role name") sits at that end on the other side. A label in the middle of the line would read
-        // as the association's own name, and a label placed at a fixed fraction of the line lands on the class box when
-        // the line is short or steep, so each label moves back along the line until it is clear of its class.
-        const [sx, sy, sw, sh] = at(a.source), [tx, ty, tw, th] = at(a.target);
-        let ux = tx + tw / 2 - (sx + sw / 2), uy = ty + th / 2 - (sy + sh / 2);
-        const length = Math.hypot(ux, uy) || 1;
-        [ux, uy] = a.source === a.target ? [1, 0] : [ux / length, uy / length];
+        // as the association's own name. The labels are placed by placeEnds, from where the classes are now.
         for (const [where, text, side] of [[-1, a.source_multiplicity, -1], [1, a.target_multiplicity, -1], [1, a.role, 1]]) {
           if (!text) continue;
-          const [bx, by, bw, bh] = where < 0 ? [sx, sy, sw, sh] : [tx, ty, tw, th], vx = -where * ux, vy = -where * uy;
-          const reach = Math.min(Math.abs(vx) > 1e-6 ? bw / 2 / Math.abs(vx) : Infinity, Math.abs(vy) > 1e-6 ? bh / 2 / Math.abs(vy) : Infinity);
-          const endX = bx + bw / 2 + vx * reach, endY = by + bh / 2 + vy * reach, halfW = textWidth(text) * 11 / 24 + 3, halfH = 9;
-          const nx = -uy * 12 * side, ny = ux * 12 * side;
-          let back = 6;
-          const clear = () => { const cx = endX + vx * back + nx, cy = endY + vy * back + ny;
-            return cx + halfW < bx - 3 || cx - halfW > bx + bw + 3 || cy + halfH < by - 3 || cy - halfH > by + bh + 3; };
-          while (!clear() && back < 200) back += 2;
           const end = classGraph.insertVertex({ parent: edge, ...(side > 0 ? { id: `role-end:${i}` } : {}), value: text, position: [where, 0], size: [0, 0], relative: true,
             style: { ...font, fontSize: 11, labelBackgroundColor: "#fbfcfe", selectable: false, movable: false } });
-          end.geometry.offset = new Point(vx * back + nx, vy * back + ny);
+          ends.push([end, edge, where, text, side]);
         }
       });
     });
@@ -679,6 +667,31 @@
       select(id && (id.startsWith("class:") || id.startsWith("enum:")) ? id : "", false);
     });
     keepMoves(classGraph, "classes");
+    // A label placed at a fixed fraction of the line lands on the class box when the line is short or steep, so each
+    // starts at its end of the line and moves back along it until it is clear of its class. Placed again whenever a
+    // class is dragged (or put back where it was dragged to), since that turns the line.
+    const placeEnds = () => classGraph.batchUpdate(() => {
+      for (const [end, edge, where, text, side] of ends) {
+        const box = (cell) => { const g = cell.geometry; return [g.x, g.y, g.width, g.height]; };
+        const [sx, sy, sw, sh] = box(edge.source), [tx, ty, tw, th] = box(edge.target);
+        let ux = tx + tw / 2 - (sx + sw / 2), uy = ty + th / 2 - (sy + sh / 2);
+        const length = Math.hypot(ux, uy) || 1;
+        [ux, uy] = edge.source === edge.target ? [1, 0] : [ux / length, uy / length];
+        const [bx, by, bw, bh] = where < 0 ? [sx, sy, sw, sh] : [tx, ty, tw, th], vx = -where * ux, vy = -where * uy;
+        const reach = Math.min(Math.abs(vx) > 1e-6 ? bw / 2 / Math.abs(vx) : Infinity, Math.abs(vy) > 1e-6 ? bh / 2 / Math.abs(vy) : Infinity);
+        const endX = bx + bw / 2 + vx * reach, endY = by + bh / 2 + vy * reach, halfW = textWidth(text) * 11 / 24 + 3, halfH = 9;
+        const nx = -uy * 12 * side, ny = ux * 12 * side;
+        let back = 6;
+        const clear = () => { const cx = endX + vx * back + nx, cy = endY + vy * back + ny;
+          return cx + halfW < bx - 3 || cx - halfW > bx + bw + 3 || cy + halfH < by - 3 || cy - halfH > by + bh + 3; };
+        while (!clear() && back < 200) back += 2;
+        const geo = end.geometry.clone();
+        geo.offset = new Point(vx * back + nx, vy * back + ny);
+        classGraph.getDataModel().setGeometry(end, geo);
+      }
+    });
+    placeEnds();
+    classGraph.addListener(InternalEvent.CELLS_MOVED, placeEnds);
   }
 
   function inspectClass(name, box) {
