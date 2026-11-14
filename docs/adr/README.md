@@ -128,6 +128,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0245](0245-partial-reads-keep-and-saves-name-their-system.md) | A partial UML read keeps what it could not read, and a save names its system | accepted |
 | [0246](0246-kernel-inspection-fixes.md) | The kernel refuses undeclared roles, judges path laws alike, and fails value guards closed | accepted |
 | [0249](0249-app-generator-inspection-fixes.md) | Fixes from the inspection of the app generator | accepted |
+| [0250](0250-app-generator-second-pass.md) | One status table, retryable creates and bounded requests in the generated app | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

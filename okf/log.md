@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-14
+* **App generator, second pass (ADR-0250)**: synced ADR-0250, the new `domain.app_http` module (one refusal-status table for the generated server and the API contract), `api_contract` (signals route, `ONCE`, every operation's 403 and 500; `REFUSALS` now imported from `app_http`, so its old page is marked deprecated) and the ADR pages that link to it. No Notes were hand-edited, nothing was recorded as verified, and no human source approval was recorded.
 * **Inspection of the app generator (ADR-0249)**: synced ADR-0249, `CASE_KINDS` (`object_cases`), `object_cases` and its answer helper, `signal_cases` (stored values and a second delivery), `generate` (README counts every case), `GENERATED_TESTS` (20) and `check_accessibility` (the label contract follows the page's `Control` and reference chooser). Re-read the Notes of `check_accessibility` as `process:claude-code-app-generator-inspection`; they still hold. No human source approval was recorded.
 
 ## 2026-11-13

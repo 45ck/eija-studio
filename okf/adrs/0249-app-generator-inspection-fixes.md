@@ -49,4 +49,8 @@ _No curated notes yet._
 
 * [ADR-0150: Build runnable apps from the model, checked against the kernel as oracle](/adrs/0150-build-apps-from-the-model-with-a-kernel-oracle.md) - The owner's goal, stated on 8 October 2026, is "UML you can trust to build apps".
 * [ADR-0243: Conformance that catches a divergent app by behaviour](/adrs/0243-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
+
+## Referenced by
+
+* [ADR-0250: One status table, retryable creates and bounded requests in the generated app](/adrs/0250-app-generator-second-pass.md) - The second inspection of the app generator (record) found that the API contract and the server kept the status of each refusal in two copies that had drifted,…
 <!-- okf:generated:end links -->

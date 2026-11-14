@@ -74,4 +74,5 @@ _No curated notes yet._
 * [ADR-0243: Conformance that catches a divergent app by behaviour](/adrs/0243-conformance-that-catches-divergence.md) - The pitch for `eija build` (ADR-0150) is that the generated app's conformance tests prove the app matches its model.
 * [ADR-0244: The built app gets no secrets, and `eija serve` binds its port before it prints a link](/adrs/0244-built-app-environment-and-bind-before-links.md) - A Fagan inspection of the `eija` command and the local server (CLI-SERVER-INSPECTION) found two boundary defects.
 * [ADR-0249: Fixes from the inspection of the app generator](/adrs/0249-app-generator-inspection-fixes.md) - The 13 November 2026 inspection (record) found ten defects in the generated app and its conformance suite.
+* [ADR-0250: One status table, retryable creates and bounded requests in the generated app](/adrs/0250-app-generator-second-pass.md) - The second inspection of the app generator (record) found that the API contract and the server kept the status of each refusal in two copies that had drifted,…
 <!-- okf:generated:end links -->

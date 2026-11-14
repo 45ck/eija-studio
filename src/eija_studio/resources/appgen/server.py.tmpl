@@ -7,11 +7,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from eija_studio.domain.app_http import status_of
 from eija_studio.domain.data import record_fields
 from eija_studio.domain.navigation import Navigation, navigation_for
 
 from .build_identity import current_subject
-from .service import DATA, MODEL, PACK, REFERENCES, SCREENS, STORED, Refused, Service
+from .service import DATA, MODEL, MODEL_HASH, PACK, REFERENCES, SCREENS, STORED, Refused, Service
 from .service import RECORD as RECORD_CLASS
 
 WEB = Path(__file__).resolve().parent / "web"
@@ -20,8 +21,6 @@ NAVIGATION = Navigation.model_validate_json((WEB.parent / "navigation.json").rea
 if NAVIGATION != navigation_for(PACK, MODEL, DATA, SCREENS):
     raise ValueError("Generated navigation differs from its model contracts")
 STATIC = {"/": ("index.html", "text/html"), "/app.js": ("app.js", "text/javascript"), "/app.css": ("app.css", "text/css")}
-FORBIDDEN = {"UNKNOWN_ACTOR", "ACTOR_REVOKED", "ROLE_DENIED", "ASSIGNMENT_DENIED"}
-INVALID = {"BAD_REQUEST", "INVALID_TITLE", "FIELD_REQUIRED", "FIELD_TYPE", "FIELD_TOO_LONG", "FIELD_CHOICE", "UNKNOWN_FIELD", "REFERENCE_UNKNOWN"}
 RECORD = re.compile(r"^/api/records/([0-9a-f]{1,32})(/act)?$")
 OBJECTS = re.compile(r"^/api/objects/([A-Z][A-Za-z0-9]{0,39})$")  # objects of a class a record refers to (ADR-0235)
 MAX_BODY = 16_384
@@ -40,7 +39,7 @@ def transitions() -> dict:
 
 
 def describe() -> dict:
-    return {"name": PACK.pack.name, "description": PACK.pack.description, "model_hash": MODEL.semantic_hash, "subject": SUBJECT,
+    return {"name": PACK.pack.name, "description": PACK.pack.description, "model_hash": MODEL_HASH, "subject": SUBJECT,
             "navigation": NAVIGATION.model_dump(mode="json"),
             "initial_state": MODEL.initial_state, "states": list(MODEL.states),
             "roles": {r.id: r.description for r in PACK.roles}, "kinds": {r.id: r.kind for r in PACK.roles},
@@ -56,6 +55,7 @@ def describe() -> dict:
 def handler_for(service: Service):
     class Handler(BaseHTTPRequestHandler):
         server_version = "EIJA-generated-app"
+        timeout = 30  # a request that promises a body and never sends it gives its thread back (ADR-0250)
 
         def log_message(self, *args):
             return None
@@ -76,7 +76,7 @@ def handler_for(service: Service):
             port = self.server.server_address[1]
             if self.headers.get("Host", "") in {f"127.0.0.1:{port}", f"localhost:{port}"}:
                 return True
-            self._json(403, {"code": "HOST_DENIED", "message": "Loopback host required"})
+            self._json(status_of("HOST_DENIED"), {"code": "HOST_DENIED", "message": "Loopback host required"})
             return False
 
         @staticmethod
@@ -89,14 +89,13 @@ def handler_for(service: Service):
 
         def _failed(self) -> None:
             """Anything unforeseen is still answered, so the page reports a failed request instead of a dropped one."""
-            self._json(500, {"code": "INTERNAL_ERROR", "message": "The app could not answer this request"})
+            self._json(status_of("INTERNAL_ERROR"), {"code": "INTERNAL_ERROR", "message": "The app could not answer this request"})
 
         def _json(self, status: int, value) -> None:
             self._send(status, json.dumps(value).encode(), "application/json")
 
         def _refused(self, refused: Refused) -> None:
-            status = 403 if refused.code in FORBIDDEN else 400 if refused.code in INVALID else 404 if refused.code == "NOT_FOUND" else 409
-            self._json(status, {"code": refused.code, "message": refused.message})
+            self._json(status_of(refused.code), {"code": refused.code, "message": refused.message})  # one table (ADR-0250)
 
         def _body(self) -> dict:
             if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
@@ -104,7 +103,11 @@ def handler_for(service: Service):
             length = int(self.headers.get("Content-Length") or 0)
             if not 0 < length <= MAX_BODY:
                 raise Refused("BAD_REQUEST", "Body missing or too large")
-            value = json.loads(self.rfile.read(length))
+            try:
+                raw = self.rfile.read(length)
+            except TimeoutError:  # the body was promised and never sent: answered, and the thread given back
+                raise Refused("REQUEST_TIMEOUT", "The request body did not arrive in time") from None
+            value = json.loads(raw)
             if not isinstance(value, dict):
                 raise Refused("BAD_REQUEST", "Send a JSON object")
             return value
@@ -119,10 +122,22 @@ def handler_for(service: Service):
                 raise Refused("BAD_REQUEST", "operation_id must be a string of 1 to 100 characters")
             return operation
 
+        def _fields(self, body: dict) -> dict:
+            fields = body.get("fields", {})
+            if not isinstance(fields, dict):
+                raise Refused("BAD_REQUEST", "fields must be a JSON object")
+            return fields
+
+        def _once(self, body: dict) -> str | None:
+            """The optional operation id of a create: sent again with the same request, it answers the first result."""
+            return self._operation(body) if "operation_id" in body else None
+
         def do_GET(self) -> None:
             if not self._host_allowed():
                 return None
             url = urlparse(self.path)
+            if url.path == "/favicon.ico":  # browsers ask for it; there is none, and that is not an error
+                return self._send(204, b"", "image/x-icon")
             if url.path in STATIC:
                 name, kind = STATIC[url.path]
                 return self._send(200, (WEB / name).read_bytes(), kind)
@@ -144,7 +159,7 @@ def handler_for(service: Service):
                 return self._refused(refused)
             except Exception:  # noqa: BLE001 - answered, never a dropped connection
                 return self._failed()
-            self._json(404, {"code": "NOT_FOUND", "message": "No such page"})
+            self._refused(Refused("NOT_FOUND", "No such page"))
 
         def do_POST(self) -> None:
             if not self._host_allowed():
@@ -153,22 +168,16 @@ def handler_for(service: Service):
             try:
                 body = self._body()
                 if url.path == "/api/records":
-                    fields = body.get("fields", {})
-                    if not isinstance(fields, dict):
-                        raise Refused("BAD_REQUEST", "fields must be a JSON object")
-                    return self._json(201, service.create(self._text(body, "title"), self._text(body, "actor"), fields))
+                    made = service.create(self._text(body, "title"), self._text(body, "actor"), self._fields(body), self._once(body))
+                    return self._json(200 if made["duplicate"] else 201, made)
                 if url.path == "/api/signals" and MODEL.receives:  # another workflow's signal starts a record (ADR-0242)
-                    fields = body.get("fields", {})
-                    if not isinstance(fields, dict):
-                        raise Refused("BAD_REQUEST", "fields must be a JSON object")
-                    started = service.receive(self._text(body, "signal"), self._text(body, "sender"), self._operation(body), fields)
+                    started = service.receive(self._text(body, "signal"), self._text(body, "sender"), self._operation(body),
+                                              self._fields(body))
                     return self._json(201 if started["started"] else 200, started)
                 stored = OBJECTS.match(url.path)
                 if stored:
-                    fields = body.get("fields", {})
-                    if not isinstance(fields, dict):
-                        raise Refused("BAD_REQUEST", "fields must be a JSON object")
-                    return self._json(201, service.create_object(stored.group(1), self._text(body, "actor"), fields))
+                    made = service.create_object(stored.group(1), self._text(body, "actor"), self._fields(body), self._once(body))
+                    return self._json(200 if made["duplicate"] else 201, made)
                 match = RECORD.match(url.path)
                 if match and match.group(2):
                     version = body.get("expected_version")
@@ -181,10 +190,10 @@ def handler_for(service: Service):
             except Refused as refused:
                 return self._refused(refused)
             except (ValueError, json.JSONDecodeError, RecursionError):
-                return self._json(400, {"code": "BAD_REQUEST", "message": "Malformed request"})
+                return self._refused(Refused("BAD_REQUEST", "Malformed request"))
             except Exception:  # noqa: BLE001 - answered, never a dropped connection
                 return self._failed()
-            self._json(404, {"code": "NOT_FOUND", "message": "No such endpoint"})
+            self._refused(Refused("NOT_FOUND", "No such endpoint"))
 
     return Handler
 
@@ -192,7 +201,7 @@ def handler_for(service: Service):
 def serve(database: str, port: int) -> None:
     service = Service(database)
     server = ThreadingHTTPServer(("127.0.0.1", port), handler_for(service))
-    print(f"{PACK.pack.name}: http://127.0.0.1:{port}/  (model {MODEL.semantic_hash[:12]}; Ctrl+C to stop)", flush=True)
+    print(f"{PACK.pack.name}: http://127.0.0.1:{port}/  (model {MODEL_HASH[:12]}; Ctrl+C to stop)", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

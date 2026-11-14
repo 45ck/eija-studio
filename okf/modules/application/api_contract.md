@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/api_contract.py
   title: application/api_contract.py
   hash_method: ast-api-v1
-  sha256: 36c14833b8e4ff54b4efe378c35526e1b1405b256fffb76fd80597694f96886b
-notes_baseline: 170949575eb3494aa7043caf3e496f040e10455c1bf2c637a8ecc7a8e03500d3
+  sha256: 0a44dfd4570a21a848dac7d76b00ae9059fc688aefaa0a75b89659e6a084f48a
+notes_baseline: 94ec989ac54131f4db0e6de61b0987448d2dd095292f0b55425267261d8235b4
 ---
 
 # application.api_contract
@@ -35,8 +35,9 @@ serves, written from the model, the pack and the data model rather than by hand.
 The paths and status codes are those of the generated server (ADR-0150). Request bodies come from the same sources the
 server checks against: the record fields from the record class (the schema says what `check_values` accepts), the
 actions from the model's transitions and the actors from the pack's fixture directory. The kernel's refusal codes are
-the documented error responses, grouped by the status the server sends them with. The drift check is in the tests: every
-route the generated server serves is in the document, and every path in the document is served.
+the documented error responses, grouped by the status the server sends them with: both read one table,
+`eija_studio.domain.app_http` (ADR-0250). The drift check is in the tests: every route the generated server serves is in
+the document, and every path in the document is served.
 
 Pure: reads the pack, its model and its data model only.
 ~~~
@@ -44,11 +45,12 @@ Pure: reads the pack, its model and its data model only.
 ## Public symbols
 
 * [`FORMAT`](/symbols/application/api_contract/FORMAT.md) (constant) - no docstring
-* [`REFUSALS`](/symbols/application/api_contract/REFUSALS.md) (constant) - no docstring
+* [`ONCE`](/symbols/application/api_contract/ONCE.md) (constant) - no docstring
 * [`api_contract`](/symbols/application/api_contract/api_contract.md) (function) - The OpenAPI 3.1 document of the app this pack, model and data model build.
 
 ## Internal imports
 
+* [`domain/app_http`](/modules/domain/app_http.md)
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -61,6 +63,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [domain.app_http](/modules/domain/app_http.md) - The HTTP status a generated app answers each refusal code with (ADR-0250).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
@@ -69,6 +72,6 @@ _No curated notes yet._
 
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.api_contract.FORMAT](/symbols/application/api_contract/FORMAT.md) - Constant `FORMAT` in `application/api_contract`.
-* [application.api_contract.REFUSALS](/symbols/application/api_contract/REFUSALS.md) - Constant `REFUSALS` in `application/api_contract`.
+* [application.api_contract.ONCE](/symbols/application/api_contract/ONCE.md) - Constant `ONCE` in `application/api_contract`.
 * [application.api_contract.api_contract](/symbols/application/api_contract/api_contract.md) - The OpenAPI 3.1 document of the app this pack, model and data model build.
 <!-- okf:generated:end links -->

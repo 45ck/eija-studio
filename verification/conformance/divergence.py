@@ -402,6 +402,8 @@ APPLIES: dict[str, Callable[[Subject], bool]] = {
     "HTTP signals share one operation id": lambda s: bool(s.model.receives),
 }
 
+SIGNAL_CALL = 'self._operation(body),\n                                              self._fields(body))'  # app/server.py's call to receive
+
 # Seeded faults in the app's own code. Each changes what the app does in a way the model does not allow.
 CODE: dict[str, tuple[str, str, str]] = {
     "operation not recorded (no idempotency)": (
@@ -419,7 +421,8 @@ CODE: dict[str, tuple[str, str, str]] = {
         "app/service.py", '(operation_id + ":" + effect, self.record_id, effect, recipient))',
         '(operation_id + ":" + effect, case_id, effect, recipient))'),
     "record values not checked on create": (
-        "app/service.py", "values = check_record(DATA, fields or {}, self._exists)", "values = dict(fields or {})"),
+        "app/service.py", "values = check_record(DATA, fields or {}, self._exists) if DATA is not None else {}  # the data model's own check",
+        "values = dict(fields or {})"),
     "record values not stored": (
         "app/service.py", "(title, actor_id, canonical(values), DATA_DIGEST, item[\"id\"])", "(title, actor_id, '{}', DATA_DIGEST, item[\"id\"])"),
     "created record not stamped with its data model": (
@@ -435,7 +438,7 @@ CODE: dict[str, tuple[str, str, str]] = {
         'if False:\n            raise DomainError("ACTOR_REVOKED", "Actor is not active")'),
     "stale data not refused": ("app/service.py", 'if row is not None and row["data_digest"] != DATA_DIGEST:', "if False:"),
     "stale records shown as current": (
-        "app/service.py", 'record["current_model"] = record["model_hash"] == MODEL.semantic_hash and record["data_digest"] == DATA_DIGEST',
+        "app/service.py", 'record["current_model"] = record["model_hash"] == MODEL_HASH and record["data_digest"] == DATA_DIGEST',
         'record["current_model"] = True'),
     "offered actions ignore value guards": ("app/service.py", "            check_guards(t, values or {})\n", ""),
     "offered actions ignore the actor": (
@@ -443,16 +446,16 @@ CODE: dict[str, tuple[str, str, str]] = {
         "pass"),
     "offered actions ignore separation of duties": (
         "app/service.py", "            check_separation(separations(PACK, MODEL, t.action), t.action, actor_id, acts or [])\n", ""),
-    "history shows every record's steps": ('app/service.py', 'if body.get("instance_id") == record_id:', "if True:"),
+    "history shows every record's steps": ('app/service.py', "WHERE json_extract(body, '$.instance_id')=? ORDER BY seq", "WHERE ? <> '' ORDER BY seq"),
     "HTTP drops the expected version": (
         "app/server.py", 'self._text(body, "action"),\n                                                       version,',
         'self._text(body, "action"),\n                                                       0,'),
     "HTTP drops the operation id": (
         "app/server.py", 'version, self._operation(body)))', 'version, "missing"))'),
-    "HTTP refusals answered as success": ("app/server.py", 'self._json(status, {"code": refused.code, "message": refused.message})',
+    "HTTP refusals answered as success": ("app/server.py", 'self._json(status_of(refused.code), {"code": refused.code, "message": refused.message})',
                                           'self._json(200, {"code": refused.code, "message": refused.message})'),
-    "HTTP drops record values": ("app/server.py", 'fields = body.get("fields", {})\n                    if not isinstance(fields, dict):\n                        raise Refused("BAD_REQUEST", "fields must be a JSON object")\n                    return self._json(201, service.create(',
-                                 'fields = {}\n                    if not isinstance(fields, dict):\n                        raise Refused("BAD_REQUEST", "fields must be a JSON object")\n                    return self._json(201, service.create('),
+    "HTTP drops record values": ("app/server.py", 'service.create(self._text(body, "title"), self._text(body, "actor"), self._fields(body)',
+                                 'service.create(self._text(body, "title"), self._text(body, "actor"), {}'),
     "rule table shows one source per action": (
         "app/server.py", '{"from": ", ".join(MODEL.sources(t.action)), "to"', '{"from": t.from_state, "to"'),
     # Added by the 13 November 2026 inspection of the generator (ADR-0249): each was MISSED before its test existed.
@@ -464,12 +467,17 @@ CODE: dict[str, tuple[str, str, str]] = {
     "created objects' values not checked": (
         "app/service.py", "values = check_values(DATA.entity(cls), fields or {})", "values = dict(fields or {})"),
     "HTTP signal drops its values": (
-        "app/server.py", 'self._text(body, "sender"), self._operation(body), fields)', 'self._text(body, "sender"), self._operation(body), {})'),
+        "app/server.py", SIGNAL_CALL, SIGNAL_CALL.replace("self._fields(body))", "{})")),
     "HTTP signals share one operation id": (
-        "app/server.py", 'self._text(body, "sender"), self._operation(body), fields)', 'self._text(body, "sender"), "missing", fields)'),
+        "app/server.py", SIGNAL_CALL, SIGNAL_CALL.replace("self._operation(body)", '"missing"')),
     "stale records offer their actions": ("app/service.py", "            if stale is not None:", "            if False:"),
     "the app answers any host": ("app/server.py", 'if self.headers.get("Host", "") in {f"127.0.0.1:{port}", f"localhost:{port}"}:',
                                  "if True:"),
+    # Added by the 14 November 2026 second pass (ADR-0250).
+    "a create sent again makes a second record": (
+        "app/service.py", "prior = self._replayed(session, operation_id, request)\n            if prior is not None:\n                return self._record(",
+        "prior = None\n            if prior is not None:\n                return self._record("),
+    "refusals answered with one status": ("app/server.py", "self._json(status_of(refused.code), {", "self._json(409, {"),
 }
 
 
