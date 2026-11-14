@@ -30,7 +30,7 @@
 
 ## Defects
 
-Severity: Major (wrong result a person may act on), Minor (wrong but visible or recoverable), Trivial.
+Severity: Major (a wrong result a person may act on), Minor (wrong, but visible or recoverable), Trivial. Eight of nine are fixed; one was withdrawn on re-inspection.
 
 | # | Severity | Where | Defect | Status |
 | --- | --- | --- | --- | --- |
@@ -38,17 +38,53 @@ Severity: Major (wrong result a person may act on), Minor (wrong but visible or 
 | 2 | Minor | `adapters/live_plan_proposals.py` | The chat's live path had no single-flight guard, unlike `Studio.propose` (`PROVIDER_BUSY`), so two tabs or a double send could make two billed calls. | Fixed: one live call at a time; a second is refused and never sent. |
 | 3 | Minor | `interfaces/play.py` `play_plan`; `resources/web/play.js` `addRound`, `addStep` | Rounds on a system you started stack without a bound. A round that takes the plan past `MAX_DRAFT_STEPS` (64) was planned and added, and every preview after it failed validation, leaving a plan that can no longer be checked. | Fixed: the server refuses `PLAN_TOO_LONG`; the page also counts rejected steps, which the server cannot see. |
 | 4 | Minor | `resources/web/play.js` `addRound`, `planCard` | The plan card's provenance line took the latest round's provider for the whole plan, so steps a live model wrote were labelled "offline fixture, not a live model" after an offline round, and the reverse. | Fixed: each AI step keeps its provider; the card names every one and says when the plan is mixed. |
-| 5 | Minor | `adapters/live_plan_proposals.py` | A request shaped like an exact phrase but with a wrong name ("add state Archived after Nowhere") falls through to the live provider (with consent) and comes back as an unrelated meaning instead of the phrase reader's "no state Nowhere". | Logged. Refusing it would also block paraphrases that happen to match a phrase shape ("let supervisors approve"); needs a product call. |
-| 6 | Minor | `interfaces/play.py`, live plan path | A live chat call leaves no audit event. `Studio.propose` records `ProviderCallStarted` and `ProviderCallNotAccepted` (request hash, billing UNKNOWN); the chat's live calls are invisible in observations. | Logged. |
-| 7 | Minor | `application/service_views.py` `plan_check` | `plan_check` always previews as a shipped pack (`grows=False`), so on a system you started a plan naming a new action or role is refused although the chat accepts it. | Logged. |
-| 8 | Minor | `application/describe_system.py` `update_tests` | A failing refusal test ("Customer cannot Start") is dropped, not recorded again, because only end-state journeys are re-recorded. It is listed as "removed", but the behaviour change it caught loses its test. | Logged. |
-| 9 | Trivial | `application/describe_system.py` `_slug` | Two end states whose names differ only in underscores (`Paid_Out`, `Paid__Out`) slug to the same test id, and the description is refused. | Logged. |
+| 5 | Minor | `adapters/live_plan_proposals.py` | A request shaped like an exact phrase but with a wrong name ("add state Archived after Nowhere") fell through to the live provider (with consent) and came back as an unrelated meaning instead of the phrase reader's "no state Nowhere". | Fixed: the phrase reader's `PLAN_UNKNOWN_NAME` answer is returned and nothing is sent. Owner's call (2026-11-13, "fix all"): a paraphrase that happens to match a phrase shape ("let supervisors approve") now gets the phrase reader's answer, which names the real roles, instead of going to the model. |
+| 6 | Minor | `adapters/live_plan_proposals.py`, `bootstrap.py` | A live chat call left no audit event. `Studio.propose` records `ProviderCallStarted` and `ProviderCallNotAccepted` (request hash, billing UNKNOWN); the chat's live calls were invisible in the audit log. | Fixed: `PlanProviderCallStarted`, then `PlanProposalReceived` or `PlanProviderCallNotAccepted`, with a request hash, never the request. |
+| 7 | Minor | `application/service_views.py` `plan_check`; `interfaces/cli.py` | `plan_check` always previewed as a shipped pack (`grows=False`), so on a system you started a plan naming a new action or role was refused although the chat accepts it. | Fixed: `eija mcp` on a system in the systems home (`--systems`, default `~/PlayIDE`) checks as the chat does, and the result says `grows`. |
+| 8 | — | `application/describe_system.py` `update_tests` | Logged as "a failing refusal test is dropped, not recorded again". | Withdrawn on re-inspection. A refusal test fails only when the kernel now allows that step, so recording it again would write an accepted step under a "cannot" title. Dropping it, reporting "removed", and adding the new refusal as "added" is right. |
+| 9 | Trivial | `application/describe_system.py` `_slug` | Two end states whose names differ only in underscores (`Paid_Out`, `Paid__Out`) slugged to the same test id, so the description was refused. | Fixed: later ones get `-2`, `-3`. |
+
+## Before and after
+
+Screenshots come from the real chat in Chromium. "Before" is `main` at 22298bc2, and "after" is this branch. Both are the same
+Playwright script against an in-process server whose live provider is a stub that counts its calls.
+
+| # | Before | After |
+| --- | --- | --- |
+| 1 | ![](assets/2026-11-13-ai-chat/d1-mixed-request-before.png) The exact clause "add state Archived" is gone from the plan; 1 provider call. | ![](assets/2026-11-13-ai-chat/d1-mixed-request-after.png) Refused in words; 0 provider calls. |
+| 3 | ![](assets/2026-11-13-ai-chat/d3-plan-too-long-before.png) ![](assets/2026-11-13-ai-chat/d3-verdict-before.png) Round 6 is added (65 steps) and the plan can no longer be checked: `CONTRACT_REJECTED`. | ![](assets/2026-11-13-ai-chat/d3-plan-too-long-after.png) The round is refused; the 60-step plan stays checked. |
+| 4 | ![](assets/2026-11-13-ai-chat/d4-round2-before.png) After an offline round, the live round's steps read "offline fixture, not a live model". | ![](assets/2026-11-13-ai-chat/d4-round2-after.png) Both sources named, and the plan says it is mixed. |
+| 5 | ![](assets/2026-11-13-ai-chat/d5-wrong-name-before.png) "add state Archived after Nowhere" is sent and comes back as the HandOff meaning; 2 provider calls in total. | ![](assets/2026-11-13-ai-chat/d5-wrong-name-after.png) The phrase reader says there is no state Nowhere; still 0 provider calls. |
+
+Defect 4 cannot be reached with a real provider today, because a system you started models no meanings for a model to
+pick. The first round's reply is therefore the real offline reply relabelled as a live model's (`page.route`), the
+way a live provider labels it. The second round is untouched.
+
+Defects 2, 6, 7 and 9 have no screen. Their evidence is the regression test failing on `main` and passing here:
+
+```text
+main (22298bc2):
+FAILED tests/test_live_plan.py::test_a_second_live_request_while_one_runs_is_refused_and_never_sent
+FAILED tests/test_live_plan.py::test_every_live_call_is_audited_by_a_hash_never_the_request
+    AssertionError: assert [] == ['PlanProviderCallStarted', 'PlanProposalReceived']
+FAILED tests/test_live_plan.py::test_bootstrap_wires_the_live_proposer_to_the_studio_audit_log
+    AttributeError: 'LivePlanProposer' object has no attribute 'audit'
+FAILED tests/test_live_plan.py::test_plan_check_on_a_system_you_started_declares_new_names_as_the_chat_does
+    KeyError: 'grows'   (and legal stays False on a system you started)
+FAILED tests/test_play_describe.py::test_two_end_states_whose_test_titles_slug_alike_get_distinct_test_ids
+    assert 2 == 1  where ids = ['payment-reaches-paid-out', 'payment-reaches-paid-out']
+this branch: all pass
+```
 
 ## Regression tests
 
-* `tests/test_live_plan.py::test_a_request_that_is_partly_exact_phrases_is_refused_before_anything_is_sent`
-* `tests/test_live_plan.py::test_a_second_live_request_while_one_runs_is_refused_and_never_sent`
-* `tests/test_play_greenfield.py::test_a_round_that_would_take_the_plan_past_one_preview_is_refused`
+* `tests/test_live_plan.py::test_a_request_that_is_partly_exact_phrases_is_refused_before_anything_is_sent` (1)
+* `tests/test_live_plan.py::test_a_second_live_request_while_one_runs_is_refused_and_never_sent` (2)
+* `tests/test_play_greenfield.py::test_a_round_that_would_take_the_plan_past_one_preview_is_refused` (3)
+* `tests/test_live_plan.py::test_an_exact_phrase_naming_what_the_model_lacks_gets_the_phrase_readers_answer_and_is_not_sent` (5)
+* `tests/test_live_plan.py::test_every_live_call_is_audited_by_a_hash_never_the_request` and `test_bootstrap_wires_the_live_proposer_to_the_studio_audit_log` (6)
+* `tests/test_live_plan.py::test_plan_check_on_a_system_you_started_declares_new_names_as_the_chat_does` (7)
+* `tests/test_play_describe.py::test_two_end_states_whose_test_titles_slug_alike_get_distinct_test_ids` (9)
 
-All three fail on `main` before the fix and pass after. Defect 4 was checked in Chromium (the card's provenance line)
+Each fails on `main` before the fix and passes after. Defect 4 was checked in Chromium (the card's provenance line)
 and by the chat browser tests in `test_play_diff.py`, `test_play_history.py` and `test_play_game.py`.

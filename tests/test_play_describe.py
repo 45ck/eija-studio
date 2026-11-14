@@ -185,3 +185,18 @@ def test_the_offline_reader_takes_fields_not_clauses(text, fields):
     names = said.removeprefix("Fields from your words: ").rstrip(".").split(", ")
     own = {f["name"]: (f["type"], f.get("choices")) for f in read["fields"] if f["name"] in names}
     assert own == fields, read["reading"]
+
+
+def test_two_end_states_whose_test_titles_slug_alike_get_distinct_test_ids():
+    """Fagan inspection 2026-11-13 (D9): `Paid_Out` and `Paid__Out` both slugged to one id, so the system was refused."""
+    from eija_studio.application.describe_system import tests_for  # noqa: PLC0415
+    from eija_studio.application.new_system import sketch_documents  # noqa: PLC0415
+    from eija_studio.domain.pack import parse_pack  # noqa: PLC0415
+    from eija_studio.domain.scenarios import parse_scenarios  # noqa: PLC0415
+
+    sketch = "Placed -> Paid_Out : Pay [Clerk]\nPlaced -> Paid__Out : Settle [Clerk]"
+    pack = parse_pack(sketch_documents("Payments", "Payment", sketch, "payments")["pack.json"])
+    document = tests_for(pack, "Payment")
+    ids = [s["id"] for s in document["scenarios"]]
+    assert len(ids) == len(set(ids)) and {"payment-reaches-paid-out", "payment-reaches-paid-out-2"} <= set(ids)
+    parse_scenarios(document, pack.id)  # the kernel's own check of the file

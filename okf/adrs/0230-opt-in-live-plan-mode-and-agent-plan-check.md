@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0230-opt-in-live-plan-mode-and-agent-plan-check.md
   title: 0230-opt-in-live-plan-mode-and-agent-plan-check.md
   hash_method: lf-sha256-v1
-  sha256: 0de84bcc4d45099142b6a93a6c10d85387173d479083cf9785cf884621254305
-notes_baseline: 1892d589021fb2e4b35b1d6d398410dfbc23e1280820b66716a9eb2f42d99844
+  sha256: 552559d68c5875205eb10f9f23d3912cc069c60876aede4a7d61f932e12d06f7
+notes_baseline: 1e216dafb542b27314789d6c889b13dceaf9db2c09dda9bbd6273be1f7dc312b
 ---
 
 # ADR-0230: Opt-in live plan mode, and a plan check for coding agents
