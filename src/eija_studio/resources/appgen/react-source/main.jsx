@@ -64,16 +64,39 @@ function Navigation() {
   }
   return <nav className="app-navigation" aria-label="Application navigation"><ul>{roots.map(item)}</ul></nav>;
 }
-function Field({field}) {
-  const id = `field-${field.name}`, value = state.form.fields[field.name];
-  const common = {id, label: field.label, className: "field-control", disabled: state.writing};
-  if (field.type === "boolean") return <Checkbox {...common} checked={Boolean(value)}
-    onChange={event => updateRecordField(field.name, event.currentTarget.checked)}/>;
-  const props = {...common, value: value ?? "", required: field.required,
-    onChange: event => updateRecordField(field.name, event.currentTarget.value)};
+function Control({id, field, label, value, onChange, onEnter, nested = false}) {
+  // A nested control (the add-object form inside the record form) never blocks the record form's own submit.
+  const common = {id, label, className: "field-control", disabled: state.writing};
+  if (field.type === "boolean") return <Checkbox {...common} checked={Boolean(value)} onChange={event => onChange(event.currentTarget.checked)}/>;
+  const props = {...common, value: value ?? "", required: field.required && !nested, withAsterisk: field.required,
+    onChange: event => onChange(event.currentTarget.value)};
   if (field.type === "choice") return <NativeSelect {...props} data={[{value: "", label: ""}, ...field.choices]}/>;
   return <TextInput {...props} type={{number: "number", date: "date"}[field.type] || "text"}
+    onKeyDown={onEnter && (event => { if (event.key === "Enter") { event.preventDefault(); onEnter(); } })}
     maxLength={field.type === "text" ? field.max_length : undefined} step={field.type === "number" ? "any" : undefined}/>;
+}
+function ReferenceField({field, reference}) {
+  const cls = reference.class, stored = state.objects[cls] || [], entity = state.app.stored_classes[cls];
+  const draft = state.newObjects[cls] || {};
+  return <div className="reference">
+    <NativeSelect id={`field-${field.name}`} label={field.label} className="field-control" required={field.required}
+      disabled={state.writing} value={state.form.fields[field.name] ?? ""}
+      onChange={event => updateRecordField(field.name, event.currentTarget.value)}
+      data={[{value: "", label: stored.length ? "" : `No ${cls} yet: add one below`}, ...stored.map(item => ({value: item.id, label: objectLabel(item)}))]}/>
+    {entity && <details className="add-object"><summary>Add a {cls}</summary>
+      {entity.attributes.map(attribute => <Control key={attribute.name} id={`object-${cls}-${attribute.name}`} field={attribute}
+        label={attribute.name} value={draft[attribute.name]} onChange={value => updateObjectField(cls, attribute.name, value)}
+        onEnter={() => addObject(reference)} nested/>)}
+      <Button type="button" className="quiet" disabled={state.writing || !state.fresh} onClick={() => addObject(reference)}>Add {cls}</Button>
+      <Notice id={`object-feedback-${cls}`}/>
+    </details>}
+  </div>;
+}
+function Field({field}) {
+  const reference = referenceOf(field.name);
+  if (reference) return <ReferenceField field={field} reference={reference}/>;
+  return <Control id={`field-${field.name}`} field={field} label={field.label} value={state.form.fields[field.name]}
+    onChange={value => updateRecordField(field.name, value)}/>;
 }
 function Records() {
   const screen = state.app?.screens.create;
@@ -98,7 +121,7 @@ function Records() {
 }
 function Values({record, screen}) {
   return <dl className="values">{screenFields(screen).map(field => <React.Fragment key={field.name}>
-    <dt>{field.label}</dt><dd>{field.name in record.fields ? String(record.fields[field.name]) : "—"}</dd>
+    <dt>{field.label}</dt><dd>{field.name in record.fields ? referenceText(field.name, record.fields[field.name]) : "—"}</dd>
   </React.Fragment>)}</dl>;
 }
 function ActionChoice({option, record}) {
@@ -135,7 +158,7 @@ function Detail() {
     <h2 id="detail-title" tabIndex={-1}>{record?.title || "Select a record"}</h2>
     <p id="record-state" className="record-state" hidden={!record}>Current state <strong id="current-state" className="chip">{record?.state}</strong></p>
     <dl id="detail-fields" className="values">{Object.entries(record?.fields || {}).map(([name, value]) =>
-      <React.Fragment key={name}><dt>{labels[name] || name}</dt><dd>{String(value)}</dd></React.Fragment>)}</dl>
+      <React.Fragment key={name}><dt>{labels[name] || name}</dt><dd>{referenceText(name, value)}</dd></React.Fragment>)}</dl>
     <ol id="flow" className="flow" aria-label="States">{(state.app?.states || []).map(value =>
       <li key={value} aria-current={value === record?.state ? "step" : undefined}>{value}</li>)}</ol>
     <div id="stranded" className="notice warn" hidden={!record || record.current_model}>

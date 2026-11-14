@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#signal_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: c93f581cbede4388b6dfd1431e53e9b527ac02d4e187ab197116ffe5b1aa05f7
-notes_baseline: 18d0ea4e116ccab71302b1931b88bbac8ef3de4c592331ff6f90055a56118110
+  sha256: 4e037a6f5338e78cb630d4872d5af786f50738e668cf5e57eb7466b92fe51c37
+notes_baseline: 2273fe56449ac1cb6f193f58d17d2824f17f7449989639e7fc95339c86d96cfe
 ---
 
 # application.appgen.signal_cases
@@ -47,10 +47,7 @@ _No curated notes yet._
 
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
 * [application.oracle_session.absent](/symbols/application/oracle_session/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
-* [application.runtime.receive](/symbols/application/runtime/receive.md) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
-* [application.simulation.MemorySession](/symbols/application/simulation/MemorySession.md) - The kernel's unit-of-work port over plain dictionaries, keeping every record, operation and effect.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
-* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 <!-- okf:generated:end links -->

@@ -154,6 +154,16 @@ def options(state: str, actor_id: str, acts: list[tuple[str, str]] | None = None
     return result
 
 
+def stale_code(record: dict[str, Any]) -> tuple[str, str] | None:
+    """Why every action on this record is refused, in the order `act` and the kernel refuse it: values another data
+    model checked (STALE_DATA, refused here first), then a record of another model (the kernel's STALE_INSTANCE)."""
+    if record["data_digest"] != DATA_DIGEST:
+        return "STALE_DATA", "This record was created under an earlier data model; actions on it are refused"
+    if record["model_hash"] != MODEL.semantic_hash:
+        return "STALE_INSTANCE", "This record was created under an earlier model; actions on it are refused"
+    return None
+
+
 class Service:
     """All writes for one request commit together or not at all."""
 
@@ -236,12 +246,14 @@ class Service:
     def objects(self, cls: str) -> list[dict[str, Any]]:
         if cls not in STORED:
             raise DomainError("NOT_FOUND", "This app stores no objects of that class")
-        return [{"id": r["id"], "class": cls, "fields": json.loads(r["fields"])} | ({"state": r["state"]} if r["state"] else {})
-                for r in self.db.execute("SELECT id, fields, state FROM objects WHERE class=? ORDER BY rowid", (cls,))]
+        with self.lock:  # never read another request's uncommitted writes on the shared connection
+            return [{"id": r["id"], "class": cls, "fields": json.loads(r["fields"])} | ({"state": r["state"]} if r["state"] else {})
+                    for r in self.db.execute("SELECT id, fields, state FROM objects WHERE class=? ORDER BY rowid", (cls,))]
 
     def records(self) -> list[dict[str, Any]]:
-        ids = [row[0] for row in self.db.execute("SELECT id FROM records ORDER BY rowid DESC")]
-        return [self._record(record_id) for record_id in ids]
+        with self.lock:  # a write's records are seen only once it commits, never while it may still roll back
+            ids = [row[0] for row in self.db.execute("SELECT id FROM records ORDER BY rowid DESC")]
+            return [self._record(record_id) for record_id in ids]
 
     def history(self, record_id: str) -> list[dict[str, Any]]:
         steps = []
@@ -254,11 +266,15 @@ class Service:
         return steps
 
     def view(self, record_id: str, actor_id: str) -> dict[str, Any]:
-        record, session = self._record(record_id), Session(self.db)
-        objects = {o.link: session.object_state(record_id, o.link) for o in MODEL.objects}
-        return {"record": record, "history": self.history(record_id),
-                "options": options(record["state"], actor_id, session.acts(record_id), record["fields"],
-                                   session.elapsed(record_id), objects)}
+        with self.lock:  # one consistent, committed reading of the record, its history and its options
+            record, session = self._record(record_id), Session(self.db)
+            objects = {o.link: session.object_state(record_id, o.link) for o in MODEL.objects}
+            offered = options(record["state"], actor_id, session.acts(record_id), record["fields"],
+                              session.elapsed(record_id), objects)
+            stale = stale_code(record)
+            if stale is not None:  # `act` refuses every action on it, whoever asks, so none is offered
+                offered = [o | {"allowed": False, "code": stale[0], "reason": stale[1]} for o in offered]
+            return {"record": record, "history": self.history(record_id), "options": offered}
 
     def receive(self, signal: str, sender: str, operation_id: str, fields: dict[str, Any] | None = None) -> dict[str, Any]:
         """Start a record because another workflow of the system sent `signal` (ADR-0242). The signal carries the new
@@ -279,7 +295,8 @@ class Service:
         return self._write(work)
 
     def outbox(self) -> list[dict[str, Any]]:
-        return [dict(r) for r in self.db.execute("SELECT * FROM outbox ORDER BY rowid")]
+        with self.lock:
+            return [dict(r) for r in self.db.execute("SELECT * FROM outbox ORDER BY rowid")]
 
     def act(self, record_id: str, actor_id: str, action: str, expected_version: int, operation_id: str) -> dict[str, Any]:
         command = ExecuteCommand(operation_id=operation_id, actor_id=actor_id, instance_id=record_id, action=action,

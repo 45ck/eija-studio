@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#CASE_KINDS
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 7524ef19f752a5083032de79485f155745ea964a136ceb9e8ffe50b78d49f9c4
-notes_baseline: cb098462e3cdc05c36ff59755276a4e0ac82193bfca7d49e64221e21ebc18402
+  sha256: be67a87387dcdc916567994e243a18d8ee85b24d3c63c1f2c61111692f22c28a
+notes_baseline: 5b8f961dfe62c94b157a828f2dededfcfef713688e25a172a5f1aec581984d6c
 ---
 
 # application.appgen.CASE_KINDS

@@ -29,7 +29,7 @@ def test_the_built_app_calls_the_kernel_and_has_no_rules_of_its_own():
     assert ids["sqlite3"] == "database" and ids["app/web"] == "browser" and ids["tests.test_conformance"] == "test"
     assert uses(diagram, "app.service", "eija_studio.application.runtime") == ["check_actor", "check_due", "check_guards", "check_linked", "check_separation", "execute", "initialise", "receive", "separations"]
     assert "check_values" in uses(diagram, "app.service", "eija_studio.domain.data")
-    assert uses(diagram, "app/web", "app.server") == ["/api/app", "/api/outbox", "/api/records"]
+    assert uses(diagram, "app/web", "app.server") == ["/api/app", "/api/objects", "/api/outbox", "/api/records"]
     assert uses(diagram, "app.service", "app/data.json") == ["reads"] and uses(diagram, "tests.test_conformance", "app.service")
     assert diagram["unserved_routes"] == [] and "json" in diagram["not_drawn"]
 

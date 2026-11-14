@@ -1,5 +1,8 @@
 # Update log
 
+## 2026-11-14
+* **Inspection of the app generator (ADR-0249)**: synced ADR-0249, `CASE_KINDS` (`object_cases`), `object_cases` and its answer helper, `signal_cases` (stored values and a second delivery), `generate` (README counts every case), `GENERATED_TESTS` (20) and `check_accessibility` (the label contract follows the page's `Control` and reference chooser). Re-read the Notes of `check_accessibility` as `process:claude-code-app-generator-inspection`; they still hold. No human source approval was recorded.
+
 ## 2026-11-13
 * **Fagan inspection of the AI chat and plan mode**: synced the ADR-0230 amendment (mixed requests refused with `PLAN_REQUEST_MIXED`, one live call at a time with `PROVIDER_BUSY`), `adapters.live_plan_proposals` and `adapters.plan_proposals` (`clauses_read`). No Notes were changed, nothing was recorded as verified, and no human source approval was recorded.
 * **Inspection fixes, round two**: synced the further ADR-0230 amendments (phrase-shaped requests with a wrong name stay offline, live plan calls audited, `plan_check` follows `grows`), `Studio.record`, `StudioViews.plan_check`, `bootstrap.build_studio`, `interfaces.cli` (`eija mcp --systems`) and `application.describe_system` (`_unique` test ids). Re-read the Notes of `application.service_views`, `Studio` and `StudioViews` as `process:claude-code` and updated all three. No human source approval was recorded.

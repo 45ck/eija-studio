@@ -137,9 +137,11 @@ def test_a_signal_alone_puts_two_workflows_in_one_system():
 def test_the_oracle_delivers_each_signal_and_two_it_refuses():
     cases = signal_cases(FINES, FINES.model, data_for(FINES))
     assert [(c["signal"], c["sender"], c["expect"]) for c in cases] == [
-        (LATE, "library-loan", {"outcome": "STARTED", "state": "Issued"}),
+        (LATE, "library-loan", {"outcome": "STARTED", "state": "Issued",  # with the values the record keeps (ADR-0249)
+                                "fields": {"amount": 1, "reason": "Overdue", "issuedOn": "2026-01-15", "note": "Sample"}}),
         ("Signal:Unheard", "library-loan", {"outcome": "REFUSED", "code": "SIGNAL_NOT_ACCEPTED"}),
         (LATE, "unheard-workflow", {"outcome": "REFUSED", "code": "SIGNAL_NOT_ACCEPTED"})]
+    assert cases[0]["again"] == {"outcome": "STARTED"}  # the same signal as a new message starts another record
     assert signal_cases(FINES, deaf(FINES.model), data_for(FINES)) == []
     assert "signal_cases" not in json.loads(generate(FINES, deaf(FINES.model), data_for(FINES))[0]["tests/oracle.json"])
 

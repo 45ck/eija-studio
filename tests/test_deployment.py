@@ -43,7 +43,7 @@ def test_the_built_app_runs_as_a_browser_a_python_process_and_a_database_file():
 
 def test_the_paths_are_the_routes_the_page_calls_and_the_sqlite3_connection():
     paths = app_deployment(built(), "0")["paths"]
-    assert paths[0] == {"source": "node:browser", "target": "node:process", "protocol": "HTTP", "names": ["/api/app", "/api/outbox", "/api/records"]}
+    assert paths[0] == {"source": "node:browser", "target": "node:process", "protocol": "HTTP", "names": ["/api/app", "/api/objects", "/api/outbox", "/api/records"]}
     assert paths[1]["protocol"] == "sqlite3" and paths[1]["target"] == "node:database"
 
 

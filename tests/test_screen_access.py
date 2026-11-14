@@ -103,7 +103,7 @@ def test_the_page_template_checks_can_fail(check, js, html):
     assert report(js=js, html=html)[check] == "FAIL"
 
 
-@pytest.mark.parametrize("binding", ['label="Record name"', 'label: field.label', 'htmlFor="actor"'])
+@pytest.mark.parametrize("binding", ['label="Record name"', 'label={field.label}', 'htmlFor="actor"', 'id={`field-${field.name}`}'])
 def test_react_control_label_contract_detects_each_missing_binding(binding):
     assert binding in JS
     assert report(js=JS.replace(binding, ""))["labelled-controls"] == "FAIL"

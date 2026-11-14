@@ -67,7 +67,7 @@ class GeneratedAppActivation(Contract):
     subject_hash: Digest
 
 
-GENERATED_TESTS = 17  # the template's test methods: time events (ADR-0237), linked objects (ADR-0241), signals (ADR-0242) and five more (ADR-0243)
+GENERATED_TESTS = 20  # the template's test methods: time events (ADR-0237), linked objects (ADR-0241), signals (ADR-0242), five more (ADR-0243) and three (ADR-0249)
 
 
 def generated_receipt_status(receipt: dict[str, Any], binding: GeneratedAppBinding,

@@ -70,6 +70,27 @@ def handler_for(service: Service):
             self.end_headers()
             self.wfile.write(body)
 
+        def _host_allowed(self) -> bool:
+            """Only a request addressed to this app's own loopback address. A page served from another name that
+            resolves here (DNS rebinding) sends that name as Host, and is refused before anything is read or written."""
+            port = self.server.server_address[1]
+            if self.headers.get("Host", "") in {f"127.0.0.1:{port}", f"localhost:{port}"}:
+                return True
+            self._json(403, {"code": "HOST_DENIED", "message": "Loopback host required"})
+            return False
+
+        @staticmethod
+        def _text(body: dict, name: str) -> str:
+            """A text value of the request, never another JSON type turned into text (a null title is not "None")."""
+            value = body.get(name, "")
+            if not isinstance(value, str):
+                raise Refused("BAD_REQUEST", f"{name} must be a string")
+            return value
+
+        def _failed(self) -> None:
+            """Anything unforeseen is still answered, so the page reports a failed request instead of a dropped one."""
+            self._json(500, {"code": "INTERNAL_ERROR", "message": "The app could not answer this request"})
+
         def _json(self, status: int, value) -> None:
             self._send(status, json.dumps(value).encode(), "application/json")
 
@@ -99,6 +120,8 @@ def handler_for(service: Service):
             return operation
 
         def do_GET(self) -> None:
+            if not self._host_allowed():
+                return None
             url = urlparse(self.path)
             if url.path in STATIC:
                 name, kind = STATIC[url.path]
@@ -119,9 +142,13 @@ def handler_for(service: Service):
                     return self._json(200, service.objects(stored.group(1)))
             except Refused as refused:
                 return self._refused(refused)
+            except Exception:  # noqa: BLE001 - answered, never a dropped connection
+                return self._failed()
             self._json(404, {"code": "NOT_FOUND", "message": "No such page"})
 
         def do_POST(self) -> None:
+            if not self._host_allowed():
+                return None
             url = urlparse(self.path)
             try:
                 body = self._body()
@@ -129,19 +156,19 @@ def handler_for(service: Service):
                     fields = body.get("fields", {})
                     if not isinstance(fields, dict):
                         raise Refused("BAD_REQUEST", "fields must be a JSON object")
-                    return self._json(201, service.create(str(body.get("title", "")), str(body.get("actor", "")), fields))
+                    return self._json(201, service.create(self._text(body, "title"), self._text(body, "actor"), fields))
                 if url.path == "/api/signals" and MODEL.receives:  # another workflow's signal starts a record (ADR-0242)
                     fields = body.get("fields", {})
                     if not isinstance(fields, dict):
                         raise Refused("BAD_REQUEST", "fields must be a JSON object")
-                    started = service.receive(str(body.get("signal", "")), str(body.get("sender", "")), self._operation(body), fields)
+                    started = service.receive(self._text(body, "signal"), self._text(body, "sender"), self._operation(body), fields)
                     return self._json(201 if started["started"] else 200, started)
                 stored = OBJECTS.match(url.path)
                 if stored:
                     fields = body.get("fields", {})
                     if not isinstance(fields, dict):
                         raise Refused("BAD_REQUEST", "fields must be a JSON object")
-                    return self._json(201, service.create_object(stored.group(1), str(body.get("actor", "")), fields))
+                    return self._json(201, service.create_object(stored.group(1), self._text(body, "actor"), fields))
                 match = RECORD.match(url.path)
                 if match and match.group(2):
                     version = body.get("expected_version")
@@ -149,12 +176,14 @@ def handler_for(service: Service):
                         version = int(version)
                     if not isinstance(version, int) or isinstance(version, bool):
                         raise Refused("BAD_REQUEST", "expected_version must be an integer")
-                    return self._json(200, service.act(match.group(1), str(body.get("actor", "")), str(body.get("action", "")),
+                    return self._json(200, service.act(match.group(1), self._text(body, "actor"), self._text(body, "action"),
                                                        version, self._operation(body)))
             except Refused as refused:
                 return self._refused(refused)
-            except (ValueError, json.JSONDecodeError):
+            except (ValueError, json.JSONDecodeError, RecursionError):
                 return self._json(400, {"code": "BAD_REQUEST", "message": "Malformed request"})
+            except Exception:  # noqa: BLE001 - answered, never a dropped connection
+                return self._failed()
             self._json(404, {"code": "NOT_FOUND", "message": "No such endpoint"})
 
     return Handler

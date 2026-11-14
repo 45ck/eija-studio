@@ -214,10 +214,57 @@ class Conformance(unittest.TestCase):
                     self.assertEqual({"outcome": "REFUSED", "code": refused.code}, case["expect"])
                     self.assertEqual(svc.records(), [])
                     continue
-                self.assertEqual({"outcome": "STARTED", "state": started["record"]["state"]}, case["expect"])
+                self.assertEqual({"outcome": "STARTED", "state": started["record"]["state"],
+                                  "fields": started["record"]["fields"]}, case["expect"])
                 again = svc.receive(case["signal"], case["sender"], f"signal-{n}", case["fields"])
                 self.assertEqual((again["started"], again["record"]["id"]), (False, started["record"]["id"]))
                 self.assertEqual(len(svc.records()), 1)
+                # the same signal sent again as a new message, under its own operation id
+                other = svc.receive(case["signal"], case["sender"], f"signal-{n}-again", case["fields"])
+                self.assertEqual({"outcome": "DUPLICATE" if other["duplicate"] else "STARTED"}, case["again"])
+
+    def test_objects_a_record_refers_to_are_stored_as_the_data_model_says(self):
+        """Each object case through the app's own create: kept exactly as the data model cleans it, starting in its
+        lifecycle's initial state when it has one (ADR-0235, ADR-0241), or refused with the data model's code. Then a
+        record can name the object the app created."""
+        self.assertEqual(bool(ORACLE.get("object_cases")), bool(service.STORED))
+        for case in ORACLE.get("object_cases", []):
+            with self.subTest(cls=case["class"], case=case["name"]):
+                svc = service.Service()
+                try:
+                    made = svc.create_object(case["class"], case["actor"], case["fields"])
+                except service.Refused as refused:
+                    self.assertEqual({"outcome": "REFUSED", "code": refused.code}, case["expect"])
+                    self.assertEqual(svc.objects(case["class"]), [])
+                    continue
+                self.assertEqual({"outcome": "CREATED", "fields": made["fields"]} |
+                                 ({"state": made["state"]} if "state" in made else {}), case["expect"])
+                self.assertEqual([{k: v for k, v in o.items() if k != "id"} for o in svc.objects(case["class"])],
+                                 [{"class": case["class"]} | {k: v for k, v in case["expect"].items() if k != "outcome"}])
+                fields = dict(VALID or {}) | {r.name: made["id"] for r in service.REFERENCES if r.target == case["class"]}
+                for item in ORACLE.get("objects", []):  # the record's other references name objects stored as usual
+                    if item["class"] != case["class"]:
+                        svc.db.execute("INSERT INTO objects(id,class,fields,created_by) VALUES(?,?,?,'oracle')",
+                                       (item["id"], item["class"], json.dumps(item["fields"])))
+                creator = next(c["actor"] for c in ORACLE["create_cases"] if c["expect"]["outcome"] == "CREATED")
+                self.assertEqual(svc.create("Refers to it", creator, fields)["fields"], ORACLE["data_cases"][0]["expect"]["fields"]
+                                 | {r.name: made["id"] for r in service.REFERENCES if r.target == case["class"]})
+
+    def test_a_step_restarts_the_records_clock(self):
+        """Every committed step enters its target state afresh, so a time event leaving it counts from that step, as the
+        kernel counts it (ADR-0237), never from when the record entered an earlier state."""
+        if not ORACLE.get("waited"):
+            self.assertFalse(any(t.after for t in service.MODEL.transitions))
+            return
+        stopped = service.now()
+        with patch.object(service, "now", return_value=stopped):
+            for case in (c for c in ORACLE["cases"] if c["expect"]["outcome"] == "COMMITTED"):
+                with self.subTest(state=case["state"], action=case["action"], actor=case["actor"]):
+                    svc = service.Service()
+                    record_id = seed(svc, case["state"])
+                    self.assertEqual(service.Session(svc.db).elapsed(record_id), ORACLE["waited"])
+                    observe(svc, record_id, case)
+                    self.assertEqual(service.Session(svc.db).elapsed(record_id), 0)
 
     def test_records_from_another_data_model_are_refused(self):
         """A record whose values another data model checked is never acted on: its values may not fit this one."""
@@ -226,7 +273,13 @@ class Conformance(unittest.TestCase):
         record_id = seed(svc, case["state"])
         svc.db.execute("UPDATE records SET data_digest='an-earlier-data-model' WHERE id=?", (record_id,))
         self.assertFalse(svc.view(record_id, case["actor"])["record"]["current_model"])
+        offered = svc.view(record_id, case["actor"])["options"]  # nothing is offered that `act` will refuse
+        self.assertEqual({(o["allowed"], o["code"]) for o in offered}, {(False, "STALE_DATA")})
         self.assertEqual(observe(svc, record_id, case), {"outcome": "REFUSED", "code": "STALE_DATA"})
+        svc.db.execute("UPDATE records SET data_digest=?, model_hash='an-earlier-model' WHERE id=?", (service.DATA_DIGEST, record_id))
+        offered = svc.view(record_id, case["actor"])["options"]
+        self.assertEqual({(o["allowed"], o["code"]) for o in offered}, {(False, "STALE_INSTANCE")})
+        self.assertEqual(observe(svc, record_id, case), {"outcome": "REFUSED", "code": "STALE_INSTANCE"})
 
     def test_effects_are_written_once(self):
         """Each commit writes exactly the kernel's audit entries and notifications (to the kernel's recipient, naming
@@ -286,6 +339,39 @@ class Conformance(unittest.TestCase):
         self.assertEqual(server.describe()["initial_state"], next(
             (c["expect"]["state"] for c in ORACLE["create_cases"] if c["expect"]["outcome"] == "CREATED"), server.MODEL.initial_state))
 
+    def test_only_requests_to_the_apps_own_address_are_answered(self):
+        """A page on another host name that resolves to this machine (DNS rebinding) is refused before anything is read
+        or written; the app's own loopback addresses are answered."""
+        svc = service.Service()
+        httpd = ThreadingHTTPServer(("127.0.0.1", 0), self.server.handler_for(svc))
+        threading.Thread(target=httpd.serve_forever, daemon=True).start()
+        port = httpd.server_address[1]
+        try:
+            for host, status in ((f"127.0.0.1:{port}", 200), (f"localhost:{port}", 200), (f"rebound.example:{port}", 403),
+                                 ("127.0.0.1", 403), (f"127.0.0.1:{port + 1}", 403)):
+                for method in ("GET", "POST"):
+                    with self.subTest(host=host, method=method):
+                        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+                        connection.putrequest(method, "/api/records", skip_host=True)
+                        connection.putheader("Host", host)
+                        body = json.dumps({"title": "Rebound", "actor": "", "fields": {}}).encode()
+                        if method == "POST":
+                            connection.putheader("Content-Type", "application/json")
+                            connection.putheader("Content-Length", str(len(body)))
+                        connection.endheaders(body if method == "POST" else None)
+                        response = connection.getresponse()
+                        answer = json.loads(response.read())
+                        connection.close()
+                        if status == 403:
+                            self.assertEqual((response.status, answer["code"]), (403, "HOST_DENIED"))
+                        else:  # answered by the app itself: a read succeeds, a create gets its own answer
+                            self.assertNotEqual(answer.get("code") if isinstance(answer, dict) else None, "HOST_DENIED")
+                            self.assertEqual(response.status == 200, method == "GET")
+            self.assertEqual(svc.records(), [])
+        finally:
+            httpd.shutdown()
+            httpd.server_close()
+
     def test_the_http_api_answers_as_the_kernel_does(self):
         """Every case again, through the app's HTTP API: a commit is a success carrying the kernel's state and
         effects, a refusal an error carrying the kernel's code; starting a record is refused or created alike; and each
@@ -330,6 +416,31 @@ class Conformance(unittest.TestCase):
                     got = ({"outcome": "CREATED", "state": body["state"], "version": body["version"]} if status == 201
                            else {"outcome": "REFUSED", "code": body.get("code")})
                     self.assertEqual(got, case["expect"])
+            for n, case in enumerate(ORACLE.get("signal_cases", []), start=1):
+                with self.subTest(signal=case["signal"], sender=case["sender"]):
+                    svc = stock(service.Service())
+                    httpd.RequestHandlerClass = server.handler_for(svc)
+                    request = {"signal": case["signal"], "sender": case["sender"], "fields": case["fields"],
+                               "operation_id": f"signal-{n}"}
+                    status, body = post("/api/signals", request)
+                    if case["expect"]["outcome"] == "REFUSED":
+                        self.assertEqual({"outcome": "REFUSED", "code": body.get("code")}, case["expect"])
+                    else:
+                        self.assertEqual((status, {"outcome": "STARTED", "state": body["record"]["state"],
+                                                   "fields": body["record"]["fields"]}), (201, case["expect"]))
+                        self.assertEqual(post("/api/signals", request)[0], 200)
+                        status, body = post("/api/signals", request | {"operation_id": f"signal-{n}-again"})
+                        self.assertEqual({"outcome": "DUPLICATE" if body.get("duplicate") else "STARTED"}, case["again"])
+                    svc.db.close()
+            for case in ORACLE.get("object_cases", []):
+                with self.subTest(cls=case["class"], case=case["name"]):
+                    svc = service.Service()
+                    httpd.RequestHandlerClass = server.handler_for(svc)
+                    status, body = post(f"/api/objects/{case['class']}", {"actor": case["actor"], "fields": case["fields"]})
+                    got = ({"outcome": "CREATED", "fields": body["fields"]} | ({"state": body["state"]} if "state" in body else {})
+                           if status == 201 else {"outcome": "REFUSED", "code": body.get("code")})
+                    self.assertEqual(got, case["expect"])
+                    svc.db.close()
             creator = next(c["actor"] for c in ORACLE["create_cases"] if c["expect"]["outcome"] == "CREATED")
             for journey in ORACLE["journeys"]:
                 with self.subTest(transition=journey["transition"]):
