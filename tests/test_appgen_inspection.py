@@ -1,5 +1,5 @@
 """Regressions from the 13 November 2026 Fagan inspection of the app generator (ADR-0249,
-docs/quality/inspections/2026-11-13-app-generator.md). Each test failed on the generator before its fix."""
+docs/quality/inspection-2026-11-13-app-generator.md). Each test failed on the generator before its fix."""
 from __future__ import annotations
 
 import http.client

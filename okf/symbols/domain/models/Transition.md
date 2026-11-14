@@ -85,6 +85,7 @@ The validator [guarded](/symbols/domain/models/Transition.guarded.md) refuses re
 ## Referenced by
 
 * [Execution](/contexts/execution.md) - Owns Trusted fixture actor state, preview instances, command replay, committed effect intents
+* [application.access.meeting](/symbols/application/access/meeting.md) - A record's values that meet every guard over values of these transitions (ADR-0234): {} when they have none, None when no values meet them all.
 * [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
 * [application.runtime.check_due](/symbols/application/runtime/check_due.md) - Refuse a transition with a time event, ``after(14 days)``, before the record has been in its source state that long (ADR-0237).

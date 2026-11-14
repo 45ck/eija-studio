@@ -8,6 +8,12 @@
 - Fixed: the permissions matrix and reachability tried a step with a time event, or one that moves a linked object, on a record that had not waited or linked nothing, so they said no one could take steps Simulate commits (ai-ops, refund-desk). A cell now names its time event and the moves it makes.
 - Fixed: Simulate's counts read below zero for a frame; Stop on the run bar emptied the Simulated check; a stop on a slip named no action; Simulate and the run bar painted the diagram at once; undoing an unchecked AI plan popped "✓ AI steps checked".
 - Every answer the run, check and lens views ask for now follows one rule (`P.ticket`): shown only while it is the newest asked and about the view on show. This fixes a late reachability answer shown under a newer question, recorded test steps written for a model no longer on show, and an older run log replacing a newer one. A test fails on any new request that does not follow it.
+### 14 November 2026: review of the day's inspection PRs
+
+- Reviewed #250 to #261 one by one ([record](docs/quality/inspection-2026-11-14-todays-prs.md)); each holds, with three defects found and fixed, each with a regression test in `tests/test_todays_pr_review.py`.
+- Fixed: the SCXML export ordered any text against a date, so its chart took `[due > "2026-01-15"]` for `due = "other"` where the kernel refuses (ADR-0246 K3 had reached the kernel only).
+- Fixed: the SCXML export compared a record value with a guard of another kind, taking `True` for `1` and `6` for `!= "a"`, and failing with a `TypeError` on `"6" > 5`. Each guard now needs its own kind, as in the kernel.
+- Fixed: two inspection test modules named log files that do not exist.
 
 ### 13 November 2026: inspection of the app generator
 

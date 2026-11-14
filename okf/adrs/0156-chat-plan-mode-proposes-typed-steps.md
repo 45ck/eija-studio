@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0156-chat-plan-mode-proposes-typed-steps.md
   title: 0156-chat-plan-mode-proposes-typed-steps.md
   hash_method: lf-sha256-v1
-  sha256: 4da335b0459f5c8ab1001f1d2cb61716e10deb5b1659679fe5e2efb9827d5f4e
-notes_baseline: 11a3097175161e1e4bf08b4307f8b00a861e1359dd444c691811c894b0e42b1c
+  sha256: 5c1da59c5f235baa3be49870f5cec3cee794bdc318822e5f4ea2d89eaed2c2f7
+notes_baseline: 3e734fe8bc31f19359bf455681a096c56bc357198fa9e68e288e63060e16cf38
 ---
 
 # ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects
@@ -44,6 +44,12 @@ notes_baseline: 11a3097175161e1e4bf08b4307f8b00a861e1359dd444c691811c894b0e42b1c
 * Considered options
 * Decision outcome
 * OSS check (required for any custom module)
+
+## Code and docs mentioned
+
+Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
+
+* `repo://docs/quality/inspections/2026-11-14-ai-chat-deeper.md`
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -51,6 +57,12 @@ notes_baseline: 11a3097175161e1e4bf08b4307f8b00a861e1359dd444c691811c894b0e42b1c
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
+## Related decisions
+
+* [ADR-0230: Opt-in live plan mode, and a plan check for coding agents](/adrs/0230-opt-in-live-plan-mode-and-agent-plan-check.md) - On 2026-10-08 the owner kept PlayIDE's chat offline and synthetic: a phrase reader plus the pack's proposal rules, never a model.
+* [ADR-0234: Guards over record values](/adrs/0234-guards-over-record-values.md) - Issue #93, item 1.
+* [ADR-0237: Time events on transitions](/adrs/0237-time-events.md) - Issue #93, item 2.
+
 ## Referenced by
 
 * [ADR-0157: Drawn edits join the plan, and a checks ring rewards checking](/adrs/0157-drawn-edits-and-checks-ring.md) - The owner wants PlayIDE to be visual and mouse-driven ("drag and drop, design then test in place") and to feel rewarding, "tied to real checks".
@@ -63,4 +75,5 @@ _No curated notes yet._
 * [ADR-0176: How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses](/adrs/0176-how-a-uml-change-looks.md) - The owner asked how a change can be reviewed as a UML change instead of a pull request, and "how you even view a UML change (ghost UI/UX?)".
 * [ADR-0177: The law file and the test cases are files PlayIDE opens, edits as drafts and runs](/adrs/0177-law-files-and-test-cases-in-playide.md) - The owner asked where the formal law files and the test cases are.
 * [ADR-0198: Undo, redo and autosave of the edited document in PlayIDE](/adrs/0198-undo-redo-and-autosave-of-the-edited-document.md) - PlayIDE is meant to be more robust than the UML tools engineers already use, and every one of those has undo.
+* [ADR-0230: Opt-in live plan mode, and a plan check for coding agents](/adrs/0230-opt-in-live-plan-mode-and-agent-plan-check.md) - On 2026-10-08 the owner kept PlayIDE's chat offline and synthetic: a phrase reader plus the pack's proposal rules, never a model.
 <!-- okf:generated:end links -->

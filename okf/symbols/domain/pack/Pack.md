@@ -87,6 +87,7 @@ _No curated notes yet._
 
 * [application.access.access](/symbols/application/access/access.md) - The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with `base`.
 * [application.access.matrix](/symbols/application/access/matrix.md) - Every role's actions from every state, each tried in the kernel with the fixture actors in that role.
+* [application.access.meeting](/symbols/application/access/meeting.md) - A record's values that meet every guard over values of these transitions (ADR-0234): {} when they have none, None when no values meet them all.
 * [application.access.reach](/symbols/application/access/reach.md) - Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?
 * [application.api_contract.api_contract](/symbols/application/api_contract/api_contract.md) - The OpenAPI 3.1 document of the app this pack, model and data model build.
 * [application.app_runs.create_cases](/symbols/application/app_runs/create_cases.md) - Every fixture actor, and one unknown actor, starting a record with valid values: the state and version it starts in, or the refusal.
