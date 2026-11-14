@@ -63,6 +63,9 @@ def test_n1_an_ordering_against_a_date_holds_in_the_chart_only_for_a_date(due):
     ([{"attribute": "x", "op": "gt", "value": 5}], "6"),
     ([{"attribute": "x", "op": "eq", "value": 1}], 1.0),
     ([{"attribute": "x", "op": "eq", "value": True}], True),
+    ([{"attribute": "x", "op": "gt", "value": 5}], 10**309),  # beyond a float's range: math.isfinite would overflow
+    ([{"attribute": "x", "op": "lt", "value": 10**309}], 6),
+    ([{"attribute": "x", "op": "gt", "value": 5}], float("inf")),
 ])
 def test_n2_a_guard_never_holds_in_the_chart_across_kinds(conditions, value):
     model = _guarded(conditions)

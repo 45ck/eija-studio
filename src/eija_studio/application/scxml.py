@@ -91,11 +91,11 @@ def _kind(value: object) -> str:
     """The kind `ValueGuard.holds` compares (`models._kind`): a bool is not a number, an int and a float are both numbers,
     and anything else, None and a non-finite number included, is no kind a guard has. The differential checks the two
     agree on every value a guard can tell apart."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return "none"  # only a float: math.isfinite cannot take an int beyond a float's range, and every int is finite
     if isinstance(value, bool):
         return "boolean"
-    if isinstance(value, int | float):
-        return "number" if math.isfinite(value) else "none"
-    return "text" if isinstance(value, str) else "none"
+    return "number" if isinstance(value, int | float) else "text" if isinstance(value, str) else "none"
 
 
 def _dated(value: object, op: str) -> bool:
