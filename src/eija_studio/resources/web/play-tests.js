@@ -170,9 +170,15 @@
 
   async function tryStep() {
     const wanted = [...steps.map((s) => [s.actor, s.action]), [$("rec-actor").value, $("rec-action").value]];
+    // The kernel's answer is for these steps on the model on show: if either changed meanwhile (another step tried,
+    // Undo, a preview), writing it down would record what another model did or drop a step.
+    const mine = P.ticket("tests-try", () => JSON.stringify(steps));
     try {
-      steps = (await P.api("/api/play/tests/try", { ...P.about(), steps: wanted })).steps;
+      const tried = (await P.api("/api/play/tests/try", { ...P.about(), steps: wanted })).steps;
+      if (!mine.current()) return;
+      steps = tried;
     } catch (error) {
+      if (!mine.current()) return;
       $("tests-summary").className = "laws-summary bad";
       $("tests-summary").textContent = `Could not try that step (${error.code || "ERROR"}): ${error.message}`;
       return;

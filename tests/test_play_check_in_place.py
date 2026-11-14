@@ -83,7 +83,7 @@ def test_the_tests_tab_lets_only_its_newest_run_fill_the_panel():
 def test_simulate_drops_a_result_of_a_model_no_longer_on_screen():
     source = (WEB / "play.js").read_text(encoding="utf-8")
     body = source[source.index("async function simulate()"):source.index("// Undo, redo and autosave")]
-    assert body.index("key !== viewKey()") < body.index("showSim(result)")
+    assert body.index("!mine.current()") < body.index("showSim(result)")  # a ticket for the view on show (play.js `ticket`)
 
 
 browser = pytest.mark.skipif(os.environ.get("EIJA_BROWSER_TESTS") != "1",

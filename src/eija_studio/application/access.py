@@ -69,6 +69,7 @@ def _try(pack: Pack, model: Workflow, transition: Transition, actor_id: str, ses
     if record is None:
         record = initialise(session, CASE, model, state=transition.from_state, pack=pack)["id"]  # type: ignore[arg-type]
         session.record_values[record] = meeting(pack, [transition]) or {}
+        _ready(session, model, transition, record)
     item = session.instances[record]
     command = ExecuteCommand(operation_id=f"access-{transition.id}-{actor_id}-{item['version']}", actor_id=actor_id,
                              instance_id=record, action=transition.action, expected_version=item["version"])
@@ -79,11 +80,25 @@ def _try(pack: Pack, model: Workflow, transition: Transition, actor_id: str, ses
     return None
 
 
+def _ready(session: MemorySession, model: Workflow, transition: Transition, record: str) -> None:
+    """Make a fresh record able to take `transition` but for who acts, as a simulated record can: wait out its time
+    event (ADR-0237) and link each object it moves to one in a state that event moves from (ADR-0241). Without this a
+    timed step or one that moves an object was refused for everyone, though Simulate commits it."""
+    if transition.after is not None:
+        session.wait(transition.after.seconds)
+    for step in transition.then:
+        lifecycle = model.lifecycle(step.link)
+        if lifecycle is not None:
+            start = next((m.from_state for m in lifecycle.moves if m.event == step.event), lifecycle.initial)
+            session.link(record, step.link, f"{lifecycle.entity} {record}:{step.link}", start)
+
+
 def _cell(pack: Pack, model: Workflow, t: Transition) -> dict[str, Any]:
     actors = [a for a in pack.fixtures.actors if a.role == t.role]
     tried = [{"actor": a.id, "refused": _try(pack, model, t, a.id)} for a in actors]
     return {"action": t.action, "transition": t.id, "to": t.to_state, "assigned_only": "actor_assigned" in t.guards,
-            "actors": tried} | ({"when": [str(g) for g in t.conditions]} if t.conditions else {})
+            "actors": tried} | ({"when": [str(g) for g in t.conditions]} if t.conditions else {}) \
+        | ({"after": str(t.after)} if t.after is not None else {}) | ({"moves": [str(m) for m in t.then]} if t.then else {})
 
 
 def matrix(pack: Pack, model: Workflow) -> dict[str, Any]:
@@ -101,8 +116,10 @@ Key = tuple[str, str, str, str]
 
 
 def _conditions(cell: dict[str, Any]) -> list[str]:
-    """What, beyond the role, a cell's permission depends on: being assigned, and guards over the record's values."""
-    return (["assigned only"] if cell["assigned_only"] else []) + [f"when [{w}]" for w in cell.get("when", [])]
+    """What, beyond the role, a cell's permission depends on: being assigned, guards over the record's values, a time
+    event and the linked objects it moves."""
+    return ((["assigned only"] if cell["assigned_only"] else []) + [f"when [{w}]" for w in cell.get("when", [])]
+            + ([cell["after"]] if "after" in cell else []) + [f"moves {m}" for m in cell.get("moves", [])])
 
 
 def _keys(grid: dict[str, Any]) -> dict[Key, list[str]]:
@@ -130,8 +147,9 @@ def access(pack: Pack, model: Workflow, base: Workflow | None = None) -> dict[st
     if base is not None and base.semantic_hash != model.semantic_hash:
         changes = _changes(_keys(grid), _keys(matrix(pack, base)))
     return {"format": "eija.access.v1", "pack": pack.id, "model": model.semantic_hash, **grid, "changes": changes,
-            "limits": ["Each cell is tried in the kernel with the pack's fixture actors on a fresh record; other actors "
-                       "are refused or let through by the same guards."]}
+            "limits": ["Each cell is tried in the kernel with the pack's fixture actors on a fresh record, made ready as "
+                       "Simulate's records are: values that meet its guards, its time event waited out, and a linked "
+                       "object that can make its move. Other actors are refused or let through by the same guards."]}
 
 
 def _path(model: Workflow, target: str, usable: set[str]) -> list[Transition] | None:
@@ -174,8 +192,12 @@ def _replay(pack: Pack, model: Workflow, path: list[Transition], values: dict[st
     session = MemorySession(pack)
     record = initialise(session, CASE, model, pack=pack, role=starter)["id"]  # type: ignore[arg-type]
     session.record_values[record] = values
+    for lifecycle in model.objects:  # a new object per link, in its initial state, as Simulate starts one (ADR-0241)
+        session.link(record, lifecycle.link, f"{lifecycle.entity} 1", lifecycle.initial)
     steps: list[dict[str, Any]] = []
     for t in path:
+        if t.after is not None:  # the record waits out a time event before its timed step (ADR-0237)
+            session.wait(t.after.seconds)
         # The first fixture actor in the role the kernel lets take this step on this record: one who took an earlier
         # step may be refused by a separation of duties law (ADR-0233), and another of the role may not.
         code: str | None = "ROLE_DENIED"

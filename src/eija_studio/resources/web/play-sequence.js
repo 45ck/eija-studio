@@ -13,7 +13,7 @@
   const FONT = { fontFamily: "system-ui, sans-serif", fontColor: INK };
   const REFUSALS = ["ROLE_DENIED", "STATE_DENIED", "ASSIGNMENT_DENIED", "ACTOR_REVOKED", "ACTION_DENIED", "UNKNOWN_ACTOR"];
   const REVIEW = new URLSearchParams(location.search).get("view") === "review";
-  let P = null, graph = null, result = null, doc = null, at = 0, picked = "", seq = 0, kept = null, asked = "";
+  let P = null, graph = null, result = null, doc = null, at = 0, picked = "", kept = null, asked = "";
 
   const shown = () => (result && result.sequences.length ? result.sequences[Math.min(at, result.sequences.length - 1)] : null);
   const authored = () => (doc && doc.scenarios.length ? doc.scenarios[Math.min(at, doc.scenarios.length - 1)] : null);
@@ -22,17 +22,17 @@
 
   // ---- The check ----------------------------------------------------------------------------------------------------
   async function check() {
-    const mine = ++seq;
+    const mine = P.ticket("sequences", () => JSON.stringify(draft()));
     asked = JSON.stringify(draft());
     try {
       const r = await P.api("/api/play/sequences", draft() ? { ...P.about(), scenarios: draft() } : P.about());
-      if (mine !== seq) return; // a newer edit or preview asked again
+      if (!mine.current()) return; // a newer edit or preview asked again
       result = r;
       doc = r.document;
       badge();
       if (P.tab() === "sequences") render();
     } catch (error) {
-      if (mine !== seq) return;
+      if (!mine.current()) return;
       $("seq-verdict").replaceChildren(P.el("span", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
     }
   }
@@ -51,8 +51,13 @@
   }
 
   // What the kernel does for these (actor, action) steps from `start`: a new step expects exactly that.
+  // The answer is written into the draft only if the model and the draft are still the ones it was asked about;
+  // otherwise it would record what another model did, or overwrite an edit made meanwhile (STALE_ANSWER).
   async function tried(start, steps) {
-    return (await P.api("/api/play/tests/try", { ...P.about(), start: start || null, steps })).steps;
+    const mine = P.ticket("sequence-edit", () => JSON.stringify(doc));
+    const answer = (await P.api("/api/play/tests/try", { ...P.about(), start: start || null, steps })).steps;
+    if (!mine.current()) throw Object.assign(new Error("The model or the scenarios changed while the kernel tried that step; nothing was written. Try again"), { code: "STALE_ANSWER" });
+    return answer;
   }
 
   function badge() {
