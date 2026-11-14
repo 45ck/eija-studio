@@ -25,6 +25,10 @@ from .providers.offline import matches_rule
 
 SPLIT = re.compile(r"\s*(?:;|\n|,?\s+then\s+|,?\s+and then\s+)\s*", re.IGNORECASE)
 NAME = r"([A-Za-z][\w-]*)"
+# A limit on a value or a time ("over 500", "after 2 days", "< 3"): a guard over values (ADR-0234) or a time event
+# (ADR-0237), which no plan step can add. Only before a number, so "add state S after T" stays a phrase.
+RULE_LIMIT = re.compile(r"(?:\b(?:over|under|above|below|after|within|before|(?:more|less|fewer) than|at (?:least|most))"
+                        r"\s+(?:\$|£|€)?\d[\d.,]*(?:\s+[a-z]+)?|[<>≤≥]=?\s*\d[\d.,]*)", re.I)
 HELP = ("Use one change per clause, with exact model names, joined by 'then': add state <S> [after <T>]; rename state <A> "
         "to <B>; remove state <S>; start in <S>; add <action> from <A> to <B> for <role>; remove <action> [from <S>]; allow <role> "
         "to <action>; move <action> [from <S>] source|target to <S>. On a system you started, also: add field <name> [as "
@@ -226,6 +230,7 @@ class OfflinePlanProposer:
     name, live = "offline-plan-fixture-v1", False
 
     def propose(self, request: str, model: Workflow, pack: Pack, *, grows: bool = False) -> dict[str, Any]:
+        refuse_limits(request)
         clauses = [_normalise(c) for c in SPLIT.split(request) if _normalise(c)]
         if not clauses:
             raise DomainError("PLAN_REQUEST_UNSUPPORTED", f"I can't read that request against this model. {HELP}")
@@ -241,6 +246,16 @@ class OfflinePlanProposer:
 
     def follow_on(self, ripple: dict[str, Any], model: Workflow, pack: Pack) -> dict[str, Any]:
         return follow_ons(ripple, model, pack)
+
+
+def refuse_limits(request: str) -> None:
+    """Refuse a request that sets a limit on a value or a time. No plan step adds a guard over values or a time event,
+    so a plan would drop the limit and change the model in a way nobody asked for: the #152 substitution."""
+    limit = RULE_LIMIT.search(request)
+    if limit is not None:
+        raise DomainError("PLAN_LIMIT_UNSUPPORTED", f"I can't plan “{limit.group(0).strip()}”: no plan step adds a guard over "
+                          "values or a time event, and a plan without it would change the model in a way you did not ask "
+                          "for. Ask without it to plan the rest; the guard or time event is written in the model file.")
 
 
 def _spare_action(model: Workflow, pack: Pack) -> str | None:

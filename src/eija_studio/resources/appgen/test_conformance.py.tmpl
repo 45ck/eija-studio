@@ -20,6 +20,7 @@ from unittest.mock import patch
 
 from app import service
 from app.build_identity import current_subject
+from eija_studio.domain.app_http import status_of
 from eija_studio.domain.screens import check_screens
 
 ORACLE = json.loads((Path(__file__).resolve().parent / "oracle.json").read_text(encoding="utf-8"))
@@ -386,9 +387,14 @@ class Conformance(unittest.TestCase):
             response = connection.getresponse()
             return response.status, json.loads(response.read())
 
+        def refused(status: int, body: dict) -> dict:
+            """A refusal, sent with the status the shared table gives its code (ADR-0254)."""
+            self.assertEqual(status, status_of(body.get("code")), body)
+            return {"outcome": "REFUSED", "code": body.get("code")}
+
         def answer(status: int, body: dict) -> dict:
             if status >= 400:
-                return {"outcome": "REFUSED", "code": body.get("code")}
+                return refused(status, body)
             if status != 200 or body.get("duplicate"):
                 return {"outcome": "DUPLICATE" if body.get("duplicate") else str(status), "state": body["record"]["state"]}
             return {"outcome": "COMMITTED", "state": body["record"]["state"], "effects": body["effects"]}
@@ -411,11 +417,17 @@ class Conformance(unittest.TestCase):
                 with self.subTest(create=case["actor"]):
                     svc = stock(service.Service())
                     httpd.RequestHandlerClass = server.handler_for(svc)
-                    status, body = post("/api/records", {"title": "Over HTTP", "actor": case["actor"], "fields": VALID or {}})
-                    svc.db.close()
+                    request = {"title": "Over HTTP", "actor": case["actor"], "fields": VALID or {}, "operation_id": "create-1"}
+                    status, body = post("/api/records", request)
                     got = ({"outcome": "CREATED", "state": body["state"], "version": body["version"]} if status == 201
-                           else {"outcome": "REFUSED", "code": body.get("code")})
+                           else refused(status, body))
                     self.assertEqual(got, case["expect"])
+                    if status == 201:  # sent again after a lost answer: the same record, not a second one (ADR-0254)
+                        again, replay = post("/api/records", request)
+                        self.assertEqual((again, replay["id"], replay["duplicate"], len(svc.records())), (200, body["id"], True, 1))
+                        self.assertEqual(refused(*post("/api/records", request | {"title": "Another"})),
+                                         {"outcome": "REFUSED", "code": "OPERATION_CONFLICT"})
+                    svc.db.close()
             for n, case in enumerate(ORACLE.get("signal_cases", []), start=1):
                 with self.subTest(signal=case["signal"], sender=case["sender"]):
                     svc = stock(service.Service())
@@ -424,7 +436,7 @@ class Conformance(unittest.TestCase):
                                "operation_id": f"signal-{n}"}
                     status, body = post("/api/signals", request)
                     if case["expect"]["outcome"] == "REFUSED":
-                        self.assertEqual({"outcome": "REFUSED", "code": body.get("code")}, case["expect"])
+                        self.assertEqual(refused(status, body), case["expect"])
                     else:
                         self.assertEqual((status, {"outcome": "STARTED", "state": body["record"]["state"],
                                                    "fields": body["record"]["fields"]}), (201, case["expect"]))
@@ -438,7 +450,7 @@ class Conformance(unittest.TestCase):
                     httpd.RequestHandlerClass = server.handler_for(svc)
                     status, body = post(f"/api/objects/{case['class']}", {"actor": case["actor"], "fields": case["fields"]})
                     got = ({"outcome": "CREATED", "fields": body["fields"]} | ({"state": body["state"]} if "state" in body else {})
-                           if status == 201 else {"outcome": "REFUSED", "code": body.get("code")})
+                           if status == 201 else refused(status, body))
                     self.assertEqual(got, case["expect"])
                     svc.db.close()
             creator = next(c["actor"] for c in ORACLE["create_cases"] if c["expect"]["outcome"] == "CREATED")

@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0246-kernel-inspection-fixes.md
   title: 0246-kernel-inspection-fixes.md
   hash_method: lf-sha256-v1
-  sha256: aa1ab9f854b7eba6f5dd86f833080ec2d20fb5864416960d61d8991feee3ca4c
-notes_baseline: c537650b70b846752ad93cd30c9674c7e50f8809481291f61267019875102420
+  sha256: 9ecab07ce243083e405daeba366d20f8f8b37ec919aea14aac44b185ff2f0030
+notes_baseline: 8a73ccf918d2b3027aa9cdbbf208a86df46d4db24b77ae6d441b6a49b3d9c140
 ---
 
 # ADR-0246: The kernel refuses undeclared roles, judges path laws alike, and fails value guards closed
@@ -56,6 +56,7 @@ notes_baseline: c537650b70b846752ad93cd30c9674c7e50f8809481291f61267019875102420
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 14 November 2026: the SCXML export judges value guards as the kernel does
 * Amendment, 14 November 2026: `UNDECLARED_ROLE` names the action
 * OSS check (required for any custom module)
 
@@ -63,6 +64,7 @@ notes_baseline: c537650b70b846752ad93cd30c9674c7e50f8809481291f61267019875102420
 
 Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
 
+* `repo://docs/quality/inspection-2026-11-14-todays-prs.md`
 * `repo://tests/test_diagrams.py`
 * `repo://tests/test_kernel_inspection.py`
 <!-- okf:generated:end facts -->
@@ -74,6 +76,11 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Related decisions
 
+* [ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check](/adrs/0165-executable-uml-on-the-eija-kernel.md) - PlayIDE draws six UML views (state machine, class, use case, screens, component, sequence) over one model (ADR-0093), and `eija build` turns the model into a r…
 * [ADR-0231: Who may start a record](/adrs/0231-who-may-start-a-record.md) - Issue #142: a workflow said who may take each transition, but not who may start a record.
 * [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
+
+## Referenced by
+
+* [ADR-0250: Who starts a record is checked like who acts, and a law never protects a state that is gone](/adrs/0250-kernel-second-inspection.md) - The first inspection of the kernel (ADR-0246) read each kernel function against its own ADR.
 <!-- okf:generated:end links -->

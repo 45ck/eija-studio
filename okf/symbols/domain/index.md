@@ -3,6 +3,7 @@
 # Sections
 
 * [affordance](affordance/) - Symbols of domain.affordance
+* [app_http](app_http/) - Symbols of domain.app_http
 * [change_case](change_case/) - Symbols of domain.change_case
 * [data](data/) - Symbols of domain.data
 * [evidence](evidence/) - Symbols of domain.evidence

@@ -80,6 +80,13 @@ Chosen option.
 * Bad: the recorded tests pin down today's behaviour. A later change that alters it makes them fail. That is their purpose, so re-recording them is one deliberate click ("Update the tests"), which says what it recorded again, added and removed.
 * Neutral: shipped packs and the sketch, template and UML starts are unchanged.
 
+### Amendment, 2026-11-14 (second Fagan inspection)
+
+The offline reader makes no guard, time event or law from words. A sentence in the description that states a rule
+("Claims over 500 need finance approval", "The submitter cannot approve their own claim", "within 7 days") is now
+said back under the box as not made into a rule, up to six of them, so nobody believes the new system enforces it.
+Before, it vanished. See `docs/quality/inspections/2026-11-14-ai-chat-deeper.md`.
+
 ## Verification
 
 * `tests/test_play_describe.py` checks these things:

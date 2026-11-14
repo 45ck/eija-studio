@@ -66,6 +66,14 @@ maintainability floor (MI-01) after the additions.
 * Bad: kernel change, so it needs owner source review (#80).
 * Revisit when: the pack gains a way to declare a role from PlayIDE; `UNDECLARED_ROLE` then points at that edit.
 
+## Amendment, 14 November 2026: the SCXML export judges value guards as the kernel does
+
+The review of the day's merged inspection PRs (`docs/quality/inspection-2026-11-14-todays-prs.md`, N1 and N2) found
+that K3 reached the kernel but not the SCXML export (ADR-0165): the chart still ordered any text against a date, and
+compared a record value with a guard of another kind (`True == 1`, `6 != "a"`, a `TypeError` on `"6" > 5`). The
+sender of an event now attaches `kind_<name>` and `date_<name>` for each guarded attribute, and each guard's term
+requires the guard's own kind and, for an ordering against a date, a date. Shipped packs' committed exports are
+unchanged, since none orders against a date or mixes kinds; the differential agrees on the two new probe models.
 ## Amendment, 14 November 2026: `UNDECLARED_ROLE` names the action
 
 The integration review of the day's fixes ([record](../quality/inspections/2026-11-14-integration-review.md), I3)

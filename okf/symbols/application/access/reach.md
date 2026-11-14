@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/access.py#reach
   title: application/access.py
   hash_method: ast-v2
-  sha256: 54897298c14ceb86f449ab0130028d6638846055bea1d59206a971d729224466
-notes_baseline: a0390043583aac24a09ded3bf5ba562075006d20b67efe2902e05a6c33b8e41a
+  sha256: 751207c83e3aa8144adcace1c8e39fb07f7e0115153c2d50de3d4f11bd0d5e71
+notes_baseline: e8184390b72f039e2b22727fd7913ae902ca71ea758db83a5d306526d4eafb9c
 ---
 
 # application.access.reach
@@ -45,6 +45,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.access.meeting](/symbols/application/access/meeting.md) - A record's values that meet every guard over values of these transitions (ADR-0234): {} when they have none, None when no values meet them all.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 <!-- okf:generated:end links -->

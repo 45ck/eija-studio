@@ -384,14 +384,23 @@ _SOURCES: dict[Path, str] = {}
 _DIRECTORIES: dict[tuple[str, str], Path] = {}  # where each snapshot was last read, for files beside pack.json
 
 
-def load_pack(location: str | Path) -> Pack:
-    """Read current file contents and retain an immutable, digest-addressed pack snapshot."""
+def load_pack(location: str | Path, *, claim: bool = True) -> Pack:
+    """Read current file contents and retain an immutable, digest-addressed pack snapshot.
+
+    Files beside `pack.json` (data.json, screens.json, scenarios.json) are read from the folder the snapshot was read
+    from. Two folders can hold the same `pack.json` (a copy of a shipped pack whose class model was changed), so a
+    read that only looks at a pack, such as listing the templates or the workflows beside the open one, passes
+    `claim=False`: it does not move the snapshot to its folder, and the open system keeps reading its own files
+    (ADR-0253)."""
     path = Path(location)
     path = (path / PACK_FILE if path.is_dir() else path).resolve()
     pack = _cached(_read_text(path), path.name)
     _LOADED[pack.id, pack.digest] = pack
     _SOURCES[path] = pack.id
-    _DIRECTORIES[pack.id, pack.digest] = path.parent
+    if claim:
+        _DIRECTORIES[pack.id, pack.digest] = path.parent
+    else:
+        _DIRECTORIES.setdefault((pack.id, pack.digest), path.parent)
     return pack
 
 

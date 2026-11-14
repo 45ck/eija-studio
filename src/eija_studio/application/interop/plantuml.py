@@ -22,28 +22,36 @@ from .model import (ACTOR_KINDS, GENERATOR, PERSON_STEREOTYPES, Parsed, attribut
 from .textual import read_body, read_relation, read_transition, unread_line
 
 _PLAIN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-_ESCAPE = {"%": "<U+0025>", "<": "<U+003C>", "[[": "<U+005B>["}
+_ESCAPE = {"%": "<U+0025>", "<": "<U+003C>", "[[": "<U+005B>[", '"': "<U+0022>", "'": "<U+0027>"}
 _PRESENTATION = re.compile(r"^(title|skinparam|hide|show|left to right direction|top to bottom direction|scale|header|"
                            r"footer|caption|legend|endlegend|autonumber|!|allowmixing|set namespaceseparator)\b", re.IGNORECASE)
 
 
 def _text(text: str) -> str:
-    """Creole and the preprocessor would read `<`, `[[` and `%`; PlantUML documents `<U+XXXX>` for literal characters."""
-    plain = " ".join(text.split()).replace('"', "'")
-    return re.sub(r"%|<|\[\[", lambda m: _ESCAPE[m.group()], plain)
+    """Creole and the preprocessor would read `<`, `[[` and `%`; PlantUML documents `<U+XXXX>` for literal characters.
+    A double quote would end a quoted name, and a quote that starts a line or follows `/` starts a comment, so those
+    are written the same way and read back as they were (ADR-0253)."""
+    plain = " ".join(text.split())
+    return re.sub(r'%|<|\[\[|"|^\'|(?<=/)\'', lambda m: _ESCAPE[m.group()], plain)
 
 
 def unescape(text: str) -> str:
     return re.sub(r"<U\+([0-9A-Fa-f]{4,6})>", lambda m: character(int(m.group(1), 16)) or m.group(), text)
 
 
+# Words that start another kind of line: a state named one of them is written by an alias, or it would be read as that line.
+_KEYWORDS = {"state", "note", "end", "as", "class", "enum", "abstract", "interface", "entity", "actor", "usecase",
+             "package", "namespace", "together", "remove", "hide", "show", "skinparam", "title"}
+
+
 def _alias(name: str, prefix: str) -> str:
-    return name if _PLAIN.match(name) else prefix + name.encode("utf-8").hex()
+    plain = _PLAIN.match(name) and name.lower() not in _KEYWORDS and not _PRESENTATION.match(name)
+    return name if plain else prefix + name.encode("utf-8").hex()
 
 
 def _states(pack: Pack, model: Workflow) -> list[str]:
     out = ["@startuml " + model.id + "-states", f"title {_text(pack.pack.name)}: state machine", "hide empty description"]
-    out += [f'state "{_text(s)}" as {_alias(s, "S_")}' if not _PLAIN.match(s) else f"state {s}" for s in model.states]
+    out += [f'state "{_text(s)}" as {_alias(s, "S_")}' if _alias(s, "S_") != s else f"state {s}" for s in model.states]
     out.append(f"[*] --> {_alias(model.initial_state, 'S_')}")
     for t in sorted(model.transitions, key=lambda t: t.id):
         out.append(f"{_alias(t.from_state, 'S_')} --> {_alias(t.to_state, 'S_')} : {_text(transition_label(t))}")

@@ -8,7 +8,7 @@
   const DOT = "data:image/svg+xml," + encodeURIComponent(
     "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><circle cx='8' cy='8' r='6.5' fill='#e51400' stroke='#fff' stroke-width='1.5'/></svg>");
   const NOW = "#d99a00", REFUSED = "#a12f2f"; // the current step, as a debugger marks the current line
-  let P = null, log = null, logKey = null, pos = 0, timer = 0, mode = "idle", stopNote = "", fetching = null;
+  let P = null, log = null, logKey = null, pos = 0, timer = 0, mode = "idle", stopNote = "", loads = 0, pending = null;
   let loading = false; // a Run or Step is waiting for its log: Stop can cancel it, so it is enabled
   let generation = 0; // bumped by Stop, Restart and a redraw, so a Run or Step still loading its log does not start after them
   const marks = new Set(), overlays = new Map();
@@ -21,15 +21,28 @@
 
   // The run log for the model on screen, with the current breakpoints. Re-fetched when breakpoints change: the same
   // seed and model give the same steps, so the position is kept; a different model starts again from step 0.
-  async function load() {
+  // Only the log for the newest breakpoints, on the model on show, is kept: an earlier one landing late would run
+  // without a breakpoint the bar shows as set. A superseded load waits for the newest load instead.
+  function load() {
+    const n = ++loads;
+    pending = fetchLog(n);
+    return pending;
+  }
+
+  async function fetchLog(n) {
     const key = P.viewKey(), before = log;
     const body = { ...P.about(), seed: SEED, steps: STEPS, breakpoints: [...marks].filter(exists), break_on_refusal: $("break-refusal").checked };
-    fetching = P.api("/api/play/run", body);
+    const mine = P.ticket("run-log", () => JSON.stringify([[...marks].filter(exists), $("break-refusal").checked]));
+    const later = () => (n !== loads ? pending : load()); // the newest load, or one for what is on show now
+    let answer;
     try {
-      log = await fetching;
-    } finally {
-      fetching = null;
+      answer = await P.api("/api/play/run", body);
+    } catch (error) {
+      if (mine.current()) throw error;
+      return later(); // a refusal of an earlier question is not this one's
     }
+    if (!mine.current()) return later();
+    log = answer;
     if (!before || before.model !== log.model || logKey !== key) pos = 0;
     logKey = key;
     $("debug-limits").textContent = `Seed ${log.seed}, ${log.steps} steps. ` + log.limits.join(" ");
@@ -54,7 +67,7 @@
 
   function stopText(stop) {
     if (stop.reason === "exception") return stop.elements[0].startsWith("state:")
-      ? `the kernel refused an action from ${name(stop.elements[0])} (${stop.code})` : `the kernel refused ${name(stop.elements[0])} (${stop.code})`;
+      ? `the kernel refused ${stop.action || "an action"} from ${name(stop.elements[0])} (${stop.code})` : `the kernel refused ${name(stop.elements[0])} (${stop.code})`;
     return "breakpoint on " + stop.elements.map(name).join(", ");
   }
 
@@ -68,6 +81,7 @@
       await waiting(mine);
     } catch (error) { return mine === generation ? failed(error) : undefined; }
     if (mine !== generation || !log) return; // stopped, restarted, pressed again or redrawn while the log loaded
+    yieldSimulate();
     mode = "running";
     stopNote = "";
     const delay = Number($("run-speed").value);
@@ -82,6 +96,24 @@
       timer = setTimeout(tick, delay);
     };
     tick();
+  }
+
+  // The diagram shows one run at a time. Run and Step take it from a Simulate result on show (its panel would claim
+  // totals the diagram no longer shows); a Simulate result shown takes it from the run bar, which ends its run.
+  function yieldSimulate() {
+    if (!$("sim").hidden) P.clearSim();
+  }
+
+  function simulated() {
+    if (mode === "idle") return;
+    generation += 1;
+    loading = false;
+    clearTimeout(timer);
+    mode = "idle";
+    pos = 0;
+    stopNote = "";
+    P.restyle("initial-edge", {}); // Simulate repaints every state and transition; the run's mark on the start is the one left
+    render("Ended the run: the diagram shows Simulate's run");
   }
 
   // One step forward. Returns true when the run stops here (a stop, or the end).
@@ -107,6 +139,7 @@
     const mine = ++generation;
     try { await waiting(mine); } catch (error) { return mine === generation ? failed(error) : undefined; }
     if (mine !== generation || !log) return;
+    yieldSimulate();
     mode = "paused";
     stopNote = "";
     advance();
@@ -247,6 +280,7 @@
 
   function describe(e) {
     if (e.outcome === "CREATED") return `${e.actor} created ${e.record} in ${e.to}`;
+    if (e.start) return `${e.actor} tried to start a record: refused, ${e.code}`; // a revoked user (ADR-0250)
     return `${e.actor} ${e.action} on ${e.record}: ` + (e.outcome === "REFUSED" ? `refused, ${e.code}` : `${e.from} → ${e.to}`);
   }
 
@@ -373,6 +407,7 @@
     $("break-refusal").addEventListener("change", () => { if (log) load().then(() => render()).catch(failed); });
     new MutationObserver(buttons).observe($("run"), { attributes: true, attributeFilter: ["hidden"] });
     document.addEventListener("keydown", keys);
+    document.addEventListener("playide:simulated", simulated);
     render();
   }
 

@@ -1,5 +1,5 @@
 """Regressions from the 13 November 2026 Fagan inspection of the app generator (ADR-0249,
-docs/quality/inspections/2026-11-13-app-generator.md). Each test failed on the generator before its fix."""
+docs/quality/inspection-2026-11-13-app-generator.md). Each test failed on the generator before its fix."""
 from __future__ import annotations
 
 import http.client
@@ -161,7 +161,7 @@ def test_the_page_lets_a_person_choose_or_add_the_object_a_record_refers_to():
     page = (source / "main.jsx").read_text(encoding="utf-8")
     controller = (source / "controller.js").read_text(encoding="utf-8")
     assert "function ReferenceField" in page and "Add a {cls}" in page
-    assert "/api/objects/${cls}" in controller and "state.form.fields[reference.field] = made.id" in controller
+    assert "/api/objects/${cls}" in controller and "updateRecordField(reference.field, made.id)" in controller
 
 
 @pytest.mark.browser

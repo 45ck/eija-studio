@@ -72,3 +72,56 @@ wrong message, a side effect before a refusal, or an inconsistency a person woul
 ## What keeps it fixed
 
 `tests/test_cli_server_inspection.py` (fast tier) has one test per fixed defect, named D1 to D9.
+
+## Second pass (14 November 2026)
+
+A principal-engineer pass went where the first did not: every route and subcommand run against a live `eija serve`,
+a fuller security review (token handling, CSRF and Origin, Host and DNS rebinding on the IDE server, file and path
+handling, every child process), concurrency between browser tabs, shutdown, and design-level limits. The boundary
+decisions are [ADR-0251](../adr/0251-server-boundaries-second-inspection.md).
+
+### Extra checklist items
+
+11. A limit a person is told (the page's "2 MB" for a UML file) is the limit the server applies.
+12. Reading a repository runs nothing the repository or its configuration names (filters, fsmonitor, hooks, external diff).
+13. No process the IDE starts outlives it, whichever way the IDE is stopped (Ctrl+C, SIGTERM, closing the terminal).
+14. The session token is never anywhere another local user can read it (process arguments, world-readable files).
+15. A request that runs while another tab opens a different system reads and writes one system, not half of each.
+16. Two of the same action at once (a double click) give two results or a clear refusal, never a 500.
+17. Files the IDE writes about the workspace are no more readable than the workspace database (0600).
+
+### Defects
+
+| # | Severity | Where | Defect | Status |
+|---|---|---|---|---|
+| S1 | Major | `adapters/repository_capture.py` `_metadata` | `eija serve --repo` and `eija mcp --repo` ran a command named in the repository's own `.git/config`: `git status` runs a file's clean filter to compare a stat-dirty file, and `.gitattributes` picks the filter. The module says Git metadata commands never run filters. | Fixed: every configured filter driver is switched off for `status` (`_without_filters`) |
+| S2 | Major | `interfaces/http.py` `boundary` | One 32 KiB body cap for every write. The UML import contract and the page allow 2 MB, so PlayIDE refused its own XMI export of 7 of the 11 shipped packs (`BODY_TOO_LARGE`); the plan, ripple and draft routes hit the cap within their own contracts (64 steps, twice). | Fixed: caps per route family (`body_limit`): 32 KiB default, 1 MiB for `/api/play/`, 4.5 MB for the two UML upload routes |
+| S3 | Major | `interfaces/play.py` `AppRunner`; `http.py` | SIGTERM to `eija serve` left the built app running on its port: only `atexit` stopped it, and uvicorn re-raises SIGTERM after shutdown so `atexit` never runs. | Fixed: the app is stopped by the server's shutdown event |
+| S4 | Minor | `interfaces/cli.py` `_serve_command` | `--open` gave the browser the private link as a command-line argument, which every local user can read (`ps`, `/proc`); the loopback port is open to all of them. | Fixed: the browser opens `<workspace>/open.html` (0600), which forwards to the link and is removed on exit |
+| S5 | Minor | `interfaces/play.py` `AppRunner._start` | The app's port is picked free, closed, then bound by the app. A program that took it in between was framed and reported as this model's app, since "something listens" was the only check. | Fixed: the server on the port must name this build's subject at `/api/app` (`_serves`) |
+| S6 | Minor | `interfaces/play_systems.py` `StudioHandle`, draft routes | A request still running when another tab opened a different system switched studio halfway (model from one system, pack from the other), and a Save could pass the "same system" check and then write its draft into the other system's workspace. | Fixed: each request is pinned to its studio (`StudioHandle.pinned`); draft save and clear check and write under the switch lock |
+| S7 | Minor | `adapters/system_library.py` `create`; `play_new_system` | Two New system requests of one name at once (a double click) both chose the same id; the second rename failed with a bare OSError, a 500. | Fixed: one create at a time with the id chosen again (`x`, `x-2`); a folder made by another process is `SYSTEM_EXISTS` |
+| S8 | Minor | `adapters/sqlite_store.py` `backup` | `eija backup` wrote the database copy as 0644 (the database is 0600), and checked for an existing file before, not when, it created it. | Fixed: created with `O_EXCL` as 0600; a file there is `OUTPUT_EXISTS` |
+
+### Checked and clean
+
+* Host allowlist on the IDE server itself: a DNS-rebinding page sends its own name as Host and is refused before the token is looked at; `%61pi` paths are decoded before the `/api/` check, `//api/` and `/API/` are 404.
+* Writes need the exact Origin (`null` and absent are refused), JSON content type, and the token; GET routes change nothing. No CORS, no cookies: the token lives in the tab's `sessionStorage` and the link's fragment, which is never sent to a server.
+* The built app is a separate origin (another port): it cannot read the IDE's token or pass its Origin check.
+* Every Git command passes `-C`, `--no-optional-locks` and `core.fsmonitor=false`, clears `GIT_*` from the environment, uses `--` before paths, and `diff` runs with `--no-ext-diff --no-textconv`. `cat-file`, `ls-tree`, `ls-files` and `check-ignore --no-index` run no filters.
+* Ctrl+C (SIGINT) already stopped the app; only SIGTERM did not.
+* Conformance runs (`eija build`, Build & run) get an empty environment apart from the Windows system variables, `-I` and a fresh bytecode cache.
+
+### Observations (not defects)
+
+* `eija serve` holds every system opened in this session in memory (`Systems.studios`) until it stops.
+* Built apps are kept under `<workspace>/apps/<key>` for every model built; nothing prunes them.
+* A Build & run holds the runner's lock for the whole conformance run (up to 600 s); Stop and opening another system wait for it.
+* A SIGKILL'd IDE still leaves its app running; only a parent-death signal (Linux only) or a job object (Windows) would stop that.
+
+### What keeps it fixed
+
+`tests/test_cli_server_deeper.py` (fast tier) has one test per defect, named S1 to S8. Each fails on main before the
+fix (S1: the marker file the filter writes appears; S2: 413; S3: the child outlives shutdown; S4: the token is in
+the argument; S5: no refusal; S6: the request's second read is the other system; S7: an OSError, three requests give
+500, 500, 200; S8: mode 0644).

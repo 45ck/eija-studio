@@ -91,6 +91,7 @@ Codes such as `POLICY_BLOCKED`, `STALE_VERSION` and `ROLE_DENIED` are the contra
 * [application.runtime.check_guards](/symbols/application/runtime/check_guards.md) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
 * [application.runtime.check_linked](/symbols/application/runtime/check_linked.md) - The moves a transition makes on the objects the record links to, given each object's state (ADR-0241).
 * [application.runtime.check_separation](/symbols/application/runtime/check_separation.md) - Refuse an actor who already took another action of a separation law on this record.
+* [application.runtime.check_starter](/symbols/application/runtime/check_starter.md) - The role of the actor starting a record: an unknown actor is refused by the directory and a revoked one as it is refused an action (ADR-0250), so whoever start…
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
 * [application.runtime.receive](/symbols/application/runtime/receive.md) - Start a record because another workflow of the system sent `signal` (issue #93 item 5, ADR-0242).
