@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0230-opt-in-live-plan-mode-and-agent-plan-check.md
   title: 0230-opt-in-live-plan-mode-and-agent-plan-check.md
   hash_method: lf-sha256-v1
-  sha256: 552559d68c5875205eb10f9f23d3912cc069c60876aede4a7d61f932e12d06f7
-notes_baseline: 1e216dafb542b27314789d6c889b13dceaf9db2c09dda9bbd6273be1f7dc312b
+  sha256: 9f1f8d768ee90e0c8263669249b527e4f1d975caa6dca08acdab4ef5fc32ddb1
+notes_baseline: 459e393fc28e9bfc360e8b6be4092a00257a660f5ad64593c88d2246f8b3c2c3
 ---
 
 # ADR-0230: Opt-in live plan mode, and a plan check for coding agents
@@ -56,5 +56,10 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Related decisions
 
+* [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
 * [ADR-0229: Kernel-graded intent evals, and an OpenAI Responses API provider](/adrs/0229-kernel-graded-intent-evals-and-openai-provider.md) - PlayIDE's pitch is that AI may propose a change and the kernel decides what it means.
+
+## Referenced by
+
+* [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
 <!-- okf:generated:end links -->

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/review.py
   title: application/review.py
   hash_method: ast-api-v1
-  sha256: c1814206c35bf047dde46a164764e4916fb76840ab7670d34a5818c469c943ba
-notes_baseline: f6ecb8a4edde8f8cf37a1a5420ff69663273c84ffd44998e425c2e983e634c35
+  sha256: 231ca9ce2292e1ab33631338fb400467c8e5bfa15a959c30a4530a42760b61b7
+notes_baseline: 8918b5a99a1ee584bacf2d34676416add88beb321d46667222c465f04972fb2d
 ---
 
 # application.review
@@ -60,6 +60,7 @@ Each change that alters behaviour carries a question for the reviewer to answer 
 
 ## Internal imports
 
+* [`application/access`](/modules/application/access.md)
 * [`application/diagrams`](/modules/application/diagrams.md)
 * [`application/runtime`](/modules/application/runtime.md)
 * [`application/simulation`](/modules/application/simulation.md)
@@ -76,6 +77,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).

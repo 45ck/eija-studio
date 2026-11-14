@@ -7,6 +7,12 @@
 - Fixed: the API contract and the generated server read one status table (`eija_studio.domain.app_http`); the contract had left out 13 refusal codes and the signals route. `ROLE_CANNOT_START` and `SEPARATION_DENIED` are now 403. [Inspection record](docs/quality/inspection-2026-11-14-app-generator-pass-2.md), [ADR-0250](docs/adr/0250-app-generator-second-pass.md).
 - Fixed: a create (record or stored object) can be retried after a lost answer: an optional `operation_id` returns the first result instead of making a second. The page sends one per draft.
 - Fixed: values and references are checked inside the write; a request that never sends its body is answered `408` after 30 s instead of holding a thread; the record list is one query and a view no longer scans every audit entry (5,000 records: 0.395 s to 0.03 s); a number the browser cannot hold is refused, not dropped; `/favicon.ico` is answered 204.
+### 14 November 2026: review of the day's inspection PRs
+
+- Reviewed #250 to #261 one by one ([record](docs/quality/inspection-2026-11-14-todays-prs.md)); each holds, with three defects found and fixed, each with a regression test in `tests/test_todays_pr_review.py`.
+- Fixed: the SCXML export ordered any text against a date, so its chart took `[due > "2026-01-15"]` for `due = "other"` where the kernel refuses (ADR-0246 K3 had reached the kernel only).
+- Fixed: the SCXML export compared a record value with a guard of another kind, taking `True` for `1` and `6` for `!= "a"`, and failing with a `TypeError` on `"6" > 5`. Each guard now needs its own kind, as in the kernel.
+- Fixed: two inspection test modules named log files that do not exist.
 
 ### 13 November 2026: inspection of the app generator
 

@@ -1,6 +1,6 @@
 """Defects found by the 2026-11-13 re-inspection of the pull requests merged from 2026-11-11 (#217 to #252).
 
-Log: docs/quality/inspections/2026-11-13-merged-prs.md. Each test failed on main before its fix.
+Log: docs/quality/inspection-2026-11-13-merged-prs.md. Each test failed on main before its fix.
 
 * M1: another source for an action that carries a time event, a value guard, a step on a linked object, or edited
   guards or effects was refused as "incoherent", so ADR-0232 (one action from several states) did not hold for them.

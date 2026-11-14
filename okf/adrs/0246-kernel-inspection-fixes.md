@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0246-kernel-inspection-fixes.md
   title: 0246-kernel-inspection-fixes.md
   hash_method: lf-sha256-v1
-  sha256: 0f807d52dc19cb8b0085fe19387490cc219ead992b478f2ec0f0e8e2bc742f0d
-notes_baseline: 1899155485c8ea6a0161ad8060607c414d63adc6e4e1b51595f29f53132792a2
+  sha256: 04c0fccc606ba045b168458c7d800d5f27eabe4829697c0073f6cf6e769ef71a
+notes_baseline: 533e5b2e3c52a709de1db0920d0b6403d96bedf76fcb02026360d7f368b72465
 ---
 
 # ADR-0246: The kernel refuses undeclared roles, judges path laws alike, and fails value guards closed
@@ -55,12 +55,14 @@ notes_baseline: 1899155485c8ea6a0161ad8060607c414d63adc6e4e1b51595f29f53132792a2
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 14 November 2026: the SCXML export judges value guards as the kernel does
 * OSS check (required for any custom module)
 
 ## Code and docs mentioned
 
 Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
 
+* `repo://docs/quality/inspection-2026-11-14-todays-prs.md`
 * `repo://tests/test_diagrams.py`
 * `repo://tests/test_kernel_inspection.py`
 <!-- okf:generated:end facts -->
@@ -72,6 +74,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Related decisions
 
+* [ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check](/adrs/0165-executable-uml-on-the-eija-kernel.md) - PlayIDE draws six UML views (state machine, class, use case, screens, component, sequence) over one model (ADR-0093), and `eija build` turns the model into a r…
 * [ADR-0231: Who may start a record](/adrs/0231-who-may-start-a-record.md) - Issue #142: a workflow said who may take each transition, but not who may start a record.
 * [ADR-0232: One action from several states](/adrs/0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
 <!-- okf:generated:end links -->

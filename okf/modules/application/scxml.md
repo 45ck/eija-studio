@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py
   title: application/scxml.py
   hash_method: ast-api-v1
-  sha256: 36382e5cc9cff09b8fcdb239caf26be924a87f9c0ef9adee202340e8432ef3e0
-notes_baseline: 2693bd9cd6b9e4b2eeef3331e2b4ff97472329ed72defadd5a17a715f53b6461
+  sha256: 2e2aba3828562fb835e1e85735aa4c6220eec9aad39e766f96333b9e36c67f19
+notes_baseline: ae141975af55bb6f7e912d99129eaf12cc74d15bc1afe461676c64f61219c64d
 ---
 
 # application.scxml
@@ -49,8 +49,10 @@ runs in production. What it keeps and what it leaves to the kernel:
   the transition's `cond`, and an actor not in the directory sends `known` False.
 * A guard over the record's values (`[amount > 500]`, ADR-0234) becomes a `cond` term over the event data too: whoever
   sends the event reads the record's values, as the kernel's `UnitOfWork.values` port does, and attaches each guarded
-  attribute as `value_<name>` with `has_<name>` (False when the record has no value). The data model has already
-  checked each value's type, so the chart compares without a type test.
+  attribute as `value_<name>` with `has_<name>` (False when the record has no value), `kind_<name>` (boolean, number,
+  text or none) and `date_<name>` (whether it is a YYYY-MM-DD date). Each term first requires the guard's own kind, so
+  `[x != "a"]` does not hold for a number and `[x == 1]` does not hold for True, as in the kernel; an ordering against a
+  date also needs `date_<name>` (ADR-0246, K3).
 * A time event (`after(14 days)`, ADR-0237) becomes a `cond` term over the event data as well: whoever sends the event
   reads how long the record has been in its state, as the kernel's `UnitOfWork.elapsed` port does, and attaches it as
   `elapsed` in seconds, with `has_elapsed` False when it is unknown, which is never due. It is not a delayed `<send>`: in the kernel a time
