@@ -6,6 +6,8 @@ Quantitative, reproducible HCI checks of the Studio UI. **This is prediction plu
 
 PlayIDE's running tally of small, measured fixes and polishes (November 2026) is in [fixes-and-polishes-2026-11.md](fixes-and-polishes-2026-11.md).
 
+The Fagan inspection of drawing and editing diagrams (13 November 2026), with its defect log and before and after captures, is in [inspection-2026-11-13/README.md](inspection-2026-11-13/README.md).
+
 ## Run it
 
 ```bash
