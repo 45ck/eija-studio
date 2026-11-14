@@ -50,7 +50,7 @@ An already-created virtual environment may also install the supplied wheel inste
 python -m pip install dist/eija_studio-0.2.0-py3-none-any.whl
 ```
 
-The launchers create a virtual environment on first run. They do not install Codex or provide provider credentials. To update an existing environment, rerun the installation command explicitly. `--open` may launch the browser just before the listener is ready; refresh the private launch URL if needed.
+The launchers create a virtual environment on first run. They do not install Codex or provide provider credentials. To update an existing environment, rerun the installation command explicitly. `--open` opens the browser once the server is listening, through a launcher page in the workspace that only you can read, so the private link never appears in the browser's command line (ADR-0251).
 
 The server listens on **127.0.0.1 only**. Open the complete private URL printed in the terminal, including its fragment. Do not share that URL. A new session token is generated on restart; use the new launch link. No login credential is needed for the offline fixture.
 

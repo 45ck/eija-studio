@@ -13,7 +13,9 @@ import os
 import threading
 import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Literal
 
@@ -35,20 +37,39 @@ DESCRIBE = "describe"  # start from a description of the app (ADR-0216)
 TEMPLATE_FILES = ("pack.json", "data.json", "screens.json", "scenarios.json")
 
 
+_PINNED: ContextVar[Any] = ContextVar("eija_pinned_studio", default=None)
+
+
 class StudioHandle:
-    """The studio every route uses, which `switch` replaces when another system is opened."""
+    """The studio every route uses, which `switch` replaces when another system is opened.
+
+    A request pins the studio it started on (`pinned`), so one that is still running when another tab opens a
+    different system reads and writes the system it began with from start to end, never half of each."""
 
     def __init__(self, studio: Any):
         object.__setattr__(self, "_current", studio)
 
+    def _studio(self) -> Any:
+        pinned = _PINNED.get()
+        return pinned if pinned is not None else object.__getattribute__(self, "_current")
+
     def __getattr__(self, name: str) -> Any:
-        return getattr(object.__getattribute__(self, "_current"), name)
+        return getattr(object.__getattribute__(self, "_studio")(), name)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        setattr(object.__getattribute__(self, "_current"), name, value)
+        setattr(object.__getattribute__(self, "_studio")(), name, value)
 
     def switch(self, studio: Any) -> None:
         object.__setattr__(self, "_current", studio)
+
+    @contextmanager
+    def pinned(self) -> Iterator[None]:
+        """Within this block (one request), the handle is the studio current when it began."""
+        token = _PINNED.set(object.__getattribute__(self, "_current"))
+        try:
+            yield
+        finally:
+            _PINNED.reset(token)
 
 
 class NewSystem(Contract):
@@ -168,7 +189,8 @@ class Systems:
                  pack: Path, workspace: Path, on_switch: Callable[[], Any] = lambda: None, describer: Any = None):
         self.handle, self.library, self.opener, self.on_switch = handle, library, opener, on_switch
         self.describer = describer
-        self.lock = threading.Lock()
+        self.lock = threading.Lock()  # one switch at a time, and no draft written across a switch
+        self.creating = threading.Lock()  # one new system at a time, so two of one name get two ids, not a collision
         self.current = self._entry(handle.pack, Path(pack), Path(workspace))
         self.launched = dict(self.current)
         self.studios: dict[str, Any] = {self._key(pack): object.__getattribute__(handle, "_current")}
@@ -233,15 +255,19 @@ def register(app, systems: Systems) -> None:
             pack_id, documents, report = new_documents(systems.library, body, systems.describer)
         except PackError as error:
             return {"created": False, "problems": list(error.diagnostics)}
-        found: dict[str, Any]
-        if body.template == DESCRIBE:
-            found = {"system": described_summary(documents), "described": report}
-        else:
-            found = {"system": summary(documents)} | ({"import": report} if report is not None else {})
+        def found(documents: dict[str, dict[str, Any]], report: dict[str, Any] | None) -> dict[str, Any]:
+            if body.template == DESCRIBE:
+                return {"system": described_summary(documents), "described": report}
+            return {"system": summary(documents)} | ({"import": report} if report is not None else {})
+
         if body.check_only:
-            return {"created": False, "problems": []} | found
-        folder = systems.library.create(pack_id, documents)
-        return {"created": True, "problems": []} | found | {"opened": systems.open(folder, systems.library.workspace(folder))}
+            return {"created": False, "problems": []} | found(documents, report)
+        with systems.creating:  # the id is chosen again under the lock: a double click makes x and x-2, not a 500
+            if pack_id in systems.library.ids():
+                pack_id, documents, report = new_documents(systems.library, body, systems.describer)
+            folder = systems.library.create(pack_id, documents)
+        # The summary is of the documents written, so a request that made x-2 says x-2 (Codex review of #268).
+        return {"created": True, "problems": []} | found(documents, report) | {"opened": systems.open(folder, systems.library.workspace(folder))}
 
     @app.post("/api/play/systems/open")
     def play_open_system(body: OpenSystem):

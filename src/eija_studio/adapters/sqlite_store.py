@@ -229,9 +229,19 @@ class SQLiteStore:
             return [json.loads(r[0]) for r in db.execute("SELECT body FROM cases ORDER BY rowid DESC")]
 
     def backup(self, target: Path) -> None:
-        """SQLite online backup: do not copy the .sqlite3 file without its WAL."""
-        with self.connection() as source, closing(sqlite3.connect(target)) as destination:
-            source.backup(destination)
+        """SQLite online backup: do not copy the .sqlite3 file without its WAL. The copy is made as a new file that only
+        its owner can read, as the workspace database is (0600): a backup is never written over a file that exists, and
+        is never readable by other local users."""
+        try:
+            os.close(os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
+        except FileExistsError:
+            raise DomainError("OUTPUT_EXISTS", "Choose a new backup filename") from None
+        try:
+            with self.connection() as source, closing(sqlite3.connect(target)) as destination:
+                source.backup(destination)
+        except BaseException:
+            Path(target).unlink(missing_ok=True)
+            raise
 
 
 SANDBOX_PREFIX = "eija-check-"

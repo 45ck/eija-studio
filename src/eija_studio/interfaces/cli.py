@@ -1,5 +1,5 @@
 from __future__ import annotations
-import argparse, getpass, importlib.util, json, os, secrets, socket, sys
+import argparse, getpass, html, importlib.util, json, os, secrets, socket, sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
@@ -312,6 +312,24 @@ def _serve(app, sock: socket.socket) -> None:
     uvicorn.Server(uvicorn.Config(app, access_log=False, log_level="warning")).run(sockets=[sock])
 
 
+LAUNCHER = "open.html"
+
+
+def _launcher(workspace: Path, url: str) -> Path:
+    """A page in the workspace (a 0700 folder) that only its owner can read (0600) and that forwards to `url`. `--open`
+    hands the browser this file, not the private link: a browser's command line can be read by every local user
+    (`ps`, /proc), and the loopback port the token guards is reachable by all of them."""
+    page = Path(workspace).resolve() / LAUNCHER
+    href = html.escape(url, quote=True)
+    temporary = page.with_name(f".{LAUNCHER}.{secrets.token_hex(4)}.tmp")
+    descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as out:
+        out.write(f'<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url={href}">'
+                  f'<meta name="referrer" content="no-referrer"><title>Opening EIJA Studio</title><a href="{href}">Open EIJA Studio</a>\n')
+    os.replace(temporary, page)
+    return page
+
+
 def _serve_command(args, key) -> int:
     """`eija serve`: a bad or busy port is refused before the workspace (and its receipt key) is created, and no link
     is printed or browser opened until the port is ours and listening (ADR-0244)."""
@@ -326,10 +344,15 @@ def _serve_command(args, key) -> int:
         print(f"PlayIDE (visual model, Build & run): http://127.0.0.1:{args.port}/play#{token}", flush=True)
         if args.provider != "offline":
             print("External inference requires configured credentials and explicit per-request consent.", flush=True)
-        if args.open:
-            webbrowser.open(url)  # the port is already ours and listening
+        launcher = _launcher(studio.store.directory, url) if args.open else None
+        if launcher is not None:
+            webbrowser.open(launcher.as_uri())  # the port is already ours and listening
         handle, systems = _systems(studio, args, key)
-        _serve(create_app(handle, token, args.port, systems=systems), listener)
+        try:
+            _serve(create_app(handle, token, args.port, systems=systems), listener)
+        finally:
+            if launcher is not None:
+                launcher.unlink(missing_ok=True)
     return 0
 
 
