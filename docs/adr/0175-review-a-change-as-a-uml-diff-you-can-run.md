@@ -69,6 +69,19 @@ attempt from or into it. That ranks a harmless rename as the riskiest change in 
 * Not changed: the diagram (ADR-0176) still draws the old name as removed and the new one as added; **Show me** selects
   both. The review's limits say so.
 
+### Amendment, 2026-11-14 (second Fagan inspection)
+
+* Each attempt in the behaviour diff now starts on a record holding values that meet the action's guards over values
+  (ADR-0234) in either model, and in its state long enough for every time event (ADR-0237). Before, a change of who may
+  take a guarded or timed step was refused on both sides and the review said nothing turned out differently. A row
+  names the values it held ("with renewals 0"). The limits say what is still not covered: values that fail a guard,
+  and a step that waits for an earlier one.
+* A change to a transition's guards over values, time event or steps on linked objects (ADR-0241) is reviewed with its
+  own reasons and risk: dropping one is high, adding a value guard or a time event is low, adding a linked step is
+  medium, and changing a time event is medium. Before, these crashed the review, and `diff_summary` could not sort two
+  guard objects.
+* See `docs/quality/inspections/2026-11-14-ai-chat-deeper.md`.
+
 ## OSS check (required for any custom module)
 
 | OSS checked | Why adapter/dependency use was insufficient | Replacement or fork path |

@@ -40,6 +40,14 @@ Chosen option: an application-owned `PlanProposer` port, `application/plan.py`, 
 * Bad: a free-form plan cannot yet be saved. That needs an owner decision on how a plan without a modelled meaning becomes a change case.
 * Revisit when: the owner allows a live proposer, or decides how free-form plans are saved.
 
+### Amendment, 2026-11-14 (second Fagan inspection)
+
+No plan step adds a guard over values (ADR-0234) or a time event (ADR-0237). A request that sets a limit on a value or
+a time ("only when renewals under 3", "after 2 days", "more than 3 times", "<= 3") is refused with
+`PLAN_LIMIT_UNSUPPORTED`, naming the limit, by the offline reader and before any live call (ADR-0230). Before, the limit
+was dropped and the step planned without it, a green plan for a change nobody asked for (the #152 substitution).
+See `docs/quality/inspections/2026-11-14-ai-chat-deeper.md`.
+
 ## OSS check (required for any custom module)
 
 | OSS checked | Why adapter/dependency use was insufficient | Replacement or fork path |

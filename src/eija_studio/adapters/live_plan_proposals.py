@@ -48,7 +48,8 @@ class LivePlanProposer:
         try:
             plan = self.offline.propose(request, model, pack, grows=grows)
         except DomainError as error:
-            if error.code == "PLAN_UNKNOWN_NAME":  # a phrase it read, naming what the model lacks: its answer, not the model's
+            if error.code in ("PLAN_UNKNOWN_NAME", "PLAN_LIMIT_UNSUPPORTED"):  # its answer, not the model's: a phrase naming
+                # what the model lacks, or a limit no plan step can hold
                 raise
             read, clauses = clauses_read(request, model, pack, grows=grows)
             if 0 < read < clauses:
