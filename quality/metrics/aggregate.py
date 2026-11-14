@@ -80,14 +80,27 @@ def _trace_pass(value: Any, modality: str) -> bool:
             and all(isinstance(value.get(key), list) for key in lists))
 
 
+# The root keys quality.hci.journey.collect writes. `inspection_pass` (schema eija.hci.inspection.v1) arrived on 2026-10-09
+# without this reader learning it, so every trace a real `nox -s hci` wrote read as UNKNOWN and failed LANE-01 in the
+# full tier's `metrics`. tests/metrics/test_metrics_aggregate.py now reads these keys from the journey's own source.
+TRACE_KEYS = frozenset({"environment", "pointer_passes", "keyboard_pass"})
+OPTIONAL_TRACE_KEYS = frozenset({"inspection_pass"})
+
+
+def _inspection_pass(value: Any) -> bool:
+    return (isinstance(value, dict) and value.get("schema") == "eija.hci.inspection.v1" and isinstance(value.get("views"), dict)
+            and all(isinstance(value.get(key), list) for key in ("steps", "operators", "errors", "http_failures")))
+
+
 def _hci_trace(doc: Any) -> bool:
     """The raw root emitted by quality.hci.journey.collect; verdict-bearing payloads cannot match."""
-    if not isinstance(doc, dict) or set(doc) != {"environment", "pointer_passes", "keyboard_pass"}:
+    if not isinstance(doc, dict) or not TRACE_KEYS <= set(doc) <= TRACE_KEYS | OPTIONAL_TRACE_KEYS:
         return False
     passes = doc["pointer_passes"]
     return (isinstance(doc["environment"], dict) and isinstance(passes, list) and bool(passes)
             and all(_trace_pass(value, "pointer") for value in passes)
-            and _trace_pass(doc["keyboard_pass"], "keyboard"))
+            and _trace_pass(doc["keyboard_pass"], "keyboard")
+            and ("inspection_pass" not in doc or _inspection_pass(doc["inspection_pass"])))
 
 
 def read_report(path: Path, *, hci_trace: bool = False) -> dict:

@@ -140,7 +140,8 @@ def check(summary: dict[str, Any], baseline: dict[str, Any]) -> list[str]:
         if row["incompetent"] / row["total"] > MAX_INCOMPETENT_SHARE:
             failures.append(f"{module}: {row['incompetent']}/{row['total']} mutants were not exercisable; the analysis is not trustworthy")
         if floor is None:
-            failures.append(f"{module}: no baseline floor; establish one with `python -m quality.mutation baseline`")
+            failures.append(f"{module}: no baseline floor; establish one from a full run with "
+                            f"`python -m quality.mutation run --module {module} --write-baseline`")
         elif row["score"] is None or row["score"] < floor["score"]:
             failures.append(f"{module}: mutation score {row['score']} is below the ratchet floor {floor['score']}")
     return failures

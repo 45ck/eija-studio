@@ -1,3 +1,4 @@
+import ast
 import hashlib
 import json
 from pathlib import Path
@@ -6,6 +7,8 @@ import pytest
 
 from quality.metrics import aggregate, budgets
 from quality.metrics.common import MEASURED, NOT_RUN
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def write(path, doc):
@@ -124,6 +127,27 @@ def test_hci_trace_is_hashed_input_and_never_changes_the_lane_verdict(tmp_path, 
     assert hci["inputs"] == [{"file": "hci/trace.json", "sha256": hashlib.sha256(trace_path.read_bytes()).hexdigest(),
                               "kind": "hci_raw_trace", "reason": "Raw HCI observations; the lane verdict belongs to report.json"}]
     assert aggregate.yield_rows(result) == []
+
+
+def test_the_trace_the_journey_really_writes_is_recognised(tmp_path, monkeypatch):
+    """The fixture above mirrored the reader, not the writer: quality.hci.journey.collect has also written
+    `inspection_pass` since 2026-10-09, and the reader called every real trace UNKNOWN (LANE-01 FAIL)."""
+
+
+    tree = ast.parse((ROOT / "quality" / "hci" / "journey.py").read_text(encoding="utf-8"))
+    collect_fn = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "collect")
+    written = {k.value for node in ast.walk(collect_fn) if isinstance(node, ast.Return) and isinstance(node.value, ast.Dict)
+               for k in node.value.keys if isinstance(k, ast.Constant)}
+    assert written == aggregate.TRACE_KEYS | aggregate.OPTIONAL_TRACE_KEYS
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    trace = hci_trace() | {"inspection_pass": {"schema": "eija.hci.inspection.v1", "views": {}, "steps": [], "operators": [],
+                                               "errors": [], "http_failures": []}}
+    write(tmp_path / "hci" / "trace.json", trace)
+    write(tmp_path / "hci" / "report.json", {"status": "PASS"})
+    result = collect(tmp_path)
+    assert group(result, "hci")["status"] == lane_budget(result)["status"] == "PASS"
+    write(tmp_path / "hci" / "trace.json", trace | {"inspection_pass": {"schema": "other"}})  # a wrong shape is still not a trace
+    assert lane_budget(collect(tmp_path))["status"] == "FAIL"
 
 
 def test_hci_trace_without_a_verdict_report_is_not_run(tmp_path, monkeypatch):
