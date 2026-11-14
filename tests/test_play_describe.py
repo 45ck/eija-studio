@@ -200,3 +200,18 @@ def test_two_end_states_whose_test_titles_slug_alike_get_distinct_test_ids():
     ids = [s["id"] for s in document["scenarios"]]
     assert len(ids) == len(set(ids)) and {"payment-reaches-paid-out", "payment-reaches-paid-out-2"} <= set(ids)
     parse_scenarios(document, pack.id)  # the kernel's own check of the file
+
+
+def test_a_rule_in_the_description_is_said_back_as_not_enforced():
+    """Inspection 2026-11-14 S1: the offline reader makes no guard, time event or law from words, yet it listed only
+    what it read, so "over 500 need finance approval" vanished and the person believed the system enforced it."""
+    text = ("Staff submit expense claims and managers approve them. Claims have an amount and a description. "
+            "Claims over 500 need finance approval. The submitter cannot approve their own claim. "
+            "Claims must be paid within 7 days. After approval, finance pays them. Items under review show a badge.")
+    reading = OfflineSystemDescriber().describe(text)["reading"]
+    said = [line.split("“", 1)[1].rstrip("”") for line in reading if line.startswith("Not made into a rule")]
+    assert said == ["Claims over 500 need finance approval.", "The submitter cannot approve their own claim.",
+                    "Claims must be paid within 7 days."]
+    assert not any(line.startswith("Not made into a rule") for line in OfflineSystemDescriber().describe(COFFEE)["reading"])
+    _, shown = describe_documents(text, "Claims", lambda name: name.lower(), OfflineSystemDescriber())
+    assert sum(line.startswith("Not made into a rule") for line in shown["reading"]) == 3

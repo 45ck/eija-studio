@@ -45,3 +45,4 @@ It is wired only when the Studio's provider is networked. `/api/status` reports 
 * Every live plan call that leaves the machine is audited, as `Studio.propose` is: `PlanProviderCallStarted`, then `PlanProposalReceived` or `PlanProviderCallNotAccepted`, with a request hash and never the request.
 * `plan_check` on a system started in PlayIDE (`eija mcp --systems`, default `~/PlayIDE`) declares new actions and roles as the chat does, and says `grows`.
 * See `docs/quality/inspections/2026-11-13-ai-chat-plan-mode.md` for the defects logged and not yet fixed.
+* 2026-11-14: a request that sets a limit on a value or a time gets the phrase reader's `PLAN_LIMIT_UNSUPPORTED` and is not sent (ADR-0156 amendment).

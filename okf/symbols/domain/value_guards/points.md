@@ -47,5 +47,6 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.access.meeting](/symbols/application/access/meeting.md) - A record's values that meet every guard over values of these transitions (ADR-0234): {} when they have none, None when no values meet them all.
 * [domain.value_guards.combinations](/symbols/domain/value_guards/combinations.md) - `valuations` over these guards, grouped by attribute.
 <!-- okf:generated:end links -->

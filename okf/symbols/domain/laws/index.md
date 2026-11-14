@@ -37,6 +37,7 @@
 * [domain.laws.applies](applies.md) - `def applies(law: _Law, actions: set[str]) -> bool` in `domain/laws`.
 * [domain.laws.evaluate_run](evaluate_run.md) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [domain.laws.evaluate_table](evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [domain.laws.protected](protected.md) - The one state ``law`` protects, if it is a law of that kind.
 * [domain.laws.protects_absent](protects_absent.md) - Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept.
 * [domain.laws.reachable](reachable.md) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
 * [domain.laws.separation_breach](separation_breach.md) - The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py#protects_absent
   title: domain/laws.py
   hash_method: ast-v2
-  sha256: 894c1d601e53eb12956d2de0ae3d5d282ab30feceb42dc792561a736c8ffd193
-notes_baseline: 086cc01ac2168a6fde1457c30e72dc2fae86d0b60b16f320137df2c15003e64d
+  sha256: 543f93ee3c47c4527e6b1486022e1f001a56e344a68439d97b38fef4307e7fcf
+notes_baseline: 9c13cf5c9191b0facb79e87b0c19ad17f3ef126154eaf46bc33a6393797d7e00
 ---
 
 # domain.laws.protects_absent
@@ -43,6 +43,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.laws.PROTECTING](/symbols/domain/laws/PROTECTING.md) - Constant `PROTECTING` in `domain/laws`.
+* [domain.laws.protected](/symbols/domain/laws/protected.md) - The one state ``law`` protects, if it is a law of that kind.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 <!-- okf:generated:end links -->

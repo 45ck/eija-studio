@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py
   title: domain/laws.py
   hash_method: ast-api-v1
-  sha256: 07a351df6cf85932fd913541f382e2cc8a27681da6a440bf05e6040e8518690b
-notes_baseline: 007d9942ccb91d655097199921ac7576985c92f98731a34b5266b37bf69f2bbe
+  sha256: ea42ba6306407543da8b04b7735d38331ce8eeab9939864338727bcb32a5f577
+notes_baseline: 45049fe6f3660ebafbb4d0bd0c58be9d62ddd1173851475ed02922f1dc85166a
 ---
 
 # domain.laws
@@ -73,6 +73,7 @@ Nothing here names a domain: every state, role, action and effect comes from the
 * [`applies`](/symbols/domain/laws/applies.md) (function) - no docstring
 * [`evaluate_run`](/symbols/domain/laws/evaluate_run.md) (function) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [`evaluate_table`](/symbols/domain/laws/evaluate_table.md) (function) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [`protected`](/symbols/domain/laws/protected.md) (function) - The one state ``law`` protects, if it is a law of that kind.
 * [`protects_absent`](/symbols/domain/laws/protects_absent.md) (function) - Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept.
 * [`reachable`](/symbols/domain/laws/reachable.md) (function) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
 * [`separation_breach`](/symbols/domain/laws/separation_breach.md) (function) - The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.
@@ -137,6 +138,7 @@ _No curated notes yet._
 * [domain.laws.applies](/symbols/domain/laws/applies.md) - `def applies(law: _Law, actions: set[str]) -> bool` in `domain/laws`.
 * [domain.laws.evaluate_run](/symbols/domain/laws/evaluate_run.md) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
+* [domain.laws.protected](/symbols/domain/laws/protected.md) - The one state ``law`` protects, if it is a law of that kind.
 * [domain.laws.protects_absent](/symbols/domain/laws/protects_absent.md) - Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept.
 * [domain.laws.reachable](/symbols/domain/laws/reachable.md) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
 * [domain.laws.separation_breach](/symbols/domain/laws/separation_breach.md) - The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.

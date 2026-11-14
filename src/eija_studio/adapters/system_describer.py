@@ -37,6 +37,12 @@ NOT_FIELDS = ("to", "be", "been", "can", "will", "no", "not", "many", "multiple"
 CLAUSE = ("them", "it", "they", "that", "who", "which", "can", "will", "should", "may", "cannot")
 BOOLEAN_PREFIX = ("is", "has", "paid", "urgent", "vip")
 THING = re.compile(r"\b(?:track|tracks|tracking|manage|manages|managing|organise|organize|log|logs)\s+(?:my\s+|our\s+|the\s+|all\s+)?([a-z]{3,30}?)s\b", re.I)
+# A sentence that states a rule: who may not act, a limit on a value, a time limit. The offline reader makes no rule
+# from it, so it says so instead of leaving the person to believe the system enforces it.
+RULE = re.compile(r"\b(?:cannot|can't|can ?not|must(?: not)?|mustn't|only|never|always|needs?|requires?|unless|"
+                  r"(?:within|before|after|over|under|above|below|(?:at (?:least|most))|(?:more|less|fewer) than)"
+                  r"\s+(?:\$|£|€)?\d)", re.I)  # a word of time or amount counts only before a number: "after 2 days"
+MAX_RULES = 6
 LIST = re.compile(r"\b(?:with|has|have|having|records?|stores?|captures?|fields?:?)\s+(?:an?\s+|the\s+|their\s+|its\s+)?([^.;\n]+)", re.I)
 
 
@@ -214,7 +220,7 @@ class OfflineSystemDescriber:
             record, name = _camel(thing.group(1)), _camel(thing.group(1)) + "s"
         lines, actors = _actors(text, _sketch(shape, roles).split("\n"))
         return {"name": name, "record": record, "sketch": "\n".join(lines), "fields": fields,
-                "template": shape["id"], "reading": _reading(shape, roles, own) + actors}
+                "template": shape["id"], "reading": _reading(shape, roles, own) + actors + _rules(text)}
 
 
 def _reading(shape: dict[str, Any], roles: dict[str, str], own: list[dict[str, Any]]) -> list[str]:
@@ -226,3 +232,12 @@ def _reading(shape: dict[str, Any], roles: dict[str, str], own: list[dict[str, A
     if own:
         reading.append("Fields from your words: " + ", ".join(f["name"] for f in own) + ".")
     return reading
+
+
+def _rules(text: str) -> list[str]:
+    """The sentences that state a rule, each said back as not made into one: the offline reader makes no guard, time
+    event or law from words, and a law is the person's to write (ADR-0216), so nothing here enforces them yet."""
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?;])\s+|\n+", text) if s.strip()]
+    found = [s for s in sentences if RULE.search(s)][:MAX_RULES]
+    return [f"Not made into a rule, so nothing enforces it yet (add it as a guard, a time event or a law): “{s[:200]}”"
+            for s in found]

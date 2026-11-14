@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/review.py#review_change
   title: application/review.py
   hash_method: ast-v2
-  sha256: 05efe644465c9df17a5e73d80a7cc0e3c2df8bc91e0235145fb89b1149c9bcb5
-notes_baseline: 101749f792a9087a85cb496516ebc8dd82902785a049dd8ac43e776dd7ee5b54
+  sha256: d526e039c603326ab45a0a646c71085a811048356e58128aaa04bab734299ca1
+notes_baseline: 178808f881fe010083d936df26d053b7bfb48763b3fa865fae92b934c6fb72d3
 ---
 
 # application.review.review_change

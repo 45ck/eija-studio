@@ -26,6 +26,7 @@ from eija_studio.domain.impact import keyed
 from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.transactions import RenameState, apply_structural
+from .access import meeting
 from .diagrams import diff_summary
 from .runtime import execute, initialise
 from .simulation import MemorySession, simulate
@@ -52,12 +53,16 @@ def _exits(model: Workflow, state: str) -> list[Transition]:
     return [t for t in model.transitions if t.from_state == state]
 
 
-def _attempt(pack: Pack, model: Workflow, state: str, actor: dict[str, Any], action: str, n: int) -> dict[str, Any]:
-    """One attempt decided by the kernel: a fresh record in `state`, then `actor` tries `action` on it."""
+def _attempt(pack: Pack, model: Workflow, state: str, actor: dict[str, Any], action: str, n: int,
+             values: dict[str, Any] | None = None, wait: int = 0) -> dict[str, Any]:
+    """One attempt decided by the kernel: a fresh record in `state`, holding `values` and in it for `wait` seconds,
+    then `actor` tries `action` on it."""
     if state not in model.states:
         return {"outcome": "NO_STATE"}
     session = MemorySession(pack)
     record = initialise(session, CASE, model, state=state, pack=pack)["id"]  # type: ignore[arg-type]  # duck-typed port
+    session.record_values[record] = dict(values or {})
+    session.wait(wait)
     command = ExecuteCommand(operation_id=f"review-{n}", actor_id=actor["id"], instance_id=record, action=action,
                              expected_version=0)
     try:
@@ -124,17 +129,34 @@ def behaviour_diff(pack: Pack, before: Workflow, after: Workflow, names: dict[st
     actors = [a.model_dump() for a in pack.fixtures.actors]
     states = sorted({names.get(s, s) for s in before.states} | set(after.states))
     actions = sorted({t.action for t in before.transitions} | {t.action for t in after.transitions})
+    wait = max(before.longest_wait, after.longest_wait)  # every time event due, so a timer's taker and target show
     rows: dict[tuple[str, str, str], dict[str, Any]] = {}
     for n, (state, action, actor) in enumerate(itertools.product(states, actions, actors), 1):
-        was = _named(_attempt(pack, before, old.get(state, state), actor, action, n), names)
-        now = _attempt(pack, after, state, actor, action, n)
+        values = _values(pack, before, after, old.get(state, state), state, action)
+        was = _named(_attempt(pack, before, old.get(state, state), actor, action, n, values, wait), names)
+        now = _attempt(pack, after, state, actor, action, n, values, wait)
         if not _same(was, now):
             key = (state, action, repr(sorted(was.items())) + repr(sorted(now.items())))
-            rows.setdefault(key, {"state": state, "action": action, "role": actor["role"], "actors": [],
-                                  "before": was, "after": now})["actors"].append(actor["id"])
+            rows.setdefault(key, _row(state, action, actor, was, now, values))["actors"].append(actor["id"])
     n = len(states) * len(actions) * len(actors)
     ordered = sorted(rows.values(), key=lambda r: (r["action"], r["state"], r["role"], r["actors"]))
     return {"attempts": n * 2, "actors": len(actors), "rows": [r | {"n": i} for i, r in enumerate(ordered, 1)]}
+
+
+def _row(state: str, action: str, actor: dict[str, Any], was: dict[str, Any], now: dict[str, Any],
+         values: dict[str, Any]) -> dict[str, Any]:
+    """One row of the behaviour diff, with the record values both attempts held when the action has a guard over them."""
+    row = {"state": state, "action": action, "role": actor["role"], "actors": [], "before": was, "after": now}
+    return row | {"values": values} if values else row
+
+
+def _values(pack: Pack, before: Workflow, after: Workflow, was: str, state: str, action: str) -> dict[str, Any]:
+    """Values for the record both attempts start with, meeting the guards over values on `action` from `state` in
+    either model (ADR-0234): the same record on both sides, so a guard does not hide who may act or where it leads.
+    {} when no values meet them all; the kernel then refuses on both sides, as before."""
+    leaving = [t for t in before.transitions if t.action == action and t.from_state == was]
+    leaving += [t for t in after.transitions if t.action == action and t.from_state == state]
+    return meeting(pack, leaving) or {}
 
 
 def _outcome_text(o: dict[str, Any]) -> str:
@@ -147,7 +169,8 @@ def _outcome_text(o: dict[str, Any]) -> str:
 
 def row_text(row: dict[str, Any]) -> str:
     who = row["role"] + (f" ({', '.join(row['actors'])})" if len(row["actors"]) < 3 else "")
-    return (f"{who} tries {row['action']} on a record in {row['state']}: before {_outcome_text(row['before'])}; "
+    held = f" with {', '.join(f'{k} {v}' for k, v in row['values'].items())}" if row.get("values") else ""
+    return (f"{who} tries {row['action']} on a record in {row['state']}{held}: before {_outcome_text(row['before'])}; "
             f"after {_outcome_text(row['after'])}")
 
 
@@ -157,7 +180,8 @@ def _item(element: str, change: str, text: str, risk: str, reasons: list[str], a
             "actions": actions or [], "states": states or [], "edited": edited}
 
 
-FIELD_LABEL = {"guards": "guard", "required_effects": "effect it must perform", "forbidden_effects": "effect it must never perform"}
+FIELD_LABEL = {"guards": "guard", "required_effects": "effect it must perform", "forbidden_effects": "effect it must never perform",
+               "conditions": "guard over values", "then": "step on a linked object"}
 
 
 def _field_reasons(field: dict[str, Any]) -> list[tuple[str, str]]:
@@ -167,13 +191,24 @@ def _field_reasons(field: dict[str, Any]) -> list[tuple[str, str]]:
         return [(f"Changes who may act: {was} → {now}.", "high")]
     if name in ("from_state", "to_state"):
         return [(f"Moves the {'source' if name == 'from_state' else 'target'}: {was} → {now}.", "medium")]
-    if not isinstance(was, list):
+    if name == "after":
+        return [_time_reason(was, now)]
+    if name == "id":
         return [(f"Renames its id: {was} → {now}.", "low")]
     gone, new = sorted(set(was) - set(now)), sorted(set(now) - set(was))
     reasons = [(f"Drops {FIELD_LABEL[name]}: {', '.join(gone)}.", "high")] if gone else []
     if new:
-        reasons.append((f"Adds {FIELD_LABEL[name]}: {', '.join(new)}.", "medium" if name == "required_effects" else "low"))
+        reasons.append((f"Adds {FIELD_LABEL[name]}: {', '.join(new)}.", "medium" if name in ("required_effects", "then") else "low"))
     return reasons
+
+
+def _time_reason(was: str | None, now: str | None) -> tuple[str, str]:
+    """A time event (ADR-0237) added, dropped or changed: dropping one lets the step happen at once, so it is high."""
+    if was is None:
+        return f"Adds a time event {now}: the step now waits that long in its source state.", "low"
+    if now is None:
+        return f"Drops its time event {was}: it may be taken at once.", "high"
+    return f"Changes its time event: {was} → {now}.", "medium"
 
 
 def _removed_item(t: Transition, after: Workflow, reach_after: dict[str, list[str]]) -> dict[str, Any]:
@@ -332,8 +367,9 @@ def review_change(pack: Pack, before: Workflow, after: Workflow) -> dict[str, An
         "risk": {level: sum(1 for i in items if i["risk"] == level) for level in RISK_ORDER},
         "before_model": before.model_dump(mode="json"), "after_model": after.model_dump(mode="json"),
         "renamed": names, "simulation": _simulation(pack, before, after, names),
-        "limits": ["Behaviour is every fixture actor trying every action once from a fresh record in every state; "
-                   "it does not cover guards that depend on data the fixtures do not vary.",
+        "limits": ["Behaviour is every fixture actor trying every action once from a fresh record in every state, holding "
+                   "values that meet that action's guards over values and in the state long enough for every time event; "
+                   "it does not cover values that fail a guard, or a step that waits for an earlier one.",
                    "Risk levels are fixed rules about the kind of change, not a judgement of the domain.",
                    "A state is read as renamed only when every transition and the start that used it use one new state "
                    "instead; the diagram still draws the old name as removed and the new one as added.",

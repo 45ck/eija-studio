@@ -47,8 +47,4 @@ _No curated notes yet._
 * [domain.laws.RoleNeverEnters](/symbols/domain/laws/RoleNeverEnters.md) - No transition held by ``role`` enters ``state``.
 * [domain.laws.StateFinal](/symbols/domain/laws/StateFinal.md) - No transition leaves ``state``.
 * [domain.laws.StateOnlyVia](/symbols/domain/laws/StateOnlyVia.md) - Every transition entering ``state`` performs one of ``actions``.
-
-## Referenced by
-
-* [domain.laws.protects_absent](/symbols/domain/laws/protects_absent.md) - Whether ``law`` protects a state the model does not have: the law is broken, never vacuously kept.
 <!-- okf:generated:end links -->
