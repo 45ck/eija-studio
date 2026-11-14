@@ -273,3 +273,12 @@ def test_eija_mcp_checks_as_a_started_system_only_for_a_pack_in_the_systems_home
     assert _started_in_playide(Namespace(pack=home / "coffee", systems=home)) is True
     assert _started_in_playide(Namespace(pack=ROOT / "packs" / "refund-desk", systems=home)) is False
     assert _started_in_playide(Namespace(pack=None, systems=home)) is False
+
+
+def test_a_limit_on_a_value_or_a_time_is_refused_before_anything_is_sent():
+    """Inspection 2026-11-14 P1: a limit no plan step can hold went to the model, which planned the step without it."""
+    pack = load_pack(ROOT / "packs" / "refund-desk")
+    proposer, stub = live("agent_hands_off")
+    with pytest.raises(DomainError) as e:
+        propose_plan("Let an agent hand off refunds over 500 to a human.", pack.model, pack, proposer)
+    assert e.value.code == "PLAN_LIMIT_UNSUPPORTED" and stub.calls == 0

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/system_describer.py
   title: adapters/system_describer.py
   hash_method: ast-api-v1
-  sha256: e5d2c44feb5ebc962cd93608d0b6ad0980bc6d2e7320dd2db7e03964e8ea7c89
-notes_baseline: 6702b8cbf92c26d67b995ec5ece82c70baaeaefcc0d2c3f1a2d35e597b4875c3
+  sha256: fff6ce0ee7ade4ee694a6323b819ea91f3a84c25b90e5a50cf99a51ff3844607
+notes_baseline: 3d090836b93977410c15a588d72b11918efd02cd2a2c802b29378dfd4803f9e1
 ---
 
 # adapters.system_describer

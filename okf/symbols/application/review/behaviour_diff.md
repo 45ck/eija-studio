@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/review.py#behaviour_diff
   title: application/review.py
   hash_method: ast-v2
-  sha256: 920b981f6bf415bb45429734b6fc3342fa3a683badc193979e462d4dd512f57e
-notes_baseline: fe3efd0b8a69b9b1ceb2b42f41d30ae5fc756b0063651a098fef4cc7eb9c955a
+  sha256: ac3bfe56c6632a3b6b26efdf4870ccb60388ac59ca075c8cfd5bb1cdd0ce0004
+notes_baseline: 9a0ce8a6c720d78a9d01a3d1de202f6885e31a2554ba487653b887b0b22af5b2
 ---
 
 # application.review.behaviour_diff
