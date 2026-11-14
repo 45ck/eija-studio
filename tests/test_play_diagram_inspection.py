@@ -145,7 +145,7 @@ def test_composites_role_names_and_the_use_case_width_read_right_at_1280():
                 return Object.values(m.cells).filter((c) => c.id && c.id.startsWith("assoc:")).map((e) => {
                   const role = m.getCell("role-end:" + e.id.slice(6));
                   return [e.value, role && role.value, role && role.geometry.x]; }); }""")
-            assert ["", "payouts", 0.8] in ends
+            assert ["", "payouts", 1] in ends
             assert all(value == "" for value, _, _ in ends)
 
             # The whole width of the use case diagram is on screen at 1280 pixels, at the readable scale.

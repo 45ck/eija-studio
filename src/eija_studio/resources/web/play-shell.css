@@ -73,6 +73,10 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 /* A trace, an open inspector or a dock must not spend the diagram's last usable pixels.
    When the regions exceed the available height, the workbench scrolls instead of overlapping them. */
 .workbench>.stage{grid-template-rows:auto auto minmax(240px,1fr) auto}
+/* A diagram canvas takes the height the stage gives it, never the height of its drawing: maxGraph sizes its SVG to the
+   whole graph, and through the workbench's min-content row a large model (32 states) made the canvas 4,000 pixels tall,
+   so the page scrolled instead of the diagram panning, and Fit fitted a canvas taller than the screen. */
+.stage>.canvas:not(.c4-panel),.stage>.sequences{contain:size}
 .workbench>.stage:has(#live-trace:not([hidden])){grid-template-rows:auto auto minmax(240px,1fr) auto auto}
 /* The screen designer's three columns need about 880px; with the side bar and the chat open, the record attributes go
    under the screen instead of squeezing it, and on a narrower stage the use cases go above it too. */
@@ -258,6 +262,8 @@ body[data-play="open"][data-play-arrangement="stacked"] .play-empty-mark{width:4
 @media(max-width:1100px){
   body .layout{display:flex;flex-direction:column;overflow:auto;min-height:0}
   .layout>.workbench{order:0;flex:none;min-height:360px;overflow:visible}
+  /* The page scrolls here, so a diagram gets a usable height of its own rather than whatever its drawing measured. */
+  .workbench>.stage{grid-template-rows:auto auto minmax(420px,1fr) auto}
   body[data-play="open"] .layout>.workbench{overflow:visible}
   .layout>.explorer{order:1;flex:none;height:380px;min-height:0;border-right:0;border-top:1px solid var(--line)}
   .layout>.side{order:2;flex:none;height:360px;min-height:0;border-left:0;border-top:1px solid var(--line)}
