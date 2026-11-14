@@ -7,8 +7,10 @@ from pathlib import Path
 
 import pytest
 
+from eija_studio.application.diagram_catalog import _summary_table
+from eija_studio.application.diagrams import diff_summary
 from eija_studio.application.review import behaviour_diff, review_change, row_text
-from eija_studio.domain.models import DomainError
+from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import load_pack
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.transactions import parse_transaction
@@ -162,9 +164,6 @@ def test_a_change_to_value_guards_time_events_or_linked_steps_is_reviewed_not_a_
     """Inspection 2026-11-14 R2: review_change raised KeyError on a changed value guard (ADR-0234) or linked step
     (ADR-0241) and read a time event (ADR-0237) as a renamed id; diff_summary sorted guard objects, so two guards on one
     transition raised TypeError in the plan preview, the review and the case's diagrams."""
-    from eija_studio.application.diagram_catalog import _summary_table
-    from eija_studio.application.diagrams import diff_summary
-    from eija_studio.domain.models import Workflow
     raw = LOAN.model.model_dump(mode="json")
     for t in raw["transitions"]:
         if t["action"] == "Return":
