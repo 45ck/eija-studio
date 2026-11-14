@@ -135,6 +135,7 @@ class _Run:
         self.labels: dict[str, str] = {}  # kernel ids are random; the report names records R1, R2, ... in creation order
         self.commits: Counter[str] = Counter()
         self.refusals: dict[str, Counter[str]] = defaultdict(Counter)
+        self.slips: dict[str, Counter[str]] = defaultdict(Counter)  # per state, refused actions that do not leave it
         self.codes: Counter[str] = Counter()
         self.entered: Counter[str] = Counter()
         self.by_role: dict[str, Counter[str]] = defaultdict(Counter)  # per role: "committed" and each refusal code
@@ -156,6 +157,13 @@ def _actions_for(model: Workflow, actor: dict[str, Any], state: str) -> list[str
     return [t.action for t in _ordered(model) if t.from_state == state and t.role == actor["role"]]
 
 
+def _tried(model: Workflow, action: str, state: str) -> str | None:
+    """The transition tried: the one `action` takes from `state`. A slip, an action that does not leave that state,
+    tries no transition on the diagram; it is the state's, never another state's transition's."""
+    transition = model.transition_for(action, state)
+    return transition.id if transition is not None and transition.from_state == state else None
+
+
 def _attempt(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _Dice, n: int,
              actor: dict[str, Any], record: str) -> None:
     item = session.instances[record]
@@ -164,20 +172,20 @@ def _attempt(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng
     version = item["version"] - 1 if item["version"] > 0 and rng.chance(STALE) else item["version"]
     command = ExecuteCommand(operation_id=f"sim-{n}", actor_id=actor["id"], instance_id=record, action=action,
                              expected_version=version)
-    transition = model.transition_for(action, item["state"])
-    assert transition is not None  # noqa: S101  # the action was chosen from this model
+    tried = _tried(model, action, item["state"])
     step = {"step": n, "actor": actor["id"], "role": actor["role"], "record": run.labels[record], "action": action,
-            "transition": transition.id, "from": item["state"]}
+            "transition": tried, "from": item["state"]}
     try:
         result = execute(session, CASE, model, command, pack=pack)  # type: ignore[arg-type]  # duck-typed port
     except DomainError as refused:
-        run.refusals[transition.id][refused.code] += 1
+        (run.slips[item["state"]] if tried is None else run.refusals[tried])[refused.code] += 1
         run.codes[refused.code] += 1
         run.by_role[actor["role"]][refused.code] += 1
         run.log(step | {"outcome": "REFUSED", "code": refused.code})
         return
     to = result["instance"]["state"]
-    run.commits[transition.id] += 1
+    assert tried is not None  # noqa: S101  # the kernel commits only a transition that leaves the record's state
+    run.commits[tried] += 1
     run.by_role[actor["role"]]["committed"] += 1
     run.entered[to] += 1
     run.log(step | {"outcome": "COMMITTED", "to": to, "effects": result["effects"]})
@@ -247,7 +255,8 @@ def _stop(entry: dict[str, Any], marks: list[str], break_on_refusal: bool) -> di
     if hits:
         return {"step": entry["step"], "reason": "breakpoint", "elements": hits}
     if break_on_refusal and entry["outcome"] == "REFUSED":
-        return {"step": entry["step"], "reason": "exception", "elements": ["transition:" + entry["transition"]],
+        where = "transition:" + entry["transition"] if entry["transition"] else "state:" + entry["from"]  # a slip is its state's
+        return {"step": entry["step"], "reason": "exception", "elements": [where],
                 "code": entry["code"]}
     return None
 
@@ -363,7 +372,8 @@ def _report(pack: Pack, model: Workflow, seed: int, steps: int, session: MemoryS
         "records": len(session.instances), "attempts": attempts, "committed": sum(run.commits.values()),
         "refused": sum(run.codes.values()), "codes": dict(run.codes.most_common()),
         "transitions": {t.id: {"committed": run.commits[t.id], "refused": dict(run.refusals.get(t.id, {}))} for t in model.transitions},
-        "states": {s: {"entered": run.entered[s], "now": occupancy[s]} for s in model.states},
+        "states": {s: {"entered": run.entered[s], "now": occupancy[s]} | ({"slips": dict(run.slips[s])} if s in run.slips else {})
+                   for s in model.states},
         "effects": {"audit": dict(Counter(session.audit)), "outbox": dict(Counter(session.outbox))},
         "by_kind": _by_kind(pack, run), "findings": _findings(model, run, occupancy), "trace": run.trace,
         **_time(model, session),

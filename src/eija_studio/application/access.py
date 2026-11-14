@@ -97,21 +97,38 @@ def matrix(pack: Pack, model: Workflow) -> dict[str, Any]:
     return {"roles": roles, "states": list(model.states), "initial": model.initial_state, "cells": cells}
 
 
-def _keys(grid: dict[str, Any]) -> set[tuple[str, str, str, str]]:
-    return {(state, role, c["action"], c["to"]) for state, row in grid["cells"].items() for role, cs in row.items() for c in cs}
+Key = tuple[str, str, str, str]
 
 
-def _named(key: tuple[str, str, str, str]) -> dict[str, str]:
+def _conditions(cell: dict[str, Any]) -> list[str]:
+    """What, beyond the role, a cell's permission depends on: being assigned, and guards over the record's values."""
+    return (["assigned only"] if cell["assigned_only"] else []) + [f"when [{w}]" for w in cell.get("when", [])]
+
+
+def _keys(grid: dict[str, Any]) -> dict[Key, list[str]]:
+    return {(state, role, c["action"], c["to"]): _conditions(c)
+            for state, row in grid["cells"].items() for role, cs in row.items() for c in cs}
+
+
+def _named(key: Key) -> dict[str, str]:
     return dict(zip(("state", "role", "action", "to"), key, strict=True))
 
 
+def _changes(now: dict[Key, list[str]], before: dict[Key, list[str]]) -> dict[str, list[dict[str, Any]]]:
+    """Permissions added and removed, and those kept whose conditions changed (being assigned, a guard over values):
+    a plan that only tightens or loosens who may take an action changes who can do what too."""
+    changed = [_named(k) | {"before": before[k], "after": now[k]} for k in sorted(set(now) & set(before)) if now[k] != before[k]]
+    return {"added": [_named(k) for k in sorted(set(now) - set(before))],
+            "removed": [_named(k) for k in sorted(set(before) - set(now))], "changed": changed}
+
+
 def access(pack: Pack, model: Workflow, base: Workflow | None = None) -> dict[str, Any]:
-    """The matrix for `model`, and, when `base` differs, the permissions it adds and removes compared with `base`."""
+    """The matrix for `model`, and, when `base` differs, the permissions it adds, removes and changes compared with
+    `base`."""
     grid = matrix(pack, model)
-    changes: dict[str, list[dict[str, str]]] = {"added": [], "removed": []}
+    changes: dict[str, list[dict[str, Any]]] = {"added": [], "removed": [], "changed": []}
     if base is not None and base.semantic_hash != model.semantic_hash:
-        now, before = _keys(grid), _keys(matrix(pack, base))
-        changes = {"added": [_named(k) for k in sorted(now - before)], "removed": [_named(k) for k in sorted(before - now)]}
+        changes = _changes(_keys(grid), _keys(matrix(pack, base)))
     return {"format": "eija.access.v1", "pack": pack.id, "model": model.semantic_hash, **grid, "changes": changes,
             "limits": ["Each cell is tried in the kernel with the pack's fixture actors on a fresh record; other actors "
                        "are refused or let through by the same guards."]}
@@ -150,10 +167,12 @@ def _taker(pack: Pack, model: Workflow, t: Transition) -> str | None:
     return next((a.id for a in pack.fixtures.actors if a.role == t.role and _try(pack, model, t, a.id) is None), None)
 
 
-def _replay(pack: Pack, model: Workflow, path: list[Transition], values: dict[str, Any]) -> list[dict[str, Any]] | str:
-    """Take `path` on one record in the kernel: the steps it committed, or the refusal code that stopped it."""
+def _replay(pack: Pack, model: Workflow, path: list[Transition], values: dict[str, Any],
+            starter: str | None = None) -> list[dict[str, Any]] | str:
+    """Take `path` on one record in the kernel, started by a holder of role `starter` when the model names who may
+    start one (ADR-0231): the steps it committed, or the refusal code that stopped it."""
     session = MemorySession(pack)
-    record = initialise(session, CASE, model, pack=pack)["id"]  # type: ignore[arg-type]
+    record = initialise(session, CASE, model, pack=pack, role=starter)["id"]  # type: ignore[arg-type]
     session.record_values[record] = values
     steps: list[dict[str, Any]] = []
     for t in path:
@@ -191,21 +210,54 @@ def _usable(pack: Pack, model: Workflow, allowed: set[str]) -> set[str]:
     return {t.id for t in model.transitions if t.id in allowed and _taker(pack, model, t)}
 
 
+def _starter(pack: Pack, model: Workflow, without: str | None) -> tuple[str | None, str | None]:
+    """Who starts the record (ADR-0231): (a role a fixture actor holds that may start one, None) or (None, why not).
+    A model that names no initiators lets anyone start a record, so there is nothing to choose. A workflow that receives
+    a signal (ADR-0242) also starts a record when one is delivered, with no person's role, so it starts one that way
+    when no starting role is left or held; `runtime.receive` starts it exactly as a role-less `initialise` does."""
+    if not model.initiators:
+        return None, None
+    roles = [r for r in model.initiators if r != without]
+    held = next((r for r in roles if any(a.role == r for a in pack.fixtures.actors)), None)
+    if held or model.receives:
+        return held, None
+    if not roles:
+        return None, "unreachable"
+    return None, f"Only {', '.join(roles)} may start a record, and no fixture actor holds that role; other actors might."
+
+
+def _started(model: Workflow, starter: str | None) -> str:
+    """How the replayed record was started, when the model limits that and no starting role was used: by a signal."""
+    if not model.initiators or starter is not None:
+        return ""
+    signals = ", ".join(f"{r.signal} from {r.sender}" for r in model.receives)
+    return f" The record was started by a signal from another workflow ({signals}), as the kernel starts one on delivery."
+
+
 def reach(pack: Pack, model: Workflow, target: str, without: str | None = None) -> dict[str, Any]:
-    """Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?"""
+    """Can a record reach `target` with no step taken by role `without` (or at all, when it is None)? Starting the record
+    is a step too: when the model names who may start one, a record without them does not exist (ADR-0231), unless a
+    signal from another workflow starts it (ADR-0242)."""
     _check(pack, model, target, without)
     question = {"target": target, "without": without, "model": model.semantic_hash}
+    starter, unstarted = _starter(pack, model, without)
+    if unstarted == "unreachable":
+        return question | {"verdict": "UNREACHABLE", "path": [], "why": f"Only {', '.join(model.initiators)} may start a record "
+                           f"and no signal starts one, so without {without} no record exists to reach {target}. "
+                           "The kernel refuses anyone else (ROLE_CANNOT_START)."}
     allowed = {t.id for t in model.transitions if t.role != without}
     if _path(model, target, allowed) is None:
         return _unreachable(question, without)
     # Search only transitions some fixture actor can take in the kernel, then replay the path on one record.
+    if unstarted:
+        return _not_shown(question, unstarted)
     path = _path(model, target, _usable(pack, model, allowed))
     if path is None:
         return _not_shown(question, "The model has a path, but no fixture actor could take every step in the kernel; other actors might.")
     values = _meeting(pack, path)  # one record takes the whole path, so its values must meet every guard on it (ADR-0234)
     if values is None:
         return _not_shown(question, "The model has a path, but no one record's values meet every guard over values on it.")
-    steps = _replay(pack, model, path, values)
+    steps = _replay(pack, model, path, values, starter)
     if isinstance(steps, str):
         return _not_shown(question, f"The kernel refused {steps} on replay.")
-    return question | {"verdict": "REACHABLE", "path": steps, "why": _reached(target, steps)} | ({"values": values} if values else {})
+    return question | {"verdict": "REACHABLE", "path": steps, "why": _reached(target, steps) + _started(model, starter)} | ({"values": values} if values else {})

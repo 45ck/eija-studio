@@ -168,6 +168,7 @@ dd{margin:0}
 .check-list li{display:grid;grid-template-columns:18px 1fr;gap:6px}
 .check-list li.ok .mark{color:var(--ok)}
 .check-list li .mark{color:var(--muted)}
+.check-list li.na{opacity:.75}
 .check-list .detail{grid-column:2;color:var(--muted);font-size:.8rem}
 .earned li{color:var(--muted)}
 .earned li strong{color:var(--ok);margin-right:6px}
