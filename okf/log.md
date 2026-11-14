@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-14
+* **Second inspection of checking in place**: synced `application.access` (`_try` readies a fresh record for a time event and a linked object, the reach replay waits and links, cells name `after` and `moves`) and `simulation` (an exception stop names its `action`). Their Notes were empty and stay so. Nothing was recorded as verified and no human source approval was recorded.
 * **Inspection of the app generator (ADR-0249)**: synced ADR-0249, `CASE_KINDS` (`object_cases`), `object_cases` and its answer helper, `signal_cases` (stored values and a second delivery), `generate` (README counts every case), `GENERATED_TESTS` (20) and `check_accessibility` (the label contract follows the page's `Control` and reference chooser). Re-read the Notes of `check_accessibility` as `process:claude-code-app-generator-inspection`; they still hold. No human source approval was recorded.
 
 ## 2026-11-13

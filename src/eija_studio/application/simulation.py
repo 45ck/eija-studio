@@ -257,7 +257,7 @@ def _stop(entry: dict[str, Any], marks: list[str], break_on_refusal: bool) -> di
     if break_on_refusal and entry["outcome"] == "REFUSED":
         where = "transition:" + entry["transition"] if entry["transition"] else "state:" + entry["from"]  # a slip is its state's
         return {"step": entry["step"], "reason": "exception", "elements": [where],
-                "code": entry["code"]}
+                "code": entry["code"], "action": entry.get("action")}
     return None
 
 

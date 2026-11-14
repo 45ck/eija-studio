@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 14 November 2026: running and checking a design in place, inspected again
+
+- A second Fagan inspection, over every sector pack, compared what the page shows with the kernel and logged nine defects, all fixed with before and after screenshots ([inspection record](docs/engineering/2026-11-14-INSPECTION-CHECK-IN-PLACE-2.md)).
+- Fixed: the permissions matrix and reachability tried a step with a time event, or one that moves a linked object, on a record that had not waited or linked nothing, so they said no one could take steps Simulate commits (ai-ops, refund-desk). A cell now names its time event and the moves it makes.
+- Fixed: Simulate's counts read below zero for a frame; Stop on the run bar emptied the Simulated check; a stop on a slip named no action; Simulate and the run bar painted the diagram at once; undoing an unchecked AI plan popped "✓ AI steps checked".
+- Every answer the run, check and lens views ask for now follows one rule (`P.ticket`): shown only while it is the newest asked and about the view on show. This fixes a late reachability answer shown under a newer question, recorded test steps written for a model no longer on show, and an older run log replacing a newer one. A test fails on any new request that does not follow it.
+
 ### 13 November 2026: inspection of the app generator
 
 - Fixed: a built app's page now lets a person choose the object a record refers to, or add one in place (ai-ops records could not be created from the page before). Ten defects in all; [inspection record](docs/quality/inspection-2026-11-13-app-generator.md), [ADR-0249](docs/adr/0249-app-generator-inspection-fixes.md).
