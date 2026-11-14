@@ -223,7 +223,7 @@ def _apply_notes(notes: dict[str, str], classes: list[Klass], parsed: Parsed) ->
 
 
 def parse(text: str) -> Parsed:
-    parsed = Parsed()
+    parsed = Parsed(attribute_notes=False)
     for block in _blocks(text):
         if not block:
             continue

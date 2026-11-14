@@ -7,6 +7,20 @@
 - Fixed: the API contract and the generated server read one status table (`eija_studio.domain.app_http`); the contract had left out 13 refusal codes and the signals route. `ROLE_CANNOT_START` and `SEPARATION_DENIED` are now 403. [Inspection record](docs/quality/inspection-2026-11-14-app-generator-pass-2.md), [ADR-0251](docs/adr/0251-app-generator-second-pass.md).
 - Fixed: a create (record or stored object) can be retried after a lost answer: an optional `operation_id` returns the first result instead of making a second. The page sends one per draft.
 - Fixed: values and references are checked inside the write; a request that never sends its body is answered `408` after 30 s instead of holding a thread; the record list is one query and a view no longer scans every audit entry (5,000 records: 0.395 s to 0.03 s); a number the browser cannot hold is refused, not dropped; `/favicon.ico` is answered 204.
+### 14 November 2026: saving and UML import, inspected again
+
+- A second inspection of saving and UML interchange ([log](docs/engineering/INSPECTION-SAVE-IMPORT.md#second-pass-2026-11-14), [ADR-0253](docs/adr/0253-imports-match-names-and-tabs-keep-each-others-work.md)) found seven defects; all are fixed, each with a test that fails on the old code.
+- Fixed: a state renamed in a UML file is imported as one `rename_state`, so it keeps its composite state; before, the plan removed and re-added it, and a composite's initial state could not be removed.
+- Fixed: PlantUML writes `"`, a leading `'` and keyword-like state names so they read back as written; names, descriptions and literals that differ only in spacing are not a change; a Mermaid import keeps the attribute descriptions Mermaid cannot carry.
+- Fixed: two tabs on one system no longer replace each other's work. Save is refused with `DRAFT_CHANGED` when another tab saved since (press Save again to replace it), and each tab's browser draft is kept separately and offered with Reopen.
+- Fixed: opening the systems dialog no longer makes a copy of a shipped pack read the shipped pack's `data.json`.
+
+### 14 November 2026: running and checking a design in place, inspected again
+
+- A second Fagan inspection, over every sector pack, compared what the page shows with the kernel and logged nine defects, all fixed with before and after screenshots ([inspection record](docs/engineering/2026-11-14-INSPECTION-CHECK-IN-PLACE-2.md)).
+- Fixed: the permissions matrix and reachability tried a step with a time event, or one that moves a linked object, on a record that had not waited or linked nothing, so they said no one could take steps Simulate commits (ai-ops, refund-desk). A cell now names its time event and the moves it makes.
+- Fixed: Simulate's counts read below zero for a frame; Stop on the run bar emptied the Simulated check; a stop on a slip named no action; Simulate and the run bar painted the diagram at once; undoing an unchecked AI plan popped "✓ AI steps checked".
+- Every answer the run, check and lens views ask for now follows one rule (`P.ticket`): shown only while it is the newest asked and about the view on show. This fixes a late reachability answer shown under a newer question, recorded test steps written for a model no longer on show, and an older run log replacing a newer one. A test fails on any new request that does not follow it.
 ### 14 November 2026: the kernel, inspected a second time
 
 - A second, deeper inspection of the kernel read how its features meet ([record](docs/quality/inspection-2026-11-14-kernel.md), [ADR-0250](docs/adr/0250-kernel-second-inspection.md)). It found three defects, all fixed, each with a regression test in `tests/test_kernel_inspection_2.py`.

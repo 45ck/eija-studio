@@ -9,11 +9,11 @@
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, savedData = null, classGraph = null, useCaseGraph = null, tab = "states";
-  let components = null, componentGraph = null, lastBuild = null;
+  let components = null, componentsAsk = null, componentGraph = null, lastBuild = null; // componentsAsk: the report being read, per view
   let navigationReady = false, asking = false;
   let activeStatus = null; // server identities, never re-created or interpreted in the browser
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
-  let packInfo = null, points = 0, simKey = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
+  let packInfo = null, points = 0, simKey = null, simulated = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
   let shownChange = null; // while the Changes view is on: the union of the model in force and the change (ADR-0176), drawn on the class and use case diagrams too
   let ripple = null, rippleSeq = 0; // what the accepted plan does to every diagram, with the proposer's follow-ons (ADR-0158)
   let effectsSeq = 0; // late effect reports cannot replace the subject currently being inspected
@@ -42,6 +42,17 @@
     const options = { headers: { Authorization: "Bearer " + token } };
     if (body !== undefined) Object.assign(options, { method: "POST", body: JSON.stringify(body) }, { headers: { ...options.headers, "Content-Type": "application/json" } });
     return PlayApi.request(fetch, path, options); // a stopped server or a crash page reads as a sentence, not a parse error
+  }
+
+  // One rule for every answer the page asks the server for: it is shown only while it is the newest asked on its
+  // channel and the view it was asked about (the model, plan and screens on show, and whatever `also` reads) is still
+  // the one on show. A caller takes a ticket before it asks and drops the answer once `current()` is false, so a late,
+  // superseded or stale answer never paints over the question now on screen. tests/test_play_answers_follow_view.py
+  // checks that every request in the run, check and lens modules does this.
+  const tickets = Object.create(null);
+  function ticket(channel, also = () => "") {
+    const n = (tickets[channel] = (tickets[channel] || 0) + 1), at = viewKey() + "\u0000" + also();
+    return Object.freeze({ current: () => tickets[channel] === n && viewKey() + "\u0000" + also() === at });
   }
 
   function el(tag, text, attrs = {}) {
@@ -1050,7 +1061,7 @@
     const panel = $("canvas").closest(".workbench"), scrolled = panel ? panel.scrollTop : 0;
     for (const g of [graph, classGraph, useCaseGraph, componentGraph]) if (g) g.destroy();
     for (const box of ["canvas", "class-canvas", "usecase-canvas", "component-canvas"]) $(box).replaceChildren();
-    classGraph = useCaseGraph = componentGraph = components = null;
+    classGraph = useCaseGraph = componentGraph = components = componentsAsk = null;
     for (const key of Object.keys(base)) delete base[key];
     clearSimPanel();
     outline();
@@ -1501,7 +1512,9 @@
   function checksNow() {
     const key = viewKey(), ai = plan ? plan.steps.filter((s) => s.author === "ai") : [];
     const seen = ai.filter((s) => s.checked).length, built = lastBuild && lastBuild.key === key ? lastBuild : null;
-    const simulated = sim && simKey === key ? sim : null;
+    // What was simulated, not what is painted: the run bar repaints and clears the diagram, which ran nothing new and
+    // changed no model, so it neither empties this part nor fills it.
+    const done = simulated && simKey === key ? simulated : null;
     return [
       { id: "ai", name: "AI steps checked", ok: seen === ai.length, na: !ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
       { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length && Boolean(a11y) && !a11y.failed,
@@ -1510,8 +1523,8 @@
       { id: "conformance", name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       rippleCheck(),
-      { id: "simulated", name: "Simulated", ok: Boolean(simulated),
-        detail: simulated ? `${simulated.attempts} attempts, ${simulated.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
+      { id: "simulated", name: "Simulated", ok: Boolean(done),
+        detail: done ? `${done.attempts} attempts, ${done.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
     ];
   }
 
@@ -1998,9 +2011,22 @@
 
   // The components report of the model on screen, read once per view: the component diagram and the deployment
   // diagram (ADR-0206) are both read from it.
-  async function loadComponents() {
-    if (!components) components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
-    return components;
+  // Callers for the same view share one request; a report of a view no longer on show is returned to its caller, never
+  // kept for this one.
+  function loadComponents() {
+    if (components) return Promise.resolve(components);
+    const key = viewKey();
+    if (componentsAsk && componentsAsk.key === key) return componentsAsk.promise;
+    const mine = ticket("components");
+    const promise = api("/api/play/components", { ...about(), screens: screensEdited ? screens : null }).then((result) => {
+      if (mine.current() && componentsAsk && componentsAsk.promise === promise) components = result;
+      return result;
+    }, (error) => {
+      if (componentsAsk && componentsAsk.promise === promise) componentsAsk = null; // asked again next time
+      throw error;
+    });
+    componentsAsk = { key, promise };
+    return promise;
   }
 
   async function drawComponents() {
@@ -2019,6 +2045,7 @@
         box.replaceChildren(said);
         return;
       }
+      if (!components) return; // the view changed while the report was read: the redraw of the new view draws it
     }
     if (componentGraph) { restyleComponents(); fit(); return; }
     const { Graph, InternalEvent } = maxgraph;
@@ -2128,7 +2155,7 @@
     commit(label);
     lastBuild = null; // the last build was of other screens
     restyleComponents();
-    components = null;
+    components = componentsAsk = null;
     renderDesigner();
     clearTimeout(checkTimer);
     problemsFor = null; // pending until the check of this design answers
@@ -2366,11 +2393,11 @@
     score.hidden = false;
     score.className = "score";
     score.textContent = "Building and checking against the kernel…";
+    // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
+    const key = viewKey(), mine = ticket("build");
     try {
-      // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
-      const key = viewKey();
       const result = await api("/api/play/build", { ...about(), screens: screensEdited ? screens : null });
-      if (key !== viewKey()) { score.textContent = "The model changed during this build. Build the current revision again."; score.className = "score bad"; return; }
+      if (!mine.current()) { score.textContent = "The model changed during this build. Build the current revision again."; score.className = "score bad"; return; }
       const pass = result.conformance.status === "PASS";
       lastBuild = { ...result, key };
       if (pass) rewardTrying("build", 3, `Built the AI's change and ran its ${result.cases} conformance cases`, key);
@@ -2384,6 +2411,7 @@
       document.dispatchEvent(new CustomEvent("playide:built", { detail: { subject: result.subject, approval: result.approval, conformance: result.conformance } }));
     } catch (error) {
       score.className = "score bad";
+      if (!mine.current()) { score.textContent = `A build of an earlier model was refused (${error.code || "ERROR"}). Build the current revision again.`; return; }
       score.textContent = error.code === "MODEL_CHANGED"
         ? "The model changed since this page loaded. Reload to see it, then build again."
         : `Build refused (${error.code || "ERROR"}): ${error.message}`;
@@ -2511,17 +2539,18 @@
   async function simulate() {
     const button = $("simulate");
     button.disabled = true;
-    const key = viewKey();
+    const key = viewKey(), mine = ticket("simulate");
     try {
       const result = await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 });
       // A run of a model no longer on screen is not painted on this one: its counts are of other states and transitions.
-      if (key !== viewKey()) { notify("The model changed while simulating. Press Simulate to run the model shown."); return; }
+      if (!mine.current()) { notify("The model changed while simulating. Press Simulate to run the model shown."); return; }
       showSim(result);
       simKey = key;
+      simulated = { attempts: result.attempts, refused: result.refused };
       rewardTrying("simulate", 2, "Simulated users on the AI's change", key);
       renderHealth();
     } catch (error) {
-      if (key !== viewKey()) { notify(`A simulation of an earlier model was refused (${error.code || "ERROR"}). Press Simulate to run the model shown.`); return; }
+      if (!mine.current()) { notify(`A simulation of an earlier model was refused (${error.code || "ERROR"}). Press Simulate to run the model shown.`); return; }
       $("sim").hidden = false;
       $("sim-summary").textContent = error.code === "MODEL_CHANGED"
         ? "The model changed since this page loaded. Reload to see it, then simulate again."
@@ -2545,6 +2574,12 @@
   let restoring = false, planUid = 0, recoveredWork = false;
   const clone = (value) => (value == null ? null : JSON.parse(JSON.stringify(value)));
   const draftKey = () => `playide.draft.v1:${packInfo.id}:${caseId || ""}`;
+  // Two tabs on one system share the draft key (ADR-0253). Each draft names the tab that wrote it: a tab never
+  // writes over, or removes, another tab's draft without first keeping it under that tab's own earlier key, so both
+  // tabs' work survives a reload. A draft this tab recovered on load is its own until the tab that wrote it writes again.
+  const TAB = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+  let adopted = null; // { tab, saved } of the draft recovered on load
+  const ownDraft = (d) => !d || !d.tab || d.tab === TAB || (adopted !== null && d.tab === adopted.tab && d.saved === adopted.saved);
   const navigationKey = () => `playide.navigation.v1:${packInfo.id}:${caseId || ""}`;
 
   // Presentation is deliberately separate from the edit document. No runtime, check or approval is restored.
@@ -2708,12 +2743,18 @@
     if (REVIEW_VIEW || !packInfo) return;
     const now = edits.stack[edits.at], empty = !now || (!now.doc.plan && !now.doc.screens && !now.doc.tests); // nothing to keep
     try {
-      if (empty) { localStorage.removeItem(draftKey()); browserNote = { bad: false, text: "", title: "" }; renderSaveStatus(); return; }
+      const other = keepOtherTab();
+      if (empty) {
+        if (!other) localStorage.removeItem(draftKey());
+        localStorage.removeItem(`${earlierKey()}:tab-${TAB}`);
+        browserNote = { bad: false, text: "", title: "" }; renderSaveStatus(); return;
+      }
       const from = Math.max(0, edits.at - STORED), keep = edits.stack.slice(from, edits.at + STORED + 1);
-      const draft = { v: 1, model: modelPrint(), saved: Date.now(), at: edits.at - from, stack: keep.map(({ label, doc, at }) => ({ label, doc, at })) };
+      const draft = { v: 1, model: modelPrint(), saved: Date.now(), tab: TAB, at: edits.at - from, stack: keep.map(({ label, doc, at }) => ({ label, doc, at })) };
       try { localStorage.setItem(draftKey(), JSON.stringify(draft)); } catch {
         localStorage.setItem(draftKey(), JSON.stringify({ ...draft, at: 0, stack: [keep[edits.at - from]] })); // the current work, without its history
       }
+      localStorage.removeItem(`${earlierKey()}:tab-${TAB}`); // this tab's work is under the key again: no older copy of it is offered
       browserNote = { bad: false, text: "Edits kept in this browser", title: `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.` };
     } catch {
       setAsideOutdated();
@@ -2776,11 +2817,30 @@
       return key;
     } catch { return null; } // left where it was
   }
-  // Every retained draft (`:earlier`, `:earlier:2`, ...), oldest first, as [key, draft]; unreadable ones are skipped.
+  // Another tab's draft under the key: kept under that tab's own earlier key (its newest work replaces its older
+  // copy there) before this tab writes. True when the key held another tab's draft.
+  function keepOtherTab() {
+    const raw = localStorage.getItem(draftKey());
+    if (raw === null) return false;
+    let found = null;
+    try { found = JSON.parse(raw); } catch { return false; }
+    if (!isRecord(found) || ownDraft(found) || typeof found.tab !== "string" || !/^[a-z0-9]{1,40}$/.test(found.tab)) return false;
+    localStorage.setItem(`${earlierKey()}:tab-${found.tab}`, raw);
+    noteOtherTab();
+    return true;
+  }
+  let otherTabNoted = false;
+  function noteOtherTab() {
+    if (otherTabNoted) return;
+    otherTabNoted = true;
+    say("ai", el("p", "This system is open in another tab too. Each tab's edits are kept in this browser separately, so "
+      + "neither replaces the other; a reload offers the other tab's work to reopen. Save from the tab whose work you want to keep.")).classList.add("recovered");
+  }
+  // Every retained draft (`:earlier`, `:earlier:2`, `:earlier:tab-…`), oldest first, as [key, draft]; unreadable ones are skipped.
   function retainedDrafts() {
     const found = [];
     try {
-      const pattern = new RegExp(`^${earlierKey().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(:\\d+)?$`);
+      const pattern = new RegExp(`^${earlierKey().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(:\\d+|:tab-[a-z0-9]{1,40})?$`);
       for (let i = 0; i < localStorage.length; i += 1) {
         const key = localStorage.key(i);
         if (!key || !pattern.test(key)) continue;
@@ -2794,7 +2854,9 @@
     for (const [key, draft] of retainedDrafts()) {
       offerEarlier(draft, key, draft.model !== modelPrint()
         ? "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams."
-        : `An earlier browser draft from ${new Date(draft.saved).toLocaleString()} is retained. Later edits were not kept in this browser, so it was set aside.`);
+        : key.includes(":tab-")
+          ? `Work from another tab on this system, ${new Date(draft.saved).toLocaleString()}, is kept. Both tabs edited at once, so each tab's work was kept separately.`
+          : `An earlier browser draft from ${new Date(draft.saved).toLocaleString()} is retained. Later edits were not kept in this browser, so it was set aside.`);
     }
   }
   function offerEarlier(draft, key, text) {
@@ -2817,6 +2879,11 @@
 
   // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
   // restored plan again; a step that no longer applies (the model in force changed) is shown as such.
+  window.addEventListener("storage", (event) => { // another tab of this browser wrote this system's draft
+    if (REVIEW_VIEW || !packInfo || event.key !== draftKey() || !event.newValue) return;
+    try { if (!ownDraft(JSON.parse(event.newValue))) noteOtherTab(); } catch { /* not a draft */ }
+  });
+
   async function recover() {
     edits.stack = [{ label: "open the model", doc: { plan: null, screens: null }, card: null, at: Date.now() }];
     edits.at = 0;
@@ -2836,6 +2903,7 @@
       return;
     }
     offerRetained(); // drafts retained on earlier loads stay offered beside the newer work
+    adopted = { tab: draft.tab, saved: draft.saved }; // recovered: this tab's own until the tab that wrote it writes again
     planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
     edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens || draft.stack[0].doc.tests ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
     edits.at = edits.stack.length - draft.stack.length + draft.at;
@@ -2858,7 +2926,7 @@
     screensEdited = false;
     lastBuild = null;
     restyleComponents();
-    components = null;
+    components = componentsAsk = null;
     await loadScreens(null);
     renderDesigner();
     if (plan) refreshRipple();
@@ -3058,6 +3126,7 @@
     lastBuild = null;
     shownChange = null;
     simKey = null;
+    simulated = null;
     $("run").hidden = true;
     $("run-frame").src = "about:blank";
     $("run-open").removeAttribute("href");
@@ -3197,7 +3266,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    api, ticket, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
     activationDraft, activated, showEffects, status: () => activeStatus,
     buildForReview: () => { if (plan && !plan.previewing) enterPreview(); return build(); },
     inspectChange: () => { if (plan && !plan.previewing) enterPreview(); showTab("review"); },

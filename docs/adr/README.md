@@ -130,6 +130,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0249](0249-app-generator-inspection-fixes.md) | Fixes from the inspection of the app generator | accepted |
 | [0250](0250-kernel-second-inspection.md) | Who starts a record is checked like who acts, and a law never protects a state that is gone | accepted |
 | [0251](0251-app-generator-second-pass.md) | One status table, retryable creates and bounded requests in the generated app | accepted |
+| [0253](0253-imports-match-names-and-tabs-keep-each-others-work.md) | An import matches renamed and respaced names, and two tabs keep each other's work | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
