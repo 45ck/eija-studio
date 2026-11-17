@@ -614,6 +614,25 @@
       "rules": [
         {
           "all": [
+            "excursion",
+            "final"
+          ],
+          "any": [
+            "approv"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "final_approval",
+              "explanation": "Would expand final approval authority to teachers. Protected policy blocks this."
+            },
+            {
+              "interpretation": "recommend_only",
+              "explanation": "The supported change: teachers recommend; the registrar still gives final approval."
+            }
+          ]
+        },
+        {
+          "all": [
             "excursion"
           ],
           "any": [

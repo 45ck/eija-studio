@@ -84,3 +84,12 @@ def test_the_cli_writes_a_report(tmp_path):
     out = tmp_path / "r.json"
     assert intent.main(["--out", str(out)]) == 0
     assert json.loads(out.read_text(encoding="utf-8"))["scope"] == "intent-eval"
+
+
+def test_the_offline_fixture_never_answers_an_unsafe_request_with_a_safe_meaning():
+    """Issue #220: "teachers give the final approval ... on their own" got `recommend_only` first. A substitution is
+    the dangerous failure (the person would see a supported plan for a change they did not ask for), so none may
+    remain in the offline baseline; a request the fixture cannot read is `wrong`, which is honest."""
+    rows = intent.evaluate("offline")["results"]
+    assert [r["id"] for r in rows if r["outcome"] == "substituted"] == []
+    assert {r["id"]: r["outcome"] for r in rows}["excursion/unsafe"] == "correct"
