@@ -1,4 +1,4 @@
-"""CI cost and reliability budget (ADR-0228, amendment of 17 November 2026).
+"""CI cost and reliability budget (ADR-0228, amendments of 17 November 2026).
 
 The repository is public, so GitHub's standard Linux runners cost nothing. These tests keep it that way and keep a
 hung or repeated run from piling up minutes: every workflow must
@@ -7,7 +7,7 @@ hung or repeated run from piling up minutes: every workflow must
 * give every job a timeout of at most 60 minutes (the default is 6 hours),
 * cancel a superseded run on the same ref or pull request (``concurrency`` with ``cancel-in-progress``),
 * pin every action to a full commit SHA, and
-* schedule at most one run a day.
+* run on no schedule at all (the owner dropped the nightly on 17 November 2026; the full tier is on demand).
 
 Each rule has a negative control: a planted workflow that breaks it must be caught.
 """
@@ -36,12 +36,8 @@ def budget_problems(text: str) -> list[str]:
     concurrency = doc.get("concurrency")
     if not isinstance(concurrency, dict) or concurrency.get("cancel-in-progress") is not True:
         problems.append("workflow has no concurrency group with cancel-in-progress: true")
-    for entry in triggers.get("schedule") or []:
-        minute, hour = entry["cron"].split()[:2]
-        if not (minute.isdigit() and hour.isdigit()):
-            problems.append(f"schedule {entry['cron']!r} runs more than once a day")
-    if len(triggers.get("schedule") or []) > 1:
-        problems.append("more than one schedule")
+    if "schedule" in triggers:
+        problems.append("workflow has a schedule: the full tier runs on demand only (workflow_dispatch)")
     for name, job in (doc.get("jobs") or {}).items():
         runner = job.get("runs-on")
         if runner not in STANDARD_RUNNERS:
@@ -70,8 +66,7 @@ def test_every_workflow_is_within_the_ci_budget(path):
 GOOD = """
 on:
   pull_request:
-  schedule:
-    - cron: '17 15 * * *'
+  workflow_dispatch:
 concurrency:
   group: x
   cancel-in-progress: true
@@ -98,12 +93,8 @@ def test_the_control_workflow_is_within_budget():
         ("timeout-minutes: 15", "timeout-minutes: 360", "timeout-minutes 360 is missing or over"),
         ("cancel-in-progress: true", "cancel-in-progress: false", "no concurrency group"),
         ("@d23441a48e516b6c34aea4fa41551a30e30af803", "@v6", "is not pinned to a commit SHA"),
-        ("'17 15 * * *'", "'*/30 * * * *'", "runs more than once a day"),
-        (
-            "    - cron: '17 15 * * *'",
-            "    - cron: '17 15 * * *'\n    - cron: '17 3 * * *'",
-            "more than one schedule",
-        ),
+        ("  workflow_dispatch:", "  schedule:\n    - cron: '17 15 * * *'", "workflow has a schedule"),
+        ("  workflow_dispatch:", "  schedule:\n    - cron: '*/30 * * * *'", "workflow has a schedule"),
     ],
 )
 def test_a_workflow_over_budget_is_caught(old, new, expected):

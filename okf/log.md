@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-11-17
+* **No nightly run**: synced ADR-0228 (amendment: the full tier runs on manual dispatch only, the SARIF schema check moves to the fast job, the budget test rejects any schedule) and ADR-0036 (its note on `quality.yml` triggers). No Notes were hand-edited.
 * **CI budget and a deeper test pass**: synced ADR-0228 (the 17 November amendment from #273, which had left the page stale so `okf` and `okf_tools` failed in the full tier) and the `graph_formal_full` gate page (it now fetches the pinned OASIS SARIF schema and runs the schema check that had skipped everywhere), and the `okf` gate page (now also in the fast tier). Re-read the Notes of `okf` as `process:deeper-test-pass`; they still hold. The other pages have no curated Notes. Nothing was recorded as verified and no human source approval was recorded.
 
 ## 2026-11-14
