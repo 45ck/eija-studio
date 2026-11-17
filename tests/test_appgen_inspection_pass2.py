@@ -105,7 +105,12 @@ def test_a_request_that_never_sends_its_body_is_answered_and_its_thread_freed(ai
                      "Content-Length: 50\r\n\r\n".encode())
         held.settimeout(45)
         started = time.monotonic()
-        answer = held.recv(4096).decode()
+        # Read to the close: the head and the JSON body can arrive in separate segments, and one recv() got only the
+        # head on a hosted runner (17 November 2026), failing a correct server.
+        chunks = []
+        while chunk := held.recv(4096):
+            chunks.append(chunk)
+        answer = b"".join(chunks).decode()
     assert answer.startswith("HTTP/1.0 408") and '"REQUEST_TIMEOUT"' in answer and 25 < time.monotonic() - started < 40
 
 

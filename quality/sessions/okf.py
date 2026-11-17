@@ -27,7 +27,7 @@ def okf_structure(session: nox.Session) -> None:
     session.run(PYTHON, "-m", "quality.okf", "check", "--only", "conformance,links")
 
 
-@nox.session(python=False, tags=["full", "release"])
+@nox.session(python=False, tags=["fast", "full", "release"])
 def okf(session: nox.Session) -> None:
     """OKF v0.2 conformance, links, code-link hashes (STALE, NOTES_STALE), coverage and generator drift.
 

@@ -57,3 +57,10 @@ def test_the_pins_are_the_ones_the_gates_check():
     assert (url, sha) == (lock["url"], lock["sha256"]) and f'ROOT / ".tmp" / "tools" / "{path.name}"' in run_alloy
     url, sha, path = pinned_jars.JARS["plantuml"]()
     assert url.endswith("/" + path.name) and len(sha) == 64 and path.parent == pinned_jars.TOOLS
+
+
+def test_the_sarif_schema_is_pinned_where_the_rules_test_reads_it():
+    url, sha256, path = pinned_jars.JARS["sarif"]()
+    assert url.startswith("https://docs.oasis-open.org/") and len(sha256) == 64
+    assert path == pinned_jars.ROOT / ".tmp" / "sarif-schema-2.1.0.json"
+    assert sha256 in (pinned_jars.ROOT / "graph" / "schema" / "rules.md").read_text(encoding="utf-8")

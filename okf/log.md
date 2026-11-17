@@ -1,5 +1,8 @@
 # Update log
 
+## 2026-11-17
+* **CI budget and a deeper test pass**: synced ADR-0228 (the 17 November amendment from #273, which had left the page stale so `okf` and `okf_tools` failed in the full tier) and the `graph_formal_full` gate page (it now fetches the pinned OASIS SARIF schema and runs the schema check that had skipped everywhere), and the `okf` gate page (now also in the fast tier). Re-read the Notes of `okf` as `process:deeper-test-pass`; they still hold. The other pages have no curated Notes. Nothing was recorded as verified and no human source approval was recorded.
+
 ## 2026-11-14
 * **Tests, gates and docs, second pass**: synced the gate pages `tests` (the skip ledger, `quality/tools/skip_ledger.py`), `graph_formal_full`, `graph_formal_release` and `interop_plantuml` (they fetch their pinned jars with `quality/tools/pinned_jars.py`). None of these pages has curated Notes. Nothing was reviewed by a human.
 * **Integration review of the 13 November fixes**: synced the ADR-0246 amendment and `declared_codes` after `UNDECLARED_ROLE` changed to name the action (`UNDECLARED_ROLE:<action>`). No Notes were hand-edited.
