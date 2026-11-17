@@ -1,0 +1,43 @@
+name: archive-branches
+# Manual dispatch only (issue #56). For each listed branch: tag its head as archive/<branch>, push the tag, then delete
+# the branch. The tag keeps every commit reachable, so `git push origin archive/<b>:refs/heads/<b>` brings a branch back.
+# A branch with an open pull request, `main` and `pr-media` (PR GIF hosting, demos/prgif) are refused.
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: Space-separated branch names to archive and delete
+        required: true
+        type: string
+permissions:
+  contents: write
+  pull-requests: read
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+      - name: Tag and delete
+        env:
+          BRANCHES: ${{ inputs.branches }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for b in $BRANCHES; do
+            case "$b" in main|pr-media) echo "::error::refusing to archive $b"; exit 1;; esac
+            open=$(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:$b" --jq length)
+            if [ "$open" != "0" ]; then echo "::error::$b has an open pull request"; exit 1; fi
+            git rev-parse --verify --quiet "refs/remotes/origin/$b" >/dev/null || { echo "$b: already gone"; continue; }
+            git tag -a "archive/$b" "refs/remotes/origin/$b" -m "Archived branch $b (issue #56)"
+            git push origin "refs/tags/archive/$b"
+            git push origin --delete "$b"
+            echo "$b -> archive/$b ($(git rev-parse --short "refs/remotes/origin/$b"))" >> "$GITHUB_STEP_SUMMARY"
+          done
