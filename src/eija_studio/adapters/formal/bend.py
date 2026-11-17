@@ -66,6 +66,15 @@ def _conformance(conf: dict[str, Any]) -> dict[str, Any]:
                           for w in conf["witnesses"]]}
 
 
+def _tool(tool: dict[str, Any]) -> dict[str, Any]:
+    """The runner's tool block. Since the review fixes the runner records the commit as `declared_bend_commit_unverified`
+    (a Dockerfile label; the archive sha256 is the pin), while older reports say `bend_commit`. Reading only the old name
+    made every report from the fixed runner, fresh or committed, NOT_RUN (found 2026-11-17 refreshing the snapshot)."""
+    out = {k: tool[k] for k in ("bend_version", "image_id", "image_tag", "base_image", "lean_version")}
+    out["bend_commit"] = tool["declared_bend_commit_unverified"] if "declared_bend_commit_unverified" in tool else tool["bend_commit"]
+    return out
+
+
 def extract(report: Report, root: Path, baseline: Workflow, candidate: Workflow) -> dict[str, Any]:
     """Copy the raw fields the kernel checks. No verdict is computed here."""
     body = report.body
@@ -77,7 +86,7 @@ def extract(report: Report, root: Path, baseline: Workflow, candidate: Workflow)
     current = {name: digest for name in MODEL_FILES if (digest := lf_sha256(base / name)) is not None}
     return {
         "protocol": PROTOCOL,
-        "tool": {k: body["tool"][k] for k in ("bend_version", "bend_commit", "image_id", "image_tag", "base_image", "lean_version")},
+        "tool": _tool(body["tool"]),
         "mode": body["mode"],
         "model": {"semantic_hash": body["model"]["semantic_hash"], "files": body["model"]["files"]},
         "binding": {"current_files_sha256": current, "regenerated_main_bend_sha256": _regenerated_sha(root, baseline, candidate)},

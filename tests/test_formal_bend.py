@@ -27,6 +27,7 @@ import verification.bend.bend_generate as gen  # noqa: E402
 import verification.bend.bend_policy as bend_policy  # noqa: E402
 import verification.bend.bend_runner as runner  # noqa: E402
 import verification.bend.bend_slicing as slicing  # noqa: E402
+from eija_studio.adapters.formal import bend as bend_adapter  # noqa: E402
 from eija_studio.domain.policy import check_policy  # noqa: E402
 
 LAWS = (BEND / "LAWS.bend").read_text(encoding="utf-8")
@@ -411,8 +412,6 @@ def test_the_committed_evidence_snapshot_describes_the_committed_proofs():
     assert snapshot["limits"], "the limits travel with the evidence"
 
 
-@pytest.mark.xfail(strict=True, reason="NOT_RUN: the snapshot predates the review fixes (Dockerfile pin, --verdict per law, archive pin); "
-                   "refresh it with `nox -s formal_bend -- --snapshot` on a Docker host (docs/engineering/FUTURE-WORK.md), then remove this marker")
 def test_the_snapshot_was_produced_by_the_current_gate_and_dockerfile():
     snapshot = json.loads((BEND / "evidence" / "bend.json").read_text(encoding="utf-8"))
     assert snapshot["tool"]["bend_archive_sha256"] == runner._archive_pin()
@@ -436,3 +435,13 @@ def test_the_committed_proofs_check_and_a_seeded_fault_fails_them():
     unsafe, _ = runner.prove_directory(checker, "pytest-unsafe", control.build(), LAWS, PROOF, {}, attribute=False)
     assert unsafe["model_check"]["result"] == "PROVEN", "the unsafe model is well-formed Bend"
     assert unsafe["full_run"]["result"] == "FAILED", "the same proofs must NOT check against the unsafe model"
+
+
+def test_the_adapter_reads_the_commit_under_both_names_the_runner_has_used():
+    """2026-11-17: the fixed runner writes `declared_bend_commit_unverified`; the adapter read only `bend_commit`, so
+    every report from it was NOT_RUN (KeyError). Both names map to the artifact's `bend_commit`."""
+    base = {"bend_version": "v", "image_id": "i", "image_tag": "t", "base_image": "b@sha256:x", "lean_version": "l"}
+    assert bend_adapter._tool({**base, "declared_bend_commit_unverified": "new"})["bend_commit"] == "new"
+    assert bend_adapter._tool({**base, "bend_commit": "old"})["bend_commit"] == "old"
+    committed = json.loads((BEND / "evidence" / "bend.json").read_text(encoding="utf-8"))["tool"]
+    assert bend_adapter._tool(committed)["bend_commit"] == "573002f01ec6c52416d44489543f69a9625facf8"

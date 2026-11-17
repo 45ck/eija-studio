@@ -7,6 +7,9 @@
 - Fixed: `okf` was red on `main` (the ADR-0228 amendment left its page stale). The `okf` check (11 s) now runs in the fast tier, so a pull request sees it.
 - Fixed: a flaky server test read a 408 answer with one `recv`; it now reads to the close.
 - The SARIF example is checked against the official OASIS schema in `graph_formal_full` (fetched, sha256-pinned); before, that check skipped on every machine.
+- Fixed: the browser undo test read the screen title before the server's answer to an undo came back (failed 3 runs in 4); it now waits for it. The browser suite is 129 of 129.
+- Fixed: the kernel's Bend adapter read the commit as `bend_commit`, but the runner has written `declared_bend_commit_unverified` since its review fixes, so every report from the current runner was NOT_RUN. It reads both names now.
+- The Bend proof snapshot is refreshed on a Docker host with the current runner and Dockerfile; the strict xfail that marked it stale is gone.
 - The CI budget test was shown to fail a pull request that adds a paid runner or drops a timeout (#275, closed unmerged).
 
 ### 17 November 2026: the offline proposer reads "final approval"

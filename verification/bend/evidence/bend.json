@@ -144,7 +144,9 @@
     "Effect emission is modelled as 'a successful step emits exactly its rule's declared effects'; the runtime's additional EFFECT_DENIED rejection of unknown effect kinds is not modelled (the model is more permissive).",
     "Conformance to the runtime is a bounded differential test (matrix cells and traces), not a proof.",
     "The unsafe models are a fixed set of seeded faults; failing them shows sensitivity to those faults only.",
-    "The laws are authored by the same team as the model; they are not an independently blinded specification."
+    "The laws are authored by the same team as the model; they are not an independently blinded specification.",
+    "Trust moves to BendTT, whose soundness theorem is proved in Lean for the declarative theory; Bend's elaborator and the parser of BendTT's input are trusted, unproven code, and the Lean development has not been audited here.",
+    "The guard conjunction (`permits`) is a fixed hand-written engine template; the generator derives rule tables from the Workflow, not guard semantics. `declared_bend_commit_unverified` is a Dockerfile label; the archive sha256 is the pin."
   ],
   "mode": "complete",
   "model": {
@@ -438,7 +440,7 @@
       "result": "PROOF_FAILS_AS_EXPECTED"
     }
   ],
-  "platform": "Windows-11-10.0.26200-SP0",
+  "platform": "Linux-6.18.44-fc-v553-x86_64-with-glibc2.39",
   "producer": "verification/bend/bend_runner.py",
   "proof": {
     "command": "bend PROOF.bend --verdict",
@@ -448,56 +450,56 @@
     },
     "laws": [
       {
-        "basis": "law checked alone (bend, sliced)",
+        "basis": "law checked alone (bend --verdict, sliced)",
         "exit_code": 0,
         "name": "teacher_never_approves",
         "result": "PROVEN",
         "statement": "LAW 1: whatever a Teacher does (active or not, assigned or not), in any state and in either model, the accepted command never leaves the instance Approved."
       },
       {
-        "basis": "law checked alone (bend, sliced)",
+        "basis": "law checked alone (bend --verdict, sliced)",
         "exit_code": 0,
         "name": "teacher_sequences_never_approve",
         "result": "PROVEN",
         "statement": "LAW 2: no sequence of commands issued only by teachers can ever reach Approved from the initial state."
       },
       {
-        "basis": "law checked alone (bend, sliced)",
+        "basis": "law checked alone (bend --verdict, sliced)",
         "exit_code": 0,
         "name": "approved_only_from_recommended",
         "result": "PROVEN",
         "statement": "LAW 3: in the recommend_only candidate, any accepted command into Approved fires from Recommended."
       },
       {
-        "basis": "law checked alone (bend, sliced)",
+        "basis": "law checked alone (bend --verdict, sliced)",
         "exit_code": 0,
         "name": "every_path_to_approved_passes_recommended",
         "result": "PROVEN",
         "statement": "LAW 4: in the candidate, every path to Approved passes through Recommended (all sequences, any actors)."
       },
       {
-        "basis": "law checked alone (bend, sliced)",
+        "basis": "law checked alone (bend --verdict, sliced)",
         "exit_code": 0,
         "name": "revoked_teacher_cannot_recommend",
         "result": "PROVEN",
         "statement": "LAW 5: a revoked teacher can never recommend, whatever their assignment and whatever the state."
       },
       {
-        "basis": "law checked alone (bend, sliced)",
+        "basis": "law checked alone (bend --verdict, sliced)",
         "exit_code": 0,
         "name": "unassigned_teacher_cannot_recommend",
         "result": "PROVEN",
         "statement": "LAW 6: an unassigned teacher can never recommend, whether or not they are active."
       },
       {
-        "basis": "law checked alone (bend, sliced)",
+        "basis": "law checked alone (bend --verdict, sliced)",
         "exit_code": 0,
         "name": "reject_only_from_declared_source",
         "result": "PROVEN",
         "statement": "LAW 7: Reject is accepted only from the declared rejection source of the model."
       },
       {
-        "basis": "law checked alone (bend, sliced)",
+        "basis": "law checked alone (bend --verdict, sliced)",
         "exit_code": 0,
         "name": "forbidden_effects_never_emitted",
         "result": "PROVEN",
@@ -511,7 +513,7 @@
     },
     "status": "PASS"
   },
-  "python": "3.12.10",
+  "python": "3.13.18",
   "schema_version": 1,
   "status": "PASS",
   "summary": {
@@ -521,13 +523,14 @@
   },
   "tool": {
     "base_image": "ubuntu:24.04@sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4",
-    "bend_commit": "573002f01ec6c52416d44489543f69a9625facf8",
+    "bend_archive_sha256": "5c365ddb12954d0933cef751802e0f7d9875f842edcb80f9661f89cd1a9ff7b6",
     "bend_version": "2.0.32",
     "bend_version_output": "bend 2.0.32",
-    "docker_server_version": "29.8.0",
-    "dockerfile_sha256": "71ebe0c76d8f0419689a355cf3f084a26889884b8df9610ad9cec21a549e4efa",
-    "image_id": "sha256:2735ef8d30a0c7e7aa870e5c8d8d8d9046498ae0e671be36f121abcbc88ad287",
-    "image_tag": "eija-bend-checker:2.0.32",
+    "declared_bend_commit_unverified": "573002f01ec6c52416d44489543f69a9625facf8",
+    "docker_server_version": "29.9.2",
+    "dockerfile_sha256": "b2b0b4819950efee9edb014b37e2f2b9b48ce1377b03528abc735732793d8bb7",
+    "image_id": "sha256:cdef22209929a29427c368b5415b2996d0939d54151c3703419d92de8084aeff",
+    "image_tag": "eija-bend-checker:2.0.32-b2b0b4819950",
     "lean_version": "4.34.0"
   }
 }

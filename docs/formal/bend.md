@@ -123,8 +123,9 @@ platform; the full `bend PROOF.bend --verdict` result and, for each law, a resul
 limits below. A snapshot of a complete run is committed as `verification/bend/evidence/bend.json`. The snapshot is
 unsigned: tests check that its recorded hashes match the committed files (`main.bend`, `LAWS.bend`, `PROOF.bend`; the
 generator hash is checked by the evidence-kind staleness rule), not that a run produced it. It is reproducible with
-`bend_runner.py --snapshot`. It predates the review fixes to the runner and Dockerfile (per-law `--verdict`, archive pin,
-Dockerfile-hash image tag): a strict xfail in `tests/test_formal_bend.py` records that until a Docker host refreshes it.
+`bend_runner.py --snapshot`. It was refreshed on 2026-11-17 on a Linux Docker host (`nox -s formal_bend -- --snapshot`
+with the image built from the current Dockerfile), so it carries the review fixes (per-law `--verdict`, archive pin,
+Dockerfile-hash image tag) and `test_the_snapshot_was_produced_by_the_current_gate_and_dockerfile` checks them.
 
 ### Negative controls (the trust anchor)
 
