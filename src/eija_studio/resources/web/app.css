@@ -43,6 +43,9 @@ body{font-size:14px}.muted{font-size:13px}.workspace-context strong,.case-headin
   .bottom-bar{padding:0 8px}.bottom-tabs{gap:12px}.bottom-tabs button{font-size:12px}.bottom-actions{gap:0}.bottom-content{padding:6px 9px}.tab-content{padding:10px}.panel{padding:13px}.panel h2{font-size:18px}.section-heading{gap:10px}.section-heading>button{max-width:100%;white-space:normal}.row{gap:8px}.options{grid-template-columns:minmax(0,1fr)}.option{padding:13px}.source-reference-form{padding:7px 9px}.source-metadata{max-height:115px}.source-editor-toolbar{padding:7px 8px}.source-editor-toolbar>span:first-of-type{font-size:12px}.read-only-badge{font-size:8px}.source-section{padding:13px}.source-table-wrap{max-width:100%}.diff-table{table-layout:fixed}.diff-table th,.diff-table td{padding:6px;overflow-wrap:anywhere}.status-bar{padding:3px 8px;font-size:11px}#notice{max-height:54px;padding-inline:9px}
 }
 
+/* At phone width the Run pane is only a few lines tall: keep the preview's state and its Start button in the first screen. */
+@media(max-width:540px){#try .panel>p.muted{font-size:12px;margin:0 0 6px}.runtime-state{padding:9px 12px;margin:8px 0}.runtime-state strong{font-size:22px}}
+
 /* Grid placement must survive hidden and positioned compact pane siblings. */
 #ide-shell > #main{grid-column:3;grid-row:1}#workspace{grid-row:1}#panel-resizer{grid-row:2}#bottom-pane{grid-row:3}
 /* Physical grab rails remain usable targets, with a compact visible grip. */

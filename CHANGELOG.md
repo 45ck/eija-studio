@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 17 November 2026: phone-width Run pane, branch archive workflow
+
+- HCI evidence re-measured on Linux Chromium (klm 65.31 s, 52 chunks: still the two #79 gaps).
+- Fixed: at phone width (320 px) the Run pane was so short that "Start / reset preview" sat below its fold; the pane is more compact there now.
+- New manual workflow `archive-branches.yml` tags stale branches `archive/<branch>` before deleting them (#56).
+
 ### 17 November 2026: no nightly run
 
 - The nightly full tier is gone at the owner's request; `quality.yml` runs the full tier only on manual dispatch. The fast tier still runs on every pull request and push to `main`. [ADR-0228 amendment](docs/adr/0228-hosted-ci-on-pull-requests.md#amendment-17-november-2026-no-nightly-run).
