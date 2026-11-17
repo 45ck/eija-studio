@@ -118,6 +118,13 @@ SCENARIOS: tuple[Scenario, ...] = (
              "limit (each is refused); write a law (laws are the person's, proved over every run); let the refund desk's "
              "AI agent approve refunds (the law refuses); or approve and apply anything (the owner does, after source "
              "review). The changed app is built and its conformance cases match the kernel. Nothing is approved or applied."),
+    Scenario("playide_ai_builds_proved", "The AI builds it. PlayIDE proves it.", "recorded", (),
+             "Offline AI, no live model. The describer drafts every model and view of a coffee shop from one sentence; a "
+             "plain-words ask adds paying first and the kernel records the tests again; the app is built from the same "
+             "model and every conformance case matches, shown as a UML deployment of browser, process and database. On "
+             "the library loan the AI's step that deletes late returns is caught before it lands and every law holds on "
+             "every run; on the refund desk a law refuses letting the AI agent approve refunds. A closing card lists the "
+             "repository's formal gates run on the same commit. Nothing is approved or applied."),
     Scenario("agent_change_review","Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "
