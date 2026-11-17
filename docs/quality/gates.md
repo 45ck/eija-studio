@@ -4,7 +4,7 @@ Every gate is a nox session in `quality/sessions/` ([ADR-0017](../adr/0017-local
 `pyproject.toml` or a checked-in baseline, so tightening or loosening a threshold is one reviewable diff
 ([ADR-0035](../adr/0035-static-analysis-and-architecture-fitness-functions.md)). Since 2026-11-11 the same tiers also run on
 GitHub's hosted runners ([ADR-0228](../adr/0228-hosted-ci-on-pull-requests.md)): the fast tier on every pull request and push to
-`main`, the full tier nightly. A local green run shows that this checkout on this machine passed; a hosted run is Linux only.
+`main`, the full tier on manual dispatch only (no nightly since 2026-11-17). A local green run shows that this checkout on this machine passed; a hosted run is Linux only.
 
 ```sh
 nox -t fast       # pre-commit: about 2 minutes on the reference PC (most of it the test suite)
@@ -27,22 +27,22 @@ LANE-01 budget aggregates the reports the other lanes write. Before 2026-11-09 i
 **Hosted CI spend.** The repository is public, so GitHub's standard Linux runners cost nothing; larger and macOS runners
 would be billed even here, and none are used. Measured on 2026-11-09 before triggers were added: 11 Actions runs ever, about 40
 runner-minutes. Each job carries a `timeout-minutes` cap (a hung session would otherwise run to the 6-hour default), a
-`concurrency` group that cancels a superseded run on the same ref, and pip caching keyed on `pyproject.toml`. The nightly full
-tier skips itself when `main` has not changed for 26 hours. Docs-only changes still run the fast tier, because it holds the docs
+`concurrency` group that cancels a superseded run on the same ref, and pip caching keyed on `pyproject.toml`. There is no
+scheduled run: the owner dropped the nightly on 2026-11-17, and the full tier runs when someone dispatches it. Docs-only changes still run the fast tier, because it holds the docs
 gates and a required check that never starts blocks a pull request (ADR-0228).
 `tests/test_ci_budget.py` holds these rules in the fast tier: every job on the pinned `ubuntu-24.04` image, a timeout of at
-most 60 minutes, `concurrency` with `cancel-in-progress` on every workflow, every action pinned to a commit SHA, and at most
-one scheduled run a day. Measured on 2026-11-17: 100 runs since 2026-10-18, 0 billable minutes; until 2026-11-15 every job
-was refused by an account billing lock, and the first job to get a runner was the nightly of 2026-11-16. To check spend again,
+most 60 minutes, `concurrency` with `cancel-in-progress` on every workflow, every action pinned to a commit SHA, and no
+`schedule` trigger at all. Measured on 2026-11-17: 100 runs since 2026-10-18, 0 billable minutes; until 2026-11-15 every job
+was refused by an account billing lock, and the first job to get a runner was a scheduled run of 2026-11-16. To check spend again,
 `gh api repos/45ck/eija-studio/actions/runs/<id>/timing` gives a run's billable milliseconds by runner OS, which must stay 0.
 `okf` (`python -m quality.okf check`, about 11 s) is in the fast tier since 2026-11-17: an ADR amendment merged on a green
 fast run had left its OKF page stale, and only the full tier saw it. The SARIF example's check against the official OASIS
-schema had skipped on every machine; `graph_formal_full` now fetches the schema (pinned sha256, `pinned_jars sarif`) and runs it.
+schema had skipped on every machine; `graph_formal_full` now fetches the schema (pinned sha256, `pinned_jars sarif`) and runs it, and since the nightly was dropped the hosted fast job fetches it too, so the check runs in the `tests` session on every pull request.
 
 **Missing prerequisites report `NOT_RUN`, never PASS.** The only gate here that needs anything outside the venv is `audit`
 (network). nox exits 0 for a skipped session, and an exit code cannot tell NOT_RUN from PASS, so `audit` **fails** offline with a
 `NOT_RUN` message unless `EIJA_ALLOW_NOT_RUN=1` is set (then it skips, prints NOT_RUN, and the reader must not count it as PASS).
-Any script that aggregates nox results must treat a skipped session as NOT_RUN. The hosted workflow does so with `python -m quality.tools.nox_report`, which reads `nox --report`: in the fast tier a skipped session fails the job, and the nightly full tier lists every NOT_RUN session in the job summary. The hosted jobs install the same extras a local run uses (`graph`, `graph-formal`, `okf`, `interop-api`, `smt`, `mutation`, and since 2026-11-14 `metrics`, `hci` and `visual`), so a missing extra cannot quietly skip a gate. A skipped *test* inside a green session is checked too: the `tests` session writes junit and `python -m quality.tools.skip_ledger` fails on any skip that `quality/tools/skip_ledger.json` does not record (counted per file and reason, with every extra installed and no jar fetched). Fewer skips than the ledger is fine; accepting a new skip is a reviewed diff from `--update`. The full tier fetches its pinned Java tools itself (`python -m quality.tools.pinned_jars`, sha256-verified): before 2026-11-14 the Alloy and PlantUML jars had only a manual `curl` in a docstring, so `graph_formal_full` and `interop_plantuml` were NOT_RUN everywhere, the hosted nightly included. The reachability probe is a TCP connect to
+Any script that aggregates nox results must treat a skipped session as NOT_RUN. The hosted workflow does so with `python -m quality.tools.nox_report`, which reads `nox --report`: in the fast tier a skipped session fails the job, and the on-demand full tier lists every NOT_RUN session in the job summary. The hosted jobs install the same extras a local run uses (`graph`, `graph-formal`, `okf`, `interop-api`, `smt`, `mutation`, and since 2026-11-14 `metrics`, `hci` and `visual`), so a missing extra cannot quietly skip a gate. A skipped *test* inside a green session is checked too: the `tests` session writes junit and `python -m quality.tools.skip_ledger` fails on any skip that `quality/tools/skip_ledger.json` does not record (counted per file and reason, with every extra installed and no jar fetched). Fewer skips than the ledger is fine; accepting a new skip is a reviewed diff from `--update`. The full tier fetches its pinned Java tools itself (`python -m quality.tools.pinned_jars`, sha256-verified): before 2026-11-14 the Alloy and PlantUML jars had only a manual `curl` in a docstring, so `graph_formal_full` and `interop_plantuml` were NOT_RUN everywhere, the hosted full tier included. The reachability probe is a TCP connect to
 `pypi.org:443`, so it does not prove the advisory API answers. Tests that need a `lint`-extra tool (radon, ruff, mypy,
 import-linter) skip with a `NOT_RUN:` reason when it is missing; the baseline suite still runs with only `.[dev]`, but the gates
 need `.[dev,lint]`.
@@ -141,7 +141,7 @@ this gate does not make.
 | `.githooks/commit-msg` | Conventional Commits subject; rejects `[skip ci]`-style bypass text; allows git-generated merge and revert subjects |
 | `.githooks/run-nox` | Finds `.venv/Scripts/python.exe` or `.venv/bin/python` (Git Bash on Windows and POSIX), sets TMP/TEMP inside the checkout, probes for nox, pytest-cov, ruff, mypy, import-linter, xenon, radon and deptry and prints the `.[dev,lint]` instruction if any is missing |
 | `.claude/settings.json`, `.claude/hooks/pre-tool-use.sh` | **Active for every agent automatically** (not opt-in). Deny force-pushes and the long no-verify flag on `git commit`/`git push`, and Edit/Write of hooks and agent settings. The hook is a tripwire inside a single `git ... commit\|push` command segment: the long flag, `git commit -n` (and clusters such as `-nm`), `core.hooksPath` overrides, `HUSKY=`/`SKIP=` variables and `[skip ci]`. Text that merely mentions a flag (a PR comment, a quoted commit message) and ordinary `--force` operations (worktree removal, pip) are allowed; the hook works without `jq` |
-| `.github/workflows/quality.yml` | `nox -t fast` on pull requests and pushes to `main`; `nox -t full` nightly and on dispatch; a red nightly opens one issue (ADR-0228) |
+| `.github/workflows/quality.yml` | `nox -t fast` on pull requests and pushes to `main`; `nox -t full` on manual dispatch only; no schedule (ADR-0228) |
 | `.github/workflows/guardrails.yml` | On pull requests touching hooks or agent settings: requires the `noslop-approved` label |
 
 ### Toolchain with uv (Windows reference PC)

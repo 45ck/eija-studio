@@ -3,20 +3,17 @@ name: quality-gates
 # The repository is public, so standard runners cost nothing. Larger and macOS runners are billed even for public
 # repositories: do not add them here.
 # - Every pull request to main and every push to main runs the fast tier (~2 min on 4 cores).
-# - The full tier runs nightly, and only when main changed in the last 26 hours. A red nightly opens or updates one issue.
-# - Manual dispatch runs the full tier on any ref.
+# - The full tier runs only on demand (manual dispatch, any ref). There is no nightly schedule (owner decision 2026-11-17).
 # Local `nox -t fast` / `nox -t full` stay the same commands, so a local run and a hosted run check the same gates.
 # Actions are pinned to commit SHAs (checkout v6.1.0 and setup-python v6.3.0, both Node 24, resolved 2026-11-17).
 # The runner image is pinned to ubuntu-24.04 so a GitHub image migration cannot turn main red overnight.
 # tests/test_ci_budget.py keeps these rules: standard runners only, a timeout on every job, SHA-pinned actions,
-# concurrency on every workflow and at most a daily schedule.
+# concurrency on every workflow and no schedule at all.
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
-  schedule:
-    - cron: '17 15 * * *'  # 15:17 UTC: overnight in eastern Australia, off the hour to avoid queue peaks
   workflow_dispatch:
 permissions:
   contents: read
@@ -41,6 +38,9 @@ jobs:
       # The skip ledger was measured with ffmpeg present (tests/demo_catalogue/test_finish.py); the image has none.
       - run: sudo apt-get install -y --no-install-recommends ffmpeg
       - run: python -m pip install -e '.[dev,lint,testing,metrics,hci,visual,agents,providers,source-analysis,demos,xuml,graph,graph-formal,okf,interop-api,smt,mutation]'
+      # The SARIF 2.1.0 schema check used to run only in the full tier. Fetching the pinned schema here lets the `tests`
+      # session run it on every pull request; a failed fetch (exit 3) leaves the test skipped, which the ledger catches.
+      - run: python -m quality.tools.pinned_jars sarif || true
       # nox exits 0 for a skipped session, so the report decides: every fast gate must actually run (NOT_RUN fails).
       # A skipped *test* is checked inside the `tests` session against quality/tools/skip_ledger.json, so the extras above
       # are the ones the ledger was measured with: drop one and the fast tier fails on the tests it skips.
@@ -49,55 +49,23 @@ jobs:
         run: python -m quality.tools.nox_report reports/nox-fast.json --fail-on-skip
 
   full:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     # The full tier took 43 min on 4 cores (2026-11-14, every extra, jars fetched); a hung session
     # must still not bill up to the 6 h default.
     timeout-minutes: 60
-    permissions:
-      contents: read
-      issues: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-      - name: Skip a nightly run when main has not changed
-        id: changed
-        run: |
-          last=$(git log -1 --format=%ct)
-          now=$(date +%s)
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ $((now - last)) -gt 93600 ]; then
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "main unchanged for over 26 hours: nightly full tier skipped."
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
-      - if: steps.changed.outputs.run == 'true'
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: pyproject.toml
       # The same extras a local full run uses (docs/quality/gates.md). Without them the graph, okf, SMT and mutation gates
       # skip, and a skipped nox session still exits 0.
-      - if: steps.changed.outputs.run == 'true'
-        run: sudo apt-get install -y --no-install-recommends ffmpeg
-      - if: steps.changed.outputs.run == 'true'
-        run: python -m pip install -e '.[dev,lint,testing,metrics,hci,visual,agents,providers,source-analysis,demos,xuml,graph,graph-formal,okf,interop-api,smt,mutation]'
-      - if: steps.changed.outputs.run == 'true'
-        run: mkdir -p reports && python -m nox -t full --report reports/nox-full.json
+      - run: sudo apt-get install -y --no-install-recommends ffmpeg
+      - run: python -m pip install -e '.[dev,lint,testing,metrics,hci,visual,agents,providers,source-analysis,demos,xuml,graph,graph-formal,okf,interop-api,smt,mutation]'
+      - run: mkdir -p reports && python -m nox -t full --report reports/nox-full.json
       # Some full gates need Docker, Java or a Chrome this runner may lack: list every NOT_RUN in the job summary.
-      - if: always() && steps.changed.outputs.run == 'true'
+      - if: always()
         run: python -m quality.tools.nox_report reports/nox-full.json
-      - name: Open or update the nightly failure issue
-        if: failure() && github.event_name == 'schedule'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          title="Nightly full tier failed on main"
-          body="The nightly \`nox -t full\` run failed on $(git rev-parse --short HEAD): $RUN_URL"
-          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
-          else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
-          fi

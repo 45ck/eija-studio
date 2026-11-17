@@ -4,7 +4,7 @@
 
 `formal_tla` has always downloaded its pinned jar (verification/tla/tlc.py). The Alloy (graph/formal/TOOLS.lock) and
 PlantUML (verification/interop/plantuml_oracle.py) jars had only a manual `curl` in a docstring, so `graph_formal_full`
-and `interop_plantuml` were NOT_RUN on every machine that had not run it by hand, the hosted nightly included. A jar
+and `interop_plantuml` were NOT_RUN on every machine that had not run it by hand, the hosted full tier included. A jar
 whose digest differs is never used: the file is removed and the gate stays NOT_RUN. The OASIS SARIF 2.1.0 schema
 (`sarif`, a JSON file, not vendored because its reuse terms are UNVERIFIED) is fetched the same way: before 2026-11-17
 tests/graph/test_rules_reference.py could only skip its schema check, on every machine and in every tier. A download failure is NOT_RUN

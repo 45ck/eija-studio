@@ -223,7 +223,7 @@ General live AI creation, actions that change record values, migrations, deliver
 
 As of 11 November 2026, in order:
 
-1. **Checks on every pull request.** The fast tier runs on each PR and the full tier nightly, once hosted Actions are unlocked. Until then, local `EIJA_REQUIRE_EXTRAS=1 nox -t fast` with the extras installed is the merge evidence.
+1. **Checks on every pull request.** The fast tier runs on each PR (hosted, $0 on standard runners) and the full tier on demand; there is no nightly run. A green hosted `quality-gates / fast`, or local `EIJA_REQUIRE_EXTRAS=1 nox -t fast` with the extras installed, is the merge evidence.
 2. **A backlog that matches the product.** Stale issues closed, one list of current work, tech debt removed.
 3. **Measure how well AI reads a request.** A kernel-graded intent eval across providers.
 4. **Opt-in live AI, offline by default.** Live chat only with consent, plus a `plan_check` tool for coding agents.

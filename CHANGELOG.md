@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 17 November 2026: no nightly run
+
+- The nightly full tier is gone at the owner's request; `quality.yml` runs the full tier only on manual dispatch. The fast tier still runs on every pull request and push to `main`. [ADR-0228 amendment](docs/adr/0228-hosted-ci-on-pull-requests.md#amendment-17-november-2026-no-nightly-run).
+- The SARIF schema check, which only the full tier ran, now runs on every pull request: the hosted fast job fetches the pinned schema first.
+- `tests/test_ci_budget.py` now rejects any `schedule` trigger.
+
 ### 17 November 2026: a deeper test pass
 
 - Fixed: `okf` was red on `main` (the ADR-0228 amendment left its page stale). The `okf` check (11 s) now runs in the fast tier, so a pull request sees it.

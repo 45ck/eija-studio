@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0228-hosted-ci-on-pull-requests.md
   title: 0228-hosted-ci-on-pull-requests.md
   hash_method: lf-sha256-v1
-  sha256: cdd93d4a6edf5482b746b4c87f6875085058b3c8a8ffeca2eed3833d510f50d1
-notes_baseline: 4affef182831a26409fe37c999f5f88c9f330d5df323569c64ff8e16a6e9e1dd
+  sha256: 5a48d7a8ceb60dc485b29d1c8a66ca8938fe0356a2c2972656cfa8c56ba976bc
+notes_baseline: 1264981ebcc701eafd547430bfe14fc4c393f92ae6acb52179782085a6ca88d3
 ---
 
 # ADR-0228: Hosted CI on pull requests, nightly full tier and auto-merge
@@ -51,6 +51,7 @@ notes_baseline: 4affef182831a26409fe37c999f5f88c9f330d5df323569c64ff8e16a6e9e1dd
 * OSS check (required for any custom module)
 * Amendment, 13 November 2026: a skipped gate is not a green gate
 * Amendment, 17 November 2026: the billing lock is gone; a CI budget test
+* Amendment, 17 November 2026: no nightly run
 
 ## Code and docs mentioned
 
