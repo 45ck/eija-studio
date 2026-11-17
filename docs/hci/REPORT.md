@@ -105,7 +105,7 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | fitts.max_id | Fitts | 3.86 bits | 4 | 4.5 | PASS |
 | hick.choice_groups_over_7 | Hick-Hyman | 0 groups | 0 | 0 | PASS |
 | hick.max_choices | Hick-Hyman | 7 alternatives | 7 | 7 | PASS |
-| klm.pointer_expert_time | KLM-GOMS | 65.31 s | 65 | 65 | FAIL |
+| klm.pointer_expert_time | KLM-GOMS | 65.31 s | 65 | 65.31 | GAP |
 | doherty.first_feedback_p95 | Doherty | 5.4 ms | 400 | 400 | PASS |
 | doherty.settled_p50 | Doherty | 96.5 ms | 400 | 400 | PASS |
 | doherty.settled_p95 | Doherty | 249.5 ms | 400 | 4000 | PASS |
@@ -116,7 +116,7 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | wcag.reflow_overflow_views | WCAG 1.4.10 | 0 views | 0 | 0 | PASS |
 | keyboard.focus_lost_activations | WCAG 2.4.3 | 0 activations | 0 | 7 | PASS |
 | keyboard.stops_without_indicator | WCAG 2.4.7 | 0 stops | 0 | 0 | PASS |
-| memory.max_chunks_viewport | Miller / Cowan (proxy) | 52 chunks | 9 | 27 | FAIL |
+| memory.max_chunks_viewport | Miller / Cowan (proxy) | 52 chunks | 9 | 52 | GAP |
 | runtime.js_exceptions | hygiene | 0 exceptions | 0 | 0 | PASS |
 
 ## Necessary-state inspection

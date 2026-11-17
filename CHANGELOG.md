@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 17 November 2026: HCI caps reset (#79)
+
+- Owner decision ("Reset the caps", 2026-10-08; "proceed fully do all", 2026-11-17): `klm.pointer_expert_time` limit 65 → 65.31 s and `memory.max_chunks_viewport` limit 27 → 52 for the integrated IDE. Targets stay 65 s and 9. The `hci` and `metrics` gates pass again.
+
 ### 17 November 2026: phone-width Run pane, branch archive workflow
 
 - HCI evidence re-measured on Linux Chromium (klm 65.31 s, 52 chunks: still the two #79 gaps).
