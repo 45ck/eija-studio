@@ -142,6 +142,7 @@ this gate does not make.
 | `.githooks/run-nox` | Finds `.venv/Scripts/python.exe` or `.venv/bin/python` (Git Bash on Windows and POSIX), sets TMP/TEMP inside the checkout, probes for nox, pytest-cov, ruff, mypy, import-linter, xenon, radon and deptry and prints the `.[dev,lint]` instruction if any is missing |
 | `.claude/settings.json`, `.claude/hooks/pre-tool-use.sh` | **Active for every agent automatically** (not opt-in). Deny force-pushes and the long no-verify flag on `git commit`/`git push`, and Edit/Write of hooks and agent settings. The hook is a tripwire inside a single `git ... commit\|push` command segment: the long flag, `git commit -n` (and clusters such as `-nm`), `core.hooksPath` overrides, `HUSKY=`/`SKIP=` variables and `[skip ci]`. Text that merely mentions a flag (a PR comment, a quoted commit message) and ordinary `--force` operations (worktree removal, pip) are allowed; the hook works without `jq` |
 | `.github/workflows/quality.yml` | `nox -t fast` on pull requests and pushes to `main`; `nox -t full` on manual dispatch only; no schedule (ADR-0228) |
+| `.github/workflows/archive-branches.yml` | Manual dispatch: tags each listed branch `archive/<branch>`, then deletes it (refuses `main`, `pr-media` and branches with an open PR; issue #56) |
 | `.github/workflows/guardrails.yml` | On pull requests touching hooks or agent settings: requires the `noslop-approved` label |
 
 ### Toolchain with uv (Windows reference PC)
