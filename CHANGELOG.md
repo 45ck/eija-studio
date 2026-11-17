@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 17 November 2026: CI cost guardrails
+
+- Hosted Actions jobs start again (the account billing lock is gone); 0 billable minutes in the last 30 days. [ADR-0228 amendment](docs/adr/0228-hosted-ci-on-pull-requests.md#amendment-17-november-2026-the-billing-lock-is-gone-a-ci-budget-test).
+- Workflows use Node 24 actions (`checkout` v6.1.0, `setup-python` v6.3.0) and the pinned `ubuntu-24.04` image.
+- New `tests/test_ci_budget.py`: standard runners only, a timeout on every job, concurrency on every workflow, SHA-pinned actions, at most a daily schedule.
+
 ### 14 November 2026: the app generator, second pass
 
 - Fixed: the API contract and the generated server read one status table (`eija_studio.domain.app_http`); the contract had left out 13 refusal codes and the signals route. `ROLE_CANNOT_START` and `SEPARATION_DENIED` are now 403. [Inspection record](docs/quality/inspection-2026-11-14-app-generator-pass-2.md), [ADR-0254](docs/adr/0254-app-generator-second-pass.md).

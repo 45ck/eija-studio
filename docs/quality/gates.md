@@ -30,6 +30,11 @@ runner-minutes. Each job carries a `timeout-minutes` cap (a hung session would o
 `concurrency` group that cancels a superseded run on the same ref, and pip caching keyed on `pyproject.toml`. The nightly full
 tier skips itself when `main` has not changed for 26 hours. Docs-only changes still run the fast tier, because it holds the docs
 gates and a required check that never starts blocks a pull request (ADR-0228).
+`tests/test_ci_budget.py` holds these rules in the fast tier: every job on the pinned `ubuntu-24.04` image, a timeout of at
+most 60 minutes, `concurrency` with `cancel-in-progress` on every workflow, every action pinned to a commit SHA, and at most
+one scheduled run a day. Measured on 2026-11-17: 100 runs since 2026-10-18, 0 billable minutes; until 2026-11-15 every job
+was refused by an account billing lock, and the first job to get a runner was the nightly of 2026-11-16. To check spend again,
+`gh api repos/45ck/eija-studio/actions/runs/<id>/timing` gives a run's billable milliseconds by runner OS, which must stay 0.
 
 **Missing prerequisites report `NOT_RUN`, never PASS.** The only gate here that needs anything outside the venv is `audit`
 (network). nox exits 0 for a skipped session, and an exit code cannot tell NOT_RUN from PASS, so `audit` **fails** offline with a

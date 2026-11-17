@@ -6,7 +6,10 @@ name: quality-gates
 # - The full tier runs nightly, and only when main changed in the last 26 hours. A red nightly opens or updates one issue.
 # - Manual dispatch runs the full tier on any ref.
 # Local `nox -t fast` / `nox -t full` stay the same commands, so a local run and a hosted run check the same gates.
-# Actions are pinned to commit SHAs (tags resolved 2026-09-29).
+# Actions are pinned to commit SHAs (checkout v6.1.0 and setup-python v6.3.0, both Node 24, resolved 2026-11-17).
+# The runner image is pinned to ubuntu-24.04 so a GitHub image migration cannot turn main red overnight.
+# tests/test_ci_budget.py keeps these rules: standard runners only, a timeout on every job, SHA-pinned actions,
+# concurrency on every workflow and at most a daily schedule.
 on:
   pull_request:
     branches: [main]
@@ -26,11 +29,11 @@ env:
 jobs:
   fast:
     if: github.event_name == 'pull_request' || github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: pip
@@ -45,7 +48,7 @@ jobs:
 
   full:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # The full tier took 43 min on 4 cores (2026-11-14, every extra, jars fetched); a hung session
     # must still not bill up to the 6 h default.
     timeout-minutes: 60
@@ -53,7 +56,7 @@ jobs:
       contents: read
       issues: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Skip a nightly run when main has not changed
         id: changed
         run: |
@@ -66,7 +69,7 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
       - if: steps.changed.outputs.run == 'true'
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
           cache: pip
