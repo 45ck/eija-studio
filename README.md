@@ -156,6 +156,12 @@ We want engineering to be something you want to come back to. Enjoyment and bett
 
 Fixture actors, local records and inspected recordings. The normal source-review gate remains enforced; the longer clip does not establish legitimate owner review. [Checks, exact identities and limitations](docs/demos/assets/playide-react-20261012/manifest.json) · [Post-restart native frame](docs/assets/readme/renewal-after-restart-20261012.png).
 
+### The AI builds it. PlayIDE proves it. · 3:54 · 17 November 2026
+
+[![Watch the AI draft a whole system from one sentence, change it in plain words and build it, while the kernel proves every law and every conformance case across the stack](docs/demos/assets/playide-proved-20261117/playide-ai-builds-proved-poster.png)](docs/demos/assets/playide-proved-20261117/playide-ai-builds-proved.mp4)
+
+The AI drafts a whole coffee-shop system from one sentence, changes it in plain words and builds the app; the kernel records the tests again and all 334 conformance cases match, across what the app offers, its HTTP API and its stored records. On the library loan, the AI's step that would delete late returns is caught before it lands, and every law holds on every run. On the refund desk, a law refuses letting the AI agent approve refunds. The closing cards quote the formal gates run on the same commit: Z3 proves the change policy's 15 invariants, TLA+ checks 15,408 states and finds every planted bug, 12,256 cases agree with an independent SCXML engine, and 553 deliberately wrong apps are all caught or refused. Proved against the model and its laws; the owner still ships. Offline AI, no live model. [What is real and what "proved" means](docs/demos/2026-11-17-PLAYIDE-AI-BUILDS-PROVED.md).
+
 ### What the AI can do, and what it can't · 4:08 · 17 November 2026
 
 [![Watch PlayIDE's AI turn plain words into UML steps and a whole system, and watch the kernel, the laws and the reviewer stop what it must not do](docs/demos/assets/playide-ai-20261117/playide-ai-can-and-cannot-poster.png)](docs/demos/assets/playide-ai-20261117/playide-ai-can-and-cannot.mp4)

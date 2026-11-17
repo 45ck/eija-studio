@@ -1,0 +1,11 @@
+{
+  "mode": "record",
+  "platform": "Linux 6.18.44-fc-v553 / Python 3.13.18",
+  "scenario": "playide_ai_builds_proved",
+  "scenario_sha256": "db2465a21e4fd63a8ab6783a2ae81081aca1ef2ea7f6ba7f731e70d5d42718af",
+  "skipped": [],
+  "status": "PASS",
+  "video": "demos/output/playide_ai_builds_proved.webm",
+  "video_bytes": 26530229,
+  "video_sha256": "07b9d87e5da57e703d2c22ee4a1b8b5e0b4549d27a890639959b1cef439f9c26"
+}
