@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 17 November 2026: a deeper test pass
+
+- Fixed: `okf` was red on `main` (the ADR-0228 amendment left its page stale). The `okf` check (11 s) now runs in the fast tier, so a pull request sees it.
+- Fixed: a flaky server test read a 408 answer with one `recv`; it now reads to the close.
+- The SARIF example is checked against the official OASIS schema in `graph_formal_full` (fetched, sha256-pinned); before, that check skipped on every machine.
+- The CI budget test was shown to fail a pull request that adds a paid runner or drops a timeout (#275, closed unmerged).
+
 ### 17 November 2026: the offline proposer reads "final approval"
 
 - Fixed (#220): "Let teachers give the final approval for an excursion on their own" now gets `final_approval` first, which protected policy refuses, instead of the safe `recommend_only` the person did not ask for. The offline intent eval is 25 of 32 with no substitution ([evidence](evidence/intent-eval/2026-11-17-offline-linux.json)); a test keeps substitutions at zero.

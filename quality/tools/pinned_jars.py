@@ -5,7 +5,9 @@
 `formal_tla` has always downloaded its pinned jar (verification/tla/tlc.py). The Alloy (graph/formal/TOOLS.lock) and
 PlantUML (verification/interop/plantuml_oracle.py) jars had only a manual `curl` in a docstring, so `graph_formal_full`
 and `interop_plantuml` were NOT_RUN on every machine that had not run it by hand, the hosted nightly included. A jar
-whose digest differs is never used: the file is removed and the gate stays NOT_RUN. A download failure is NOT_RUN
+whose digest differs is never used: the file is removed and the gate stays NOT_RUN. The OASIS SARIF 2.1.0 schema
+(`sarif`, a JSON file, not vendored because its reuse terms are UNVERIFIED) is fetched the same way: before 2026-11-17
+tests/graph/test_rules_reference.py could only skip its schema check, on every machine and in every tier. A download failure is NOT_RUN
 (exit 3), never a pass and never a crash; the gate itself then reports NOT_RUN as before.
 """
 from __future__ import annotations
@@ -31,7 +33,15 @@ def _plantuml() -> tuple[str, str, Path]:
     return oracle.JAR_URL, oracle.JAR_SHA256, TOOLS / oracle.JAR_NAME
 
 
-JARS = {"alloy": _alloy, "plantuml": _plantuml}
+SARIF_URL = "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json"
+SARIF_SHA256 = "c3b4bb2d6093897483348925aaa73af03b3e3f4bd4ca38cef26dcb4212a2682e"  # graph/schema/rules.md
+
+
+def _sarif() -> tuple[str, str, Path]:
+    return SARIF_URL, SARIF_SHA256, ROOT / ".tmp" / "sarif-schema-2.1.0.json"  # tests/graph/test_rules_reference.py reads it there
+
+
+JARS = {"alloy": _alloy, "plantuml": _plantuml, "sarif": _sarif}
 
 
 def _digest(path: Path) -> str:

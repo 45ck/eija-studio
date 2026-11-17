@@ -110,6 +110,11 @@ def graph_formal_full(session: nox.Session) -> None:
     report = session.run(PYTHON, "graph/formal/selfcheck.py", "--alloy", env=_env(), silent=True, success_codes=[0, 2])
     session.log(report)
     run_lane_tests(session, *NO_CACHE, "tests/graph/formal", env=_env())
+    # The SARIF example against the official OASIS schema: the suite session skips it wherever the schema was never
+    # fetched, so it is fetched (pinned sha256) and run here, every time, whatever the suite did.
+    session.run(PYTHON, "-m", "quality.tools.pinned_jars", "sarif", success_codes=[0, 3])  # exit 3 prints NOT_RUN; the test then skips
+    session.run(PYTHON, "-m", "pytest", "-q", *NO_CACHE, "-rs",
+                "tests/graph/test_rules_reference.py::test_example_validates_against_the_official_schema_when_available", env=_env())
     alloy = json.loads(report).get("tools", {}).get("alloy", {})
     if alloy.get("verdict") == "NOT_RUN":
         session.skip(f"NOT_RUN (not a pass): the Alloy certificate models did not run: {alloy.get('reason')}")

@@ -5,6 +5,7 @@ description: OKF v0.2 conformance, links, code-link hashes (STALE, NOTES_STALE),
 resource: repo://quality/sessions/okf.py#okf
 tags:
 - gate
+- fast
 - full
 - release
 status: stable
@@ -14,8 +15,13 @@ sources:
 - resource: repo://quality/sessions/okf.py#okf
   title: okf.py
   hash_method: ast-v2
-  sha256: a37d0665060682f3e8189f54be8801f941457cd05dc0c535f3cbe1e9ecaa175d
-notes_baseline: 1be2066262efa9423a352293a72317d1622fecc1abaf4d053877db569b4da458
+  sha256: c5d6d45e8ae01164f1e784e85c3bf89636acedc395aecec8af3161e3f91a4273
+notes_baseline: c9b3cb428306837ce1baace99873f5bfeaaa7af3d988b31f15dff548cd76ed4b
+verified:
+- by: process:deeper-test-pass
+  at: '2026-11-17T01:30:00Z'
+  notes_sha256: 34e38738ead699a87dec889f1c5bc16804d71221212ba6b43bf4f26b86816ac2
+  sources_sha256: c9b3cb428306837ce1baace99873f5bfeaaa7af3d988b31f15dff548cd76ed4b
 ---
 
 # nox -s okf
@@ -24,7 +30,7 @@ notes_baseline: 1be2066262efa9423a352293a72317d1622fecc1abaf4d053877db569b4da458
 | | |
 |---|---|
 | Command | `nox -s okf` |
-| Tiers | `full`, `release` |
+| Tiers | `fast`, `full`, `release` |
 | Session module | `repo://quality/sessions/okf.py` |
 | Code | `repo://quality/sessions/okf.py#okf` |
 

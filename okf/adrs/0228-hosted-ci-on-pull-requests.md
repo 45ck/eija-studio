@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0228-hosted-ci-on-pull-requests.md
   title: 0228-hosted-ci-on-pull-requests.md
   hash_method: lf-sha256-v1
-  sha256: ea432a859b31516a18f03262e334d9030f7fc8bb86bdb0c3e77ab21826c5a00a
-notes_baseline: 3f4c476ded27996af5fec81e79914d122b041e8f8f3855ded7fe8b4d00d8f529
+  sha256: cdd93d4a6edf5482b746b4c87f6875085058b3c8a8ffeca2eed3833d510f50d1
+notes_baseline: 4affef182831a26409fe37c999f5f88c9f330d5df323569c64ff8e16a6e9e1dd
 ---
 
 # ADR-0228: Hosted CI on pull requests, nightly full tier and auto-merge
@@ -32,7 +32,7 @@ notes_baseline: 3f4c476ded27996af5fec81e79914d122b041e8f8f3855ded7fe8b4d00d8f529
 > `.github/workflows/quality.yml`:
 >
 > * `fast` job: every pull request to `main` and every push to `main` runs `nox -t fast` on Python 3.12 (about 2 minutes of tests on 4 cores, under 15 minutes cap).
-> * `full` job: nightly at 15:17 UTC, and on manual dispatch, runs `nox -t full` (about 13 minutes, 30-minute cap). The nightly run skips itself when `main` has not changed for 26 hours. A failed nightly run opens one issue, "Nightly full tier failed on main", or comments on it if it is already open.
+> * `full` job: nightly at 15:17 UTC, and on manual dispatch, runs `nox -t full` (about 13 minutes, 30-minute cap; amended 14 November 2026: 43 minutes measured after the 11 to 14 November gates, 60-minute cap, see [the second tests and gates inspection](repo://docs/quality/inspections/2026-11-14-tests-gates-docs-deeper.md#r1-the-full-tier)). The nightly run skips itself when `main` has not changed for 26 hours. A failed nightly run opens one issue, "Nightly full tier failed on main", or comments on it if it is already open.
 > * Docs-only changes are **not** excluded with `paths-ignore`. The fast tier contains docs gates (`docs_links`, `adr_index`, `community_files`), and a required check that never starts leaves a pull request blocked.
 > * Concurrency groups cancel a superseded run on the same ref; pip caching is keyed on `pyproject.toml`.
 >
@@ -50,6 +50,7 @@ notes_baseline: 3f4c476ded27996af5fec81e79914d122b041e8f8f3855ded7fe8b4d00d8f529
 * Decision outcome
 * OSS check (required for any custom module)
 * Amendment, 13 November 2026: a skipped gate is not a green gate
+* Amendment, 17 November 2026: the billing lock is gone; a CI budget test
 
 ## Code and docs mentioned
 
@@ -58,6 +59,7 @@ Existence-checked by the gate; not hashed (an ADR is a decision record, not a de
 * `repo://.claude/settings.json`
 * `repo://pyproject.toml`
 * `repo://quality/sessions/browser.py`
+* `repo://tests/test_ci_budget.py`
 * `repo://tests/test_syntax_validator.py`
 <!-- okf:generated:end facts -->
 

@@ -35,6 +35,9 @@ most 60 minutes, `concurrency` with `cancel-in-progress` on every workflow, ever
 one scheduled run a day. Measured on 2026-11-17: 100 runs since 2026-10-18, 0 billable minutes; until 2026-11-15 every job
 was refused by an account billing lock, and the first job to get a runner was the nightly of 2026-11-16. To check spend again,
 `gh api repos/45ck/eija-studio/actions/runs/<id>/timing` gives a run's billable milliseconds by runner OS, which must stay 0.
+`okf` (`python -m quality.okf check`, about 11 s) is in the fast tier since 2026-11-17: an ADR amendment merged on a green
+fast run had left its OKF page stale, and only the full tier saw it. The SARIF example's check against the official OASIS
+schema had skipped on every machine; `graph_formal_full` now fetches the schema (pinned sha256, `pinned_jars sarif`) and runs it.
 
 **Missing prerequisites report `NOT_RUN`, never PASS.** The only gate here that needs anything outside the venv is `audit`
 (network). nox exits 0 for a skipped session, and an exit code cannot tell NOT_RUN from PASS, so `audit` **fails** offline with a
