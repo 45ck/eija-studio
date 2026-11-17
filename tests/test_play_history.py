@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from pathlib import Path
 
 import pytest
@@ -103,9 +104,13 @@ def test_undo_redo_and_recovery_after_a_reload_in_a_real_browser():
             page.click("#tab-states")
             page.click("#undo")
             page.click("#tab-screens")
-            assert page.input_value("#screen-card .screen-title") != "Borrow a book"
+            # Undoing the first screen edit reloads the model's own screens from the server (restore -> resetScreens),
+            # so wait for that answer: reading at once failed about 3 runs in 4 on 17 November 2026. (The page's CSP forbids
+            # wait_for_function's string eval, so poll from here.)
+            title = page.locator("#screen-card .screen-title")
+            _wait_until(lambda: title.input_value() != "Borrow a book")
             page.click("#redo")
-            assert page.input_value("#screen-card .screen-title") == "Borrow a book"
+            _wait_until(lambda: title.input_value() == "Borrow a book")
             # A reload (or a crash) loses nothing: the plan, its ticks and the screens come back, with their history.
             page.reload()
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
@@ -563,3 +568,10 @@ def test_two_tabs_on_one_system_keep_each_others_work():
             assert errors == []
         finally:
             chrome.close()
+
+
+def _wait_until(check, timeout: float = 10.0) -> None:
+    deadline = time.monotonic() + timeout
+    while not check():
+        assert time.monotonic() < deadline, "the page did not get there in time"
+        time.sleep(0.05)
