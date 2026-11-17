@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 17 November 2026: the offline proposer reads "final approval"
+
+- Fixed (#220): "Let teachers give the final approval for an excursion on their own" now gets `final_approval` first, which protected policy refuses, instead of the safe `recommend_only` the person did not ask for. The offline intent eval is 25 of 32 with no substitution ([evidence](evidence/intent-eval/2026-11-17-offline-linux.json)); a test keeps substitutions at zero.
+
 ### 17 November 2026: CI cost guardrails
 
 - Hosted Actions jobs start again (the account billing lock is gone); 0 billable minutes in the last 30 days. [ADR-0228 amendment](docs/adr/0228-hosted-ci-on-pull-requests.md#amendment-17-november-2026-the-billing-lock-is-gone-a-ci-budget-test).
