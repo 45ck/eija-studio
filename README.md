@@ -156,6 +156,12 @@ We want engineering to be something you want to come back to. Enjoyment and bett
 
 Fixture actors, local records and inspected recordings. The normal source-review gate remains enforced; the longer clip does not establish legitimate owner review. [Checks, exact identities and limitations](docs/demos/assets/playide-react-20261012/manifest.json) · [Post-restart native frame](docs/assets/readme/renewal-after-restart-20261012.png).
 
+### What the AI can do, and what it can't · 4:08 · 17 November 2026
+
+[![Watch PlayIDE's AI turn plain words into UML steps and a whole system, and watch the kernel, the laws and the reviewer stop what it must not do](docs/demos/assets/playide-ai-20261117/playide-ai-can-and-cannot-poster.png)](docs/demos/assets/playide-ai-20261117/playide-ai-can-and-cannot.mp4)
+
+An honest tour of the AI in PlayIDE. **Can:** turn a plain-words ask into typed UML steps, and draft a whole system (state machine, classes, use cases, screens, kernel-recorded tests) from one sentence. **Can't:** slip a step that deletes late returns past the kernel and the reviewer's prediction; guess a vague ask, an unknown name or a value limit (each is refused, not invented); write a law; let an AI agent in the model approve refunds; or approve and apply anything. The changed app is built and every conformance case matches the kernel. The proposer and describer are the labelled offline readers: no live model. [What is real and what is not shown](docs/demos/2026-11-17-PLAYIDE-AI-CAN-AND-CANNOT.md).
+
 ### New in the kernel · 3:02 · 12 November 2026
 
 [![Watch guards over values, four eyes, checked references, signals between workflows, composite states, timers and linked objects in PlayIDE](docs/demos/assets/playide-kernel-20261112/playide-kernel-rules-poster.png)](docs/demos/assets/playide-kernel-20261112/playide-kernel-rules.mp4)

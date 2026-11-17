@@ -111,6 +111,13 @@ SCENARIOS: tuple[Scenario, ...] = (
              "The app is built and its conformance suite passes. Then two shipped templates: the refund desk's composite "
              "state and after(2 days) timer (ADR-0240, ADR-0237) and the AI ops window that locks its target (ADR-0241). "
              "Nothing is approved or applied."),
+    Scenario("playide_ai_can_and_cannot", "What PlayIDE's AI can do, and what it can't", "recorded", (),
+             "An honest tour of the AI in PlayIDE, offline (no live model). Can: turn plain words into typed UML steps on "
+             "the library loan, and draft a whole coffee-shop system from one sentence. Can't: slip a step that deletes "
+             "late returns past the kernel and the reviewer's prediction; guess a vague ask, an unknown name or a value "
+             "limit (each is refused); write a law (laws are the person's, proved over every run); let the refund desk's "
+             "AI agent approve refunds (the law refuses); or approve and apply anything (the owner does, after source "
+             "review). The changed app is built and its conformance cases match the kernel. Nothing is approved or applied."),
     Scenario("agent_change_review","Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "
