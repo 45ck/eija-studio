@@ -58,10 +58,10 @@
     {
       "id": "klm.pointer_expert_time",
       "law": "KLM-GOMS",
-      "limit": 65,
-      "note": "modelled, not measured: a regression guard on the journey definition (measured model value 62.7 s), so adding a journey step trips it on purpose; no law defines a threshold, so target = limit",
+      "limit": 65.31,
+      "note": "modelled, not measured: a regression guard on the journey definition, so adding a journey step trips it on purpose. Limit re-derived 2026-11-17 for the integrated IDE (65.31 s on Windows Chrome and Linux Chromium, issue #79); the owner chose 'Reset the caps' on 2026-10-08 and confirmed on 2026-11-17. Target stays 65",
       "path": "klm.expert_time_pointer_s",
-      "status": "FAIL",
+      "status": "GAP",
       "target": 65,
       "unit": "s",
       "value": 65.31
@@ -179,10 +179,10 @@
     {
       "id": "memory.max_chunks_viewport",
       "law": "Miller / Cowan (proxy)",
-      "limit": 27,
-      "note": "heuristic proxy; limit raised 26 -> 27 on 2026-09-29: evidence-kinds UI added a group; UI replaced in Phase 2, WP 2.6 re-derives all budgets; accepted by delegated review 2026-09-29",
+      "limit": 52,
+      "note": "heuristic proxy. Re-derived 27 -> 52 on 2026-11-17 for the integrated IDE (WP 2.6): the densest state, the model canvas with View and the pinned inspector open, has about 20 chunks of chrome (header, six work tabs, case picker, navigator, status lines) before any task content, measured 52 on Linux Chromium (issue #79). Owner decision: 'Reset the caps' (2026-10-08, confirmed 2026-11-17). Target stays 9; tighten as the UI is decluttered",
       "path": "working_memory.summary.max_chunks_viewport",
-      "status": "FAIL",
+      "status": "GAP",
       "target": 9,
       "unit": "chunks",
       "value": 52
